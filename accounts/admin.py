@@ -41,11 +41,6 @@ class UserAdmin(BaseUserAdmin):
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
 
-    fieldsets = (
-        (None, {'fields': ('email', 'password')}),
-        ('Personal info', {'fields': ('first_name', 'last_name')}),
-    )
-
     def get_queryset(self, request):
         if hasattr(request.user, 'userprofilebase'):
             queryset = request.user.get_query_set_within_organization()
@@ -53,11 +48,11 @@ class UserAdmin(BaseUserAdmin):
         return super().get_queryset(request)
 
     def get_inline_instances(self, request, obj=None):
+        self.inlines = []
         if not obj:
             return list()
         else:
             # dynamic user profile form by User type
-            self.inlines = []
             if obj.type == CLIENT_USER:
                 self.inlines.append(ClientProfileInline)
             elif obj.type == GENERAL_PRACTICE_USER:
@@ -70,6 +65,10 @@ class UserAdmin(BaseUserAdmin):
                 'classes': ('wide',),
                 'fields': ('email', 'username', 'password1', 'password2', 'first_name', 'last_name'),
             }),
+        )
+        self.fieldsets = (
+            (None, {'fields': ('email', 'password')}),
+            ('Personal info', {'fields': ('first_name', 'last_name')}),
         )
 
         if request.user.is_medidata or request.user.is_superuser:
@@ -94,11 +93,22 @@ class UserAdmin(BaseUserAdmin):
         return super().get_fieldsets(request, obj)
 
     def save_model(self, request, obj, form, change):
-        if request.user.type == CLIENT_USER:
+        if request.user.type == CLIENT_USER and request.user.is_client_admin:
             obj.type = CLIENT_USER
-        elif request.user.type == GENERAL_PRACTICE_USER:
+            super(UserAdmin, self).save_model(request, obj, form, change)
+            if hasattr(request.user, 'userprofilebase'):
+                if not ClientUser.objects.filter(user=obj).exists():
+                    organisation = request.user.userprofilebase.clientuser.organization_client
+                    ClientUser.objects.create(user=obj, organization_client=organisation)
+        elif request.user.type == GENERAL_PRACTICE_USER and request.user.is_practice_manager:
             obj.type = GENERAL_PRACTICE_USER
-        super(UserAdmin, self).save_model(request, obj, form, change)
+            super(UserAdmin, self).save_model(request, obj, form, change)
+            if hasattr(request.user, 'userprofilebase'):
+                if not GeneralPracticeUser.objects.filter(user=obj).exists():
+                    organisation = request.user.userprofilebase.generalpracticeuser.organization_gp
+                    GeneralPracticeUser.objects.create(user=obj, organization_gp=organisation)
+        else:
+            super(UserAdmin, self).save_model(request, obj, form, change)
 
 
 admin.site.register(User, UserAdmin)

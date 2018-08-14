@@ -85,27 +85,27 @@ class User(AbstractUser):
 
 class UserProfileBase(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, blank=True)
     middle_name = models.CharField(max_length=255, blank=True)
     maiden_name = models.CharField(max_length=255, blank=True)
-    date_of_birth = models.DateField()
-    address_name_number = models.CharField(max_length=255)
-    address_line2 = models.CharField(max_length=255)
-    address_line3 = models.CharField(max_length=255)
-    address_line4 = models.CharField(max_length=255)
-    address_postcode = models.CharField(max_length=255)
-    address_country = models.CharField(max_length=255)
-    email = models.EmailField()
-    telephone_home = PhoneNumberField()
-    telephone_mobile = PhoneNumberField()
-    sex = models.CharField(max_length=1, choices=SEX_CHOICES)
+    date_of_birth = models.DateField(null=True, blank=True)
+    address_name_number = models.CharField(max_length=255, blank=True)
+    address_line2 = models.CharField(max_length=255, blank=True)
+    address_line3 = models.CharField(max_length=255, blank=True)
+    address_line4 = models.CharField(max_length=255, blank=True)
+    address_postcode = models.CharField(max_length=255, blank=True)
+    address_country = models.CharField(max_length=255, blank=True)
+    email = models.EmailField(blank=True)
+    telephone_home = PhoneNumberField(blank=True)
+    telephone_mobile = PhoneNumberField(blank=True)
+    sex = models.CharField(max_length=1, choices=SEX_CHOICES, blank=True)
 
     class Meta:
         verbose_name = 'User Profile Base'
         verbose_name_plural = 'User Profile Bases'
 
     def __str__(self):
-        return self.user + "User Profile"
+        return self.user.email + "User Profile"
 
 
 class ClientUser(UserProfileBase):
@@ -120,10 +120,10 @@ class ClientUser(UserProfileBase):
 
 class GeneralPracticeUser(UserProfileBase):
     organization_gp = models.ForeignKey(OrganizationGeneralPractice, on_delete=models.CASCADE)
-    gp_code = models.CharField(max_length=255)
-    payment_bank_holder_name = models.CharField(max_length=255)
-    payment_bank_account_number = models.CharField(max_length=255)
-    payment_bank_sort_code = models.CharField(max_length=255)
+    gp_code = models.CharField(max_length=255, blank=True)
+    payment_bank_holder_name = models.CharField(max_length=255, blank=True)
+    payment_bank_account_number = models.CharField(max_length=255, blank=True)
+    payment_bank_sort_code = models.CharField(max_length=255, blank=True)
     can_complete_amra = models.BooleanField(default=False)
     can_complete_sars = models.BooleanField(default=False)
 
