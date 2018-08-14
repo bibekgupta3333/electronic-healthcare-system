@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'medi.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'medi.settings.staging_settings')
 
 application = get_wsgi_application()
