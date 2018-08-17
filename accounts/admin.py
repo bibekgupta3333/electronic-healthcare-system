@@ -33,7 +33,7 @@ class CustomUserChangeForm(UserChangeForm):
 
     class Meta:
         model = User
-        fields = ('email', 'password', 'groups', 'is_active', 'is_medidata', 'is_client_admin', 'is_practice_manager')
+        fields = ('email', 'password', 'groups', 'is_active',)
 
 
 class UserAdmin(BaseUserAdmin):
@@ -71,13 +71,12 @@ class UserAdmin(BaseUserAdmin):
             ('Personal info', {'fields': ('first_name', 'last_name')}),
         )
 
-        if request.user.is_medidata or request.user.is_superuser:
+        if request.user.type == MEDIDATA_USER or request.user.is_superuser:
             # add permission form
             self.fieldsets = (
                 (None, {'fields': ('email', 'password')}),
                 ('Personal info', {'fields': ('first_name', 'last_name')}),
-                ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'is_medidata',
-                                            'is_client_admin', 'is_practice_manager', 'groups')}),
+                ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups')}),
             )
             # add type field form
             self.add_fieldsets = (
@@ -93,14 +92,14 @@ class UserAdmin(BaseUserAdmin):
         return super().get_fieldsets(request, obj)
 
     def save_model(self, request, obj, form, change):
-        if request.user.type == CLIENT_USER and request.user.is_client_admin:
+        if request.user.type == CLIENT_USER:
             obj.type = CLIENT_USER
             super(UserAdmin, self).save_model(request, obj, form, change)
             if hasattr(request.user, 'userprofilebase'):
                 if not ClientUser.objects.filter(user=obj).exists():
                     organisation = request.user.userprofilebase.clientuser.organization_client
                     ClientUser.objects.create(user=obj, organization_client=organisation)
-        elif request.user.type == GENERAL_PRACTICE_USER and request.user.is_practice_manager:
+        elif request.user.type == GENERAL_PRACTICE_USER:
             obj.type = GENERAL_PRACTICE_USER
             super(UserAdmin, self).save_model(request, obj, form, change)
             if hasattr(request.user, 'userprofilebase'):

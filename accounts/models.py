@@ -11,11 +11,14 @@ SEX_CHOICES = (
     ('F', 'Female')
 )
 
+MEDIDATA_USER = 'MEDI'
 CLIENT_USER = 'CLT'
 GENERAL_PRACTICE_USER = 'GP'
+
 USER_TYPE_CHOICES = (
-    ('CLT', 'Client'),
-    ('GP', 'General Practice')
+    (MEDIDATA_USER, 'Medidata'),
+    (CLIENT_USER, 'Client'),
+    (GENERAL_PRACTICE_USER, 'General Practice')
 )
 
 
@@ -50,22 +53,7 @@ class User(AbstractUser):
         max_length=255,
         unique=True,
     )
-    type = models.CharField(max_length=3, choices=USER_TYPE_CHOICES)
-    is_medidata = models.BooleanField(
-        _('Medidata status'),
-        help_text=_("Designates that this user can create Other Organization users"),
-        default=False
-    )
-    is_client_admin = models.BooleanField(
-        _('Client Admin status'),
-        help_text=_("Designates that this user can create their client users"),
-        default=False
-    )
-    is_practice_manager = models.BooleanField(
-        _('GP Manager status'),
-        help_text=_("Designates that this user can create their gp users"),
-        default=False
-    )
+    type = models.CharField(max_length=4, choices=USER_TYPE_CHOICES)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
@@ -95,7 +83,6 @@ class UserProfileBase(models.Model):
     address_line4 = models.CharField(max_length=255, blank=True)
     address_postcode = models.CharField(max_length=255, blank=True)
     address_country = models.CharField(max_length=255, blank=True)
-    email = models.EmailField(blank=True)
     telephone_home = PhoneNumberField(blank=True)
     telephone_mobile = PhoneNumberField(blank=True)
     sex = models.CharField(max_length=1, choices=SEX_CHOICES, blank=True)

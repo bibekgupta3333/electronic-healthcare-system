@@ -13,6 +13,3 @@ DATABASES = {
         'HOST': 'localhost',
     }
 }
-
-
-MEDIA_ROOT = os.path.join(BASE_DIR, 'static/media')
