@@ -27,7 +27,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'localhost',
-    'medi.mohub.co',
 ]
 
 
@@ -134,3 +133,6 @@ STATICFILES_DIRS = (
 )
 
 PHONENUMBER_DB_FORMAT = 'INTERNATIONAL'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'static/media')
+
