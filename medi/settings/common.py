@@ -126,9 +126,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 STATIC_ROOT = ''
 STATIC_URL = '/static/'
+
+EMIS_API_HOST = 'http://localhost:3000/emis'
+
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
 PHONENUMBER_DB_FORMAT = 'INTERNATIONAL'
-
