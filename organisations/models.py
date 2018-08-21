@@ -2,10 +2,19 @@ from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
 
-class OrganizationBase(models.Model):
+class OrganisationMedidata(models.Model):
     trading_name = models.CharField(max_length=255)
     legal_name = models.CharField(max_length=255)
-    address = models.TextField()
+    address = models.TextField(max_length=255)
+
+    class Meta:
+        verbose_name = 'Organisation Medidata'
+
+    def __str__(self):
+        return self.trading_name
+
+
+class OrganisationBase(OrganisationMedidata):
     contact_name = models.CharField(max_length=255, blank=True)
     contact_telephone = PhoneNumberField(blank=True)
     contact_email = models.EmailField(blank=True)
@@ -18,22 +27,20 @@ class OrganizationBase(models.Model):
     deleted_timestamp = models.DateTimeField(editable=False, null=True)
 
     class Meta:
-        verbose_name = 'Organization'
+        verbose_name = 'Organisation'
 
     def __str__(self):
         return self.trading_name
 
 
-class OrganizationClient(OrganizationBase):
+class OrganisationClient(OrganisationBase):
     INSURANCE_UNDERWRITER = 1
     INSURANCE_CLAIM = 2
-    MEDIDATA = 3
-    MEDICOLEGAL = 4
+    MEDICOLEGAL = 3
 
     ROLE_CHOICES = (
         (INSURANCE_UNDERWRITER, 'Insurance Underwriter'),
         (INSURANCE_CLAIM, 'Insurance Claim'),
-        (MEDIDATA, 'MediData'),
         (MEDICOLEGAL, 'Medicolegal')
     )
 
@@ -44,13 +51,13 @@ class OrganizationClient(OrganizationBase):
     can_create_sars = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = 'Organization Client'
+        verbose_name = 'Organisation Client'
 
     def __str__(self):
         return self.trading_name
 
 
-class OrganizationGeneralPractice(OrganizationBase):
+class OrganisationGeneralPractice(OrganisationBase):
     GP_OP_SYS_CHOICES = (
         ('EW', 'EMIS-Web'),
         ('EP', 'EMIS-PCS'),
@@ -77,7 +84,7 @@ class OrganizationGeneralPractice(OrganizationBase):
     payment_bank_account_number = models.CharField(max_length=255)
 
     class Meta:
-        verbose_name = 'Organization GeneralPractice'
+        verbose_name = 'Organisation GeneralPractice'
 
     def __str__(self):
         return self.trading_name

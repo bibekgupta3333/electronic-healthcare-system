@@ -21,8 +21,14 @@ class GeneralPracticeProfileInline(admin.StackedInline):
     fk_name = 'user'
 
 
-class CustomUserCreationForm(UserCreationForm):
+class MedidataProfileInline(admin.StackedInline):
+    model = MedidataUser
+    can_delete = False
+    verbose_name_plural = 'Profile'
+    fk_name = 'user'
 
+
+class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('email', 'first_name', 'last_name', 'type')
@@ -30,7 +36,6 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 class CustomUserChangeForm(UserChangeForm):
-
     class Meta:
         model = User
         fields = ('email', 'password', 'groups', 'is_active',)
@@ -57,6 +62,8 @@ class UserAdmin(BaseUserAdmin):
                 self.inlines.append(ClientProfileInline)
             elif obj.type == GENERAL_PRACTICE_USER:
                 self.inlines.append(GeneralPracticeProfileInline)
+            else:
+                self.inlines.append(MedidataProfileInline)
         return super(UserAdmin, self).get_inline_instances(request, obj)
 
     def get_fieldsets(self, request, obj=None):

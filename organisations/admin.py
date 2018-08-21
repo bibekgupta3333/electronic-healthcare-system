@@ -5,7 +5,7 @@ from .models import *
 
 class OrganizationClientForm(forms.ModelForm):
     class Meta:
-        model = OrganizationClient
+        model = OrganisationClient
         fields = '__all__'
 
 
@@ -29,7 +29,7 @@ class OrganizationClientAdmin(admin.ModelAdmin):
 class OrganizationGeneralPracticeForm(forms.ModelForm):
 
     class Meta:
-        model = OrganizationGeneralPractice
+        model = OrganisationGeneralPractice
         fields = '__all__'
 
 
@@ -46,5 +46,6 @@ class OrganizationGeneralPracticeAdmin(admin.ModelAdmin):
     )
 
 
-admin.site.register(OrganizationClient, OrganizationClientAdmin)
-admin.site.register(OrganizationGeneralPractice, OrganizationGeneralPracticeAdmin)
+admin.site.register(OrganisationClient, OrganizationClientAdmin)
+admin.site.register(OrganisationGeneralPractice, OrganizationGeneralPracticeAdmin)
+admin.site.register(OrganisationMedidata)
