@@ -1,0 +1,27 @@
+{% if patients %}
+<h1> Show patient list</h1>
+<table>
+    <thead>
+        <th>full_name</th>
+        <th>ref_id</th>
+        <th>nhs_number</th>
+        <th>sex</th>
+        <th>date_of_birth</th>
+        <th>parsed_date_of_birth</th>
+        <th>address_lines</th>
+    </thead>
+    {% for patient in patients %}
+    <tr>
+        <td>{{ patient.full_name }}</td>
+        <td>{{ patient.ref_id }}</td>
+        <td>{{ patient.nhs_number }}</td>
+        <td>{{ patient.sex }}</td>
+        <td>{{ patient.date_of_birth }}</td>
+        <td>{{ patient.parsed_date_of_birth }}</td>
+        <td>{{ patient.address_lines }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<h1> XML </h1>
+<textarea style="margin: 0px;width: 100%; height: 400px;">{{xml_raw_data}}</textarea>
+{% endif %}

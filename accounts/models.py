@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractUser, AbstractBaseUser
 from django.utils.translation import ugettext_lazy as _
 
-from organizations.models import OrganizationGeneralPractice, OrganizationClient
+from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -59,14 +59,14 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['username']
     objects = MyUserManager()
 
-    def get_query_set_within_organization(self, organisation=None):
+    def get_query_set_within_organisation(self, organisation=None):
         if self.userprofilebase:
             if hasattr(self.userprofilebase, 'generalpracticeuser'):
-                organisation = self.userprofilebase.generalpracticeuser.organization_gp
-                return User.objects.filter(userprofilebase__generalpracticeuser__organization_gp=organisation)
+                organisation = self.userprofilebase.generalpracticeuser.organisation_gp
+                return User.objects.filter(userprofilebase__generalpracticeuser__organisation_gp=organisation)
             elif hasattr(self.userprofilebase, 'clientuser'):
-                organisation = self.userprofilebase.clientuser.organization_client
-                return User.objects.filter(userprofilebase__clientuser__organization_client=organisation)
+                organisation = self.userprofilebase.clientuser.organisation_client
+                return User.objects.filter(userprofilebase__clientuser__organisation_client=organisation)
             else:
                 return None
 
@@ -95,8 +95,18 @@ class UserProfileBase(models.Model):
         return self.user.email + "User Profile"
 
 
+class MedidataUser(UserProfileBase):
+    organisation = models.ForeignKey(OrganisationMedidata, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = 'Medidata User'
+
+    def __str__(self):
+        return 'Medidata' + self.user.first_name
+
+
 class ClientUser(UserProfileBase):
-    organization_client = models.ForeignKey(OrganizationClient, on_delete=models.CASCADE)
+    organisation = models.ForeignKey(OrganisationClient, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = 'Client User'
@@ -106,8 +116,8 @@ class ClientUser(UserProfileBase):
 
 
 class GeneralPracticeUser(UserProfileBase):
-    organization_gp = models.ForeignKey(OrganizationGeneralPractice, on_delete=models.CASCADE)
-    gp_code = models.CharField(max_length=255, blank=True)
+    organisation = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE)
+    code = models.CharField(max_length=255, blank=True)
     payment_bank_holder_name = models.CharField(max_length=255, blank=True)
     payment_bank_account_number = models.CharField(max_length=255, blank=True)
     payment_bank_sort_code = models.CharField(max_length=255, blank=True)

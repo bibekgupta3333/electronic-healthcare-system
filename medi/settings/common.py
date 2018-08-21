@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'phonenumber_field',
     'accounts',
-    'organizations',
+    'organisations',
+    'services',
 ]
 
 MIDDLEWARE = [
@@ -135,4 +136,3 @@ STATICFILES_DIRS = (
 PHONENUMBER_DB_FORMAT = 'INTERNATIONAL'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'static/media')
-
