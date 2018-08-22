@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load render_table from django_tables2 %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% bootstrap_messages %}
+
+{% block Content %}
+        <div class="row" style="padding: 15px; padding-bottom: 0px">
+            <div class="col-md-3 input-group">
+                <form id="topsearchform" role="search" method="post" action="" class="" autocomplete="off">
+                    {% csrf_token %}
+                    <input id="search" name="search" type="search" placeholder="Search" class="form-control" required="true">
+                </form>
+            </div>
+        </div>
+        <div class="row pt-2 pl-3 pb-2">
+            <div class="col-md-12">
+                {% for k, v in count_instructions.items %}
+                    <div class="d-inline-block pb-2 pt-2 border-right" id="{{ k|cut:' ' }}">
+                        <a href="#" onclick="statusFilter('{{ k }}');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row" style="padding: 15px;">
+            <div class="col-md-2">
+                <select class="form-control">
+                    <option>Bulk Action</option>
+                    <option>Tiny Action</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                {% bootstrap_button 'Apply' %}
+            </div>
+            <div class="col-md-3 offset-md-4">
+                <select class="form-control" id="filterInstructionType" onchange="typeFilter();">
+                    <option value="allType">ALL TYPE</option>
+                    <option value="AMRA">AMRA</option>
+                    <option value="SARS">SARS</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-12   ">
+            {% render_table table 'django_tables2/bootstrap.html' %}
+            {% bootstrap_pagination  page=table.page pages_to_show=10 size='small' %}
+        </div>
+
+{% endblock %}
+
+{% block Script %}
+    <script>
+        var status = -1;
+        var statusDict = {}
+        statusDict["All"] = -1;
+        statusDict["New"] = 0;
+        statusDict["In Progress"] = 1;
+        statusDict["Overdue"] = 2;
+        statusDict["Complete"] = 3;
+
+        var getUrlParameter = function getUrlParameter(sParam) {
+            var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+                sURLVariables = sPageURL.split('&'),
+                sParameterName,
+                i;
+
+            for (i = 0; i < sURLVariables.length; i++) {
+                sParameterName = sURLVariables[i].split('=');
+
+                if (sParameterName[0] === sParam) {
+                    return sParameterName[1] === undefined ? true : sParameterName[1];
+                }
+            }
+        };
+
+        function getObjectKeyByValue(obj, val){
+            for(var key in obj){
+                if(obj[key] == val) return key;
+            }
+        }
+
+        function statusFilter(status){
+            window.location = '/instruction/view_data/?status=' + statusDict[status] + '&type=' + $('#filterInstructionType').val();
+        }
+
+        function typeFilter(){
+            if(getUrlParameter('status')){
+                status = getUrlParameter('status');
+            }
+            window.location = '/instruction/view_data/?status=' + status + '&type=' + $('#filterInstructionType').val();
+        }
+
+        $(document).ready(function () {
+            $('.pager').hide();
+
+            if(getUrlParameter('status')){
+                status = getUrlParameter('status');
+                var key = getObjectKeyByValue(statusDict, status);
+                $('#' + key.replace(' ', '')).css("background-color", "rgba(0, 0, 0, 0.1)");
+            } else {
+                $('#All').css("background-color", "rgba(0, 0, 0, 0.1)");
+            }
+
+            if(getUrlParameter('type')){
+                $('#filterInstructionType').val(getUrlParameter('type'));
+            }
+
+            $('.checkbox').each(function (index) {
+                $(this).html('<input type="checkbox">');
+            });
+
+            $("th input:checkbox").click(function(){
+                $('input:checkbox').not(this).prop('checked', this.checked);
+            });
+        });
+    </script>
+{% endblock %}

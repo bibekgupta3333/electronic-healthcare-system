@@ -1,0 +1,22 @@
+<aside class="left-panel" id="aside-panel">
+    <nav class="navigation navbar-dark">
+        <div class="sidebar-header">
+            <h1 class="logo">MD-X</h1>
+            <div class="profile">
+                <h3>{{ user.first_name }}  {{ user.last_name }}</h3>
+                <p>{{ user.get_my_role }}</p>
+            </div>
+        </div>
+        <ul class="list-unstyled components">
+            <li class="active">
+                <a href="{% url 'instructions:view_data' %}" >Instructions</a>
+            </li>
+            <li>
+                <a href="#">User Managemet</a>
+            </li>
+            <li>
+                <a href="#" >Income</a>
+            </li>
+        </ul>
+    </nav>
+</aside>
