@@ -51,14 +51,14 @@
 {% block Script %}
     <script>
         var status = -1;
-        var statusDict = {}
+        var statusDict = {};
         statusDict["All"] = -1;
         statusDict["New"] = 0;
         statusDict["In Progress"] = 1;
         statusDict["Overdue"] = 2;
         statusDict["Complete"] = 3;
 
-        var getUrlParameter = function getUrlParameter(sParam) {
+        function getUrlParameter(sParam) {
             var sPageURL = decodeURIComponent(window.location.search.substring(1)),
                 sURLVariables = sPageURL.split('&'),
                 sParameterName,
@@ -71,7 +71,7 @@
                     return sParameterName[1] === undefined ? true : sParameterName[1];
                 }
             }
-        };
+        }
 
         function getObjectKeyByValue(obj, val){
             for(var key in obj){
@@ -79,8 +79,8 @@
             }
         }
 
-        function statusFilter(status){
-            window.location = '/instruction/view_data/?status=' + statusDict[status] + '&type=' + $('#filterInstructionType').val();
+        function statusFilter(selected_status){
+            window.location = '/instruction/view_data/?status=' + statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
         }
 
         function typeFilter(){
