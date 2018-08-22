@@ -1,4 +1,9 @@
 /******** 1. General ********/
+@font-face{
+  font-family: 'Roboto';
+  src: local('Roboto'), url('../fonts/Roboto/Roboto-Regular.ttf');
+}
+
 body {
   color: #797979;
   background-color: #f5f5f5;

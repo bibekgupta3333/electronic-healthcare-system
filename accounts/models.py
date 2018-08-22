@@ -74,8 +74,6 @@ class User(AbstractUser):
     def get_my_role(self):
         if self.type == MEDIDATA_USER:
             return 'Medidata User'
-        elif self.is_superuser:
-            return "Super User"
         else:
             if self.is_staff:
                 if self.type == GENERAL_PRACTICE_USER:
