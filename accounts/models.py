@@ -62,11 +62,11 @@ class User(AbstractUser):
     def get_query_set_within_organisation(self, organisation=None):
         if self.userprofilebase:
             if hasattr(self.userprofilebase, 'generalpracticeuser'):
-                organisation = self.userprofilebase.generalpracticeuser.organisation_gp
-                return User.objects.filter(userprofilebase__generalpracticeuser__organisation_gp=organisation)
+                organisation = self.userprofilebase.generalpracticeuser.organisation
+                return User.objects.filter(userprofilebase__generalpracticeuser__organisation=organisation)
             elif hasattr(self.userprofilebase, 'clientuser'):
-                organisation = self.userprofilebase.clientuser.organisation_client
-                return User.objects.filter(userprofilebase__clientuser__organisation_client=organisation)
+                organisation = self.userprofilebase.clientuser.organisation
+                return User.objects.filter(userprofilebase__clientuser__organisation=organisation)
             else:
                 return None
 

@@ -48,7 +48,7 @@ class UserAdmin(BaseUserAdmin):
 
     def get_queryset(self, request):
         if hasattr(request.user, 'userprofilebase'):
-            queryset = request.user.get_query_set_within_organization()
+            queryset = request.user.get_query_set_within_organisation()
             return queryset
         return super().get_queryset(request)
 
