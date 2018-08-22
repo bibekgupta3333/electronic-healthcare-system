@@ -94,7 +94,7 @@
             $('.pager').hide();
 
             if(getUrlParameter('status')){
-                var status = getUrlParameter('status');
+                status = getUrlParameter('status');
                 var key = getObjectKeyByValue(statusDict, status);
                 $('#' + key.replace(' ', '')).css("background-color", "rgba(0, 0, 0, 0.1)");
             } else {
