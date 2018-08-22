@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from .emisapiservices import services
 from .dummy_models import DummyPatient, DummyPractice
 from .xml.patient_list import PatientList
+from .xml.medical_record import MedicalRecord
 import datetime
 # Create your views here.
 
@@ -26,8 +27,12 @@ def get_patient_record(request):
     practice = DummyPractice('MediData', '1234', '29390')
     patient_number = '2820'
     raw_xml = services.GetMedicalRecord(practice, patient_number).call()
+    medical_record = MedicalRecord(raw_xml)
 
-    return HttpResponse(raw_xml)
+    return render(request, 'services/test.html', {
+        'xml_raw_data': raw_xml,
+        'medical_record': medical_record
+    })
 
 
 def get_patient_attachment(request):
