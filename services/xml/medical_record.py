@@ -17,6 +17,7 @@ from .xml_base import XMLBase
 
 class MedicalRecord(XMLBase):
     XPATH = './/MedicalRecord'
+    PROFILE_EVENT_TYPES = ['height', 'weight', 'bmi', 'smoking', 'alcohol', 'systolic_blood_pressure', 'diastolic_blood_pressure']
 
     def consultations(self):
         elements = self.parsed_xml.findall(Consultation.XPATH)
@@ -120,17 +121,25 @@ class MedicalRecord(XMLBase):
                 result_list.append(event)
         return result_list
 
-    # memoize def profile_event(type)
-    #   public_send(type) if self.class.profile_event_types.include?(type)
-    # end
+    def test(self):
+        # for t in self.PROFILE_EVENT_TYPES:
+        #     self.profile_event(t)
+        for item in ValueEvent.blood_test_types():
+            self.blood_test(item)
 
-    # memoize def smoking
-    #   social_consultation_elements.select(&:smoking?)
-    # end
+    def profile_event(self, type):
+        if type in self.PROFILE_EVENT_TYPES:
+            function = getattr(self, type)
+            return function()
+        return None
 
-    # memoize def alcohol
-    #   social_consultation_elements.select(&:alcohol?)
-    # end
+    def smoking(self):
+        # social_consultation_elements.select(&:smoking?)
+        return None
+
+    def alcohol(self):
+        # social_consultation_elements.select(&:alcohol?)
+        return None
 
     def significant_active_problems(self):
         result_list = []

@@ -29,16 +29,24 @@
 <h1>Medical record consultations</h1>
 <table>
         <thead>
+            <th>date</th>
             <th>original_author_refid</th>
             <th>snomed_concepts</th>
-            <th>date</th>
+            <th>readcodes</th>
+            <th>is_significant_problem</th>
+            <th>is_profile_event</th>
+            <th>is_sick_note</th>
             <th>consultation_elements</th>
         </thead>
 {% for consultation in medical_record.consultations %}
     <tr>
+        <td>{{ consultation.date }}</td>
         <td>{{ consultation.original_author_refid }}</td>
         <td>{{ consultation.snomed_concepts }}</td>
-        <td>{{ consultation.date }}</td>
+        <td>{{ consultation.readcodes }}</td>
+        <td>{{ consultation.is_significant_problem }}</td>
+        <td>{{ consultation.is_profile_event }}</td>
+        <td>{{ consultation.is_sick_note }}</td>
         <td>
             <table style="width:100%">
                 <thead>

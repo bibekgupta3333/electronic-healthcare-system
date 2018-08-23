@@ -8,19 +8,6 @@ class ValueEvent(XMLModelBase):
     XPATH = ".//Event[EventType='5']"
     SPECIFIED_BLOOD_CODES = None
 
-    def __load_bloods_data(self):
-        filepath = os.path.join(settings.CONFIG_DIR, 'data/bloods.yml')
-        with open(filepath, 'r') as stream:
-            try:
-                return yaml.load(stream)
-            except yaml.YAMLError as exc:
-                print(exc)
-
-    def __init__(self, xml_data):
-        super().__init__(xml_data)
-        if not ValueEvent.SPECIFIED_BLOOD_CODES:
-            ValueEvent.SPECIFIED_BLOOD_CODES = self.__load_bloods_data()
-
     def __str__(self):
         return "ValueEvent"
 
@@ -99,15 +86,34 @@ class ValueEvent(XMLModelBase):
                 return False
 
     def has_blood_test(self, type):
-        return "not implement"
-        # blood_snomed_concept_ids = self.SPECIFIED_BLOOD_CODES.get(type).get('snomed_concept_ids')
-        # blood_read_codes = self.SPECIFIED_BLOOD_CODES.get(type).get('read_codes')
-        # if self.readcodes():
-        #     print(blood_read_codes)
-        #     # blood_read_codes.any? { |readcode| readcode.in?(readcodes) }
-        # else:
-        #     print(blood_snomed_concept_ids)
-        #     blood_snomed_concept_ids.any? { |snomed| snomed.in?(snomed_concepts) }
+        blood_snomed_concept_ids = self.SPECIFIED_BLOOD_CODES.get(type).get('snomed_concept_ids')
+        blood_read_codes = self.SPECIFIED_BLOOD_CODES.get(type).get('read_codes')
+        read_codes = self.readcodes()
+        snomed_concepts = self.snomed_concepts()
 
-    # def blood_test_types(self):
-    #     return self.SPECIFIED_BLOOD_CODES.keys()
+        if read_codes:
+            for code in blood_read_codes:
+                if code in read_codes:
+                    return True
+        elif snomed_concepts:
+            for code in blood_snomed_concept_ids:
+                if code in snomed_concepts:
+                    return True
+        return False
+
+    @classmethod
+    def blood_test_types(cls):
+        return cls.SPECIFIED_BLOOD_CODES.keys()
+
+
+def load_bloods_data():
+        filepath = os.path.join(settings.CONFIG_DIR, 'data/bloods.yml')
+        with open(filepath, 'r') as stream:
+            try:
+                return yaml.load(stream)
+            except yaml.YAMLError as exc:
+                print(exc)
+
+
+if ValueEvent.SPECIFIED_BLOOD_CODES is None:
+    ValueEvent.SPECIFIED_BLOOD_CODES = load_bloods_data()
