@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django import forms
-from .models import *
+from .models import OrganisationMedidata, OrganisationGeneralPractice, OrganisationClient
 
 
 class OrganizationClientForm(forms.ModelForm):
@@ -27,7 +27,6 @@ class OrganizationClientAdmin(admin.ModelAdmin):
 
 
 class OrganizationGeneralPracticeForm(forms.ModelForm):
-
     class Meta:
         model = OrganisationGeneralPractice
         fields = '__all__'
@@ -46,6 +45,15 @@ class OrganizationGeneralPracticeAdmin(admin.ModelAdmin):
     )
 
 
+class OrganizationMedidataAdmin(admin.ModelAdmin):
+
+    def get_queryset(self, request):
+        query_set = super(OrganizationMedidataAdmin, self).get_queryset(request)
+        client_organisation_query = OrganisationClient.objects.all()
+        filtered_queryset = query_set.exclude(id__in=client_organisation_query)
+        return filtered_queryset
+
+
 admin.site.register(OrganisationClient, OrganizationClientAdmin)
 admin.site.register(OrganisationGeneralPractice, OrganizationGeneralPracticeAdmin)
-admin.site.register(OrganisationMedidata)
+admin.site.register(OrganisationMedidata, OrganizationMedidataAdmin)

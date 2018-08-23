@@ -1,0 +1,20 @@
+{% load static %}
+<header >
+    <nav class="navbar navbar-expand-lg navbar-top">
+        <a class="navbar-brand" href="#">Instructions Pipline</a>
+        <button class="btn btn-primary">Add New</button>
+
+        <div class="container-fluid float-right justify-content-end ">
+            <div class="dropdown">
+                <a data-toggle="dropdown" class="dropdown-toggle" href="#" data-toggle="dropdown">
+                    <img src="{% static 'images/batman.png' %}" class="rounded thumb-sm"><span class="username">{{ user.first_name }}  {{ user.last_name }}</span> <span class="caret"></span>
+                </a>
+                <div class="dropdown-menu">
+                    <a href="#" class="dropdown-item"><i class="fas fa-user-plus"></i> Profile</a>
+                    <a href="#" class="dropdown-item"><i class="fas fa-key"></i> Change Password</a>
+                    <a href="#" class="dropdown-item"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>

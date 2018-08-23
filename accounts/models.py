@@ -1,8 +1,9 @@
 from django.db import models
-from django.contrib.auth.models import BaseUserManager, AbstractUser, AbstractBaseUser
-from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth.models import BaseUserManager, AbstractUser
+from django.utils.translation import gettext_lazy as _
 
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
+from common.models import TimeStampedModel
 
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -70,8 +71,23 @@ class User(AbstractUser):
             else:
                 return None
 
+    def get_my_role(self):
+        if self.type == MEDIDATA_USER:
+            return 'Medidata User'
+        else:
+            if self.is_staff:
+                if self.type == GENERAL_PRACTICE_USER:
+                    return 'General Practice Manager'
+                elif self.type == CLIENT_USER:
+                    return 'Client Admin'
+            else:
+                if self.type == GENERAL_PRACTICE_USER:
+                    return 'General Practice User'
+                elif self.type == CLIENT_USER:
+                    return 'Client User'
 
-class UserProfileBase(models.Model):
+
+class UserProfileBase(TimeStampedModel, models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255, blank=True)
     middle_name = models.CharField(max_length=255, blank=True)
@@ -112,7 +128,7 @@ class ClientUser(UserProfileBase):
         verbose_name = 'Client User'
 
     def __str__(self):
-        return 'Client: ' + self.user.first_name
+        return self.user.first_name
 
 
 class GeneralPracticeUser(UserProfileBase):
@@ -128,4 +144,19 @@ class GeneralPracticeUser(UserProfileBase):
         verbose_name = 'General Practice User'
 
     def __str__(self):
-        return 'GP: ' + self.user.first_name
+        return self.user.first_name
+
+
+class Patient(UserProfileBase):
+    organization_gp = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE)
+    nhs_number = models.CharField(max_length=10, blank=True)
+    emis_number = models.CharField(max_length=255)
+    vision_number = models.CharField(max_length=255)
+    systmone_number = models.CharField(max_length=255)
+    microtest_number = models.CharField(max_length=255)
+
+    class Meta:
+        verbose_name = 'Patient User'
+
+    def __str__(self):
+        return self.user.first_name

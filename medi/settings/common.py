@@ -37,10 +37,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # third party
     'phonenumber_field',
+    'import_export',
+    'django_tables2',
+    'django_filters',
+    'bootstrap4',
+
+    # app
     'accounts',
     'organisations',
     'services',
+    'instructions',
 ]
 
 MIDDLEWARE = [
@@ -124,14 +133,18 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
-STATIC_ROOT = ''
 STATIC_URL = '/static/'
 
 EMIS_API_HOST = 'http://localhost:3000/emis'
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'static/'),
 )
+
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
 
 PHONENUMBER_DB_FORMAT = 'INTERNATIONAL'
 

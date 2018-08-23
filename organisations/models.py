@@ -1,5 +1,6 @@
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
+from common.models import TimeStampedModel
 
 
 class OrganisationMedidata(models.Model):
@@ -23,8 +24,6 @@ class OrganisationBase(OrganisationMedidata):
     fax_number = PhoneNumberField(blank=True)
     companies_house_number = models.CharField(max_length=255, blank=True)
     vat_number = models.CharField(max_length=255, blank=True)
-    created_timestamp = models.DateTimeField(auto_now_add=True)
-    deleted_timestamp = models.DateTimeField(editable=False, null=True)
 
     class Meta:
         verbose_name = 'Organisation'
