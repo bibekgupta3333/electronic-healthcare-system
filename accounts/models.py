@@ -67,7 +67,7 @@ class User(AbstractUser):
                 organisation = self.userprofilebase.clientuser.organisation
                 return User.objects.filter(userprofilebase__clientuser__organisation=organisation)
             else:
-                return None
+                return User.objects.all()
 
     def get_my_role(self):
         if self.type == MEDIDATA_USER:
