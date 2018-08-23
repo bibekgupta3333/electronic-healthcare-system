@@ -1,5 +1,4 @@
 from django.db import models
-from phonenumber_field.modelfields import PhoneNumberField
 from common.models import TimeStampedModel
 
 
@@ -17,11 +16,11 @@ class OrganisationMedidata(models.Model):
 
 class OrganisationBase(OrganisationMedidata):
     contact_name = models.CharField(max_length=255, blank=True)
-    contact_telephone = PhoneNumberField(blank=True)
+    contact_telephone = models.CharField(max_length=255, blank=True)
     contact_email = models.EmailField(blank=True)
-    generic_telephone = PhoneNumberField(blank=True)
+    generic_telephone = models.CharField(max_length=255, blank=True)
     generic_email = models.EmailField(blank=True)
-    fax_number = PhoneNumberField(blank=True)
+    fax_number = models.CharField(max_length=255, blank=True)
     companies_house_number = models.CharField(max_length=255, blank=True)
     vat_number = models.CharField(max_length=255, blank=True)
 
@@ -88,3 +87,19 @@ class OrganisationGeneralPractice(OrganisationBase):
     def __str__(self):
         return self.trading_name
 
+
+class NHSgpPractice(models.Model):
+    code = models.CharField(max_length=6, primary_key=True)
+    reference = models.PositiveIntegerField()
+    name = models.CharField(max_length=255)
+    address_line1 = models.CharField(max_length=255)
+    address_line2 = models.CharField(max_length=255)
+    address_line3 = models.CharField(max_length=255)
+    country = models.CharField(max_length=255)
+    post_code = models.CharField(max_length=255)
+
+    class Meta:
+        verbose_name = 'NHS GP Practice'
+
+    def __str__(self):
+        return self.name

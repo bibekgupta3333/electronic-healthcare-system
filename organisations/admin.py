@@ -1,6 +1,18 @@
 from django.contrib import admin
+from import_export.admin import ImportExportModelAdmin
+from import_export import resources
 from django import forms
-from .models import OrganisationMedidata, OrganisationGeneralPractice, OrganisationClient
+from .models import OrganisationMedidata, OrganisationGeneralPractice, OrganisationClient, NHSgpPractice
+
+
+class NHSgpPracticeResource(resources.ModelResource):
+    class Meta:
+        model = NHSgpPractice
+        import_id_fields = ('code', )
+        
+
+class NHSgpPracticeAdmin(ImportExportModelAdmin):
+    resource_class = NHSgpPracticeResource
 
 
 class OrganizationClientForm(forms.ModelForm):
@@ -57,3 +69,4 @@ class OrganizationMedidataAdmin(admin.ModelAdmin):
 admin.site.register(OrganisationClient, OrganizationClientAdmin)
 admin.site.register(OrganisationGeneralPractice, OrganizationGeneralPracticeAdmin)
 admin.site.register(OrganisationMedidata, OrganizationMedidataAdmin)
+admin.site.register(NHSgpPractice, NHSgpPracticeAdmin)

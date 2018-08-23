@@ -5,8 +5,6 @@ from django.utils.translation import gettext_lazy as _
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 from common.models import TimeStampedModel
 
-from phonenumber_field.modelfields import PhoneNumberField
-
 SEX_CHOICES = (
     ('M', 'Male'),
     ('F', 'Female')
@@ -99,8 +97,8 @@ class UserProfileBase(TimeStampedModel, models.Model):
     address_line4 = models.CharField(max_length=255, blank=True)
     address_postcode = models.CharField(max_length=255, blank=True)
     address_country = models.CharField(max_length=255, blank=True)
-    telephone_home = PhoneNumberField(blank=True)
-    telephone_mobile = PhoneNumberField(blank=True)
+    telephone_home = models.CharField(max_length=255, blank=True)
+    telephone_mobile = models.CharField(max_length=255, blank=True)
     sex = models.CharField(max_length=1, choices=SEX_CHOICES, blank=True)
 
     class Meta:
