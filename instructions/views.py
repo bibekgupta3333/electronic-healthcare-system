@@ -12,8 +12,27 @@ from .model_choices import *
 from .filters import InstructionFilter
 
 
+def count_instructions():
+    all_count = Instruction.objects.all().count()
+    new_count = Instruction.objects.filter(status=INSTRUCTION_STATUS_NEW).count()
+    progress_count = Instruction.objects.filter(status=INSTRUCTION_STATUS_PROGRESS).count()
+    overdue_count = Instruction.objects.filter(status=INSTRUCTION_STATUS_OVERDUE).count()
+    complete_count = Instruction.objects.filter(status=INSTRUCTION_STATUS_COMPLETE).count()
+    rejected_count = Instruction.objects.filter(status=INSTRUCTION_STATUS_REJECT).count()
+    overall_instructions_number = {
+        'All': all_count,
+        'New': new_count,
+        'In Progress': progress_count,
+        'Overdue': overdue_count,
+        'Complete': complete_count,
+        'Rejected': rejected_count
+    }
+    return overall_instructions_number
+
+
 @login_required(login_url='/admin')
-def instruction(request):
+def instruction_pipeline_view(request):
+    header_title = "Instructions Pipeline"
     user = request.user
     filter_type = request.GET.get('type', '')
     filter_status = int(request.GET.get('status', -1))
@@ -27,24 +46,13 @@ def instruction(request):
 
     table = InstructionTable(query_set)
 
-    all_count = Instruction.objects.all().count()
-    new_count = Instruction.objects.filter(status=INSTRUCTION_STATUS_NEW).count()
-    progress_count = Instruction.objects.filter(status=INSTRUCTION_STATUS_PROGRESS).count()
-    overdue_count = Instruction.objects.filter(status=INSTRUCTION_STATUS_OVERDUE).count()
-    complete_count = Instruction.objects.filter(status=INSTRUCTION_STATUS_COMPLETE).count()
-    count_instructions = {
-        'All': all_count,
-        'New': new_count,
-        'In Progress': progress_count,
-        'Overdue': overdue_count,
-        'Complete': complete_count
-    }
+    overall_instructions_number = count_instructions()
 
-    table.paginate(page=request.GET.get('page', 1), per_page=6)
     table.order_by = request.GET.get('sort', 'created')
     RequestConfig(request, paginate={'per_page': 5}).configure(table)
     return render(request, 'instructions/instruction_views.html', {
         'user': user,
         'table': table,
-        'count_instructions': count_instructions,
+        'overall_instructions_number': overall_instructions_number,
+        'header_title': header_title
     })

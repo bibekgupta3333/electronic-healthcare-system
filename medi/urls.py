@@ -25,7 +25,8 @@ admin.site.site_title = 'MediData administration'
 urlpatterns = [
     path('testservices/', include('services.urls')),
     path('admin/', admin.site.urls),
-    path('instruction/', include('instructions.urls', namespace='instructions'))
+    path('instruction/', include('instructions.urls', namespace='instructions')),
+    path('organisation/', include('organisations.urls', namespace='organisations'))
 ]
 
 urlpatterns += staticfiles_urlpatterns()

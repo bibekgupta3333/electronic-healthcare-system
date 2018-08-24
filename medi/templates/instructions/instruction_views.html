@@ -1,29 +1,38 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load render_table from django_tables2 %}
 {% load bootstrap4 %}
 {% bootstrap_css %}
 {% bootstrap_javascript jquery='full' %}
 {% bootstrap_messages %}
 
+{% block ExtraHead %}
+     <!-- Jquery DataTables -->
+    <link rel="stylesheet" href="{% static 'css/dataTables/jquery.dataTables.min.css' %}">
+{% endblock %}
+
 {% block Content %}
-        <div class="row" style="padding: 15px; padding-bottom: 0px">
-            <div class="col-md-3 input-group">
+        <div class="row" >
+            <div class="col-md-3">
+                <button class="btn btn-primary" id="addInstructionButton">Add New</button>
+            </div>
+            <div class="col-md-4 offset-md-5">
                 <form id="topsearchform" role="search" method="post" action="" class="" autocomplete="off">
                     {% csrf_token %}
-                    <input id="search" name="search" type="search" placeholder="Search" class="form-control" required="true">
+                    <input id="search" name="search" type="search" placeholder="Search" class="form-control search" required="true">
                 </form>
             </div>
         </div>
-        <div class="row pt-2 pl-3 pb-2">
+        <div class="row overall-number">
             <div class="col-md-12">
-                {% for k, v in count_instructions.items %}
-                    <div class="d-inline-block pb-2 pt-2 border-right" id="{{ k|cut:' ' }}">
+                {% for k, v in overall_instructions_number.items %}
+                    <div class="number" id="{{ k|cut:' ' }}">
                         <a href="#" onclick="statusFilter('{{ k }}');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a>
                     </div>
                 {% endfor %}
             </div>
         </div>
-        <div class="row" style="padding: 15px;">
+        <div class="row">
             <div class="col-md-2">
                 <select class="form-control">
                     <option>Bulk Action</option>
@@ -31,68 +40,40 @@
                 </select>
             </div>
             <div class="col-md-3">
-                {% bootstrap_button 'Apply' %}
+                {% bootstrap_button 'Apply' button_type="button" button_class="btn-primary"%}
             </div>
-            <div class="col-md-3 offset-md-4">
+            <div class="col-md-2 offset-md-5">
                 <select class="form-control" id="filterInstructionType" onchange="typeFilter();">
-                    <option value="allType">ALL TYPE</option>
+                    <option value="allType">All Types</option>
                     <option value="AMRA">AMRA</option>
                     <option value="SARS">SARS</option>
                 </select>
             </div>
         </div>
-        <div class="col-md-12   ">
-            {% render_table table 'django_tables2/bootstrap.html' %}
-            {% bootstrap_pagination  page=table.page pages_to_show=10 size='small' %}
+        <div class="row">
+            <div class="col-md-12   ">
+                {% render_table table 'django_tables2/bootstrap.html' %}
+                {% bootstrap_pagination  page=table.page pages_to_show=10 size='small' %}
+            </div>
         </div>
+
 
 {% endblock %}
 
 {% block Script %}
+    <script src="{% static 'js/dataTables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'js/dataTables/dataTables.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'js/instructions/instruction_views.js' %}"></script>
     <script>
-        var status = -1;
-        var statusDict = {};
-        statusDict["All"] = -1;
-        statusDict["New"] = 0;
-        statusDict["In Progress"] = 1;
-        statusDict["Overdue"] = 2;
-        statusDict["Complete"] = 3;
-
-        function getUrlParameter(sParam) {
-            var sPageURL = decodeURIComponent(window.location.search.substring(1)),
-                sURLVariables = sPageURL.split('&'),
-                sParameterName,
-                i;
-
-            for (i = 0; i < sURLVariables.length; i++) {
-                sParameterName = sURLVariables[i].split('=');
-
-                if (sParameterName[0] === sParam) {
-                    return sParameterName[1] === undefined ? true : sParameterName[1];
-                }
-            }
-        }
-
-        function getObjectKeyByValue(obj, val){
-            for(var key in obj){
-                if(obj[key] == val) return key;
-            }
-        }
-
-        function statusFilter(selected_status){
-            window.location = '/instruction/view_data/?status=' + statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
-        }
-
-        function typeFilter(){
-            if(getUrlParameter('status')){
-                status = getUrlParameter('status');
-            }
-            window.location = '/instruction/view_data/?status=' + status + '&type=' + $('#filterInstructionType').val();
-        }
-
         $(document).ready(function () {
-            $('.pager').hide();
+            $('#instructionsTable').DataTable();
+            $('.dataTables_filter, .dataTables_info, .dataTables_paginate, .dataTables_length').hide();
 
+            $('input.search').on('keyup click', function () {
+                filterGlobal();
+            } );
+
+            $('.pager').hide();
             if(getUrlParameter('status')){
                 status = getUrlParameter('status');
                 var key = getObjectKeyByValue(statusDict, status);
@@ -105,7 +86,7 @@
                 $('#filterInstructionType').val(getUrlParameter('type'));
             }
 
-            $('.checkbox').each(function (index) {
+            $('.checkbox').each(function () {
                 $(this).html('<input type="checkbox">');
             });
 

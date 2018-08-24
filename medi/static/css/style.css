@@ -150,6 +150,34 @@ aside.left-panel.lg + .content {
   margin-left: 250px;
 }
 
+.mainmenu, .submenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mainmenu a {
+  display: block;
+  text-decoration: none;
+  padding: 10px;
+}
+
+.mainmenu .active .submenu {
+    display: block;
+    max-height: 500px;
+}
+
+.submenu a:hover {
+  background-color: #666;
+}
+
+.submenu {
+    margin-right: 10px;
+  overflow: hidden;
+  max-height: 0;
+  -webkit-transition: all 0.5s ease-out;
+}
+
 /***** 2.1 LOGO *****/
 .logo {
   font-weight: bold;
@@ -507,7 +535,24 @@ header {
   left: 75px;
 }
 
-/***************** 5. Accessory ****************/
+.overall-number {
+  padding-bottom: .5rem!important;
+  padding-top: .5rem!important;
+  margin-top: 3rem!important;
+}
+
+.number {
+  padding-bottom: .5rem!important;
+  padding-top: .5rem!important;
+  border-right: 1px solid #dee2e6!important;
+  display: inline-block!important;
+}
+
+/***************** 5. Instructions Pipeline ****************/
 .status .badge {
   width: 128px;
+}
+
+#addInstructionButton {
+  width: 130px;
 }

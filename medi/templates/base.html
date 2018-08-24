@@ -24,7 +24,11 @@
         {% include 'aside.html' %}
         <section class="content">
             {% include 'header.html' %}
-            {% block Content %}{% endblock %}
+            <div class="container-fluid">
+                <div class="wraper">
+                    {% block Content %}{% endblock %}
+                </div>
+            </div>
         </section>
 
 
@@ -33,5 +37,13 @@
         <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
         <!-- Script Block -->
         {% block Script %}{% endblock %}
+        <script>
+            $(document).ready(function () {
+                $("#aside-panel .mainmenu li").click(function() {
+                    $("#aside-panel .mainmenu li").removeClass("active");
+                    $(this).addClass("active");
+                });
+            });
+        </script>
     </body>
 </html>

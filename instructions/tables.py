@@ -10,16 +10,16 @@ class InstructionTable(tables.Table):
     status = tables.Column()
 
     class Meta:
-        attrs = {'class': 'table table-striped table-bordered table-hover'}
+        attrs = {
+            'class': 'table table-striped table-bordered table-hover',
+            'id': 'instructionsTable'
+        }
         model = Instruction
         fields = ('checkbox', 'client_user', 'type', 'patient', 'gp_user', 'initial_monetary_value', 'created', 'status')
         template_name = 'django_tables2/semantic.html'
         row_attrs = {
             'data-id': lambda record: record.pk
         }
-
-    def render_checkbox(self, value):
-        return 'test'
 
     def render_patient(self, value):
         return format_html('{} {} <br><b>NHS </b>{}', value.user.first_name, value.user.last_name, value.nhs_number)

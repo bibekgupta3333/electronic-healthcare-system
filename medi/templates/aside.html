@@ -7,12 +7,16 @@
                 <p>{{ user.get_my_role }}</p>
             </div>
         </div>
-        <ul class="list-unstyled components">
-            <li class="active">
+        <ul class="mainmenu">
+            <li class="{% if request.resolver_match.url_name == 'view_data' %}active{% endif %}">
                 <a href="{% url 'instructions:view_data' %}" >Instructions</a>
             </li>
             <li>
-                <a href="#">User Managemet</a>
+                <a href="#">User Management</a>
+                <ul class="submenu">
+                    <li><a href="{% url 'organisations:create_organisation' %}">New Organisations</a></li>
+                    <li><a href="#">New User</a></li>
+                </ul>
             </li>
             <li>
                 <a href="#" >Income</a>

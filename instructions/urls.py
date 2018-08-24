@@ -3,5 +3,5 @@ from . import views
 
 app_name = 'instructions'
 urlpatterns = (
-    path('view_data/', views.instruction, name='view_data'),
+    path('view_data/', views.instruction_pipeline_view, name='view_data'),
 )
