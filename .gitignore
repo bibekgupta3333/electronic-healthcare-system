@@ -108,3 +108,8 @@ venv.bak/
 
 # VSCode
 .vscode/
+
+# Docker
+Dockerfile
+config/nginx/
+docker-compose.yml
