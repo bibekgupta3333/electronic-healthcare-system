@@ -39,11 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # third party
-    'phonenumber_field',
     'import_export',
     'django_tables2',
     'django_filters',
     'bootstrap4',
+    'raven.contrib.django.raven_compat',
 
     # app
     'accounts',
@@ -53,6 +53,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'raven.contrib.django.raven_compat.middleware.Sentry404CatchMiddleware',
+    'raven.contrib.django.raven_compat.middleware.SentryResponseErrorIdMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -146,6 +148,8 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
 
-PHONENUMBER_DB_FORMAT = 'INTERNATIONAL'
+RAVEN_CONFIG = {
+    'dsn': 'https://33c2417eac2f468dadf54d7061d533d2:e741c290968045c098a339001c99f49f@sentry.io/1267663',
+}
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'static/media')
