@@ -9,7 +9,10 @@ class NHSgpPracticeResource(resources.ModelResource):
     class Meta:
         model = NHSgpPractice
         import_id_fields = ('code', )
-        
+
+    def before_import(self, dataset, using_transactions, dry_run, **kwargs):
+        NHSgpPractice.objects.all().delete()
+
 
 class NHSgpPracticeAdmin(ImportExportModelAdmin):
     resource_class = NHSgpPracticeResource
