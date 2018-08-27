@@ -4,6 +4,7 @@ from .emisapiservices import services
 from .dummy_models import DummyPatient, DummyPractice
 from .xml.patient_list import PatientList
 from .xml.medical_record import MedicalRecord
+from .xml.base64_attachment import Base64Attachment
 import datetime
 # Create your views here.
 
@@ -41,4 +42,9 @@ def get_patient_attachment(request):
     attachment_identifier = '{5C37D79F-8DB5-4754-BBDE-43BF6AFE19DE}'
     raw_xml = services.GetAttachment(practice, patient_number, attachment_identifier).call()
 
-    return HttpResponse(raw_xml)
+    base64_attachment = Base64Attachment(raw_xml)
+
+    response = HttpResponse(base64_attachment.data(), content_type='application/octet-stream')
+    response['Content-Disposition'] = 'inline;filename={}'.format(base64_attachment.file_basename())
+    response['Content-Transfer-Encoding'] = 'binary'
+    return response
