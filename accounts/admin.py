@@ -105,14 +105,14 @@ class UserAdmin(BaseUserAdmin):
             if hasattr(request.user, 'userprofilebase'):
                 if not ClientUser.objects.filter(user=obj).exists():
                     organisation = request.user.userprofilebase.clientuser.organisation
-                    ClientUser.objects.create(user=obj, organization=organisation)
+                    ClientUser.objects.create(user=obj, organisation=organisation)
         elif request.user.type == GENERAL_PRACTICE_USER:
             obj.type = GENERAL_PRACTICE_USER
             super(UserAdmin, self).save_model(request, obj, form, change)
             if hasattr(request.user, 'userprofilebase'):
                 if not GeneralPracticeUser.objects.filter(user=obj).exists():
                     organisation = request.user.userprofilebase.generalpracticeuser.organisation
-                    GeneralPracticeUser.objects.create(user=obj, organization=organisation)
+                    GeneralPracticeUser.objects.create(user=obj, organisation=organisation)
         else:
             super(UserAdmin, self).save_model(request, obj, form, change)
 

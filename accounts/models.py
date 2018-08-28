@@ -146,7 +146,7 @@ class GeneralPracticeUser(UserProfileBase):
 
 
 class Patient(UserProfileBase):
-    organization_gp = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE)
+    organisation_gp = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE)
     nhs_number = models.CharField(max_length=10, blank=True)
     emis_number = models.CharField(max_length=255)
     vision_number = models.CharField(max_length=255)

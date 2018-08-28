@@ -18,14 +18,14 @@ class NHSgpPracticeAdmin(ImportExportModelAdmin):
     resource_class = NHSgpPracticeResource
 
 
-class OrganizationClientForm(forms.ModelForm):
+class OrganisationClientForm(forms.ModelForm):
     class Meta:
         model = OrganisationClient
         fields = '__all__'
 
 
-class OrganizationClientAdmin(admin.ModelAdmin):
-    form = OrganizationClientForm
+class OrganisationClientAdmin(admin.ModelAdmin):
+    form = OrganisationClientForm
     fieldsets = (
         ('Organisation Information', {'fields': ('trading_name', 'legal_name', 'address', 'type')}),
         ('Addition Information', {
@@ -41,14 +41,14 @@ class OrganizationClientAdmin(admin.ModelAdmin):
         js = ('js/custom_admin/organisation_admin.js', )
 
 
-class OrganizationGeneralPracticeForm(forms.ModelForm):
+class OrganisationGeneralPracticeForm(forms.ModelForm):
     class Meta:
         model = OrganisationGeneralPractice
         fields = '__all__'
 
 
-class OrganizationGeneralPracticeAdmin(admin.ModelAdmin):
-    form = OrganizationGeneralPracticeForm
+class OrganisationGeneralPracticeAdmin(admin.ModelAdmin):
+    form = OrganisationGeneralPracticeForm
     fieldsets = (
         ('Organisation Information', {'fields': ('trading_name', 'legal_name', 'address', 'companies_house_number', 'vat_number',
                                     'practice_code')}),
@@ -60,16 +60,16 @@ class OrganizationGeneralPracticeAdmin(admin.ModelAdmin):
     )
 
 
-class OrganizationMedidataAdmin(admin.ModelAdmin):
+class OrganisationMedidataAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
-        query_set = super(OrganizationMedidataAdmin, self).get_queryset(request)
+        query_set = super(OrganisationMedidataAdmin, self).get_queryset(request)
         client_organisation_query = OrganisationClient.objects.all()
         filtered_queryset = query_set.exclude(id__in=client_organisation_query)
         return filtered_queryset
 
 
-admin.site.register(OrganisationClient, OrganizationClientAdmin)
-admin.site.register(OrganisationGeneralPractice, OrganizationGeneralPracticeAdmin)
-admin.site.register(OrganisationMedidata, OrganizationMedidataAdmin)
+admin.site.register(OrganisationClient, OrganisationClientAdmin)
+admin.site.register(OrganisationGeneralPractice, OrganisationGeneralPracticeAdmin)
+admin.site.register(OrganisationMedidata, OrganisationMedidataAdmin)
 admin.site.register(NHSgpPractice, NHSgpPracticeAdmin)
