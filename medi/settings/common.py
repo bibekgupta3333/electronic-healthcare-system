@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'organisations',
     'services',
     'instructions',
+    'medicalreport',
 ]
 
 MIDDLEWARE = [

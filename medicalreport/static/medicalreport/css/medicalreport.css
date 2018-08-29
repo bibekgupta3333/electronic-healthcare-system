@@ -1,0 +1,10 @@
+#patient-info-open-modal{
+    position: fixed;
+    top: 0px;
+    margin: 8px;
+}
+.no-bullet {
+    margin-left: 0px;
+    padding-left: 0px;
+    list-style: none;
+}

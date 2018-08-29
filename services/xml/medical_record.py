@@ -189,7 +189,7 @@ class MedicalRecord(XMLBase):
         return result_list
 
     def __significant_problems(self):
-        elements = self.parsed_xml.xpath(".//*[Problem]")
+        elements = self.parsed_xml.xpath(Problem.XPATH)
         problem_list = [Problem(element) for element in elements]
         return list(filter(lambda problem: problem.is_significant() is True, problem_list))
 

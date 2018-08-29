@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load medi_report_tags %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% bootstrap_messages %}
+
+{% block ExtraHead %}
+    <link rel="stylesheet" href="{% static 'medicalreport/css/medicalreport.css' %}">
+{% endblock %}
+
+{% block Content %}
+        
+    {% patient_info %}
+
+{% endblock %}
+
+{% block Script %}
+    <script>
+      
+    </script>
+{% endblock %}

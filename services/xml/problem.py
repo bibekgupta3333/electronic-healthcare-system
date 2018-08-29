@@ -3,7 +3,7 @@ import datetime
 
 
 class Problem(XMLModelBase):
-    XPATH = './/Problem'
+    XPATH = './/*[Problem]'
 
     def is_active(self):
         value = self.parsed_xml.find('Problem/ProblemStatus').text if self.parsed_xml.find('Problem/ProblemStatus') is not None else None
@@ -16,13 +16,6 @@ class Problem(XMLModelBase):
     def is_significant(self):
         value = self.parsed_xml.find('Problem/Significance').text if self.parsed_xml.find('Problem/Significance') is not None else None
         return value == '1'
-
-    # def xpaths
-    #   [parent_xpath, problem_xpath].uniq
-    # end
-
-    def guid(self):
-        return self.parsed_xml.find('GUID').text if self.parsed_xml.find('GUID') is not None else None
 
     def date(self):
         return self.parsed_xml.find('AssignedDate').text if self.parsed_xml.find('AssignedDate') is not None else None

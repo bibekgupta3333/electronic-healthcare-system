@@ -23,3 +23,7 @@ class Attachment(XMLModelBase):
 
     def to_param(self):
         return self.dds_identifier()
+
+    def xpaths(self):
+        xpath = ".//ConsultationElement[Attachment/GUID='{}']".format(self.guid())
+        return xpath
