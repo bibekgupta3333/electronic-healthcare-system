@@ -4,6 +4,7 @@ from .emisapiservices import services
 from .dummy_models import DummyPatient, DummyPractice
 from .xml.patient_list import PatientList
 from .xml.medical_record import MedicalRecord
+from .xml.medical_report_decorator import MedicalReportDecorator
 from .xml.base64_attachment import Base64Attachment
 from .xml.xml_utils import redaction_elements
 import datetime
@@ -40,6 +41,7 @@ def get_patient_record(request):
         ".//Event[GUID='{6F058DA7-420E-422A-9CE6-84F3CA9CA246}']"
     ])
     medical_record = MedicalRecord(raw_xml)
+    # medical_record = MedicalReportDecorator(raw_xml, None)
 
     return render(request, 'services/test.html', {
         'xml_raw_data': raw_xml,

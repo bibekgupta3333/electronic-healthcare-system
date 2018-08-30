@@ -1,7 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
 from services.dummy_models import DummyPractice
 from services.emisapiservices import services
 from services.xml.medical_record import MedicalRecord
+from services.xml.medical_report_decorator import MedicalReportDecorator
 
 # Create your views here.
 
@@ -34,6 +36,15 @@ class DummyInstruction(object):
 class DummyRedaction(object):
     def __init__(self):
         self.instruction = DummyInstruction()
+        self.redacted_xpaths = [
+            ".//ConsultationElement[Referral/GUID='{1FA96ED4-14F8-4322-B6F5-E00262AE124D}']",
+            ".//ConsultationElement[Attachment/GUID='{6BC4493F-DB5F-4C74-B585-05B0C3AA53C9}']"
+        ]
+
+    def redacted(self, xpaths):
+        if xpaths in self.redacted_xpaths:
+            return True
+        return False
 
 
 def get_patient_record():
@@ -48,7 +59,10 @@ def get_patient_record():
     #     ".//Medication[GUID='{A1C57DC5-CCC6-4CD2-871B-C8A07ADC7D06}']",
     #     ".//Event[GUID='{EC323C66-8698-4802-9731-6AC229B11D6D}']",
     #     ".//Event[GUID='{6F058DA7-420E-422A-9CE6-84F3CA9CA246}']"])
-    return MedicalRecord(raw_xml)
+    # medical_record = MedicalRecord(raw_xml)
+    # md = MedicalReportDecorator(medical_record, None)
+    md = MedicalReportDecorator(raw_xml, None)
+    return md
 
 
 def edit_report(request):
@@ -59,3 +73,9 @@ def edit_report(request):
         'medical_record': medical_record,
         'redaction': redaction
     })
+
+
+def update_report(request):
+    print(request.POST)
+    return redirect('medicalreport:edit')
+    # return HttpResponse("ok")

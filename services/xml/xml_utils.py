@@ -20,3 +20,11 @@ def redaction_elements(xml_data, remove_xpaths):
             e = element[0]
             e.getparent().remove(e)
     return xml
+
+
+def chronological_redactable_elements(elements):
+    return sorted(elements, key=lambda x: x.parsed_date(), reverse=True)
+
+
+def alphabetical_redactable_elements(elements):
+    return sorted(elements, key=lambda x: x.description().lower(), reverse=True)

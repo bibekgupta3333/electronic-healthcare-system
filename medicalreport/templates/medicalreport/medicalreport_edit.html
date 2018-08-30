@@ -13,6 +13,18 @@
 {% block Content %}
         
     {% patient_info %}
+    <div class="container-fluid">
+        <form action="{% url 'medicalreport:update_report' %}" method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6">
+                    {% form_referrals %}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+    
 
 {% endblock %}
 

@@ -1,0 +1,9 @@
+<label class="redaction-checkbox">
+    <input name="redaction_xpaths" 
+           {{ checked }} readonly="" type="checkbox" class="redaction-checkbox__input" 
+           value="{{ xpath }}">
+    <span class="redaction-checkbox__icon float-right fas fa-check-circle"></span>
+    <span class="redaction-checkbox__header">{{ header }}</span>
+    <span class="redaction-checkbox__text"></span>
+</label>
+{{ medical_record.test }}
