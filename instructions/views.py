@@ -34,8 +34,13 @@ def count_instructions():
 def instruction_pipeline_view(request):
     header_title = "Instructions Pipeline"
     user = request.user
-    filter_type = request.GET.get('type', '')
-    filter_status = int(request.GET.get('status', -1))
+
+    if 'status' in request.GET:
+        filter_type = request.GET.get('type')
+        filter_status = int(request.GET.get('status'))
+    else:
+        filter_type = request.COOKIES.get('type', '')
+        filter_status = int(request.COOKIES.get('status', -1))
     if filter_type and filter_type != 'allType':
         query_set = Instruction.objects.filter(type=filter_type,)
     else:
@@ -50,9 +55,13 @@ def instruction_pipeline_view(request):
 
     table.order_by = request.GET.get('sort', 'created')
     RequestConfig(request, paginate={'per_page': 5}).configure(table)
-    return render(request, 'instructions/instruction_views.html', {
+    response = render(request, 'instructions/instruction_views.html', {
         'user': user,
         'table': table,
         'overall_instructions_number': overall_instructions_number,
         'header_title': header_title
     })
+
+    response.set_cookie('status', filter_status)
+    response.set_cookie('type', filter_type)
+    return response
