@@ -10,7 +10,7 @@ class XMLBase(object):
 class XMLModelBase(XMLBase):
     def xpaths(self):
         xpath = ".//{}[GUID='{}']".format(self.parsed_xml.tag, self.guid())
-        return xpath
+        return [xpath]
 
     def guid(self):
         return self.parsed_xml.find('GUID').text if self.parsed_xml.find('GUID') is not None else None

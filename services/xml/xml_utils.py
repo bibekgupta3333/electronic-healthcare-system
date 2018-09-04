@@ -27,4 +27,4 @@ def chronological_redactable_elements(elements):
 
 
 def alphabetical_redactable_elements(elements):
-    return sorted(elements, key=lambda x: x.description().lower(), reverse=True)
+    return sorted(elements, key=lambda x: x.description().lower(), reverse=False)

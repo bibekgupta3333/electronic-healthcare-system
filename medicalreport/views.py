@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from services.dummy_models import DummyPractice
 from services.emisapiservices import services
-from services.xml.medical_record import MedicalRecord
 from services.xml.medical_report_decorator import MedicalReportDecorator
 
 # Create your views here.
@@ -38,13 +37,14 @@ class DummyRedaction(object):
         self.instruction = DummyInstruction()
         self.redacted_xpaths = [
             ".//ConsultationElement[Referral/GUID='{1FA96ED4-14F8-4322-B6F5-E00262AE124D}']",
-            ".//ConsultationElement[Attachment/GUID='{6BC4493F-DB5F-4C74-B585-05B0C3AA53C9}']"
+            ".//ConsultationElement[Attachment/GUID='{6BC4493F-DB5F-4C74-B585-05B0C3AA53C9}']",
+            ".//Consultation[GUID='{94DAFC52-26F4-4341-BFDB-397FA67C17E2}']",
+            ".//Event[GUID='{13021918-0B2B-44E7-AC28-A6643D4CFEC9}']",
+            ".//Medication[GUID='{A85327B8-3106-480A-BDD3-0777D0F267D1}']"
         ]
 
     def redacted(self, xpaths):
-        if xpaths in self.redacted_xpaths:
-            return True
-        return False
+        return all(xpath in self.redacted_xpaths for xpath in xpaths)
 
 
 def get_patient_record():
@@ -59,10 +59,9 @@ def get_patient_record():
     #     ".//Medication[GUID='{A1C57DC5-CCC6-4CD2-871B-C8A07ADC7D06}']",
     #     ".//Event[GUID='{EC323C66-8698-4802-9731-6AC229B11D6D}']",
     #     ".//Event[GUID='{6F058DA7-420E-422A-9CE6-84F3CA9CA246}']"])
-    # medical_record = MedicalRecord(raw_xml)
-    # md = MedicalReportDecorator(medical_record, None)
-    md = MedicalReportDecorator(raw_xml, None)
-    return md
+
+    medical_record_decorator = MedicalReportDecorator(raw_xml, None)
+    return medical_record_decorator
 
 
 def edit_report(request):
@@ -76,6 +75,7 @@ def edit_report(request):
 
 
 def update_report(request):
-    print(request.POST)
+    print("POST data=", request.POST)
+    print("redaction_patch_xpaths=", request.POST.getlist('redaction_patch_xpaths'))
     return redirect('medicalreport:edit')
     # return HttpResponse("ok")

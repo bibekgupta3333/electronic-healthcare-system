@@ -131,15 +131,15 @@ class MedicalRecord(XMLBase):
         if type in self.PROFILE_EVENT_TYPES:
             function = getattr(self, type)
             return function()
-        return None
+        return []
 
     def smoking(self):
         # social_consultation_elements.select(&:smoking?)
-        return None
+        return []
 
     def alcohol(self):
         # social_consultation_elements.select(&:alcohol?)
-        return None
+        return []
 
     def significant_active_problems(self):
         result_list = []

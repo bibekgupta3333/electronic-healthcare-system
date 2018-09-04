@@ -41,11 +41,18 @@ class Problem(XMLModelBase):
             description = self.parsed_xml.find('Code/Term').text if self.parsed_xml.find('Code/Term') is not None else None
         return description
 
-    # private
-    # def parent_xpath(self.)
-    #   XpathUtils.new.xpath_for(parsed_xml, depth_from_root: 3)
-    # end
+    def xpaths(self):
+        xpaths = self.__parent_xpath() + self.__problem_xpath()
+        return list(set(xpaths))
 
-    # def problem_xpath
-    #   XpathUtils.new.xpath_for(parsed_xml)
-    # end
+    # private
+    def __parent_xpath(self):
+        parent = self.parsed_xml.getparent().getparent().getparent()
+        if parent is not None:
+            xpath = ".//{}[GUID='{}']".format(parent.tag, parent.find('GUID').text)
+            return [xpath]
+        else:
+            return []
+
+    def __problem_xpath(self):
+        return super().xpaths()

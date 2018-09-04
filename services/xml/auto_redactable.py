@@ -16,10 +16,10 @@ def auto_redact_by_conditions(models, instruction):
     #   puts "====>external_read_codes"
     #   puts readcodes
     #   puts "=====external_read_codes end"
-    # snomed_concepts = ['329807003']
-    # readcodes = ['EMISSPR410', 'J155.']
-    snomed_concepts = []
-    readcodes = []
+    snomed_concepts = ['329807003']
+    readcodes = ['EMISSPR410', 'J155.', '66A..']
+    # snomed_concepts = []
+    # readcodes = []
     redactor = ConditionsRedactor(concepts=snomed_concepts, codes=readcodes)
     filtered_list = filter(lambda m: redactor.is_redact(m) is not True, models)
     return list(filtered_list)
@@ -47,13 +47,8 @@ def auto_redact_referrals(referrals, current_date=datetime.now()):
 
 
 def auto_redact_attachments(attachments, current_date=datetime.now()):
-    return auto_redact_by_date(attachments, date=years_ago(5, current_date))
+    return auto_redact_by_date(attachments, date=years_ago(2, current_date))
 
 
-#   def auto_redact_profile_events(events, current_date: Time.zone.today)
-#     auto_redact_by_date(
-#       events,
-#       date: current_date - 5.years,
-#     )
-#   end
-# end
+def auto_redact_profile_events(events, current_date=datetime.now()):
+    return auto_redact_by_date(events, date=years_ago(5, current_date))

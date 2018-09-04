@@ -26,4 +26,4 @@ class Attachment(XMLModelBase):
 
     def xpaths(self):
         xpath = ".//ConsultationElement[Attachment/GUID='{}']".format(self.guid())
-        return xpath
+        return [xpath]

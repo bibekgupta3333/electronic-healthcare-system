@@ -1,0 +1,34 @@
+{% load medi_report_tags %}
+{% load custom_filters %}
+<div class="container callout callout--no-padding">
+    <div class="row">
+        <div class="col">
+            <h6 class="callout__header">
+                 Attachments
+                <span></span>
+            </h6>
+        </div>
+    </div>
+    <div class="row callout__content">
+        <div class="container">
+            <div>
+            {% for model in attachments %}
+            {% with header=model.parsed_date|format_date_filter|add:" - "|add:model.description %}
+            <a class="attachment-preview-link" target="_blank" title="Preview" 
+               href="/medicalreport/attachments/{{ model.dds_identifier }}">
+               <i class="fas fa-paperclip"></i>
+            </a>
+                {% redaction_checkbox_with_body model redaction header %}
+            {% endwith %}
+            {% endfor %}
+            </div>
+            <br>
+            <label class="redaction-additional-header" for="redaction_attachment_notes">
+                Additional contextual information
+            </label>
+            <textarea placeholder="Further information related to this section of the report" 
+                      name="redaction_attachment_notes" id="redaction_attachment_notes">{{ redaction.redaction_attachment_notes }}</textarea>
+            <button type="submit" class="btn btn-primary float-right">Update Report</button>
+        </div>
+    </div>
+</div>

@@ -1,4 +1,114 @@
 from django import template
+from .helper import diagnosed_date, linked_problems, end_date, format_date
+import re
 register = template.Library()
 
 
+@register.filter
+def format_date_filter(date):
+    return format_date(date)
+
+
+@register.filter
+def active_problem_header(problem, problem_list):
+    return "{} {}".format(problem.description(), diagnosed_date(problem, linked_problems(problem, problem_list)))
+
+
+@register.filter
+def past_problem_header(problem):
+    return "{} {}".format(problem.description(), end_date(problem))
+
+
+@register.filter
+def referral_header(referral):
+    return "{} - {}".format(format_date(referral.parsed_date()), referral.description())
+
+
+@register.filter
+def referral_body(referral, locations):
+    provider = None
+    for location in locations:
+        if location.ref_id() == referral.provider_refid():
+            provider = location
+            break
+    if provider is not None:
+        return ', '.join(provider.address_lines())
+    return ''
+
+
+@register.filter
+def consultation_header(consultation, people):
+    author = None
+    for p in people:
+        if p.ref_id() == consultation.original_author_refid():
+            author = p
+    if author is not None:
+        return "{} - {}".format(format_date(consultation.parsed_date()), author.full_name())
+    else:
+        return format_date(consultation.parsed_date())
+
+
+@register.filter
+def profile_event_value_header(key):
+    header = {
+        "height": "Height",
+        "weight": "Weight",
+        "bmi": "BMI",
+        "smoking": "Smoking",
+        "alcohol": "Alcohol",
+        "systolic_blood_pressure": "Systolic Blood Pressure",
+        "diastolic_blood_pressure": "Diastolic Blood Pressure"
+    }
+    return header[key]
+
+
+@register.filter
+def event_value_body(event):
+    if event:
+        return "{}<br>{}".format(format_date(event.parsed_date()), event.description())
+    else:
+        return "N/A"
+
+
+@register.filter
+def bloods_type_value_header(key):
+    header = {
+        "white_blood_count": "WBC",
+        "hemoglobin": "Hb",
+        "platelets": "Platelets",
+        "mean_cell_volume": "MCV",
+        "mean_corpuscular_hemoglobin": "MCH",
+        "neutrophils": "Neutrophils",
+        "lymphocytes": "Lymphocytes",
+        "sodium": "Sodium",
+        "potassium": "Potassium",
+        "urea": "Urea",
+        "creatinine": "Creatinine",
+        "c_reactive_protein": "CRP",
+        "bilirubin": "Bilirubin",
+        "alkaline_phosphatase": "ALP",
+        "alanine_aminotransferase": "ALT",
+        "albumin": "Albumin",
+        "gamma_gt": "Gamma-GT",
+        "triglycerides": "Triglycerides",
+        "total_cholesterol": "Total Cholesterol",
+        "high_density_lipoprotein": "HDL",
+        "low_density_lipoprotein": "LDL",
+        "random_glucose": "Random Glucose",
+        "fasting_glucose": "Fasting Glucose",
+        "hba1c": "HbA1c",
+    }
+    return header[key]
+
+
+@register.filter
+def consultation_element_list(consultation):
+    obj = {}
+    regex = re.compile(r"\.\s*\Z", re.IGNORECASE)
+    for element in consultation.consultation_elements():
+        header = element.header()
+        if header in obj:
+            obj[header] = regex.sub('', obj[header]) + '. {}'.format(element.content().description())
+        else:
+            obj[header] = element.content().description()
+    return obj

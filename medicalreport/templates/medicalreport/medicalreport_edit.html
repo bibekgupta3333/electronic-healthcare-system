@@ -11,25 +11,68 @@
 {% endblock %}
 
 {% block Content %}
-        
-    {% patient_info %}
-    <div class="container-fluid">
+<!-- Patient info Modal -->
+<div class="modal fade" id="patient-info-modal" tabindex="-1" role="dialog" aria-labelledby="patientInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="patientInfoModalLabel">Patient Info</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                {% patient_info %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+    <div class="container">
+        <div class="container-fluid callout callout--top">
+            {% patient_info %}
+        </div>
+        <div class="sensitive-information-instructions alert alert-warning">
+            <h6>Sensitive information instructions:</h6>
+            <ul>
+                <li>Do not include any history of sensitive conditions (e.g. sexually transmitted infections, terminations of pregnancy, domestic abuse) unless they have long term health implications and the patient consents to disclose such information.</li>
+                <li>The signing GP must check the report for any errors and remove any references to third parties before submitting a final report.</li>
+                <li>Do not include information about negative blood borne virus tests (HIV, Hepatitis B, Hepatitis C)./Do not include genetic test results unless there is a favourable test result stating that the patient has not inherited a condition.</li>
+            </ul>
+            <p>A full list of sensitive conditions (GP Summary Exclusion Code Lists) can be found<a target="_blank" href="https://isd.digital.nhs.uk/trud3/user/guest/group/0/pack/9/subpack/141/releases"> here.</a></p>
+        </div>
+        <h1>Provisional Report Contents</h1>
         <form action="{% url 'medicalreport:update_report' %}" method="post">
             {% csrf_token %}
             <div class="row">
                 <div class="col-md-6">
+                    {% form_profile%}
+                    {% form_consultations %}
                     {% form_referrals %}
                 </div>
+                <div class="col-md-6">
+                    {% form_significant_problems %}
+                    {% form_bloods %}
+                    {% form_attachments %}
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" class="btn btn-primary">Update Report</button>
         </form>
     </div>
-    
+
+    <a href="javascript:;" class="btn btn-primary" data-toggle="modal" data-target="#patient-info-modal" id="patient-info-open-modal">
+        <span class="top-bar-addendum__text">Patient Info</span>
+        <span class="top-bar-addendum__icon icon icon--info icon--large"></span>
+    </a>
 
 {% endblock %}
 
 {% block Script %}
     <script>
-      
+      $('input:checkbox').on('change', function(){
+            $('input[key="' + $(this).attr('key') + '"]:checkbox').prop('checked', this.checked);
+        });
     </script>
 {% endblock %}

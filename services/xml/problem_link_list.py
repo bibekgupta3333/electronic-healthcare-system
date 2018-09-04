@@ -12,16 +12,18 @@ class ProblemLinkList(XMLModelBase):
     def date(self):
         return self.parsed_xml.find('AssignedDate').text if self.parsed_xml.find('AssignedDate') is not None else None
 
-    # def xpaths(self):
-    #   [parent_xpath, problem_xpath].uniq
-    # end
+    def xpaths(self):
+        xpaths = self.__parent_xpath() + self.__problem_xpath()
+        return list(set(xpaths))
 
     # private
+    def __parent_xpath(self):
+        parent = self.parsed_xml.getparent().getparent().getparent()
+        if parent is not None:
+            xpath = ".//{}[GUID='{}']".format(parent.tag, parent.find('GUID').text)
+            return [xpath]
+        else:
+            return []
 
-    # def __parent_xpath(self):
-    #   XpathUtils.new.xpath_for(parsed_xml, depth_from_root: 3)
-    # end
-
-    # def __problem_xpath(self):
-    #   XpathUtils.new.xpath_for(parsed_xml)
-    # end
+    def __problem_xpath(self):
+        return super().xpaths()

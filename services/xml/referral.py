@@ -30,4 +30,4 @@ class Referral(XMLModelBase):
 
     def xpaths(self):
         xpath = ".//ConsultationElement[Referral/GUID='{}']".format(self.guid())
-        return xpath
+        return [xpath]

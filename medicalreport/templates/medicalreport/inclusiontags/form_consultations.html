@@ -4,7 +4,7 @@
     <div class="row">
         <div class="col">
             <h6 class="callout__header">
-                Referrals (all from the last 5 years)
+                Consultations (matched from the last 5 years)
                 <span></span>
             </h6>
         </div>
@@ -12,19 +12,19 @@
     <div class="row callout__content">
         <div class="container">
             <div>
-            {% for model in referrals %}
-            {% with header=model|referral_header body=model|referral_body:locations  %} 
-                {% redaction_checkbox_with_body model redaction header body %}
+            {% for model in consultations %}
+            {% with header=model|consultation_header:people dict_data=model|consultation_element_list %}
+                {% redaction_checkbox_with_list model redaction header dict_data%}
             {% endwith %}
             {% endfor %}
             </div>
             <br>
-            <label class="redaction-additional-header" for="redaction_referral_notes">
-                Additional contextual information / missing referrals
+            <label class="redaction-additional-header" for="redaction_consultation_notes">
+                Additional contextual information / missing consultations
             </label>
             <textarea placeholder="Further information related to this section of the report" 
-                      name="redaction_referral_notes" 
-                      id="redaction_referral_notes">{{ redaction.referral_notes }}</textarea>
+                      name="redaction_consultation_notes" 
+                      id="redaction_consultation_notes">{{ redaction.redaction_consultation_notes }}</textarea>
             <button type="submit" class="btn btn-primary float-right">Update Report</button>
         </div>
     </div>
