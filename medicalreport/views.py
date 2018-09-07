@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from datetime import datetime
 from services.dummy_models import DummyPractice
 from services.emisapiservices import services
 from services.xml.medical_report_decorator import MedicalReportDecorator
@@ -20,6 +21,9 @@ class DummyClient(object):
 class DummySnomedConcept(object):
     def __init__(self, desc):
         self.fsn_description = desc
+    
+    def fsn_description(self):
+        return self.fsn_description
 
 
 class DummyInstruction(object):
@@ -30,6 +34,54 @@ class DummyInstruction(object):
             DummySnomedConcept("Klinefelter's syndrome XXXY (disorder)"),
             DummySnomedConcept("XXXXY syndrome (disorder)"),
         ]
+
+
+class DummyAdditionalMedicationRecords(object):
+    def __init__(self, id, drug, dose, frequency, snomed_concept_id, redaction_id, prescribed_from, prescribed_to, notes, repeat):
+        self.id = id
+        self.drug = drug
+        self.dose = dose
+        self.frequency = frequency
+        self.snomed_concept_id = snomed_concept_id
+        self.redaction_id = redaction_id
+        self.prescribed_from_str = prescribed_from
+        self.prescribed_to_str = prescribed_to
+        self.notes = notes
+        self.repeat = repeat
+        self.snomed_concept = DummySnomedConcept("snomed description")
+
+    # def id(self):
+    #     return self.id
+
+    # def drug(self):
+    #     return self.drug
+
+    # def dose(self):
+    #     return self.dose
+
+    # def frequency(self):
+    #     return self.frequency
+
+    # def snomed_concept_id(self):
+    #     return self.snomed_concept_id
+
+    # def snomed_concept(self):
+    #     return self.snomed_concept
+
+    # def redaction_id(self):
+    #     return self.redaction_id
+
+    def prescribed_from(self):
+        return datetime.strptime(self.prescribed_from_str, "%d/%m/%Y")
+
+    def prescribed_to(self):
+        return datetime.strptime(self.prescribed_to_str, "%d/%m/%Y")
+
+    # def notes(self):
+    #     return self.notes
+
+    # def repeat(self):
+    #     return self.repeat
 
 
 class DummyRedaction(object):
@@ -45,6 +97,12 @@ class DummyRedaction(object):
 
     def redacted(self, xpaths):
         return all(xpath in self.redacted_xpaths for xpath in xpaths)
+
+    def additional_acute_medications(self):
+        return [DummyAdditionalMedicationRecords('1', 'drug', 'dose', 'frequency', 'snomed_concept_id', 'redaction_id', '23/08/2015', '23/09/2015', 'notes', 'acute')]
+
+    def additional_repeat_medications(self):
+        return [DummyAdditionalMedicationRecords('2', 'drug', 'dose', 'frequency', 'snomed_concept_id', 'redaction_id', '23/08/2015', '23/09/2015', 'notes', 'repeat')]
 
 
 def get_patient_record():
@@ -67,10 +125,12 @@ def get_patient_record():
 def edit_report(request):
     medical_record = get_patient_record()
     redaction = DummyRedaction()
+    instruction = DummyInstruction()
 
     return render(request, 'medicalreport/medicalreport_edit.html', {
         'medical_record': medical_record,
-        'redaction': redaction
+        'redaction': redaction,
+        'instruction': instruction
     })
 
 

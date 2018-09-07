@@ -1,5 +1,5 @@
 from django import template
-from .helper import diagnosed_date, linked_problems, end_date, format_date
+from .helper import diagnosed_date, linked_problems, end_date, format_date, additional_medication_dates_description
 import re
 register = template.Library()
 
@@ -7,6 +7,18 @@ register = template.Library()
 @register.filter
 def format_date_filter(date):
     return format_date(date)
+
+
+@register.filter
+def additional_medication_header(record):
+    return "{} prescribed for '{}'.".format(record.drug, record.snomed_concept.fsn_description)
+
+
+@register.filter
+def additional_medication_body(record):
+    return "{} {} {}. Additional contextual information:{}".format(
+        record.dose, record.frequency, additional_medication_dates_description(record), record.notes
+    )
 
 
 @register.filter
@@ -20,8 +32,8 @@ def past_problem_header(problem):
 
 
 @register.filter
-def referral_header(referral):
-    return "{} - {}".format(format_date(referral.parsed_date()), referral.description())
+def general_header(model):
+    return "{} - {}".format(format_date(model.parsed_date()), model.description())
 
 
 @register.filter

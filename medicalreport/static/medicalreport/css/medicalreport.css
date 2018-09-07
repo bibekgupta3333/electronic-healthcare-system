@@ -158,3 +158,12 @@ h1 {
 .header {
     color: #8a8a8a;
 }
+
+.nav-tabs > li > a[aria-selected='true'] {
+    background: #fefefe;
+    color: #0a0a0a;
+}
+.nav-tabs > li > a {
+    background: #fefefe;
+    color: #0a0a0a;
+}

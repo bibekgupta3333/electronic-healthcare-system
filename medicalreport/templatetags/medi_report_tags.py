@@ -8,7 +8,7 @@ register = template.Library()
 def patient_info(context):
     return {
         'medical_record': context['medical_record'],
-        'instruction': context['redaction'].instruction
+        'instruction': context['instruction']
     }
 
 
@@ -59,6 +59,24 @@ def form_significant_problems(context):
         'significant_past_problems': context['medical_record'].significant_past_problems,
         'problem_linked_lists': context['medical_record'].problem_linked_lists,
         'redaction': context['redaction']
+    }
+
+
+@register.inclusion_tag('medicalreport/inclusiontags/form_medications.html', takes_context=True)
+def form_medications(context):
+    return {
+        'acute_medications': context['medical_record'].acute_medications,
+        'repeat_medications': context['medical_record'].repeat_medications,
+        'additional_acute_medications': context['redaction'].additional_acute_medications,
+        'additional_repeat_medications': context['redaction'].additional_repeat_medications,
+        'redaction': context['redaction'],
+    }
+
+
+@register.inclusion_tag('medicalreport/inclusiontags/form_additional_medications.html')
+def form_additional_medications(additional_medication_records):
+    return {
+        'additional_medication_records': additional_medication_records
     }
 
 

@@ -23,6 +23,21 @@ def diagnosed_date(problem, problem_list):
         None
 
 
+def additional_medication_dates_description(record):
+    dates = []
+    if record.prescribed_from():
+        text = "from: {}".format(format_date(record.prescribed_from()))
+        dates += [text]
+    if record.prescribed_to():
+        text = "to: {}".format(format_date(record.prescribed_to()))
+        dates += [text]
+
+    if any(dates):
+        return "({})".format(' '.join(dates))
+    else:
+        return ''
+
+
 def linked_problems(problem, problem_list):
     filterd_list = filter(lambda x: problem.guid() in x.target_guids(), problem_list)
     return list(filterd_list)

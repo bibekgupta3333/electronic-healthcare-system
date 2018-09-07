@@ -13,7 +13,7 @@
         <div class="container">
             <div>
             {% for model in referrals %}
-            {% with header=model|referral_header body=model|referral_body:locations  %} 
+            {% with header=model|general_header body=model|referral_body:locations  %} 
                 {% redaction_checkbox_with_body model redaction header body %}
             {% endwith %}
             {% endfor %}
