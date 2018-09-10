@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django_filters',
     'bootstrap4',
     'raven.contrib.django.raven_compat',
+    'django_extensions',
     'django_select2',
 
     # app
@@ -155,3 +156,16 @@ RAVEN_CONFIG = {
 }
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'static/media')
+
+EMAIL_USE_TLS = True
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'akekatharn@mohara.co'
+EMAIL_HOST_PASSWORD = os.environ.get('MAIL_PASSWORD')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/instruction/view_data'
+LOGOUT_REDIRECT_URL = '/accounts/login/'

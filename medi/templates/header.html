@@ -10,7 +10,7 @@
                 </a>
                 <div class="dropdown-menu">
                     <a href="#" class="dropdown-item"><i class="fas fa-user-plus"></i> Profile</a>
-                    <a href="#" class="dropdown-item"><i class="fas fa-key"></i> Change Password</a>
+                    <a href="{% url 'password_reset' %}" class="dropdown-item"><i class="fas fa-key"></i> Change Password</a>
                     <a href="{% url 'logout' %}" class="dropdown-item"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </div>
             </div>
