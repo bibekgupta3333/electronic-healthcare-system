@@ -18,6 +18,12 @@
         <!-- Custom styles -->
         <link href="{% static 'css/style.css' %}" rel="stylesheet">
 
+        <!-- jquery-3.3.1 -->
+        <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+
+        <!-- Bootstrap core JS -->
+        <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
         {% block ExtraHead %}{% endblock %}
 
     </head>
@@ -35,9 +41,6 @@
         {% endblock PageContent %}
 
         <!-- js placed at the end of the document so the pages load faster -->
-        <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
-        <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-
         <!-- Script Block -->
         {% block Script %}{% endblock %}
         <script>
