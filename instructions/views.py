@@ -33,7 +33,7 @@ def count_instructions():
     return overall_instructions_number
 
 
-@login_required(login_url='/admin')
+@login_required(login_url='/accounts/login')
 def instruction_pipeline_view(request):
     header_title = "Instructions Pipeline"
     user = request.user
