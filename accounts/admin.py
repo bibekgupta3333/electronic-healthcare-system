@@ -57,6 +57,9 @@ class UserAdmin(BaseUserAdmin):
         if not obj:
             return list()
         else:
+            if request.user.type != MEDIDATA_USER and not request.user.is_superuser:
+                GeneralPracticeProfileInline.readonly_fields = ['organisation']
+                ClientProfileInline.readonly_fields = ['organisation']
             # dynamic user profile form by User type
             if obj.type == CLIENT_USER:
                 self.inlines.append(ClientProfileInline)
