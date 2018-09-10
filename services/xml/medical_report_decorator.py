@@ -39,6 +39,9 @@ class MedicalReportDecorator(MedicalRecord):
     def repeat_medications(self):
         return chronological_redactable_elements(auto_redact_medications(super().repeat_medications()))
 
+    def all_allergies(self):
+        return chronological_redactable_elements(super().all_allergies())
+
     def profile_events_for(self, type):
         return self.__table_elements(chronological_redactable_elements(auto_redact_profile_events(super().profile_event(type))))
 

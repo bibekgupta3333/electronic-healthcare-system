@@ -8,6 +8,7 @@
 
 {% block ExtraHead %}
     <link rel="stylesheet" href="{% static 'medicalreport/css/medicalreport.css' %}">
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap-datepicker/css/bootstrap-datepicker.css' %}">
 {% endblock %}
 
 {% block Content %}
@@ -55,6 +56,7 @@
                 </div>
                 <div class="col-md-6">
                     {% form_significant_problems %}
+                    {% form_allergies %}
                     {% form_bloods %}
                     {% form_attachments %}
                 </div>
@@ -71,6 +73,7 @@
 {% endblock %}
 
 {% block Script %}
+    <script src="{% static 'vendor/bootstrap-datepicker/js/bootstrap-datepicker.js' %}"></script>
     <script>
       $('input:checkbox').on('change', function(){
             $('input[key="' + $(this).attr('key') + '"]:checkbox').prop('checked', this.checked);

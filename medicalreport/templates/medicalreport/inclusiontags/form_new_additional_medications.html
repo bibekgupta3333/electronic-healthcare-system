@@ -1,0 +1,55 @@
+    <div class="">
+        <br>
+        <div class="row">
+            <div class="col">
+                <label for="additional_medication_records_type">Acute or Repeat</label>
+                <div class="input-group mb-3">
+                    <select class="custom-select" id="additional_medication_records_type" name="additional_medication_records_type">
+                        <option selected>Choose...</option>
+                        <option value="1">Acute</option>
+                        <option value="2">Repeat</option>
+                    </select>
+                </div>
+                <label for="additional_medication_related_condition">*Related to condition</label>
+                <div class="input-group mb-3">
+                    <select class="custom-select" id="additional_medication_related_condition" name="additional_medication_related_condition">
+                        <option selected>Choose...</option>
+                        {% for snomed in instruction.selected_snomed_concepts %}
+                        <option value="{{ snomed.id }}">{{ snomed.fsn_description }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <label for="additional_medication_drug">*Drug</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm"
+                           id="additional_medication_drug" name="additional_medication_drug">
+                </div>
+                <label for="additional_medication_dose">*Dose</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm"
+                           id="additional_medication_dose" name="additional_medication_dose">
+                </div>
+                <label for="additional_medication_frequency">*Frequency</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm"
+                           id="additional_medication_frequency" name="additional_medication_frequency">
+                </div>
+                <label for="additional_medication_prescribed_from">Prescribed from</label>
+                <div class="input-group mb-3">
+                    <input class="form-control" data-provide="datepicker"
+                           id="additional_medication_prescribed_from" name="additional_medication_prescribed_from">
+                </div>
+                <label for="additional_medication_prescribed_to">Prescribed to</label>
+                <div class="input-group mb-3">
+                    <input class="form-control" data-provide="datepicker"
+                           id="additional_medication_prescribed_to" name="additional_medication_prescribed_to">
+                </div>
+                <label class="redaction-additional-header" for="redaction_new_additional_medication_notes">
+                        Additional contextual information
+                    </label>
+                    <textarea placeholder="Further information related to this section of the report" 
+                            name="redaction_new_additional_medication_notes" 
+                            id="redaction_new_additional_medication_notes">{{ redaction.redaction_new_additional_medication_notes }}</textarea>
+            </div>
+        </div>
+    </div>

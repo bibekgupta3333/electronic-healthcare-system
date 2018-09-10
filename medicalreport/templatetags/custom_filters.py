@@ -22,6 +22,15 @@ def additional_medication_body(record):
 
 
 @register.filter
+def additional_allergy_description(record):
+    prefix = ''
+    if record.date_discovered():
+        prefix = "{} - ".format(format_date(record.date_discovered()))
+
+    return "{}{}, {}".format(prefix, record.allergen, record.reaction)
+
+
+@register.filter
 def active_problem_header(problem, problem_list):
     return "{} {}".format(problem.description(), diagnosed_date(problem, linked_problems(problem, problem_list)))
 

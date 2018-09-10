@@ -16,16 +16,13 @@ class SocialConsultationElement(XMLModelBase):
         else:
             return term
 
-#     def is_smoking(self):
-#       code_descendent_of(smoking_concept)
-#     end
+    def is_smoking(self):
+        self.__code_descendent_of(self.__smoking_concept())
 
-#     def alcohol?
-#       code_descendent_of(alcohol_concept)
-#     end
+    def is_alcohol(self):
+        self.__code_descendent_of(self.__alcohol_concept())
 
-#     private
-
+    # private
     def __smoking_concept(self):
         # SnomedConcept.active.find_by(external_id: '365981007')
         return DummySnomedConcept()

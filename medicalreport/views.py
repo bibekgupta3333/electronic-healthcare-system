@@ -19,9 +19,10 @@ class DummyClient(object):
 
 
 class DummySnomedConcept(object):
-    def __init__(self, desc):
+    def __init__(self, id, desc):
+        self.id = id
         self.fsn_description = desc
-    
+
     def fsn_description(self):
         return self.fsn_description
 
@@ -30,10 +31,21 @@ class DummyInstruction(object):
     def __init__(self):
         self.client = DummyClient()
         self.selected_snomed_concepts = [
-            DummySnomedConcept("% aggregation (qualifier value)"),
-            DummySnomedConcept("Klinefelter's syndrome XXXY (disorder)"),
-            DummySnomedConcept("XXXXY syndrome (disorder)"),
+            DummySnomedConcept("33333", "% aggregation (qualifier value)"),
+            DummySnomedConcept("33334", "Klinefelter's syndrome XXXY (disorder)"),
+            DummySnomedConcept("33335", "XXXXY syndrome (disorder)"),
         ]
+
+
+class DummyAdditionalAllergies(object):
+    def __init__(self, id, allergen, reaction, date_discovered):
+        self.id = id
+        self.allergen = allergen
+        self.reaction = reaction
+        self.date_discovered_str = date_discovered
+
+    def date_discovered(self):
+        return datetime.strptime(self.date_discovered_str, "%d/%m/%Y")
 
 
 class DummyAdditionalMedicationRecords(object):
@@ -48,7 +60,7 @@ class DummyAdditionalMedicationRecords(object):
         self.prescribed_to_str = prescribed_to
         self.notes = notes
         self.repeat = repeat
-        self.snomed_concept = DummySnomedConcept("snomed description")
+        self.snomed_concept = DummySnomedConcept("1234", "snomed description")
 
     # def id(self):
     #     return self.id
@@ -103,6 +115,9 @@ class DummyRedaction(object):
 
     def additional_repeat_medications(self):
         return [DummyAdditionalMedicationRecords('2', 'drug', 'dose', 'frequency', 'snomed_concept_id', 'redaction_id', '23/08/2015', '23/09/2015', 'notes', 'repeat')]
+
+    def additional_allergies(self):
+        return [DummyAdditionalAllergies('3', 'xxxxx', 'yyyyy', '23/08/2015')]
 
 
 def get_patient_record():

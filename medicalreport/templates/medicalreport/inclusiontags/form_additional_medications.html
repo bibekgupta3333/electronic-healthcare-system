@@ -5,8 +5,8 @@
   {% for record in additional_medication_records %}
     <div>
     <label class="redaction-checkbox">
-      <input name="additional_medication_records_attributes_0" 
-        {{ checked }} readonly type="checkbox" class="redaction-checkbox__input" 
+      <input name="additional_medication_records_delete" 
+             readonly type="checkbox" class="redaction-checkbox__input" 
         value="{{ record.id }}">
       <span class="redaction-checkbox__icon float-right fas fa-check-circle"></span>
       <span class="redaction-checkbox__header">{{ record|additional_medication_header }}</span>

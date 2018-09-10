@@ -70,6 +70,7 @@ def form_medications(context):
         'additional_acute_medications': context['redaction'].additional_acute_medications,
         'additional_repeat_medications': context['redaction'].additional_repeat_medications,
         'redaction': context['redaction'],
+        'instruction': context['instruction']
     }
 
 
@@ -78,6 +79,35 @@ def form_additional_medications(additional_medication_records):
     return {
         'additional_medication_records': additional_medication_records
     }
+
+
+@register.inclusion_tag('medicalreport/inclusiontags/form_new_additional_medications.html')
+def form_new_additional_medications(instruction):
+    return {
+        'instruction': instruction
+    }
+
+
+@register.inclusion_tag('medicalreport/inclusiontags/form_allergies.html', takes_context=True)
+def form_allergies(context):
+    return {
+        'all_allergies': context['medical_record'].all_allergies,
+        'additional_allergies': context['redaction'].additional_allergies,
+        'redaction': context['redaction'],
+        'instruction': context['instruction']
+    }
+
+
+@register.inclusion_tag('medicalreport/inclusiontags/form_additional_allergies.html')
+def form_additional_allergies(additional_allergies_records):
+    return {
+        'additional_allergies_records': additional_allergies_records
+    }
+
+
+@register.inclusion_tag('medicalreport/inclusiontags/form_new_additional_allergies.html')
+def form_new_additional_allergies():
+    return {}
 
 
 @register.inclusion_tag('medicalreport/inclusiontags/redaction_checkbox_with_body.html')
