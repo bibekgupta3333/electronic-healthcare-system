@@ -15,7 +15,14 @@ class NHSgpPracticeResource(resources.ModelResource):
 
 
 class NHSgpPracticeAdmin(ImportExportModelAdmin):
+    skip_admin_log = True
     resource_class = NHSgpPracticeResource
+    list_display = ('name', 'code')
+
+    def get_queryset(self, request):
+        qs = super(NHSgpPracticeAdmin, self).get_queryset(request)
+        qs = qs.order_by('name')
+        return qs
 
 
 class OrganisationClientForm(forms.ModelForm):
