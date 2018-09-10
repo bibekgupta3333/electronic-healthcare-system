@@ -44,12 +44,14 @@ INSTALLED_APPS = [
     'django_filters',
     'bootstrap4',
     'raven.contrib.django.raven_compat',
+    'django_select2',
 
     # app
     'accounts',
     'organisations',
     'services',
     'instructions',
+    'template',
 ]
 
 MIDDLEWARE = [

@@ -125,11 +125,20 @@ a {
   100% { transform: rotate(360deg); transform: rotate(360deg); }
 }
 
+.btn-xs {
+    margin-left: 10px;
+    height: 31px;
+    padding  : .25rem .4rem;
+    font-size  : 0.875rem;
+    line-height  : .5;
+    border-radius : .2rem;
+}
+
 
 /******** 2. Left Panel (aside navigation) ********/
 aside.left-panel {
   background-color: #212529;
-  width: 250px;
+  width: 220px;
   position: fixed;
   height: 100%;
   top: 0px;
@@ -510,12 +519,12 @@ header {
 /***************** 4.Content Area (right) ****************/
 
 .content {
-  margin-left: 250px;
+  margin-left: 220px;
 }
 
 .content > .container-fluid {
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-left: 25px;
+  padding-right: 25px;
 }
 
 .wraper {
@@ -548,11 +557,3 @@ header {
   display: inline-block!important;
 }
 
-/***************** 5. Instructions Pipeline ****************/
-.status .badge {
-  width: 128px;
-}
-
-#addInstructionButton {
-  width: 130px;
-}

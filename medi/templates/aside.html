@@ -8,10 +8,15 @@
             </div>
         </div>
         <ul class="mainmenu">
-            <li class="{% if request.resolver_match.url_name == 'view_data' %}active{% endif %}">
-                <a href="{% url 'instructions:view_data' %}" >Instructions</a>
+            <li class="{% if request.resolver_match.url_name == 'new_instruction' %}active{% endif %}">
+                <a href="{% url 'instructions:new_instruction' %}">New Instructions</a>
             </li>
-            <li>
+            {% if user.type != 'CLT' %}
+                <li class="{% if request.resolver_match.url_name == 'view_data' %}active{% endif %}">
+                    <a href="{% url 'instructions:view_data' %}" >Instructions</a>
+                </li>
+            {% endif %}
+            <li class="{% if request.resolver_match.namespace == 'organisations' %}active{% endif %}">
                 <a href="#">User Management</a>
                 <ul class="submenu">
                     <li><a href="{% url 'organisations:create_organisation' %}">New Organisations</a></li>
