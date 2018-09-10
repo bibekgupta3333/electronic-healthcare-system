@@ -80,6 +80,7 @@ class OrganisationGeneralPractice(OrganisationBase):
     payment_bank_holder_name = models.CharField(max_length=255)
     payment_bank_sort_code = models.CharField(max_length=255)
     payment_bank_account_number = models.CharField(max_length=255)
+    payment_preference = models.CharField(max_length=255)
 
     class Meta:
         verbose_name = 'Organisation GeneralPractice'
