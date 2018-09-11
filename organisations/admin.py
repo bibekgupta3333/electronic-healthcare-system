@@ -15,7 +15,14 @@ class NHSgpPracticeResource(resources.ModelResource):
 
 
 class NHSgpPracticeAdmin(ImportExportModelAdmin):
+    skip_admin_log = True
     resource_class = NHSgpPracticeResource
+    list_display = ('name', 'code')
+
+    def get_queryset(self, request):
+        qs = super(NHSgpPracticeAdmin, self).get_queryset(request)
+        qs = qs.order_by('name')
+        return qs
 
 
 class OrganisationClientForm(forms.ModelForm):
@@ -56,7 +63,7 @@ class OrganisationGeneralPracticeAdmin(admin.ModelAdmin):
         ('Contact Information', {'fields': ('contact_name', 'contact_telephone', 'contact_email',
                                 'generic_telephone', 'generic_email', 'fax_number')}),
         ('Payment Information', {'fields': ('payment_timing', 'payment_bank_holder_name', 'payment_bank_sort_code',
-                                            'payment_bank_account_number')})
+                                            'payment_bank_account_number', 'payment_preference')})
     )
 
 

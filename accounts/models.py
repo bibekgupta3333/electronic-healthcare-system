@@ -10,14 +10,24 @@ SEX_CHOICES = (
     ('F', 'Female')
 )
 
+TITLE_CHOICE = (
+    ('DR', 'Dr.'),
+    ('MR', 'Mr.'),
+    ('MRS', 'Mrs.'),
+    ('MS', 'Ms.'),
+    ('MX', 'Mx.')
+)
+
 MEDIDATA_USER = 'MEDI'
 CLIENT_USER = 'CLT'
 GENERAL_PRACTICE_USER = 'GP'
+PATIENT_USER = 'PAT'
 
 USER_TYPE_CHOICES = (
     (MEDIDATA_USER, 'Medidata'),
     (CLIENT_USER, 'Client'),
-    (GENERAL_PRACTICE_USER, 'General Practice')
+    (GENERAL_PRACTICE_USER, 'General Practice'),
+    (PATIENT_USER, 'Patient')
 )
 
 
@@ -87,7 +97,7 @@ class User(AbstractUser):
 
 class UserProfileBase(TimeStampedModel, models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=255, blank=True)
+    title = models.CharField(max_length=3, choices=TITLE_CHOICE, blank=True)
     middle_name = models.CharField(max_length=255, blank=True)
     maiden_name = models.CharField(max_length=255, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)

@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% load static %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% bootstrap_messages %}
+
+{% block ExtraHead %}
+    <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/bootstrap-datepicker.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/style.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/instructions/new_instruction.css' %}" rel="stylesheet"/>
+    <link rel="stylesheet" href="{% static 'assets/kartik-v-boostrap-fileinput/css/fileinput.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/kartik-v-boostrap-fileinput/themes/explorer-fas/theme.css' %}">
+    <script src="{% static 'assets/kartik-v-boostrap-fileinput/js/fileinput.js' %}"></script>
+    <script src="{% static 'assets/kartik-v-boostrap-fileinput/js/locales/LANG.js' %}"></script>
+    <script src="{% static 'assets/kartik-v-boostrap-fileinput/themes/fas/theme.js' %}"></script>
+{% endblock %}
+
+{% block Content %}
+    <form method="POST" enctype="multipart/form-data" id="myform">
+        {% csrf_token %}
+        <div class="card-deck instruction">
+            <div class="col-md-6 pr-0">
+                <div class="card mr-2">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Patient</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-2 rowTitle">Name*:</div>
+                            {% bootstrap_field patient_form.title size='small' form_group_class='form-group col-md-2 p-0' %}
+                            {% bootstrap_field patient_form.first_name size='small' form_group_class='form-group col-md-4 px-2' %}
+                            {% bootstrap_field patient_form.last_name size='small' form_group_class='form-group col-md-4 px-1' %}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2 rowTitle">Date of Birth*:</div>
+                            {% bootstrap_field patient_form.date_of_birth size='small' form_group_class='form-group col-md-6 p-0 input-group dob' show_label=False %}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2 rowTitle">Address*:</div>
+                            {% bootstrap_field patient_form.address_postcode size='small' form_group_class='form-group col-md-4 p-0 ' %}
+                            {% bootstrap_field patient_form.address_name_number size='small' form_group_class='form-group col-md-6 px-1' %}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2 rowTitle">NHS #:</div>
+                            {% bootstrap_field patient_form.address_postcode size='small' form_group_class='form-group col-md-4 p-0 mt-1' show_label=False %}
+                            <div class="col-md-2 pl-4 rowTitle">Email:</div>
+                            {% bootstrap_field patient_form.email size='small' form_group_class='form-group input-group col-md-4 px-1 emailField' show_label=False %}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 ">
+                <div class="card ">
+                    <div class="card-header"><h5>GP and GP Practice</h5></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 rowTitle">Search GP Practice:</div>
+                            {% bootstrap_field nhs_form.nhs size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
+                        </div>
+                        <div class="row " style="height: 130px">
+                            <div class="col-md-3 d-flex">GP Practice*:</div>
+                            <div class="col-md-6 p-0"><p id="nhsData"></p></div>
+                        </div>
+                        <div class="row ">
+                            <div class="col-md-3 rowTitle">Named GP*:</div>
+                            {% bootstrap_field gp_form.title size='small' form_group_class='form-group col-md-2 p-0' %}
+                            {% bootstrap_field gp_form.initial size='small' form_group_class='form-group col-md-3 px-2' %}
+                            {% bootstrap_field gp_form.last_name size='small' form_group_class='form-group col-md-4 px-2' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 mt-4">
+                <div class="card">
+                    <div class="card-header"><h5>Scope</h5></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-2 d-flex">Type of Instruction*:</div>
+                            {% bootstrap_field scope_form.type size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2 rowTitle">Set from Template?</div>
+                            {% bootstrap_field scope_form.template size='small' form_group_class='form-group col-md-6 px-0' show_label=False %}
+                            {% bootstrap_button 'Set conditions' button_type="button" extra_classes='btn-xs' %}
+                        </div>
+                        <div class="conditions d-none">
+                            <div class="row">
+                                <div class="col-md-2 rowTitle" >Common Conditions of Interest*:</div>
+                                {% for checkbox in scope_form.common_condition %}
+
+                                {% endfor %}
+                                {% bootstrap_field scope_form.common_condition size='small' form_group_class='form-group col-md-10 p-0 commonConditions' show_label=False %}
+                            </div>
+                            <div class="row">
+                                <div class="col-md-2 rowTitle">Addition Conditions of Interest*:</div>
+                                {% bootstrap_field scope_form.addition_condition size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 mt-4">
+                <div class="card">
+                    <div class="card-header"><h5>Consent and Patient Copy</h5></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-2 rowTitle">Upload consent form:</div>
+                            <div class="col-md-10">
+                                <div class="form-group">
+                                    <div class="file-loading">
+                                        <input id="consentFile" type="file">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        {% bootstrap_field scope_form.send_to_patient size='small' form_group_class='form-group offset-md-2 col-md-6 p-0' show_label=False %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mt-4">
+            <button class="btn btn-primary btn-lg w-75" type="submit" id="submit-all">Submit</button>
+        </div>
+    </form>
+{% endblock %}
+
+{% block Script %}
+    <script src="{% static 'js/select2.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            $("#consentFile").fileinput({
+                theme: 'fas',
+                showUpload: false,
+            });
+
+            $('.radio').addClass('d-inline');
+            $('#id_common_condition').addClass('row px-2');
+            $('.checkbox').addClass('d-inline col-md-3');
+
+            $('.dob').append('<div class="input-group-prepend">\n' +
+                '    <div class="input-group-text">\n' +
+                '      <i class="fas fa-calendar-alt"></i>\n' +
+                '    </div>\n' +
+                '  </div>');
+
+            $('#id_date_of_birth').datepicker({
+                orientation: 'bottom',
+                weekStart: 1,
+                daysOfWeekHighlighted: "6,0",
+                autoclose: true,
+                todayHighlight: true,
+            });
+            $('#datepicker').datepicker("setDate", new Date());
+            $('.datepicker-days .table-condensed').css('width', '231px')
+
+            $('#id_nhs').select2({
+                ajax: {
+                    delay: 500,
+                    url: "{% url 'organisations:nhs_autocomplete' %}",
+                    data: function (params) {
+                        let query = {
+                            search: params.term,
+                        };
+                        return query;
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.items
+                        }
+                    }
+                }
+            });
+
+            var $selectAllButton = $('<button class="btn btn-default btn-xs" id="selectAllButton" type="button">Select All</button>');
+            var $deSelectAllButton = $('<button class="btn btn-default btn-xs" id="deSelectAllButton" type="button">Deselect All</button>');
+            $('#id_common_condition').append([$selectAllButton, $deSelectAllButton]);
+
+            $('#selectAllButton').on('click', function () {
+                $('.commonConditions input:checkbox').prop('checked', true);
+            });
+
+            $('#deSelectAllButton').on('click', function () {
+                $('.commonConditions input:checkbox').prop('checked', false);
+            });
+
+            $('#id_nhs').on('change', function () {
+                $.ajax({
+                    type: "GET",
+                    url: "{% url 'organisations:get_nhs_data' %}",
+                    data: {
+                        'nhs_code': $(this).val()
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#nhsData').text(
+                            data.address_line1 + data.address_line2 + data.address_line3 + data.country + data.post_code
+                        );
+                    }
+                })
+            });
+
+            $('#id_type_0').on('change', function () {
+                if($(this).is(':checked')){
+                    $('.conditions').removeClass('d-none');
+                }
+            });
+
+            $('#id_type_1').on('change', function () {
+                if($(this).is(':checked')){
+                    $('.conditions').addClass('d-none');
+                }
+            });
+        });
+    </script>
+
+{% endblock %}
