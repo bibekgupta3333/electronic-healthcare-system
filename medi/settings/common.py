@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'services',
     'instructions',
     'medicalreport',
+    'snomedct',
 ]
 
 MIDDLEWARE = [
@@ -91,10 +92,20 @@ WSGI_APPLICATION = 'medi.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }postgres://localhost/medidata_development
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'medi',
+        # 'USER': 'medi',
+        # 'PASSWORD': 'medi',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -154,3 +165,7 @@ RAVEN_CONFIG = {
 }
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'static/media')
+
+
+IMPORT_EXPORT_SKIP_ADMIN_LOG = True
+IMPORT_EXPORT_USE_TRANSACTIONS = True
