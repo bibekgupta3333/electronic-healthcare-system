@@ -45,7 +45,7 @@
             <p>A full list of sensitive conditions (GP Summary Exclusion Code Lists) can be found<a target="_blank" href="https://isd.digital.nhs.uk/trud3/user/guest/group/0/pack/9/subpack/141/releases"> here.</a></p>
         </div>
         <h1>Provisional Report Contents</h1>
-        <form action="{% url 'medicalreport:update_report' %}" method="post">
+        <form action="{% url 'medicalreport:update_report' instruction.id %}" method="post">
             {% csrf_token %}
             <div class="row">
                 <div class="col-md-6">

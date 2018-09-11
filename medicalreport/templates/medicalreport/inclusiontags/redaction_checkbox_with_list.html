@@ -1,7 +1,7 @@
 <div>
 <label class="redaction-checkbox">
     {% for xpath in xpaths %}
-    <input name="redaction_patch_xpaths" key="{{ header }}"
+    <input name="redaction_xpaths" key="{{ header }}"
             {{ checked }} readonly="" type="checkbox" class="redaction-checkbox__input" 
             value="{{ xpath }}">
     {% endfor %}
