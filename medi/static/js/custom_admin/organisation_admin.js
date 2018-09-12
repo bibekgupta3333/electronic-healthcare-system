@@ -1,6 +1,6 @@
 (function($) {
     function diaplayAdditionInformation(organisationType){
-        if(organisationType=="Insurance" || organisationType=="Medicolegal"){
+        if(organisationType == "Insurance" || organisationType == "Medicolegal"){
             $('.additionInfo').show();
             $('.Insurance').show();
             $('.ConsentType').show();
