@@ -24,8 +24,8 @@ def additional_medication_body(record):
 @register.filter
 def additional_allergy_description(record):
     prefix = ''
-    if record.date_discovered():
-        prefix = "{} - ".format(format_date(record.date_discovered()))
+    if record.date_discovered:
+        prefix = "{} - ".format(format_date(record.date_discovered))
 
     return "{}{}, {}".format(prefix, record.allergen, record.reaction)
 

@@ -48,7 +48,8 @@ def form_profile(context):
 @register.inclusion_tag('medicalreport/inclusiontags/form_bloods.html', takes_context=True)
 def form_bloods(context):
     return {
-        'results': context['medical_record'].blood_test_results_by_type
+        'results': context['medical_record'].blood_test_results_by_type,
+        'redaction': context['redaction']
     }
 
 

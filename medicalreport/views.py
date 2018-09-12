@@ -1,18 +1,15 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 # from django.http import HttpResponse
 from services.dummy_models import DummyPractice
 from services.emisapiservices import services
 from services.xml.medical_report_decorator import MedicalReportDecorator
-from .dummy_models import (DummyRedaction, DummyInstruction)
+from .dummy_models import (DummyInstruction, DummyClient)
+from .models import Redaction
+from instructions.models import Instruction
+from .functions import create_or_update_redaction_record
+
 
 # Create your views here.
-
-
-class Poll(object):
-    def __init__(self):
-        self.choices = ['xxx', 'yyyy', 'uuu']
-
-
 def get_patient_record():
     practice = DummyPractice('MediData', '1234', '29390')
     patient_number = '2820'
@@ -32,19 +29,26 @@ def get_patient_record():
 
 def edit_report(request, instruction_id):
     medical_record = get_patient_record()
-    redaction = DummyRedaction()
-    instruction = DummyInstruction()
-    # if request.method == 'POST':
-    #     do_something_else()
+    try:
+        redaction = Redaction.objects.get(instruction=instruction_id)
+    except Redaction.DoesNotExist:
+        redaction = Redaction()
+
+    instruction = Instruction.objects.get(id=instruction_id)
+    dummy_client = DummyClient(instruction.client_user.organisation)
+    dummy_instruction = DummyInstruction(instruction.id, dummy_client)
+
     return render(request, 'medicalreport/medicalreport_edit.html', {
         'medical_record': medical_record,
         'redaction': redaction,
-        'instruction': instruction
+        'instruction': dummy_instruction
     })
 
 
 def update_report(request, instruction_id):
-    # redaction = Redaction.objects.get(instruction_id)
     print("POST data=", request.POST)
-    print("redaction_xpaths=", request.POST.getlist('redaction_xpaths'))
-    return redirect('medicalreport:edit_report', instruction_id=1)
+    print("instruction id: ", instruction_id)
+
+    instruction = get_object_or_404(Instruction, id=instruction_id)
+    create_or_update_redaction_record(request, instruction)
+    return redirect('medicalreport:edit_report', instruction_id=instruction_id)

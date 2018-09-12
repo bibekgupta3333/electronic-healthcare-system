@@ -25,11 +25,11 @@ def diagnosed_date(problem, problem_list):
 
 def additional_medication_dates_description(record):
     dates = []
-    if record.prescribed_from():
-        text = "from: {}".format(format_date(record.prescribed_from()))
+    if record.prescribed_from:
+        text = "from: {}".format(format_date(record.prescribed_from))
         dates += [text]
-    if record.prescribed_to():
-        text = "to: {}".format(format_date(record.prescribed_to()))
+    if record.prescribed_to:
+        text = "to: {}".format(format_date(record.prescribed_to))
         dates += [text]
 
     if any(dates):

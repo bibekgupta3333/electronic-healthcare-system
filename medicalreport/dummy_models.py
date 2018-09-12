@@ -2,8 +2,8 @@ from datetime import datetime
 
 
 class DummyClient(object):
-    def __init__(self):
-        self.company_name = "Insurers r us"
+    def __init__(self, company_name):
+        self.company_name = company_name
 
 
 class DummySnomedConcept(object):
@@ -16,13 +16,13 @@ class DummySnomedConcept(object):
 
 
 class DummyInstruction(object):
-    def __init__(self):
-        self.id = 1
-        self.client = DummyClient()
+    def __init__(self, id, client):
+        self.id = id
+        self.client = client
         self.selected_snomed_concepts = [
-            DummySnomedConcept("33333", "% aggregation (qualifier value)"),
-            DummySnomedConcept("33334", "Klinefelter's syndrome XXXY (disorder)"),
-            DummySnomedConcept("33335", "XXXXY syndrome (disorder)"),
+            DummySnomedConcept("523717", "% aggregation (qualifier value)"),
+            DummySnomedConcept("534927", "Klinefelter's syndrome XXXY (disorder)"),
+            DummySnomedConcept("389755", "XXXXY syndrome (disorder)"),
         ]
 
 

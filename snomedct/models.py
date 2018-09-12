@@ -13,6 +13,12 @@ class SnomedConcept(models.Model):
     fsn_description = models.CharField(max_length=255)
     external_fsn_description_id = models.BigIntegerField()
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['fsn_description']),
+            models.Index(fields=['external_id']),
+        ]
+
     def snomed_descendants(self):
         result = SnomedDescendant.objects.filter(external_id=self.external_id)
         print(result)
@@ -27,6 +33,11 @@ class ReadCode(models.Model):
     concept_id = models.BigIntegerField()
     # concept_id = models.ForeignKey(SnomedConcept, on_delete=models.CASCADE, to_field='external_id')
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['concept_id']),
+        ]
+
 
 class SnomedDescendant(models.Model):
     external_id = models.BigIntegerField()
@@ -34,3 +45,7 @@ class SnomedDescendant(models.Model):
     descendant_external_id = models.BigIntegerField()
 
     # snomed_concepts = models.ForeignKey('SnomedConcept', on_delete=models.CASCADE)
+    class Meta:
+        indexes = [
+            models.Index(fields=['external_id']),
+        ]

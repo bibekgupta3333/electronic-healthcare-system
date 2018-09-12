@@ -32,7 +32,7 @@
                     </label>
                     <textarea placeholder="Further information related to this section of the report" 
                             name="redaction_acute_prescription_notes" 
-                            id="redaction_acute_prescription_notes">{{ redaction.redaction_acute_prescription_notes }}</textarea>
+                            id="redaction_acute_prescription_notes">{{ redaction.acute_prescription_notes }}</textarea>
                 </div>
                 <div class="tab-pane fade" id="nav-repeat-medications" role="tabpanel" aria-labelledby="nav-repeat-medications-tab">
                     {% for model in repeat_medications%}
@@ -47,7 +47,7 @@
                     </label>
                     <textarea placeholder="Further information related to this section of the report" 
                             name="redaction_repeat_prescription_notes" 
-                            id="redaction_repeat_prescription_notes">{{ redaction.redaction_repeat_prescription_notes }}</textarea>
+                            id="redaction_repeat_prescription_notes">{{ redaction.repeat_prescription_notes }}</textarea>
                 </div>
                 <div class="tab-pane fade" id="nav-add-medications" role="tabpanel" aria-labelledby="nav-add-medications-tab">
                     {% form_new_additional_medications instruction %}
