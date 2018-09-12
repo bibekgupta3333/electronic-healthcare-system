@@ -18,7 +18,7 @@
 {% endblock %}
 
 {% block Content %}
-    <form method="POST" enctype="multipart/form-data" id="myform">
+    <form method="POST" enctype="multipart/form-data" id="newInstructionForm">
         {% csrf_token %}
         <div class="card-deck instruction">
             <div class="col-md-6 pr-0">
@@ -126,7 +126,32 @@
                     </div>
                 </div>
             </div>
-        </div>
+            <div class="col-md-12 mt-4">
+                    <div class="card">
+                        <div class="card-header"><h5>Addition Question</h5></div>
+                        <div class="card-body">
+                            <div class="row">
+                                {{ addition_question_formset.management_form }}
+                                <table border="0" cellpadding="10" cellspacing="0" class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Questions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for form in addition_question_formset.forms %}
+                                        <tr>
+                                            <td>{{ form.question }}</td>
+                                            <td></td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         <div class="col-md-4 mt-4">
             <button class="btn btn-primary btn-lg w-75" type="submit" id="submit-all">Submit</button>
         </div>
@@ -136,8 +161,19 @@
 {% block Script %}
     <script src="{% static 'js/select2.min.js' %}"></script>
     <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
+    <script src="{% static 'js/jquery.formset.js' %}"></script>
     <script>
         $(document).ready(function () {
+            $('#newInstructionForm tbody tr').formset({
+                'deleteText': 'X remove',
+                'addText': '+ Add Another',
+                'addCssClass': 'btn btn-primary',
+                'deleteCssClass': 'btn btn-danger'
+            });
+            $("#alert-message").fadeTo(2000, 500).slideUp(500, function(){
+                $("#alert-message").slideUp(500);
+            });
+
             $("#consentFile").fileinput({
                 theme: 'fas',
                 showUpload: false,

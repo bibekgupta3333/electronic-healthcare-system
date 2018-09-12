@@ -1,6 +1,8 @@
 from django import forms
+from django.forms.models import modelformset_factory
 
 from instructions.model_choices import INSTRUCTION_TYPE_CHOICES, AMRA_TYPE, SARS_TYPE
+from .models import InstructionAdditionQuestion
 from template.models import TemplateInstruction
 
 CONDITION_HEART_DISEASE         = 0
@@ -45,5 +47,19 @@ class ScopeInstructionForm(forms.Form):
     send_to_patient = forms.BooleanField(widget=forms.CheckboxInput(), label='Send copy of medical report to patient?', required=False)
 
 
+class AdditionQuestionForm(forms.ModelForm):
+    class Meta:
+        model = InstructionAdditionQuestion
+        fields = ('question',)
 
+
+AdditionQuestionFormset = modelformset_factory(
+        InstructionAdditionQuestion,
+        form=AdditionQuestionForm,
+        fields=('question', ),
+        extra=1,
+        widgets={
+            'question': forms.TextInput(attrs={'class': 'form-control'}, ),
+        },
+    )
 
