@@ -62,7 +62,7 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-3 rowTitle">Search GP Practice:</div>
-                            {% bootstrap_field nhs_form.nhs size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
+                            {% bootstrap_field nhs_form.gp_practice size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
                         </div>
                         <div class="row " style="height: 130px">
                             <div class="col-md-3 d-flex">GP Practice*:</div>
@@ -198,7 +198,7 @@
             $('#datepicker').datepicker("setDate", new Date());
             $('.datepicker-days .table-condensed').css('width', '231px')
 
-            $('#id_nhs').select2({
+            $('#id_gp_practice').select2({
                 ajax: {
                     delay: 500,
                     url: "{% url 'organisations:nhs_autocomplete' %}",
@@ -228,17 +228,17 @@
                 $('.commonConditions input:checkbox').prop('checked', false);
             });
 
-            $('#id_nhs').on('change', function () {
+            $('#id_gp_practice').on('change', function () {
                 $.ajax({
                     type: "GET",
                     url: "{% url 'organisations:get_nhs_data' %}",
                     data: {
-                        'nhs_code': $(this).val()
+                        'code': $(this).val()
                     },
                     dataType: 'json',
                     success: function (data) {
                         $('#nhsData').text(
-                            data.address_line1 + data.address_line2 + data.address_line3 + data.country + data.post_code
+                            data.address
                         );
                     }
                 })
