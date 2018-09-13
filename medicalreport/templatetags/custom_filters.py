@@ -11,7 +11,10 @@ def format_date_filter(date):
 
 @register.filter
 def additional_medication_header(record):
-    return "{} prescribed for '{}'.".format(record.drug, record.snomed_concept.fsn_description)
+    fsn_description = ''
+    if record.snomed_concept is not None:
+        fsn_description = record.snomed_concept.fsn_description
+    return "{} prescribed for '{}'.".format(record.drug, fsn_description)
 
 
 @register.filter

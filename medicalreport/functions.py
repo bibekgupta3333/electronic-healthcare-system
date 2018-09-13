@@ -83,7 +83,10 @@ def get_additional_medication(request, redaction):
             else:
                 record.repeat = True
 
-            record.snomed_concept = SnomedConcept.objects.get(id=additional_medication_snomedct)
+            try:
+                record.snomed_concept = SnomedConcept.objects.get(id=additional_medication_snomedct)
+            except SnomedConcept.DoesNotExist:
+                pass
             record.dose = additional_medication_dose
             record.drug = additional_medication_drug
             record.frequency = additional_medication_frequency

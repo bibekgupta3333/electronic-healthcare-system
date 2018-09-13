@@ -38,7 +38,7 @@ class AdditionalMedicationRecords(models.Model):
     drug = models.CharField(max_length=255)
     dose = models.CharField(max_length=255)
     frequency = models.CharField(max_length=255)
-    snomed_concept = models.ForeignKey(SnomedConcept, on_delete=models.CASCADE)
+    snomed_concept = models.ForeignKey(SnomedConcept, on_delete=models.CASCADE, null=True)
     redaction = models.ForeignKey(Redaction, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
