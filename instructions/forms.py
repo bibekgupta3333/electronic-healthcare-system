@@ -32,6 +32,7 @@ SCOPE_COMMON_CONDITION_CHOICES = (
     (CONDITION_NEURODEGENERATIVE, 'Neurodegenerative'),
 )
 
+
 class ScopeInstructionForm(forms.Form):
     type = forms.ChoiceField(choices=[], widget=forms.RadioSelect(attrs={'class': 'd-inline instructionType'}))
     template = forms.CharField(max_length=255, required=False)
@@ -44,10 +45,6 @@ class ScopeInstructionForm(forms.Form):
     def __init__(self, user, *args, **kwargs):
         super(ScopeInstructionForm, self).__init__(*args, **kwargs)
 
-class AdditionQuestionForm(forms.ModelForm):
-    class Meta:
-        model = InstructionAdditionQuestion
-        fields = ('question',)
         FORM_INSTRUCTION_TYPE_CHOICES = [
             (AMRA_TYPE, 'Underwriting(AMRA)'),
             (AMRA_TYPE, 'Claim(AMRA)'),
@@ -63,6 +60,15 @@ class AdditionQuestionForm(forms.ModelForm):
                 del FORM_INSTRUCTION_TYPE_CHOICES[0]
             elif not client_organisation.can_create_sars:
                 del FORM_INSTRUCTION_TYPE_CHOICES[2]
+            self.fields['type'] = forms.ChoiceField(choices=FORM_INSTRUCTION_TYPE_CHOICES, widget=forms.RadioSelect(
+                attrs={'class': 'd-inline instructionType'}))
+
+
+class AdditionQuestionForm(forms.ModelForm):
+    class Meta:
+        model = InstructionAdditionQuestion
+        fields = ('question',)
+
 
 AdditionQuestionFormset = modelformset_factory(
         InstructionAdditionQuestion,
@@ -73,5 +79,3 @@ AdditionQuestionFormset = modelformset_factory(
             'question': forms.TextInput(attrs={'class': 'form-control'}, ),
         },
     )
-            self.fields['type'] = forms.ChoiceField(choices=FORM_INSTRUCTION_TYPE_CHOICES, widget=forms.RadioSelect(attrs={'class': 'd-inline instructionType'}))
-
