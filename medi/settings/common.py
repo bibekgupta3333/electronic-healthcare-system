@@ -104,7 +104,7 @@ WSGI_APPLICATION = 'medi.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'medi',
+        'NAME': 'medidata',
         # 'USER': 'medi',
         # 'PASSWORD': 'medi',
         'HOST': 'localhost',
