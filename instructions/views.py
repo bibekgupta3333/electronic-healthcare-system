@@ -16,7 +16,6 @@ from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice, NHSgpPractice
 
 
-
 def count_instructions():
     all_count = Instruction.objects.all().count()
     new_count = Instruction.objects.filter(status=INSTRUCTION_STATUS_NEW).count()
@@ -82,7 +81,7 @@ def new_instruction(request):
     header_title = "Add New Instruction"
 
     if request.method == "POST":
-        scope_form = ScopeInstructionForm(request.POST, request.FILES)
+        scope_form = ScopeInstructionForm(request.user, request.POST, request.FILES,)
         patient_form = PatientForm(request.POST)
         addition_question_formset = AdditionQuestionFormset(request.POST)
         gp_practice_code = request.POST.get('gp_practice', None)

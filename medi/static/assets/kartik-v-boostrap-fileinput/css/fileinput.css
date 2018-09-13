@@ -85,17 +85,7 @@
 .file-zoom-content > .file-object.type-pdf, .file-zoom-content > .file-object.type-html, .file-zoom-content > .file-object.type-text, .file-zoom-content > .file-object.type-default {
     width: 100%;
 }
-
-.file-loading:before {
-    content: " Loading...";
-    display: inline-block;
-    padding-left: 20px;
-    line-height: 16px;
-    font-size: 13px;
-    font-variant: small-caps;
-    color: #999;
-    background: transparent url(../img/loading.gif) top left no-repeat;
-}
+    
 
 .file-object {
     margin: 0 0 -5px 0;
