@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 from common.models import TimeStampedModel
 from accounts.models import ClientUser, GeneralPracticeUser, Patient
@@ -18,6 +20,10 @@ class Instruction(TimeStampedModel, models.Model):
     status = models.IntegerField(choices=INSTRUCTION_STATUS_CHOICES, default=INSTRUCTION_STATUS_NEW)
     consent_form = models.FileField(upload_to='consent_forms', null=True)
 
+    gp_practice_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    gp_practice_id = models.CharField(max_length=255)
+    gp_practice = GenericForeignKey('gp_practice_type', 'gp_practice_id')
+
     class Meta:
         verbose_name = "Instruction"
         ordering = ('-created',)
@@ -28,7 +34,7 @@ class Instruction(TimeStampedModel, models.Model):
 
 class InstructionAdditionQuestion(models.Model):
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)
-    question = models.TextField(blank=True)
+    question = models.CharField(max_length=255, blank=True)
     response_mandatory = models.BooleanField(default=False)
 
     class Meta:

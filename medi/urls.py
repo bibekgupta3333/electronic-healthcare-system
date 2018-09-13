@@ -17,12 +17,14 @@ from django.contrib import admin
 
 from django.urls import path, include
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from instructions.views import instruction_pipeline_view
 
 admin.site.site_header = 'MediData administration'
 admin.site.site_title = 'MediData administration'
 
 
 urlpatterns = [
+    path('', instruction_pipeline_view, name='view_data'),
     path('testservices/', include('services.urls')),
     path('medicalreport/', include('medicalreport.urls')),
     path('admin/', admin.site.urls),

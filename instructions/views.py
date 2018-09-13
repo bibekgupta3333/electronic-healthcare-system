@@ -1,18 +1,19 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.core.mail import send_mail
 
 from django_tables2 import RequestConfig
 
-from .models import Instruction
+from .models import Instruction, InstructionAdditionQuestion
 from .tables import InstructionTable
 from .model_choices import *
-from .forms import ScopeInstructionForm
+from .forms import ScopeInstructionForm, AdditionQuestionFormset
 from accounts.models import User, UserProfileBase, Patient, GeneralPracticeUser
 from accounts.models import PATIENT_USER
 from accounts.forms import PatientForm, GPForm
-from organisations.forms import NHSgpPracticeForm
-from organisations.models import OrganisationGeneralPractice
-from django.contrib import messages
+from organisations.forms import GeneralPracticeForm
+from organisations.models import OrganisationGeneralPractice, NHSgpPractice
 
 
 def count_instructions():
@@ -80,9 +81,15 @@ def new_instruction(request):
     header_title = "Add New Instruction"
 
     if request.method == "POST":
-        scope_form = ScopeInstructionForm(request.POST, request.FILES)
+        scope_form = ScopeInstructionForm(request.user, request.POST, request.FILES,)
         patient_form = PatientForm(request.POST)
-        if patient_form.is_valid() and scope_form.is_valid():
+        addition_question_formset = AdditionQuestionFormset(request.POST)
+        gp_practice_code = request.POST.get('gp_practice', None)
+        gp_practice = OrganisationGeneralPractice.objects.filter(practice_code=gp_practice_code).first()
+        if not gp_practice:
+            gp_practice = NHSgpPractice.objects.filter(code=gp_practice_code).first()
+
+        if patient_form.is_valid() and scope_form.is_valid() and gp_practice:
             # create patient user
             user = User.objects.create(username="{}.{}".format(patient_form.cleaned_data['first_name'], patient_form.cleaned_data['last_name'][0]),
                                        password="{}.medi2018".format(patient_form.cleaned_data['first_name']),
@@ -101,18 +108,36 @@ def new_instruction(request):
             instruction.patient = patient
             instruction.type = scope_form.cleaned_data['type']
             instruction.consent_form = scope_form.cleaned_data['consent_form']
+            instruction.gp_practice = gp_practice
             instruction.save()
+
+            if isinstance(gp_practice, NHSgpPractice):
+                send_mail(
+                    'NHS GP is selected',
+                    'Your client had selected NHS GP: {}'.format(gp_practice.name),
+                    'akekatharn@mohara.com',
+                    ['lontharn@gmail.com'],
+                    fail_silently=False,
+                )
+
+            for form in addition_question_formset:
+                if form.is_valid():
+                    addition_question = form.save(commit=False)
+                    addition_question.instruction = instruction
+                    addition_question.save()
             messages.success(request, 'Form submission successful')
 
     patient_form = PatientForm()
     gp_form = GPForm()
-    nhs_form = NHSgpPracticeForm()
-    scope_form = ScopeInstructionForm()
+    nhs_form = GeneralPracticeForm()
+    addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.none())
+    scope_form = ScopeInstructionForm(user=request.user)
 
     return render(request, 'instructions/new_instrcution.html', {
         'header_title': header_title,
         'patient_form': patient_form,
         'nhs_form': nhs_form,
         'gp_form': gp_form,
-        'scope_form': scope_form
+        'scope_form': scope_form,
+        'addition_question_formset': addition_question_formset,
     }) 

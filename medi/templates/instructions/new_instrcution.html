@@ -10,7 +10,7 @@
     <link href="{% static 'css/bootstrap-datepicker.min.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/style.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/instructions/new_instruction.css' %}" rel="stylesheet"/>
-    <link rel="stylesheet" href="{% static 'assets/kartik-v-boostrap-fileinput/css/fileinput.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/kartik-v-boostrap-fileinput/css/fileinput.css' %}">
     <link rel="stylesheet" href="{% static 'assets/kartik-v-boostrap-fileinput/themes/explorer-fas/theme.css' %}">
     <script src="{% static 'assets/kartik-v-boostrap-fileinput/js/fileinput.js' %}"></script>
     <script src="{% static 'assets/kartik-v-boostrap-fileinput/js/locales/LANG.js' %}"></script>
@@ -18,7 +18,7 @@
 {% endblock %}
 
 {% block Content %}
-    <form method="POST" enctype="multipart/form-data" id="myform">
+    <form method="POST" enctype="multipart/form-data" id="newInstructionForm">
         {% csrf_token %}
         <div class="card-deck instruction">
             <div class="col-md-6 pr-0">
@@ -62,7 +62,7 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-3 rowTitle">Search GP Practice:</div>
-                            {% bootstrap_field nhs_form.nhs size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
+                            {% bootstrap_field nhs_form.gp_practice size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
                         </div>
                         <div class="row " style="height: 130px">
                             <div class="col-md-3 d-flex">GP Practice*:</div>
@@ -115,7 +115,7 @@
                             <div class="col-md-10">
                                 <div class="form-group">
                                     <div class="file-loading">
-                                        <input id="consentFile" type="file">
+                                        {% bootstrap_field scope_form.consent_form show_label=False %}
                                     </div>
                                 </div>
                             </div>
@@ -126,7 +126,31 @@
                     </div>
                 </div>
             </div>
-        </div>
+            <div class="col-md-12 mt-4">
+                <div class="card">
+                    <div class="card-header"><h5>Addition Question</h5></div>
+                    <div class="card-body">
+                        <div class="row">
+                            {{ addition_question_formset.management_form }}
+                            <table border="0" cellpadding="10" cellspacing="0" class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Questions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for form in addition_question_formset.forms %}
+                                    <tr>
+                                        <td>{{ form.question }}</td>
+                                        <td></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         <div class="col-md-4 mt-4">
             <button class="btn btn-primary btn-lg w-75" type="submit" id="submit-all">Submit</button>
         </div>
@@ -136,9 +160,20 @@
 {% block Script %}
     <script src="{% static 'js/select2.min.js' %}"></script>
     <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
+    <script src="{% static 'js/jquery.formset.js' %}"></script>
     <script>
         $(document).ready(function () {
-            $("#consentFile").fileinput({
+            $('#newInstructionForm tbody tr').formset({
+                'deleteText': 'X remove',
+                'addText': '+ Add Another',
+                'addCssClass': 'btn btn-primary',
+                'deleteCssClass': 'btn btn-danger'
+            });
+            $("#alert-message").fadeTo(2000, 500).slideUp(500, function(){
+                $("#alert-message").slideUp(500);
+            });
+
+            $("#id_consent_form").fileinput({
                 theme: 'fas',
                 showUpload: false,
             });
@@ -163,7 +198,7 @@
             $('#datepicker').datepicker("setDate", new Date());
             $('.datepicker-days .table-condensed').css('width', '231px')
 
-            $('#id_nhs').select2({
+            $('#id_gp_practice').select2({
                 ajax: {
                     delay: 500,
                     url: "{% url 'organisations:nhs_autocomplete' %}",
@@ -193,32 +228,28 @@
                 $('.commonConditions input:checkbox').prop('checked', false);
             });
 
-            $('#id_nhs').on('change', function () {
+            $('#id_gp_practice').on('change', function () {
                 $.ajax({
                     type: "GET",
                     url: "{% url 'organisations:get_nhs_data' %}",
                     data: {
-                        'nhs_code': $(this).val()
+                        'code': $(this).val()
                     },
                     dataType: 'json',
                     success: function (data) {
                         $('#nhsData').text(
-                            data.address_line1 + data.address_line2 + data.address_line3 + data.country + data.post_code
+                            data.address
                         );
                     }
                 })
             });
 
-            $('#id_type_0').on('change', function () {
-                if($(this).is(':checked')){
-                    $('.conditions').removeClass('d-none');
-                }
-            });
-
-            $('#id_type_1').on('change', function () {
-                if($(this).is(':checked')){
-                    $('.conditions').addClass('d-none');
-                }
+            $('.instructionType').on('change', function () {
+               if($(this).is(':checked') && $(this).val() == 'AMRA'){
+                   $('.conditions').removeClass('d-none');
+               }else if($(this).is(':checked')){
+                   $('.conditions').addClass('d-none');
+               }
             });
         });
     </script>

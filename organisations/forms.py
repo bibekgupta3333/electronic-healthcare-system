@@ -1,9 +1,12 @@
 from django import forms
-from .models import NHSgpPractice
+from .models import NHSgpPractice, OrganisationGeneralPractice
+
+nhs_query = NHSgpPractice.objects.none()
+gp_organisation = OrganisationGeneralPractice.objects.none()
 
 
-class NHSgpPracticeForm(forms.Form):
-    nhs = forms.ModelChoiceField(queryset=NHSgpPractice.objects.all())
+class GeneralPracticeForm(forms.Form):
+    gp_practice = forms.ModelChoiceField(queryset=nhs_query.union(gp_organisation))
 
     class Meta:
         model = NHSgpPractice
