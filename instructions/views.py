@@ -107,7 +107,7 @@ def new_instruction(request):
     patient_form = PatientForm()
     gp_form = GPForm()
     nhs_form = NHSgpPracticeForm()
-    scope_form = ScopeInstructionForm()
+    scope_form = ScopeInstructionForm(user=request.user)
 
     return render(request, 'instructions/new_instrcution.html', {
         'header_title': header_title,

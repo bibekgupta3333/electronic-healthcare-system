@@ -1,15 +1,14 @@
 (function($) {
     function diaplayAdditionInformation(organisationType){
-        if(organisationType=="Insurance"){
-                $('.additionInfo').show();
-                $('.Insurance').show();
-            } else if(organisationType=="Medicolegal") {
-                $('.additionInfo').show();
-                $('.Insurance').hide();
-            } else {
-                $('.additionInfo').hide();
-                $('.Insurance').hide();
-            }
+        if(organisationType == "Insurance" || organisationType == "Medicolegal"){
+            $('.additionInfo').show();
+            $('.Insurance').show();
+            $('.ConsentType').show();
+        } else {
+            $('.additionInfo').hide();
+            $('.Insurance').hide();
+            $('.ConsentType').hide();
+        }
     }
 
     $(document).ready(function() {
