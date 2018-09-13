@@ -10,7 +10,7 @@
     <link href="{% static 'css/bootstrap-datepicker.min.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/style.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/instructions/new_instruction.css' %}" rel="stylesheet"/>
-    <link rel="stylesheet" href="{% static 'assets/kartik-v-boostrap-fileinput/css/fileinput.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/kartik-v-boostrap-fileinput/css/fileinput.css' %}">
     <link rel="stylesheet" href="{% static 'assets/kartik-v-boostrap-fileinput/themes/explorer-fas/theme.css' %}">
     <script src="{% static 'assets/kartik-v-boostrap-fileinput/js/fileinput.js' %}"></script>
     <script src="{% static 'assets/kartik-v-boostrap-fileinput/js/locales/LANG.js' %}"></script>
@@ -115,7 +115,7 @@
                             <div class="col-md-10">
                                 <div class="form-group">
                                     <div class="file-loading">
-                                        <input id="consentFile" type="file">
+                                        {% bootstrap_field scope_form.consent_form show_label=False %}
                                     </div>
                                 </div>
                             </div>
@@ -173,7 +173,7 @@
                 $("#alert-message").slideUp(500);
             });
 
-            $("#consentFile").fileinput({
+            $("#id_consent_form").fileinput({
                 theme: 'fas',
                 showUpload: false,
             });

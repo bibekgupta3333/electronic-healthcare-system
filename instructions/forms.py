@@ -39,7 +39,7 @@ class ScopeInstructionForm(forms.Form):
     # template = forms.ModelChoiceField(queryset=TemplateInstruction.objects.all(), required=False)
     common_condition = forms.MultipleChoiceField(choices=SCOPE_COMMON_CONDITION_CHOICES, widget=forms.CheckboxSelectMultiple(), required=False)
     addition_condition = forms.CharField(max_length=255, required=False)
-    consent_form = forms.FileField(widget=forms.FileInput(attrs={'class': 'position-absolute'}), required=False)
+    consent_form = forms.FileField(required=False)
     send_to_patient = forms.BooleanField(widget=forms.CheckboxInput(), label='Send copy of medical report to patient?', required=False)
 
     def __init__(self, user, *args, **kwargs):
