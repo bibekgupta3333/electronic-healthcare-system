@@ -4,6 +4,8 @@ from django.forms.models import modelformset_factory
 from instructions.model_choices import INSTRUCTION_TYPE_CHOICES, AMRA_TYPE, SARS_TYPE
 from .models import InstructionAdditionQuestion
 from template.models import TemplateInstruction
+from common.functions import multi_getattr
+
 
 CONDITION_HEART_DISEASE         = 0
 CONDITION_LIVER_DISEASE         = 1
@@ -30,15 +32,8 @@ SCOPE_COMMON_CONDITION_CHOICES = (
     (CONDITION_NEURODEGENERATIVE, 'Neurodegenerative'),
 )
 
-FORM_INSTRUCTION_TYPE_CHOICES = (
-    (AMRA_TYPE, 'Underwriting(AMRA)'),
-    (AMRA_TYPE, 'Claim(AMRA)'),
-    (SARS_TYPE, 'SAR')
-)
-
-
 class ScopeInstructionForm(forms.Form):
-    type = forms.ChoiceField(choices=FORM_INSTRUCTION_TYPE_CHOICES, widget=forms.RadioSelect(attrs={'class': 'd-inline'}))
+    type = forms.ChoiceField(choices=[], widget=forms.RadioSelect(attrs={'class': 'd-inline instructionType'}))
     template = forms.CharField(max_length=255, required=False)
     # template = forms.ModelChoiceField(queryset=TemplateInstruction.objects.all(), required=False)
     common_condition = forms.MultipleChoiceField(choices=SCOPE_COMMON_CONDITION_CHOICES, widget=forms.CheckboxSelectMultiple(), required=False)
@@ -46,12 +41,28 @@ class ScopeInstructionForm(forms.Form):
     consent_form = forms.FileField(widget=forms.FileInput(attrs={'class': 'position-absolute'}), required=False)
     send_to_patient = forms.BooleanField(widget=forms.CheckboxInput(), label='Send copy of medical report to patient?', required=False)
 
+    def __init__(self, user, *args, **kwargs):
+        super(ScopeInstructionForm, self).__init__(*args, **kwargs)
 
 class AdditionQuestionForm(forms.ModelForm):
     class Meta:
         model = InstructionAdditionQuestion
         fields = ('question',)
+        FORM_INSTRUCTION_TYPE_CHOICES = [
+            (AMRA_TYPE, 'Underwriting(AMRA)'),
+            (AMRA_TYPE, 'Claim(AMRA)'),
+            (SARS_TYPE, 'SAR')
+        ]
 
+        client_organisation = multi_getattr(user, 'userprofilebase.clientuser.organisation', default=None)
+        if client_organisation:
+            if not client_organisation.can_create_amra and not client_organisation.can_create_sars:
+                FORM_INSTRUCTION_TYPE_CHOICES = ()
+            elif not client_organisation.can_create_amra:
+                del FORM_INSTRUCTION_TYPE_CHOICES[0]
+                del FORM_INSTRUCTION_TYPE_CHOICES[0]
+            elif not client_organisation.can_create_sars:
+                del FORM_INSTRUCTION_TYPE_CHOICES[2]
 
 AdditionQuestionFormset = modelformset_factory(
         InstructionAdditionQuestion,
@@ -62,4 +73,5 @@ AdditionQuestionFormset = modelformset_factory(
             'question': forms.TextInput(attrs={'class': 'form-control'}, ),
         },
     )
+            self.fields['type'] = forms.ChoiceField(choices=FORM_INSTRUCTION_TYPE_CHOICES, widget=forms.RadioSelect(attrs={'class': 'd-inline instructionType'}))
 

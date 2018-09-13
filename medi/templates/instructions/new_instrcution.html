@@ -244,16 +244,12 @@
                 })
             });
 
-            $('#id_type_0').on('change', function () {
-                if($(this).is(':checked')){
-                    $('.conditions').removeClass('d-none');
-                }
-            });
-
-            $('#id_type_1').on('change', function () {
-                if($(this).is(':checked')){
-                    $('.conditions').addClass('d-none');
-                }
+            $('.instructionType').on('change', function () {
+               if($(this).is(':checked') && $(this).val() == 'AMRA'){
+                   $('.conditions').removeClass('d-none');
+               }else if($(this).is(':checked')){
+                   $('.conditions').addClass('d-none');
+               }
             });
         });
     </script>
