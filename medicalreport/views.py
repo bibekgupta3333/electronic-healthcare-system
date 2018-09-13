@@ -34,7 +34,7 @@ def edit_report(request, instruction_id):
     except Redaction.DoesNotExist:
         redaction = Redaction()
 
-    instruction = Instruction.objects.get(id=instruction_id)
+    instruction = get_object_or_404(Instruction, id=instruction_id)
     dummy_client = DummyClient(instruction.client_user.organisation)
     dummy_instruction = DummyInstruction(instruction.id, dummy_client)
 

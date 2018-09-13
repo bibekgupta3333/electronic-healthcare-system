@@ -68,4 +68,4 @@ class ReadCodeResource(resources.ModelResource):
         print("ReadCode Imported:", self.count)
 
 
-admin.site.register(SnomedConcept, SnomedConceptAdmin)
+# admin.site.register(SnomedConcept, SnomedConceptAdmin)

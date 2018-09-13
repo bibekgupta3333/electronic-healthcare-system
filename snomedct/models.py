@@ -3,9 +3,6 @@ from django.db import models
 
 # Create your models here.
 class SnomedConcept(models.Model):
-    # snomed_descendants = models.ForeignKey(SnomedDescendant, on_delete=models.CASCADE, null=True)
-    # read_code = models.ForeignKey(ReadCode, on_delete=models.CASCADE, null=True)
-
     external_id = models.BigIntegerField(unique=True)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
@@ -20,7 +17,7 @@ class SnomedConcept(models.Model):
         ]
 
     def snomed_descendants(self):
-        result = SnomedDescendant.objects.filter(external_id=self.external_id)
+        result = SnomedConcept.objects.filter(snomeddescendant__external_id=self.external_id)
         print(result)
         return result
 
@@ -30,8 +27,7 @@ class ReadCode(models.Model):
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     file_path = models.CharField(max_length=255)
-    concept_id = models.BigIntegerField()
-    # concept_id = models.ForeignKey(SnomedConcept, on_delete=models.CASCADE, to_field='external_id')
+    concept_id = models.ForeignKey(SnomedConcept, to_field='external_id', on_delete=models.CASCADE, db_column="concept_id")
 
     class Meta:
         indexes = [
@@ -40,11 +36,9 @@ class ReadCode(models.Model):
 
 
 class SnomedDescendant(models.Model):
+    descendant_external_id = models.ForeignKey(SnomedConcept, to_field='external_id', on_delete=models.CASCADE, db_column="descendant_external_id")
     external_id = models.BigIntegerField()
-    # external_id = models.ForeignKey(SnomedConcept, on_delete=models.CASCADE, null=True)
-    descendant_external_id = models.BigIntegerField()
 
-    # snomed_concepts = models.ForeignKey('SnomedConcept', on_delete=models.CASCADE)
     class Meta:
         indexes = [
             models.Index(fields=['external_id']),
