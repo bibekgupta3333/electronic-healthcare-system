@@ -28,7 +28,7 @@ class Instruction(TimeStampedModel, models.Model):
 
 class InstructionAdditionQuestion(models.Model):
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)
-    question = models.TextField(blank=True)
+    question = models.CharField(max_length=255, blank=True)
     response_mandatory = models.BooleanField(default=False)
 
     class Meta:
