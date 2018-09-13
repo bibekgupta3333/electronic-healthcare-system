@@ -53,3 +53,4 @@ LOGGING = {
     }
 }
 
+EMIS_API_HOST = 'http://medi.mohub.co:3001/emis'
