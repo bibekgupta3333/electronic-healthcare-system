@@ -68,7 +68,7 @@ class ConsultationElement(XMLModelBase):
         return GenericContent(generic_content)
 
     def problem(self):
-        problem = self.content().parsed_xml.xpath(Problem.XPATH)
+        problem = self.content().parsed_xml.xpath('.//Problem')
         if problem:
             return Problem(self.content().parsed_xml)
         else:

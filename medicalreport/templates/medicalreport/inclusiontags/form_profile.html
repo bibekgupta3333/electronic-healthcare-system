@@ -1,0 +1,28 @@
+{% load medi_report_tags %}
+{% load custom_filters %}
+<div class="container callout callout--no-padding">
+    <div class="row">
+        <div class="col">
+            <h6 class="callout__header">
+                Patient Profile (3 most recent readings from last 5 years)
+                <span></span>
+            </h6>
+        </div>
+    </div>
+    <div class="">
+        <div class="">
+            <table class="value-event-table table-striped">
+                <tbody>
+                    {% for key, value in profile_events.items %}
+                    <tr class="value-event-table__cell-row">
+                        <th class="value-event-table__header">{{ key|profile_event_value_header }}</th>
+                        {% for event in value %}
+                        <td class="value-event-table__cell">{{ event|event_value_body|safe }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -27,3 +27,7 @@ class Referral(XMLModelBase):
 
     def provider_refid(self):
         return self.parsed_xml.find('Provider/RefID').text
+
+    def xpaths(self):
+        xpath = ".//ConsultationElement[Referral/GUID='{}']".format(self.guid())
+        return [xpath]

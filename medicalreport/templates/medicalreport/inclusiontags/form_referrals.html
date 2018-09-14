@@ -1,0 +1,31 @@
+{% load medi_report_tags %}
+{% load custom_filters %}
+<div class="container callout callout--no-padding">
+    <div class="row">
+        <div class="col">
+            <h6 class="callout__header">
+                Referrals (all from the last 5 years)
+                <span></span>
+            </h6>
+        </div>
+    </div>
+    <div class="row callout__content">
+        <div class="container">
+            <div>
+            {% for model in referrals %}
+            {% with header=model|general_header body=model|referral_body:locations  %} 
+                {% redaction_checkbox_with_body model redaction header body %}
+            {% endwith %}
+            {% endfor %}
+            </div>
+            <br>
+            <label class="redaction-additional-header" for="redaction_referral_notes">
+                Additional contextual information / missing referrals
+            </label>
+            <textarea placeholder="Further information related to this section of the report" 
+                      name="redaction_referral_notes" 
+                      id="redaction_referral_notes">{{ redaction.referral_notes }}</textarea>
+            <button type="submit" class="btn btn-primary float-right">Update Report</button>
+        </div>
+    </div>
+</div>

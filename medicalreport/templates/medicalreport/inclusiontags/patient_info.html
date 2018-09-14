@@ -1,0 +1,25 @@
+{% load custom_filters %}
+<div class="row">
+    <div class="col-md-6">
+        <h6><strong>{{ medical_record.registration.full_name }}</strong></h6>
+        <ul class='no-bullet '>
+            <li><strong>Date of birth: </strong>{{ medical_record.registration.parsed_date_of_birth|format_date_filter }}</li>
+            <li><strong>Sex: </strong>{{ medical_record.registration.sex }}</li>
+            <li><strong>NHS number: </strong>{{ medical_record.registration.nhs_number }}</li>
+            <li><strong>Address: </strong>{{ medical_record.registration.address_lines|join:", " }}</li>
+        </ul>
+    </div>
+    <div class="col-md-6 ml-auto">
+        <h6><strong>{{ instruction.client.company_name }}</strong></h6>
+        <strong>Requested Conditions:</strong>
+        {% if not instruction.selected_snomed_concepts %}
+            No conditions
+        {% else %}
+        <ul class=''>
+            {% for snomed in instruction.selected_snomed_concepts %}
+            <li>{{ snomed.fsn_description }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+</div>

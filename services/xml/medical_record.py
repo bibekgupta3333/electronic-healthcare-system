@@ -121,25 +121,19 @@ class MedicalRecord(XMLBase):
                 result_list.append(event)
         return result_list
 
-    def test(self):
-        # for t in self.PROFILE_EVENT_TYPES:
-        #     self.profile_event(t)
-        for item in ValueEvent.blood_test_types():
-            self.blood_test(item)
-
     def profile_event(self, type):
         if type in self.PROFILE_EVENT_TYPES:
             function = getattr(self, type)
             return function()
-        return None
+        return []
 
     def smoking(self):
         # social_consultation_elements.select(&:smoking?)
-        return None
+        return []
 
     def alcohol(self):
         # social_consultation_elements.select(&:alcohol?)
-        return None
+        return []
 
     def significant_active_problems(self):
         result_list = []
@@ -156,11 +150,6 @@ class MedicalRecord(XMLBase):
             if problem.is_past():
                 result_list.append(problem)
         return result_list
-
-    # @classmethod
-    # def profile_event_types(cls):
-    #     return [cls.height(), cls.weight(), cls.bmi(), cls.smoking(), cls.alcohol(),
-    #             cls.systolic_blood_pressure(), cls.diastolic_blood_pressure()]
 
     # private method
     def __event_allergies(self):
@@ -189,7 +178,7 @@ class MedicalRecord(XMLBase):
         return result_list
 
     def __significant_problems(self):
-        elements = self.parsed_xml.xpath(".//*[Problem]")
+        elements = self.parsed_xml.xpath(Problem.XPATH)
         problem_list = [Problem(element) for element in elements]
         return list(filter(lambda problem: problem.is_significant() is True, problem_list))
 

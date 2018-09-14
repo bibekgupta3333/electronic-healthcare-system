@@ -35,7 +35,7 @@ class Registration(XMLBase):
         address = []
         for xpath in self.ADDRESS_XPATHS:
             value = self.parsed_xml.find('Address/{}'.format(xpath))
-            if value is not None:
+            if value is not None and value.text is not None:
                 address.append(value.text)
         return address
 
