@@ -115,7 +115,7 @@ def new_instruction(request):
                 send_mail(
                     'NHS GP is selected',
                     'Your client had selected NHS GP: {}'.format(gp_practice.name),
-                    'akekatharn@mohara.com',
+                    'mohara.qr@gmail.com',
                     ['lontharn@gmail.com'],
                     fail_silently=False,
                 )
