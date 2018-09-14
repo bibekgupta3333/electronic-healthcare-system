@@ -9,7 +9,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'medidata',
         'USER': 'postgres',
-        'PASSWORD': 'test',
+        'PASSWORD': 'postgres',
         'HOST': 'localhost',
     }
 }
