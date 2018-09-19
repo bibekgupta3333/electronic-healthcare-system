@@ -9,7 +9,7 @@ from .models import Instruction, InstructionAdditionQuestion
 from .tables import InstructionTable
 from .model_choices import *
 from .forms import ScopeInstructionForm, AdditionQuestionFormset
-from accounts.models import User, UserProfileBase, Patient, GeneralPracticeUser
+from accounts.models import User
 from accounts.models import PATIENT_USER
 from accounts.forms import PatientForm, GPForm
 from organisations.forms import GeneralPracticeForm
@@ -34,6 +34,29 @@ def count_instructions():
     return overall_instructions_number
 
 
+def calculate_next_prev(page=None, **kwargs):
+    if page:
+        prev_disabled = ""
+        next_disabled = ""
+        if page.number <= 1:
+            prev_page = 1
+            prev_disabled = "disabled"
+        else:
+            prev_page = page.number - 1
+
+        if page.number >= page.paginator.num_pages:
+            next_disabled = "disabled"
+            next_page = page.paginator.num_pages
+        else:
+            next_page = page.number + 1
+
+        return {
+            'next_page': next_page, 'prev_page': prev_page,
+            'status': kwargs['filter_status'], 'type': kwargs['filter_type'],
+            'next_disabled': next_disabled, 'prev_disabled': prev_disabled
+        }
+
+
 @login_required(login_url='/accounts/login')
 def instruction_pipeline_view(request):
     header_title = "Instructions Pipeline"
@@ -53,22 +76,22 @@ def instruction_pipeline_view(request):
     if filter_type and filter_type != 'allType':
         query_set = Instruction.objects.filter(type=filter_type)
     else:
-        query_set = Instruction.objects.filter()
+        query_set = Instruction.objects.all()
 
     if filter_status != -1:
         query_set = query_set.filter(status=filter_status)
 
-    table = InstructionTable(query_set)
-
     overall_instructions_number = count_instructions()
-
+    table = InstructionTable(query_set)
     table.order_by = request.GET.get('sort', '-created')
     RequestConfig(request, paginate={'per_page': 5}).configure(table)
+
     response = render(request, 'instructions/pipeline_views_instruction.html', {
         'user': user,
         'table': table,
         'overall_instructions_number': overall_instructions_number,
-        'header_title': header_title
+        'header_title': header_title,
+        'next_prev_data': calculate_next_prev(table.page, filter_status=filter_status, filter_type=filter_type)
     })
 
     response.set_cookie('status', filter_status)
