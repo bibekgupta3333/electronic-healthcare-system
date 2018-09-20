@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% bootstrap_messages %}
+
+{% block ExtraHead %}
+     <link href="{% static 'css/accounts/view_account.css' %}" rel="stylesheet"/>
+     <link href="{% static 'css/instructions/new_instruction.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block Content %}
+    <div class="mt-3">
+        <div class="col-md-12 OrgaisationFee">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="mt-2 mb-3">
+                        <h6 ><b>Fees</b></h6>
+                    </div>
+                    <div class="mt-2 mb-4">
+                        {% lorem %}
+                    </div>
+                </div>
+            </div>
+            {% for i in organisation_fee_data %}
+                <div class="row FeeLevel">
+                    <div class="col-md-2 rowTitle">
+                        Payment Level {{ forloop.counter }}
+                    </div>
+                    <div class="col-md-10">
+                        <input id="feeIdlvl-{{ forloop.counter }}" type="text" class="form-control feeData" value="{{ i }}" readonly="true">
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block Script %}
+
+{% endblock %}

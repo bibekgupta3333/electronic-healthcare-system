@@ -35,12 +35,12 @@ function getObjectKeyByValue(obj, val){
 }
 
 function statusFilter(selected_status){
-    window.location = '/instruction/view_data/?status=' + statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
+    window.location = '/instruction/view_pipeline/?status=' + statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
 }
 
 function typeFilter(){
     if(getUrlParameter('status')){
         status = getUrlParameter('status');
     }
-    window.location = '/instruction/view_data/?status=' + status + '&type=' + $('#filterInstructionType').val();
+    window.location = '/instruction/view_pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val();
 }

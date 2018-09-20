@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
+from django.db.models import Q
+
 
 from django_tables2 import RequestConfig
 
@@ -14,15 +16,27 @@ from accounts.models import PATIENT_USER
 from accounts.forms import PatientForm, GPForm
 from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice, NHSgpPractice
+from common.functions import multi_getattr
 
 
-def count_instructions():
-    all_count = Instruction.objects.all().count()
-    new_count = Instruction.objects.filter(status=INSTRUCTION_STATUS_NEW).count()
-    progress_count = Instruction.objects.filter(status=INSTRUCTION_STATUS_PROGRESS).count()
-    overdue_count = Instruction.objects.filter(status=INSTRUCTION_STATUS_OVERDUE).count()
-    complete_count = Instruction.objects.filter(status=INSTRUCTION_STATUS_COMPLETE).count()
-    rejected_count = Instruction.objects.filter(status=INSTRUCTION_STATUS_REJECT).count()
+def count_instructions(gp_practice_id, client_organisation):
+    all_count = Instruction.objects.filter(
+        Q(gp_practice_id=gp_practice_id) | Q(client_user__organisation=client_organisation)).count()
+    new_count = Instruction.objects.filter(
+        Q(gp_practice_id=gp_practice_id) | Q(client_user__organisation=client_organisation),
+        status=INSTRUCTION_STATUS_NEW).count()
+    progress_count = Instruction.objects.filter(
+        Q(gp_practice_id=gp_practice_id) | Q(client_user__organisation=client_organisation),
+        status=INSTRUCTION_STATUS_PROGRESS).count()
+    overdue_count = Instruction.objects.filter(
+        Q(gp_practice_id=gp_practice_id) | Q(client_user__organisation=client_organisation),
+        status=INSTRUCTION_STATUS_OVERDUE).count()
+    complete_count = Instruction.objects.filter(
+        Q(gp_practice_id=gp_practice_id) | Q(client_user__organisation=client_organisation),
+        status=INSTRUCTION_STATUS_COMPLETE).count()
+    rejected_count = Instruction.objects.filter(
+        Q(gp_practice_id=gp_practice_id) | Q(client_user__organisation=client_organisation),
+        status=INSTRUCTION_STATUS_REJECT).count()
     overall_instructions_number = {
         'All': all_count,
         'New': new_count,
@@ -69,20 +83,30 @@ def instruction_pipeline_view(request):
             filter_status = -1
         else:
             filter_status = int(filter_status)
+
+        if filter_type == 'undefined':
+            filter_type = 'allType'
     else:
         filter_type = request.COOKIES.get('type', '')
         filter_status = int(request.COOKIES.get('status', -1))
 
     if filter_type and filter_type != 'allType':
-        query_set = Instruction.objects.filter(type=filter_type)
+        instruction_query_set = Instruction.objects.filter(type=filter_type)
     else:
-        query_set = Instruction.objects.all()
+        instruction_query_set = Instruction.objects.all()
+
 
     if filter_status != -1:
-        query_set = query_set.filter(status=filter_status)
+        instruction_query_set = instruction_query_set.filter(status=filter_status)
 
-    overall_instructions_number = count_instructions()
-    table = InstructionTable(query_set)
+    gp_practice_id = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.id', default=None)
+    client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
+    instruction_query_set = instruction_query_set.filter(Q(gp_practice_id=gp_practice_id) |
+                                                         Q(client_user__organisation=client_organisation))
+    table = InstructionTable(instruction_query_set)
+
+    overall_instructions_number = count_instructions(gp_practice_id, client_organisation)
+
     table.order_by = request.GET.get('sort', '-created')
     RequestConfig(request, paginate={'per_page': 5}).configure(table)
 
@@ -99,7 +123,7 @@ def instruction_pipeline_view(request):
     return response
 
 
-@login_required(login_url='/admin')
+@login_required(login_url='/accounts/login')
 def new_instruction(request):
     header_title = "Add New Instruction"
 

@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'medicalreport',
     'snomedct',
     'template',
+    'payment'
 ]
 
 MIDDLEWARE = [

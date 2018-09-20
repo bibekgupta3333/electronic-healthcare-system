@@ -11,8 +11,8 @@
             <li class="{% if request.resolver_match.url_name == 'new_instruction' %}active{% endif %}">
                 <a href="{% url 'instructions:new_instruction' %}">New Instructions</a>
             </li>
-            <li class="{% if request.resolver_match.url_name == 'view_data' %}active{% endif %}">
-                <a href="{% url 'instructions:view_data' %}" >Instructions</a>
+            <li class="{% if request.resolver_match.url_name == 'view_pipeline' %}active{% endif %}">
+                <a href="{% url 'instructions:view_pipeline' %}" >Instructions</a>
             </li>
             <li class="{% if request.resolver_match.namespace == 'organisations' %}active{% endif %}">
                 <a href="#">User Management</a>
@@ -23,6 +23,9 @@
             </li>
             <li>
                 <a href="#" >Income</a>
+            </li>
+            <li class="{% if request.resolver_match.namespace == 'view_account' %}active{% endif %}">
+                <a href="{% url 'accounts:view_account' %}" >Account</a>
             </li>
         </ul>
     </nav>

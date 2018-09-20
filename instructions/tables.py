@@ -1,7 +1,6 @@
 import django_tables2 as tables
 from .models import Instruction
 from django.utils.html import format_html
-from .model_choices import *
 
 
 class InstructionTable(tables.Table):

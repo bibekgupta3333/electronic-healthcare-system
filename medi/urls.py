@@ -24,11 +24,12 @@ admin.site.site_title = 'MediData administration'
 
 
 urlpatterns = [
-    path('', instruction_pipeline_view, name='view_data'),
+    path('', instruction_pipeline_view, name='view_pipeline'),
     path('testservices/', include('services.urls')),
     path('medicalreport/', include('medicalreport.urls')),
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/', include('accounts.urls', namespace='accounts')),
     path('instruction/', include('instructions.urls', namespace='instructions')),
     path('organisation/', include('organisations.urls', namespace='organisations')),
     path('select2/', include('django_select2.urls')),

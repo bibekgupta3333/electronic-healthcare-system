@@ -1,4 +1,6 @@
 from django.test import TestCase
+from django.urls.base import reverse
+
 from .models import User, ClientUser, GeneralPracticeUser, MedidataUser
 from .models import CLIENT_USER, GENERAL_PRACTICE_USER, MEDIDATA_USER
 from organisations.models import OrganisationClient, OrganisationMedidata, OrganisationGeneralPractice
@@ -91,6 +93,13 @@ class UserTestCase(TestCase):
         self.assertEqual(self.gp_user_admin.get_my_role(), 'General Practice Manager')
         self.assertEqual(self.gp_user2.get_my_role(), 'General Practice User')
 
+
+class AccountViewTest(TestCase):
+
+    def test_account_view(self):
+        url = reverse('accounts:view_account')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
 
 
 
