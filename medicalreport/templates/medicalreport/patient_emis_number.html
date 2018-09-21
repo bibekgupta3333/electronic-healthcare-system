@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% bootstrap_messages %}
+
+{% block ExtraHead %}
+    <link rel="stylesheet" href="{% static 'medicalreport/css/medicalreport.css' %}">
+    <link href="{% static 'css/bootstrap-datepicker.min.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block Content %}
+    <div class="container">
+        <div class="container-fluid callout">
+            <div class="alert alert-info">
+                <h4>Patient Details from Instruction</h4>
+                <hr>
+                <div class="row">
+                    <h5 class="col">Name</h5>
+                </div>
+                <div class="row">
+                    <div class="col">{{instruction.patient.user.first_name|default:"N/A"}}</div>
+                </div>
+                <div class="row">
+                    <h5 class="col">Date of birth</h5>
+                </div>
+                <div class="row">
+                    <div class="col">{{instruction.patient.date_of_birth|format_date_filter|default:"N/A"}}</div>
+                </div>
+                <div class="row">
+                    <h5 class="col">Sex</h5>
+                </div>
+                <div class="row">
+                    <div class="col">{{instruction.patient.sex|default:"N/A"}}</div>
+                </div>
+                <div class="row">
+                    <h5 class="col">NHS number</h5>
+                </div>
+                <div class="row">
+                    <div class="col">{{instruction.patient.nhs_number|default:"N/A"}}</div>
+                </div>
+                <div class="row">
+                    <h5 class="col">Address</h5>
+                </div>
+                <div class="row">
+                    <div class="col">{{instruction.patient|instruction_patient_address|default:"N/A"}}</div>
+                </div>
+            </div>
+            <form action="{% url 'medicalreport:set_patient_emis_number' instruction.id %}" method="post">
+                {% csrf_token %}
+                <h4>Matching patients</h4>
+                    {% for patient in patient_list %}
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="patient_emis_number" id="patient_emis_number_{{patient.ref_id}}" value="{{patient.ref_id}}">
+                        <label class="form-check-label" for="patient_emis_number_{{patient.ref_id}}">
+                            {{ patient|patient_description }}
+                        </label>
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary">Select patient</button>
+            </form>
+        </div>
+    </div>
+    
+{% endblock %}
+
+{% block Script %}
+    <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
+    <script>
+      $('input:checkbox').on('change', function(){
+            $('input[key="' + $(this).attr('key') + '"]:checkbox').prop('checked', this.checked);
+        });
+    </script>
+{% endblock %}

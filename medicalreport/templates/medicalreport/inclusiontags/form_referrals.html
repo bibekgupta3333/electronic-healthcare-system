@@ -24,7 +24,7 @@
             </label>
             <textarea placeholder="Further information related to this section of the report" 
                       name="redaction_referral_notes" 
-                      id="redaction_referral_notes">{{ redaction.referral_notes }}</textarea>
+                      id="redaction_referral_notes">{{ redaction.referral_notes|default:"" }}</textarea>
             <button type="submit" class="btn btn-primary float-right">Update Report</button>
         </div>
     </div>

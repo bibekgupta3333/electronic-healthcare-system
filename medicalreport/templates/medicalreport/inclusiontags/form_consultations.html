@@ -13,8 +13,8 @@
         <div class="container">
             <div>
             {% for model in consultations %}
-            {% with header=model|consultation_header:people dict_data=model|consultation_element_list %}
-                {% redaction_checkbox_with_list model redaction header dict_data%}
+            {% with header=model|consultation_header:people dict_data=model|consultation_element_list label=model|consultaion_sick_note %}
+                {% redaction_checkbox_with_list model redaction header dict_data label %}
             {% endwith %}
             {% endfor %}
             </div>
@@ -24,7 +24,7 @@
             </label>
             <textarea placeholder="Further information related to this section of the report" 
                       name="redaction_consultation_notes" 
-                      id="redaction_consultation_notes">{{ redaction.consultation_notes }}</textarea>
+                      id="redaction_consultation_notes">{{ redaction.consultation_notes|default:"" }}</textarea>
             <button type="submit" class="btn btn-primary float-right">Update Report</button>
         </div>
     </div>

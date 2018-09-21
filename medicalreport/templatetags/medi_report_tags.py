@@ -126,7 +126,7 @@ def redaction_checkbox_with_body(model, redaction, header='', body=''):
 
 
 @register.inclusion_tag('medicalreport/inclusiontags/redaction_checkbox_with_list.html')
-def redaction_checkbox_with_list(model, redaction, header='', dict_data=''):
+def redaction_checkbox_with_list(model, redaction, header='', dict_data='', label=None):
     checked = ""
     xpaths = model.xpaths()
     if redaction.redacted(xpaths) is True:
@@ -135,7 +135,8 @@ def redaction_checkbox_with_list(model, redaction, header='', dict_data=''):
         'checked': checked,
         'xpaths': xpaths,
         'header': header,
-        'dict_data': dict_data
+        'dict_data': dict_data,
+        'label': label
     }
 
 

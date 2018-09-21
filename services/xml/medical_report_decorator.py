@@ -3,7 +3,7 @@ from .value_event import ValueEvent
 from .medical_record import MedicalRecord
 from .auto_redactable import (
     auto_redact_referrals, auto_redact_consultations, auto_redact_attachments,
-    auto_redact_medications, auto_redact_profile_events, 
+    auto_redact_medications, auto_redact_profile_events,
 )
 
 

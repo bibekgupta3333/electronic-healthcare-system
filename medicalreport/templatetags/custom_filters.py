@@ -5,6 +5,23 @@ register = template.Library()
 
 
 @register.filter
+def instruction_patient_address(patient):
+    address_lines = [patient.address_name_number, patient.address_line2,
+                     patient.address_line3, patient.address_line4,
+                     patient.address_postcode, patient.address_country]
+    address_lines = list(filter(None, address_lines))
+    return ", ".join(address_lines)
+
+
+@register.filter
+def patient_description(patient):
+    description = [patient.full_name(), format_date(patient.parsed_date_of_birth())] + patient.address_lines()
+    description = list(filter(None, description))
+    description = ", ".join(description)
+    return description
+
+
+@register.filter
 def format_date_filter(date):
     return format_date(date)
 
@@ -70,6 +87,14 @@ def consultation_header(consultation, people):
         return "{} - {}".format(format_date(consultation.parsed_date()), author.full_name())
     else:
         return format_date(consultation.parsed_date())
+
+
+@register.filter
+def consultaion_sick_note(consultation):
+    if consultation.is_sick_note():
+        return 'sick note'
+    else:
+        return None
 
 
 @register.filter

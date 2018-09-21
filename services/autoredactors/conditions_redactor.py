@@ -20,7 +20,7 @@ class ConditionsRedactor(object):
     def snomed_concepts_match(self, model):
         if model.snomed_concepts():
             for concept in model.snomed_concepts():
-                if concept in self.concepts:
+                if int(concept) in self.concepts:
                     return True
         return False
 

@@ -35,7 +35,7 @@
                 Additional contextual information
             </label>
             <textarea placeholder="Further information related to this section of the report" name="redaction_bloods_notes" 
-                    id="redaction_bloods_notes">{{ redaction.bloods_notes }}</textarea>
+                    id="redaction_bloods_notes">{{ redaction.bloods_notes|default:"" }}</textarea>
             <button type="submit" class="btn btn-primary float-right">Update Report</button>
             <br>
             <br>

@@ -128,12 +128,20 @@ class MedicalRecord(XMLBase):
         return []
 
     def smoking(self):
-        # social_consultation_elements.select(&:smoking?)
-        return []
+        result_list = []
+        social_consultation_elements = self.__social_consultation_elements()
+        for element in social_consultation_elements:
+            if element.is_smoking():
+                result_list.append(element)
+        return result_list
 
     def alcohol(self):
-        # social_consultation_elements.select(&:alcohol?)
-        return []
+        result_list = []
+        social_consultation_elements = self.__social_consultation_elements()
+        for element in social_consultation_elements:
+            if element.is_alcohol():
+                result_list.append(element)
+        return result_list
 
     def significant_active_problems(self):
         result_list = []

@@ -1,7 +1,8 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .emisapiservices import services
-from .dummy_models import DummyPatient, DummyPractice
+from .dummy_models import DummyPatient, DummyPractice, DummySnomedConcept
+from snomedct.models import SnomedConcept
 from .xml.patient_list import PatientList
 from .xml.medical_record import MedicalRecord
 from .xml.medical_report_decorator import MedicalReportDecorator
@@ -15,9 +16,8 @@ import datetime
 # using dummy class for patient and practice model
 def get_patient_list(request):
     patient = DummyPatient('patient_first_name', 'patient_last_name', datetime.datetime.strptime('1986-09-04', "%Y-%m-%d"))
-    practice = DummyPractice('MediData', '1234', '29390')
 
-    raw_xml = services.GetPatientList(practice, patient).call()
+    raw_xml = services.GetPatientList(patient).call()
     patients = PatientList(raw_xml).patients()
 
     return render(request, 'services/test.html', {
@@ -27,9 +27,8 @@ def get_patient_list(request):
 
 
 def get_patient_record(request):
-    practice = DummyPractice('MediData', '1234', '29390')
     patient_number = '2820'
-    raw_xml = services.GetMedicalRecord(practice, patient_number).call()
+    raw_xml = services.GetMedicalRecord(patient_number).call()
     redacted = redaction_elements(raw_xml, [
         ".//Event[GUID='{12904CD5-1B75-4BBF-95ED-338EC0C6A5CC}']",
         ".//ConsultationElement[Attachment/GUID='{6BC4493F-DB5F-4C74-B585-05B0C3AA53C9}']",
@@ -50,10 +49,9 @@ def get_patient_record(request):
 
 
 def get_patient_attachment(request):
-    practice = DummyPractice('MediData', '1234', '29390')
     patient_number = '2820'
     attachment_identifier = '{5C37D79F-8DB5-4754-BBDE-43BF6AFE19DE}'
-    raw_xml = services.GetAttachment(practice, patient_number, attachment_identifier).call()
+    raw_xml = services.GetAttachment(patient_number, attachment_identifier).call()
 
     base64_attachment = Base64Attachment(raw_xml)
 

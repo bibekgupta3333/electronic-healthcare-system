@@ -1,5 +1,5 @@
 from .xml_base import XMLModelBase
-from ..dummy_models import DummySnomedConcept
+from snomedct.models import SnomedConcept
 
 
 class SocialConsultationElement(XMLModelBase):
@@ -24,17 +24,23 @@ class SocialConsultationElement(XMLModelBase):
 
     # private
     def __smoking_concept(self):
-        # SnomedConcept.active.find_by(external_id: '365981007')
-        return DummySnomedConcept()
+        return SnomedConcept.objects.get(external_id='365981007')
 
     def __alcohol_concept(self):
-        # SnomedConcept.active.find_by(external_id: '228273003')
-        return DummySnomedConcept()
+        return SnomedConcept.objects.get(external_id='228273003')
 
-    def __code_descendent_of(self, parent):
+    def __code_descendent_of(self, snomed_model):
         if self.readcodes():
-            pass
+            result = snomed_model.objects.filter(readcodes__ext_read_code__in=self.readcodes())
+            if result:
+                return True
+            else:
+                return False
             # parent.descendant_readcodes.active.where(ext_read_code: readcodes).exists?
         else:
-            pass
+            result = snomed_model.objects.filter(snomeddescendant__external_id=self.snomed_concepts())
+            if result:
+                return True
+            else:
+                return False
             # parent.descendant_snomed_concepts.active.where(external_id: snomed_concepts).exists?

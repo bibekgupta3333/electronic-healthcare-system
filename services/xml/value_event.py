@@ -20,7 +20,6 @@ class ValueEvent(XMLModelBase):
         return "{} {}".format(value, unit)
 
     def has_bmi(self):
-        # readcodes.any? ? readcodes.include?('22K..') : snomed_concepts.include?('60621009')
         readcodes = self.readcodes()
         if readcodes:
             if '22K..' in readcodes:

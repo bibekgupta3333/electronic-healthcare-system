@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from common.models import TimeStampedModel
 from accounts.models import ClientUser, GeneralPracticeUser, Patient
+from snomedct.models import SnomedConcept
 from .model_choices import *
 
 
@@ -31,6 +32,27 @@ class Instruction(TimeStampedModel, models.Model):
     def __str__(self):
         return self.client_user.user.first_name + "::" + self.patient.user.first_name
 
+    def snomed_concepts_readcords(self):
+        snomed_concepts = SnomedConcept.objects.filter(instructionconditionsofinterest__instruction=self.id)
+        snomed_concepts_list = []
+        readcodes_list = []
+        for snomed_concept in snomed_concepts:
+            snomed_concepts_list.append(snomed_concept.external_id)
+            snomed_descendants = snomed_concept.snomed_descendants()
+
+            readcodes = list(snomed_concept.readcodes()) + list(snomed_concept.snomed_descendant_readcodes())
+            if snomed_descendants:
+                for snomed_descendant in snomed_descendants:
+                    snomed_concepts_list.append(snomed_descendant.external_id)
+            if readcodes:
+                for readcode in readcodes:
+                    readcodes_list.append(readcode.ext_read_code)
+
+        return (snomed_concepts_list, readcodes_list)
+
+    def selected_snomed_conceptes(self):
+        return SnomedConcept.objects.filter(instructionconditionsofinterest__instruction=self.id)
+
 
 class InstructionAdditionQuestion(models.Model):
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)
@@ -46,11 +68,10 @@ class InstructionAdditionQuestion(models.Model):
 
 class InstructionConditionsOfInterest(models.Model):
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)
-    readcode2_code = models.CharField(max_length=255, blank=True)
-    SNOMEDCT_code = models.CharField(max_length=255)
+    snomedct = models.ForeignKey(SnomedConcept, on_delete=models.CASCADE, null=True)
 
     class Meta:
         verbose_name = "Instruction Conditions Of Interest"
 
     def __str__(self):
-        return self.readcode2_code + ': ' + self.SNOMEDCT_code
+        return "{} ({})".format(self.snomedct.fsn_description, self.snomedct.external_id)

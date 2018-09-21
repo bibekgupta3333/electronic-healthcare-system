@@ -8,18 +8,7 @@ def years_ago(years, current_date):
 
 
 def auto_redact_by_conditions(models, instruction):
-    #   snomed_concepts = instruction.external_snomed_concept_ids.map(&:to_s)
-    #   puts "====>auto_redact_by_conditions"
-    #   puts snomed_concepts
-    #   puts "=====auto_redact_by_conditions end"
-    #   readcodes = instruction.external_read_codes
-    #   puts "====>external_read_codes"
-    #   puts readcodes
-    #   puts "=====external_read_codes end"
-    snomed_concepts = ['329807003']
-    readcodes = ['EMISSPR410', 'J155.', '66A..']
-    # snomed_concepts = []
-    # readcodes = []
+    snomed_concepts, readcodes = instruction.snomed_concepts_readcords()
     redactor = ConditionsRedactor(concepts=snomed_concepts, codes=readcodes)
     filtered_list = filter(lambda m: redactor.is_redact(m) is not True, models)
     return list(filtered_list)

@@ -13,6 +13,11 @@
             <strong>{{key}}: </strong>{{value}}
         </li>
         {% endfor %}
+        {% if label %}
+        <li>
+            <span class="badge badge-warning">{{ label }}</span>
+        </li>
+        {% endif %}
     </ul>
 
 </label>

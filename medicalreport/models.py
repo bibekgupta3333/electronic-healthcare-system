@@ -7,16 +7,17 @@ from snomedct.models import SnomedConcept
 # Create your models here.
 class Redaction (models.Model):
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)
-    consultation_notes = models.TextField()
-    acute_prescription_notes = models.TextField()
-    repeat_prescription_notes = models.TextField()
-    referral_notes = models.TextField()
-    significant_problem_notes = models.TextField()
-    attachment_notes = models.TextField()
-    bloods_notes = models.TextField()
+    consultation_notes = models.TextField(null=True)
+    acute_prescription_notes = models.TextField(null=True)
+    repeat_prescription_notes = models.TextField(null=True)
+    referral_notes = models.TextField(null=True)
+    significant_problem_notes = models.TextField(null=True)
+    attachment_notes = models.TextField(null=True)
+    bloods_notes = models.TextField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    redacted_xpaths = JSONField()
+    patient_emis_number = models.CharField(max_length=255, null=True, default=None)
+    redacted_xpaths = JSONField(null=True)
 
     def additional_acute_medications(self):
         return AdditionalMedicationRecords.objects.filter(redaction=self.id, repeat=False)
