@@ -4,19 +4,19 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.db.models import Q
 
-
 from django_tables2 import RequestConfig
 
 from .models import Instruction, InstructionAdditionQuestion
 from .tables import InstructionTable
 from .model_choices import *
 from .forms import ScopeInstructionForm, AdditionQuestionFormset
-from accounts.models import User
+from accounts.models import User, Patient
 from accounts.models import PATIENT_USER
 from accounts.forms import PatientForm, GPForm
 from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice, NHSgpPractice
 from common.functions import multi_getattr
+from medi.settings.common import PIPELINE_INSTRUCTION_LINK, get_env_variable
 
 
 def count_instructions(gp_practice_id, client_organisation):
@@ -49,7 +49,12 @@ def count_instructions(gp_practice_id, client_organisation):
 
 
 def calculate_next_prev(page=None, **kwargs):
-    if page:
+    if not page:
+        return {
+            'next_disabled': 'disabled',
+            'prev_disabled': 'disabled'
+        }
+    else:
         prev_disabled = ""
         next_disabled = ""
         if page.number <= 1:
@@ -131,23 +136,36 @@ def new_instruction(request):
         scope_form = ScopeInstructionForm(request.user, request.POST, request.FILES,)
         patient_form = PatientForm(request.POST)
         addition_question_formset = AdditionQuestionFormset(request.POST)
+
+        # Is from NHS or gpOrganisation
         gp_practice_code = request.POST.get('gp_practice', None)
         gp_practice = OrganisationGeneralPractice.objects.filter(practice_code=gp_practice_code).first()
         if not gp_practice:
             gp_practice = NHSgpPractice.objects.filter(code=gp_practice_code).first()
 
         if patient_form.is_valid() and scope_form.is_valid() and gp_practice:
-            # create patient user
-            user = User.objects.create(username="{}.{}".format(patient_form.cleaned_data['first_name'], patient_form.cleaned_data['last_name'][0]),
-                                       password="{}.medi2018".format(patient_form.cleaned_data['first_name']),
-                                       email=patient_form.cleaned_data['email'],
-                                       type=PATIENT_USER,
-                                       first_name=patient_form.cleaned_data['first_name'],
-                                       last_name=patient_form.cleaned_data['last_name'])
-            patient = patient_form.save(commit=False)
-            patient.organisation_gp = OrganisationGeneralPractice.objects.first()
-            patient.user = user
-            patient.save()
+            # find existing user if no create patient user
+            user = User.objects.filter(
+                Q(username="{}.{}".format(patient_form.cleaned_data['first_name'], patient_form.cleaned_data['last_name'][0])) |
+                Q(email=patient_form.cleaned_data['email'])
+            )
+            if not user.exists():
+                user = User.objects.create(
+                    username="{}.{}".format(patient_form.cleaned_data['first_name'], patient_form.cleaned_data['last_name'][0]),
+                    password="{}.medi2018".format(patient_form.cleaned_data['first_name']),
+                    email=patient_form.cleaned_data['email'],
+                    type=PATIENT_USER,
+                    first_name=patient_form.cleaned_data['first_name'],
+                    last_name=patient_form.cleaned_data['last_name']
+                )
+                patient = patient_form.save(commit=False)
+                patient.organisation_gp = OrganisationGeneralPractice.objects.first()
+                patient.user = user
+                patient.save()
+                messages.success(request, 'Form submission successful')
+            else:
+                patient = Patient.objects.get(user__in=user)
+                messages.warning(request, 'Patient Existing In Database')
 
             # create instruction
             instruction = Instruction()
@@ -162,7 +180,7 @@ def new_instruction(request):
                 send_mail(
                     'NHS GP is selected',
                     'Your client had selected NHS GP: {}'.format(gp_practice.name),
-                    'mohara.qr@gmail.com',
+                    'MediData',
                     ['lontharn@gmail.com'],
                     fail_silently=False,
                 )
@@ -172,7 +190,17 @@ def new_instruction(request):
                     addition_question = form.save(commit=False)
                     addition_question.instruction = instruction
                     addition_question.save()
-            messages.success(request, 'Form submission successful')
+
+            send_mail(
+                'New Instruction',
+                'You have a new instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
+                'mohara.qr@gmail.com',
+                ['ben.blomerley@gmail.com', 'lontharn@gmail.com'],
+                fail_silently=False,
+                auth_user=get_env_variable('SENDGRID_USER'),
+                auth_password=get_env_variable('SENDGRID_PASS'),
+            )
+
 
     patient_form = PatientForm()
     gp_form = GPForm()

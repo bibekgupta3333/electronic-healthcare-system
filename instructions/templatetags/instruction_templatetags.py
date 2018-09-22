@@ -5,4 +5,5 @@ register = template.Library()
 
 @register.filter
 def keyvalue(dict, key):
-    return dict[key]
+    if key in dict:
+        return dict[key]

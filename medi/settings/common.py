@@ -12,6 +12,15 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 from django.contrib.messages import constants as messages
+from django.core.exceptions import ImproperlyConfigured
+
+
+def get_env_variable(name):
+    try:
+        return os.environ[name]
+    except KeyError:
+        raise ImproperlyConfigured('Environment variable {name} not found.'.format(name=name))
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -47,6 +56,7 @@ INSTALLED_APPS = [
     'raven.contrib.django.raven_compat',
     'django_extensions',
     'django_select2',
+    'django_crontab',
 
     # app
     'accounts',
@@ -160,17 +170,16 @@ RAVEN_CONFIG = {
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'static/media')
 
-EMAIL_USE_TLS = True
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'mohara.qr@gmail.com'
-EMAIL_HOST_PASSWORD = os.environ.get('MAIL_PASSWORD')
+EMAIL_HOST_USER = get_env_variable('SENDGRID_USER')
+EMAIL_HOST_PASSWORD = get_env_variable('SENDGRID_PASS')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/instruction/view_data'
+LOGIN_REDIRECT_URL = '/instruction/view_pipeline'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 MESSAGE_TAGS = {
@@ -185,3 +194,9 @@ DATE_INPUT_FORMATS = [
     '%d/%m/%Y',     # 25/10/2006
     '%d/%m/%y',     # 25/10/06
 ]
+
+CRONJOBS = [
+    ('0 0 * * *', 'instructions.cron.notification_mail.instruction_notification_email_job')
+]
+
+PIPELINE_INSTRUCTION_LINK = 'http://medi.mohub.co/instruction/view_pipeline/'
