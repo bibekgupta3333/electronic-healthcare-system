@@ -1,6 +1,10 @@
 version: 2
 jobs:
   build:
+    branches:
+      only:
+        - master
+        - develop
     docker:
       - image: circleci/python:3.6.5
 
@@ -18,8 +22,6 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            export SENDGRID_USER=medi2data
-            export SENDGRID_PASS=medimemo1234
             python manage.py test
       - store_artifacts:
           path: test-reports
