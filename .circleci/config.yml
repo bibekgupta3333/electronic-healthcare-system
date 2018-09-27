@@ -26,3 +26,12 @@ jobs:
       - store_artifacts:
           path: test-reports
           destination: test-reports
+  deploy:
+    machine:
+      enabled: true
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run:
+          name: deploy UAT
+          command: ./../.servers/.deploy-uat.sh
