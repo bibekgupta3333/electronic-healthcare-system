@@ -8,9 +8,7 @@ jobs:
           - develop
     docker:
       - image: circleci/python:3.6.5
-
     working_directory: ~/repo
-
     steps:
       - checkout
       - run:
@@ -29,10 +27,26 @@ jobs:
           destination: test-reports
   deploy:
     machine:
-      enabled: true
-    working_directory: ~/repo
+      enable: true
     steps:
-      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "0c:36:ab:0a:c6:dc:19:70:c4:40:32:b5:da:fc:7e:b2"
       - run:
           name: deploy UAT
-          command: ./../.servers/.deploy-uat.sh
+          working_directory: ~/repo
+          command: |
+            ssh $UAT_USER@$UAT_HOST "$UAT_COMMAND"
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - master
+                - develop
