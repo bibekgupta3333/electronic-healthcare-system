@@ -4,7 +4,7 @@ from postgres_copy import CopyManager
 
 # Create your models here.
 class SnomedConcept(models.Model):
-    external_id = models.BigIntegerField(unique=True)
+    external_id = models.BigIntegerField(unique=True, primary_key=True)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     file_path = models.CharField(max_length=255)
@@ -13,7 +13,7 @@ class SnomedConcept(models.Model):
     objects = CopyManager()
 
     def __str__(self):
-        return "{} - {} - {}".format(self.id, self.fsn_description, self.external_id)
+        return "{} - {}".format(self.fsn_description, self.external_id)
 
     class Meta:
         indexes = [
@@ -36,7 +36,7 @@ class ReadCode(models.Model):
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     file_path = models.CharField(max_length=255)
-    concept_id = models.ForeignKey(SnomedConcept, to_field='external_id', on_delete=models.CASCADE, db_column="concept_id")
+    concept_id = models.ForeignKey(SnomedConcept, to_field='external_id', on_delete=models.CASCADE, db_column="concept_id", null=True)
     objects = CopyManager()
 
     def __str__(self):
@@ -49,7 +49,7 @@ class ReadCode(models.Model):
 
 
 class SnomedDescendant(models.Model):
-    descendant_external_id = models.ForeignKey(SnomedConcept, to_field='external_id', on_delete=models.CASCADE, db_column="descendant_external_id")
+    descendant_external_id = models.ForeignKey(SnomedConcept, to_field='external_id', on_delete=models.CASCADE, db_column="descendant_external_id", null=True)
     external_id = models.BigIntegerField()
     objects = CopyManager()
 
@@ -63,7 +63,7 @@ class SnomedDescendant(models.Model):
 
 
 class CommonSnomedConcepts(models.Model):
-    snomed_concept = models.ForeignKey(SnomedConcept, on_delete=models.CASCADE)
+    snomed_concept = models.ForeignKey(SnomedConcept, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return "{} - {}".format(self.snomed_concept.fsn_description, self.snomed_concept.external_id)

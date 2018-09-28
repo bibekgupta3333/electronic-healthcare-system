@@ -4,7 +4,7 @@ from .models import CommonSnomedConcepts, SnomedConcept, SnomedDescendant, ReadC
 
 # Register your models here.
 class SnomedConceptsAdmin(admin.ModelAdmin):
-    ordering = ['id']
+    ordering = ['external_id']
     search_fields = ['fsn_description']
 
 

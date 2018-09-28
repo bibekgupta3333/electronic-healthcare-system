@@ -22,9 +22,10 @@ class Command(BaseCommand):
 
     def reset_sequence_serial(self, model):
         self.stdout.write("reset serail sequence on table {}...".format(model._meta.db_table))
-        with connection.cursor() as cursor:
-            query = "SELECT setval(pg_get_serial_sequence('\"{tablename}\"','id'), coalesce(max(\"id\"), 1), max(\"id\") IS NOT null) FROM \"{tablename}\";".format(tablename=model._meta.db_table)
-            cursor.execute(query)
+        if not issubclass(model, SnomedConcept):
+            with connection.cursor() as cursor:
+                query = "SELECT setval(pg_get_serial_sequence('\"{tablename}\"','id'), coalesce(max(\"id\"), 1), max(\"id\") IS NOT null) FROM \"{tablename}\";".format(tablename=model._meta.db_table)
+                cursor.execute(query)
 
         self.stdout.write("reset serail sequence on table {} Done.".format(model._meta.db_table))
 
