@@ -14,18 +14,13 @@
             <li class="{% if request.resolver_match.url_name == 'view_pipeline' %}active{% endif %}">
                 <a href="{% url 'instructions:view_pipeline' %}" >Instructions</a>
             </li>
+            {% if user.is_staff == True %}
             <li class="{% if request.resolver_match.namespace == 'organisations' %}active{% endif %}">
-                <a href="#">User Management</a>
-                <ul class="submenu">
-                    <li><a href="{% url 'organisations:create_organisation' %}">New Organisations</a></li>
-                    <li><a href="#">New User</a></li>
-                </ul>
+                <a href="{% url 'accounts:view_users' %}">User Management</a>
             </li>
+            {% endif %}
             <li>
                 <a href="#" >Income</a>
-            </li>
-            <li class="{% if request.resolver_match.namespace == 'view_account' %}active{% endif %}">
-                <a href="{% url 'accounts:view_account' %}" >Account</a>
             </li>
         </ul>
     </nav>

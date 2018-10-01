@@ -200,3 +200,4 @@ CRONJOBS = [
 ]
 
 PIPELINE_INSTRUCTION_LINK = 'http://medi.mohub.co/instruction/view_pipeline/'
+ACCOUNT_LINK = 'http://medi.mohub.co/accounts/view_account/'

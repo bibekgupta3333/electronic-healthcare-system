@@ -37,3 +37,26 @@ class GPForm(forms.ModelForm):
         labels = {
             'title': 'Title*'
         }
+
+
+class NewUserForm(forms.ModelForm):
+    
+    first_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
+    last_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), label='', required=True)
+    username = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
+    password = forms.CharField(required=True, widget=forms.HiddenInput())
+    send_email = forms.BooleanField(required=False, initial=False)
+
+    class Meta:
+        model = GeneralPracticeUser
+        fields = ('first_name', 'last_name', 'email', 'username', 'password', 'send_email', 'role', 'payment_bank_holder_name',
+                    'payment_bank_account_number', 'payment_bank_sort_code')
+        widgets = {
+            'payment_bank_sort_code': forms.HiddenInput(attrs={'placeholder': '', })
+        }
+        labels = {
+            'payment_bank_holder_name': '',
+            'payment_bank_account_number': '',
+            'payment_bank_sort_code': ''
+        }

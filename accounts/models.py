@@ -58,7 +58,7 @@ class MyUserManager(BaseUserManager):
 
 class User(AbstractUser):
     email = models.EmailField(
-        verbose_name='email address',
+        verbose_name='email',
         max_length=255,
         unique=True,
     )
@@ -140,6 +140,17 @@ class ClientUser(UserProfileBase):
 
 
 class GeneralPracticeUser(UserProfileBase):
+    PRACTICE_MANAGER = 0
+    GENERAL_PRACTICE = 1
+    SARS_RESPONDER = 2
+
+    ROLE_CHOICES = (
+        (PRACTICE_MANAGER, 'Manager'),
+        (GENERAL_PRACTICE, 'GP'),
+        (SARS_RESPONDER, 'SARS')
+    )
+
+    role = models.IntegerField(choices=ROLE_CHOICES, null=True, blank=True, verbose_name='Role')
     organisation = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE)
     code = models.CharField(max_length=255, blank=True)
     payment_bank_holder_name = models.CharField(max_length=255, blank=True)

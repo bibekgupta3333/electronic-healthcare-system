@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+
+{% block ExtraHead %}
+    <link rel="stylesheet" href="{% static 'css/pretty-checkbox.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/management/new_user.css' %}">
+{% endblock %}
+
+{% block Content %}
+    <form action="{% url 'accounts:create_user' %}" method="post" id="createuser">
+        {% csrf_token %}
+        {{ gpuser_form.non_field_errors }}
+          
+        <div class="row">
+            <div class="col-md-3 labelText"><label>First Name</label></div>
+            <div class="col-md-4 inputDiv">
+                {% bootstrap_field gpuser_form.first_name %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3 labelText"><label>Last Name</label></div>
+            <div class="col-md-4 inputDiv">
+                {% bootstrap_field gpuser_form.last_name %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3 labelText"><label>Email</label></div>
+            <div class="col-md-4 inputDiv">
+                {% bootstrap_field gpuser_form.email %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3 labelText"><label>Username</label></div>
+            <div class="col-md-4 inputDiv">
+                {% bootstrap_field gpuser_form.username %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3 labelText"><label>Password</label></div>
+            <div class="col-md-4 inputDiv">
+                {% bootstrap_field gpuser_form.password %}
+                <button id="passbtn" type="button" class="btn">Generate Password</button> 
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3 labelText"><label>Send User Notification</label></div>
+            <div class="col-md-4 inputDiv">
+                <div class="sendemail">
+                    <div class="pretty p-default">
+                        {{ gpuser_form.send_email }}
+                        <div class="state p-primary">
+                            <label>Send the new user an email about their account</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row bottom-line">
+            <div class="col-md-3 labelText"><label>Role</label></div>
+            <div class="col-md-4 inputDiv rolebox">
+                <div class="checkbox rolechk">
+                    <div class="pretty p-default">
+                        <input type="checkbox"/>
+                        <div class="state p-primary">
+                            <label>Practice Manager</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="checkbox rolechk">
+                    <div class="pretty p-default">
+                        <input type="checkbox"/>
+                        <div class="state p-primary">
+                            <label>GP</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="checkbox rolechk">
+                    <div class="pretty p-default">
+                        <input type="checkbox"/>
+                        <div class="state p-primary">
+                            <label>SARS responder</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="paragraph bottom-line">
+            <div class="row banktitle"><label>Bank Details</label></div>
+            <div class="row">
+                <div class="col-md-3 labelText"><label>Name of Bank</label></div>
+                <div class="col-md-4 inputDiv">
+                    {% bootstrap_field gpuser_form.payment_bank_holder_name %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 labelText"><label>Account Number</label></div>
+                <div class="col-md-4 inputDiv">
+                    {% bootstrap_field gpuser_form.payment_bank_account_number %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 labelText"><label>Sort Code</label></div>
+                <div class="col-md-4 inputDiv">
+                    <div class="row">
+                        {% bootstrap_field gpuser_form.payment_bank_sort_code %}
+                        <div class="sortcode"><input id="sortcode1" type="text" class="form-control" required="true"></div>
+                        <p class="cusline">-</p>
+                        <div class="sortcode"><input id="sortcode2" type="text" class="form-control" required="true"></div>
+                        <p class="cusline">-</p>
+                        <div class="sortcode"><input id="sortcode3" type="text" class="form-control" required="true"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="paragraph">
+            <input id="submitbtn" type="submit" class="btn btn-primary" value="Add New User">
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block Script %}
+    <script>
+        $("#passbtn").click(function(){
+            $("input[name=password]").val("medi2018");
+            alert("Password generated");
+        });
+        $("#createuser").on("submit", function(event) {
+            var sortcode = $("#sortcode1").val() + $("#sortcode2").val() + $("#sortcode3").val();
+            $("input[name=payment_bank_sort_code").val(sortcode);
+        });
+    </script>
+{% endblock %}
