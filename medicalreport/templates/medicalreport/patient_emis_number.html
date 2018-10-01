@@ -12,64 +12,82 @@
 {% endblock %}
 
 {% block Content %}
-    <div class="container">
-        <div class="container-fluid callout">
-            <div class="alert alert-info">
-                <h4>Patient Sought</h4>
-                <div class="row">
-                    <h5 class="col">Name</h5>
-                </div>
-                <div class="row">
-                    <div class="col">{{instruction.patient.user.first_name|default:"N/A"}}</div>
-                </div>
-                <div class="row">
-                    <h5 class="col">Date of birth</h5>
-                </div>
-                <div class="row">
-                    <div class="col">{{instruction.patient.date_of_birth|format_date_filter|default:"N/A"}}</div>
-                </div>
-                <div class="row">
-                    <h5 class="col">Sex</h5>
-                </div>
-                <div class="row">
-                    <div class="col">{{instruction.patient.sex|default:"N/A"}}</div>
-                </div>
-                <div class="row">
-                    <h5 class="col">NHS number</h5>
-                </div>
-                <div class="row">
-                    <div class="col">{{instruction.patient.nhs_number|default:"N/A"}}</div>
-                </div>
-                <div class="row">
-                    <h5 class="col">Address</h5>
-                </div>
-                <div class="row">
-                    <div class="col">{{instruction.patient|instruction_patient_address|default:"N/A"}}</div>
-                </div>
-            </div>
-            <form action="{% url 'medicalreport:set_patient_emis_number' instruction.id %}" method="post">
+      <div class="container-fluid">
+          <div class="card-deck">
+              <div class="card">
+                  <div class="card-header">
+                      <h4 class="text-bold">Patient Sought</h4>
+                  </div>
+                  <div class="card-body">
+                      <div class="patient-content">
+                          <div class="col-md-6">
+                              <div class="row">
+                                  <h4 class="text-bold">{{instruction.patient.user.first_name|default:"N/A"}}</h4>
+                              </div>
+                              <div class="row">
+                                  <h5 class="text-bold">Date of birth:&nbsp</h5>
+                                  <h5>{{instruction.patient.date_of_birth|format_date_filter|default:"N/A"}}</h5>
+                              </div>
+                              <div class="row">
+                                  <h5 class="text-bold">Address:&nbsp</h5>
+                                  <h5>{{instruction.patient|instruction_patient_address|default:"N/A"}}</h5>
+                              </div>
+                          </div>
+                          <div class="col-md-6">
+                              <div class="row">
+                                  <h4 class="text-bold">{{instruction.client_user.organisation.trading_name|default:"N/A"}}</h4>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <div class="card-deck mt-4">
+              <div class="card">
+                  <div class="card-header matching">
+                      <h4>Select a Matching Patient</h4>
+                  </div>
+                  <div class="card-body">
+                      {% for patient in patient_list %}
+                          <div class="row">
+                              <div class="col-md-2 text-bold">{{ patient.full_name }}</div>
+                              <div class="col-md-2">
+                                {{ patient.sex }}<br/>{{patient.nhs_number}}
+                              </div>
+                              <div class="col-md-2">{{ patient.date_of_birth }}</div>
+                              <div class="col-md-4">{{ patient|patient_address }}</div>
+                              <div class="col-md-2 select-btn">
+                                  <a href="{% url 'medicalreport:select_patient' instruction.id patient.ref_id %}" class="btn btn-primary">
+                                      Select
+                                  </a>
+                               </div>
+                          </div>
+                      {% endfor %}
+                  </div>
+                  <div class="card-footer">
+                      <label class="text-footer">Reject this request if there are no suitable matching patients:</label>
+                      <div data-toggle="modal" data-target="#modal-reject" class="btn btn-danger reject-btn">Reject Request</a>
+                  </div>
+              </div>
+          </div>
+    </div>
+    <div class="modal-reject" id="modal-reject">
+        <div class="modal-dialog modal-lg">
+            <form action="{% url 'medicalreport:reject_request' instruction.id %}" method="POST"  enctype="multipart/form-data">
                 {% csrf_token %}
-                <h4>Matching patients</h4>
-                    {% for patient in patient_list %}
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="radio" name="patient_emis_number" id="patient_emis_number_{{patient.ref_id}}" value="{{patient.ref_id}}">
-                        <label class="form-check-label" for="patient_emis_number_{{patient.ref_id}}">
-                            {{ patient|patient_description }}
-                        </label>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Reject reason</h3>
                     </div>
-                {% endfor %}
-                <button type="submit" class="btn btn-primary">Select patient</button>
+                    <div class="modal-body">
+                        <textarea name="rejected_reason"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger reject-btn">Reject Request</a>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
     
-{% endblock %}
-
-{% block Script %}
-    <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
-    <script>
-      $('input:checkbox').on('change', function(){
-            $('input[key="' + $(this).attr('key') + '"]:checkbox').prop('checked', this.checked);
-        });
-    </script>
 {% endblock %}

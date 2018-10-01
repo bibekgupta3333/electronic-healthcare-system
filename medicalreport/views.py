@@ -29,19 +29,26 @@ def get_patient_record(patient_number):
     return raw_xml
 
 
+def reject_request(request, instruction_id):
+    instruction = Instruction.objects.get(id=instruction_id)
+    instruction.reject(request.POST)
+    return redirect('instructions:view_pipeline')
+
+
+def select_patient(request, instruction_id, patient_emis_number):
+    try:
+        redaction = Redaction.objects.get(instruction=instruction_id)
+    except Redaction.DoesNotExist:
+        redaction = Redaction()
+        redaction.instruction = instruction
+
+    redaction.patient_emis_number = patient_emis_number
+    redaction.save()
+    return redirect('medicalreport:edit_report', instruction_id=instruction_id)
+
+
 def set_patient_emis_number(request, instruction_id):
     instruction = Instruction.objects.get(id=instruction_id)
-    if request.method == "POST":
-        try:
-            redaction = Redaction.objects.get(instruction=instruction_id)
-        except Redaction.DoesNotExist:
-            redaction = Redaction()
-            redaction.instruction = instruction
-
-        redaction.patient_emis_number = request.POST.get('patient_emis_number')
-        redaction.save()
-        return redirect('medicalreport:edit_report', instruction_id=instruction_id)
-
     dummy_patient = DummyPatient(instruction.patient.user.first_name, instruction.patient.user.last_name, instruction.patient.date_of_birth)
     patient_list = get_matched_patient(dummy_patient)
 

@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-
+from django.utils import timezone
 from common.models import TimeStampedModel
 from accounts.models import ClientUser, GeneralPracticeUser, Patient
 from snomedct.models import SnomedConcept
@@ -31,6 +31,12 @@ class Instruction(TimeStampedModel, models.Model):
 
     def __str__(self):
         return self.client_user.user.first_name + "::" + self.patient.user.first_name
+
+    def reject(self, context):
+        self.rejected_timestamp = timezone.now()
+        self.rejected_reason = context.get('rejected_reason', None)
+        self.status = INSTRUCTION_STATUS_REJECT
+        self.save()
 
     def snomed_concepts_readcords(self):
         snomed_concepts = SnomedConcept.objects.filter(instructionconditionsofinterest__instruction=self.id)

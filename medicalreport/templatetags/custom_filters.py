@@ -14,6 +14,11 @@ def instruction_patient_address(patient):
 
 
 @register.filter
+def patient_address(patient):
+    address = patient.address_lines()
+    return ", ".join(address)
+
+@register.filter
 def patient_description(patient):
     description = [patient.full_name(), format_date(patient.parsed_date_of_birth())] + patient.address_lines()
     description = list(filter(None, description))
