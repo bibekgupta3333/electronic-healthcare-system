@@ -19,7 +19,7 @@ class Instruction(TimeStampedModel, models.Model):
     final_report_date = models.TextField(blank=True)
     initial_monetary_value = models.FloatField(null=True, blank=True, verbose_name='Value £')
     status = models.IntegerField(choices=INSTRUCTION_STATUS_CHOICES, default=INSTRUCTION_STATUS_NEW)
-    consent_form = models.FileField(upload_to='consent_forms', null=True)
+    consent_form = models.FileField(upload_to='consent_forms', null=True, blank=True)
 
     gp_practice_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     gp_practice_id = models.CharField(max_length=255)
