@@ -14,7 +14,7 @@ class OrganisationFee(TimeStampedModel, models.Model):
 
     class Meta:
         verbose_name = 'Organisation Fee Structure'
-        verbose_name_plural = 'Organisation Fee Strcutures'
+        verbose_name_plural = 'Organisation Fee Structures'
 
     def __str__(self):
         return "Fee Structure: {}".format(self.gp_practice)

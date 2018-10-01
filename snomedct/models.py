@@ -13,7 +13,7 @@ class SnomedConcept(models.Model):
     objects = CopyManager()
 
     def __str__(self):
-        return "{} - {}".format(self.fsn_description, self.external_id)
+        return "{} - {}".format(self.external_id, self.fsn_description)
 
     class Meta:
         indexes = [

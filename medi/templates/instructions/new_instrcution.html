@@ -161,7 +161,14 @@
     <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
     <script src="{% static 'js/jquery.formset.js' %}"></script>
     <script>
+        const MUSCULOSKELETAL_SNOMED_CODE = '128237006';
+        const DISORDER_BACK_SNOMED_CODE = '33308003';
+        const NEURODEGENERATIVE_SNOMED_CODE = '80690008';
+        const PERIPHERAL_SNOMED_CODE = '42658009';
+
         $(document).ready(function () {
+            $('#gp_last_name').attr('name', 'gp_last_name');
+
             $('#newInstructionForm tbody tr').formset({
                 'deleteText': 'X remove',
                 'addText': '+ Add Another',
@@ -170,6 +177,20 @@
             });
             $("#alert-message").fadeTo(2000, 500).slideUp(500, function(){
                 $("#alert-message").slideUp(500);
+            });
+
+            // hide same label choice
+            $("input[value=" + DISORDER_BACK_SNOMED_CODE +"]").closest("div").attr('style','display:none !important');
+            $("input[value=" + PERIPHERAL_SNOMED_CODE + "]").closest("div").attr('style','display:none !important');
+
+            $("input[type='checkbox']").on('change', function () {
+               if($(this).val() == MUSCULOSKELETAL_SNOMED_CODE){
+                    $("input[value=" + DISORDER_BACK_SNOMED_CODE + "]").trigger('click');
+               }
+
+               if($(this).val() == NEURODEGENERATIVE_SNOMED_CODE){
+                   $("input[value=" + PERIPHERAL_SNOMED_CODE + "]").trigger('click');
+               }
             });
 
             $("#id_consent_form").fileinput({
@@ -211,6 +232,26 @@
                     processResults: function (data) {
                         return {
                             results: data.items
+                        }
+                    }
+                }
+            });
+
+            $('#id_addition_condition').select2({
+                minimumInputLength: 3,
+                width: 500,
+                multiple: true,
+                ajax: {
+                    url: "{% url 'snomedct:query_snomed' %}",
+                    data: function (params) {
+                        let query = {
+                            keyword: params.term,
+                        };
+                        return query;
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
                         }
                     }
                 }

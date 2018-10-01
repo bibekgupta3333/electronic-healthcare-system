@@ -6,7 +6,7 @@ from django.db.models import Q
 
 from django_tables2 import RequestConfig
 
-from .models import Instruction, InstructionAdditionQuestion
+from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest
 from .tables import InstructionTable
 from .model_choices import *
 from .forms import ScopeInstructionForm, AdditionQuestionFormset
@@ -17,6 +17,7 @@ from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice, NHSgpPractice
 from common.functions import multi_getattr
 from medi.settings.common import PIPELINE_INSTRUCTION_LINK, get_env_variable
+from snomedct.models import SnomedConcept
 
 
 def count_instructions(gp_practice_id, client_organisation):
@@ -100,7 +101,6 @@ def instruction_pipeline_view(request):
     else:
         instruction_query_set = Instruction.objects.all()
 
-
     if filter_status != -1:
         instruction_query_set = instruction_query_set.filter(status=filter_status)
 
@@ -109,9 +109,7 @@ def instruction_pipeline_view(request):
     instruction_query_set = instruction_query_set.filter(Q(gp_practice_id=gp_practice_id) |
                                                          Q(client_user__organisation=client_organisation))
     table = InstructionTable(instruction_query_set)
-
     overall_instructions_number = count_instructions(gp_practice_id, client_organisation)
-
     table.order_by = request.GET.get('sort', '-created')
     RequestConfig(request, paginate={'per_page': 5}).configure(table)
 
@@ -136,6 +134,9 @@ def new_instruction(request):
         scope_form = ScopeInstructionForm(request.user, request.POST, request.FILES,)
         patient_form = PatientForm(request.POST)
         addition_question_formset = AdditionQuestionFormset(request.POST)
+        common_condition_list = request.POST.getlist('common_condition')
+        addition_condition_list = request.POST.getlist('addition_condition')
+        condition_of_interests = common_condition_list + addition_condition_list
 
         # Is from NHS or gpOrganisation
         gp_practice_code = request.POST.get('gp_practice', None)
@@ -176,6 +177,17 @@ def new_instruction(request):
             instruction.gp_practice = gp_practice
             instruction.save()
 
+            for condition_code in condition_of_interests:
+                snomedct = SnomedConcept.objects.get(external_id=condition_code)
+                InstructionConditionsOfInterest.objects.create(instruction=instruction, snomedct=snomedct)
+
+            for form in addition_question_formset:
+                if form.is_valid():
+                    addition_question = form.save(commit=False)
+                    addition_question.instruction = instruction
+                    addition_question.save()
+
+            # Notification: client selected NHS GP
             if isinstance(gp_practice, NHSgpPractice):
                 send_mail(
                     'NHS GP is selected',
@@ -185,22 +197,16 @@ def new_instruction(request):
                     fail_silently=False,
                 )
 
-            for form in addition_question_formset:
-                if form.is_valid():
-                    addition_question = form.save(commit=False)
-                    addition_question.instruction = instruction
-                    addition_question.save()
-
+            # Notification: client created new instruction
             send_mail(
                 'New Instruction',
                 'You have a new instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
                 'mohara.qr@gmail.com',
-                ['ben.blomerley@gmail.com', 'lontharn@gmail.com'],
+                ['ben.blomerley@gmail.com', 'lontharn@gmail.com', 'mooauii.lazy@gmail.com'],
                 fail_silently=False,
                 auth_user=get_env_variable('SENDGRID_USER'),
                 auth_password=get_env_variable('SENDGRID_PASS'),
             )
-
 
     patient_form = PatientForm()
     gp_form = GPForm()

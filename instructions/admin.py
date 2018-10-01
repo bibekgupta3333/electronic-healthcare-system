@@ -1,10 +1,10 @@
 from django.contrib import admin
 
-from .models import Instruction, InstructionAdditionQuestion
+from . import models
 
 admin.site.register(
     (
-        Instruction,
-        InstructionAdditionQuestion
-     )
+        models.Instruction,
+        models.InstructionAdditionQuestion,
+    )
 )

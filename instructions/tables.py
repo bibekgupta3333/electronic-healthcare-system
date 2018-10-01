@@ -21,7 +21,7 @@ class InstructionTable(tables.Table):
         }
 
     def render_patient(self, value):
-        return format_html('{} {} <br><b>NHS </b>{}', value.user.first_name, value.user.last_name, value.nhs_number)
+        return format_html('{} {} <br><b>NHS: </b>{}', value.user.first_name, value.user.last_name, value.nhs_number)
 
     def render_status(self, value):
         STATUS_DICT = {

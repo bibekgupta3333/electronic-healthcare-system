@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from .models import SnomedConcept
+from django.db.models import Q
 
 QUERY_METHOD = ['istartswith', 'iendswith', 'icontains']
 
@@ -16,16 +17,15 @@ def query_snomed(request):
         kwargs = {
             '{0}__{1}'.format('fsn_description', method): query,
         }
-        results = SnomedConcept.objects.filter(**kwargs).order_by('id')
+        results = SnomedConcept.objects.filter(Q(fsn_description__icontains=query) & Q(fsn_description__icontains='(disorder)'))
     else:
-        results = SnomedConcept.objects.all().order_by('id')[:100]
+        results = SnomedConcept.objects.filter(fsn_description__icontains='(disorder)')[:100]
 
     response = []
     for item in results:
         response.append({
-            "id": item.id,
-            "fsn_description": item.fsn_description,
-            "external_id": item.external_id
+            "id": item.external_id,
+            "text": item.fsn_description,
         })
     return JsonResponse(response, safe=False)
 
