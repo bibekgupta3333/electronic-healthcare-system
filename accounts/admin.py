@@ -54,6 +54,8 @@ class UserAdmin(BaseUserAdmin):
 
     def get_inline_instances(self, request, obj=None):
         self.inlines = []
+        GeneralPracticeProfileInline.readonly_fields = []
+        ClientProfileInline.readonly_fields = []
         if not obj:
             return list()
         else:

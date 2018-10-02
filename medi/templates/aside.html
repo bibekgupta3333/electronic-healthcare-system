@@ -22,6 +22,9 @@
             <li>
                 <a href="#" >Income</a>
             </li>
+            <li class="{% if request.resolver_match.namespace == 'view_account' %}active{% endif %}">
+                <a href="{% url 'accounts:view_account' %}" >Account</a>
+            </li>
         </ul>
     </nav>
 </aside>

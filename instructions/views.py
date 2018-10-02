@@ -16,7 +16,7 @@ from accounts.forms import PatientForm, GPForm
 from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice, NHSgpPractice
 from common.functions import multi_getattr
-from medi.settings.common import PIPELINE_INSTRUCTION_LINK, get_env_variable
+from medi.settings.common import PIPELINE_INSTRUCTION_LINK, get_env_variable, DUMMY_EMAIL_LIST
 from snomedct.models import SnomedConcept
 
 
@@ -193,7 +193,7 @@ def new_instruction(request):
                     'NHS GP is selected',
                     'Your client had selected NHS GP: {}'.format(gp_practice.name),
                     'MediData',
-                    ['lontharn@gmail.com'],
+                    DUMMY_EMAIL_LIST,
                     fail_silently=False,
                 )
 
@@ -202,7 +202,7 @@ def new_instruction(request):
                 'New Instruction',
                 'You have a new instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
                 'mohara.qr@gmail.com',
-                ['ben.blomerley@gmail.com', 'lontharn@gmail.com', 'mooauii.lazy@gmail.com'],
+                DUMMY_EMAIL_LIST,
                 fail_silently=False,
                 auth_user=get_env_variable('SENDGRID_USER'),
                 auth_password=get_env_variable('SENDGRID_PASS'),
