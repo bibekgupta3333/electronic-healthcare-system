@@ -4,6 +4,20 @@
     margin: 8px;
     margin-left: -15px;
 }
+
+#patientInfo {
+    position: fixed;
+    top: 35px;
+    margin: 8px;
+    margin-left: -15px;
+    box-shadow: 10px 10px 30px #88888857;
+    border-top: solid;
+    border-top-color: blue;
+    background-color: white;
+    width: 730px;
+    display: none;
+}
+
 .no-bullet {
     margin-left: 0px;
     padding-left: 0px;

@@ -25,8 +25,6 @@ COMMON_CONDITION_KEY_LABEL_MAPPING = {
 }
 
 
-
-
 class MyMultipleChoiceField(forms.MultipleChoiceField):
 
     def validate(self, value):

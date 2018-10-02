@@ -37,4 +37,4 @@ class OrganisationFeeModelTest(TestCase):
         self.assertEqual(str(OrganisationFee._meta.verbose_name), "Organisation Fee Structure")
 
     def test_verbose_name_plural(self):
-        self.assertEqual(str(OrganisationFee._meta.verbose_name_plural), "Organisation Fee Strcutures")
+        self.assertEqual(str(OrganisationFee._meta.verbose_name_plural), "Organisation Fee Structures")
