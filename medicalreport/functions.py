@@ -93,32 +93,31 @@ def get_additional_medication(request, redaction):
     additional_medication_prescribed_to = request.POST.get('additional_medication_prescribed_to')
     additional_medication_notes = request.POST.get('additional_medication_notes')
 
-    if (additional_medication_type and additional_medication_drug and
-            additional_medication_snomedct and additional_medication_dose and
-            additional_medication_frequency):
-            record = AdditionalMedicationRecords()
-            if additional_medication_type == "acute":
-                record.repeat = False
-            else:
-                record.repeat = True
+    if (additional_medication_type and additional_medication_drug and additional_medication_snomedct
+            and additional_medication_dose and additional_medication_frequency):
+        record = AdditionalMedicationRecords()
+        if additional_medication_type == "acute":
+            record.repeat = False
+        else:
+            record.repeat = True
 
-            try:
-                record.snomed_concept = SnomedConcept.objects.get(id=additional_medication_snomedct)
-            except SnomedConcept.DoesNotExist:
-                pass
-            record.dose = additional_medication_dose
-            record.drug = additional_medication_drug
-            record.frequency = additional_medication_frequency
-            record.notes = additional_medication_notes
+        try:
+            record.snomed_concept = SnomedConcept.objects.get(pk=additional_medication_snomedct)
+        except SnomedConcept.DoesNotExist:
+            pass
+        record.dose = additional_medication_dose
+        record.drug = additional_medication_drug
+        record.frequency = additional_medication_frequency
+        record.notes = additional_medication_notes
 
-            if additional_medication_prescribed_from:
-                record.prescribed_from = datetime.strptime(additional_medication_prescribed_from, UI_DATE_FORMAT)
+        if additional_medication_prescribed_from:
+            record.prescribed_from = datetime.strptime(additional_medication_prescribed_from, UI_DATE_FORMAT)
 
-            if additional_medication_prescribed_to:
-                record.prescribed_to = datetime.strptime(additional_medication_prescribed_to, UI_DATE_FORMAT)
+        if additional_medication_prescribed_to:
+            record.prescribed_to = datetime.strptime(additional_medication_prescribed_to, UI_DATE_FORMAT)
 
-            record.redaction = redaction
-            record.save()
+        record.redaction = redaction
+        record.save()
 
 
 def delete_additional_medication_records(request):

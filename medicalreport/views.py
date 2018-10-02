@@ -39,9 +39,10 @@ def reject_request(request, instruction_id):
 
 def select_patient(request, instruction_id, patient_emis_number):
     try:
-        redaction = Redaction.objects.get(instruction=instruction_id)
+        redaction = Redaction.objects.get(instruction__id=instruction_id)
     except Redaction.DoesNotExist:
         redaction = Redaction()
+        instruction = get_object_or_404(Instruction, pk=instruction_id)
         redaction.instruction = instruction
 
     redaction.patient_emis_number = patient_emis_number

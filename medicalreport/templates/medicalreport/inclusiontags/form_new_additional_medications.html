@@ -15,7 +15,7 @@
                     <select class="custom-select" id="additional_medication_related_condition" name="additional_medication_related_condition">
                         <option value='' selected>Choose...</option>
                         {% for snomed in instruction.selected_snomed_concepts %}
-                        <option value="{{ snomed.id }}">{{ snomed.fsn_description }}</option>
+                        <option value="{{ snomed.pk }}">{{ snomed.fsn_description }}</option>
                         {% endfor %}
                     </select>
                 </div>
