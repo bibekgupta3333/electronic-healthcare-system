@@ -7,6 +7,7 @@ from .dummy_models import (DummyInstruction, DummyClient, DummyPatient)
 from medicalreport.forms import MedicalReportFinaliseSubmitForm
 from .models import Redaction
 from instructions.models import Instruction
+from instructions.model_choices import INSTRUCTION_REJECT_TYPE
 from .functions import create_or_update_redaction_record
 
 
@@ -55,6 +56,7 @@ def set_patient_emis_number(request, instruction_id):
 
     return render(request, 'medicalreport/patient_emis_number.html', {
         'patient_list': patient_list,
+        'reject_types': INSTRUCTION_REJECT_TYPE,
         'instruction': instruction
     })
 

@@ -2,10 +2,12 @@ from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
+from django.core.mail import send_mail
 from common.models import TimeStampedModel
 from accounts.models import ClientUser, GeneralPracticeUser, Patient
 from snomedct.models import SnomedConcept
 from .model_choices import *
+from medi.settings.common import PIPELINE_INSTRUCTION_LINK, get_env_variable
 
 
 class Instruction(TimeStampedModel, models.Model):
@@ -15,6 +17,7 @@ class Instruction(TimeStampedModel, models.Model):
     completed_signed_off_timestamp = models.DateTimeField(null=True, blank=True)
     rejected_timestamp = models.DateTimeField(null=True, blank=True)
     rejected_reason = models.TextField(blank=True)
+    rejected_type = models.IntegerField(choices=INSTRUCTION_REJECT_TYPE, null=True, blank=True)
     type = models.CharField(max_length=4, choices=INSTRUCTION_TYPE_CHOICES)
     final_report_date = models.TextField(blank=True)
     initial_monetary_value = models.FloatField(null=True, blank=True, verbose_name='Value £')
@@ -35,7 +38,17 @@ class Instruction(TimeStampedModel, models.Model):
     def reject(self, context):
         self.rejected_timestamp = timezone.now()
         self.rejected_reason = context.get('rejected_reason', None)
+        self.rejected_type = context.get('rejected_type', None)
         self.status = INSTRUCTION_STATUS_REJECT
+        send_mail(
+            'Rejected Instruction',
+            'You have a rejected instruction. Click here {link}?status=4&type=allType to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
+            'MediData',
+            [self.client_user.user.email],
+            fail_silently=False,
+            auth_user=get_env_variable('SENDGRID_USER'),
+            auth_password=get_env_variable('SENDGRID_PASS'),
+        )
         self.save()
 
     def snomed_concepts_readcords(self):

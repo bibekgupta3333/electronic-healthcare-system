@@ -37,6 +37,23 @@
                               <div class="row">
                                   <h4 class="text-bold">{{instruction.client_user.organisation.trading_name|default:"N/A"}}</h4>
                               </div>
+                              <div class="row">
+                                  <div>
+                                      <h5 class="text-bold">Requested Conditions:</h5>
+                                      <ul>
+                                      {% if not instruction.selected_snomed_concepts %}
+                                          <li>No conditions</li>
+                                      {% else %}
+                                          {% for snomed in instruction.selected_snomed_concepts %}
+                                              <li>{{ snomed.fsn_description }}</li>
+                                          {% endfor %}
+                                      {% endif %}
+                                      </ul>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="patient-consent">
+                            <button class="btn btn-consent"><i class="fas fa-file-medical icon"></i> View consent form</button>
                           </div>
                       </div>
                   </div>
@@ -66,7 +83,18 @@
                   </div>
                   <div class="card-footer">
                       <label class="text-footer">Reject this request if there are no suitable matching patients:</label>
-                      <div data-toggle="modal" data-target="#modal-reject" class="btn btn-danger reject-btn">Reject Request</a>
+                      <div class="btn-group reject-btn">
+                          <button class="btn btn-danger dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Reject Request
+                          </button>
+                          <div class="dropdown-menu dropdown-menu-right reject" aria-labelledby="dropdownMenuButton">
+                              {% for reject_type in reject_types %}
+                              <div id="rejected_type-{{reject_type.0}}" data-toggle="modal" data-target="#modal-reject" class="dropdown-item" onclick="updateRejectType(this);">
+                                  {{reject_type.1}}
+                              </div>
+                              {% endfor %}
+                          </div>
+                      </div>
                   </div>
               </div>
           </div>
@@ -81,6 +109,7 @@
                     </div>
                     <div class="modal-body">
                         <textarea name="rejected_reason"></textarea>
+                        <input name="rejected_type" id="rejected_type" type="hidden"/>
                     </div>
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-danger reject-btn">Reject Request</a>
@@ -90,4 +119,7 @@
         </div>
     </div>
     
+{% endblock %}
+{% block Script %}
+    <script src="{% static 'medicalreport/js/medicalreport.js' %}"></script>
 {% endblock %}

@@ -11,8 +11,19 @@
 }
 
 .patient-content {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
+}
+
+.patient-consent {
+    position: absolute;
+    right: 0;
+}
+
+.patient-consent .icon {
+    font-size: 30px;
+    margin-right: 10px;
 }
 
 .matching {
@@ -29,12 +40,27 @@
     text-align: center;
 }
 
+.dropdown-menu.reject {
+    background-color: #bd2130;
+}
+
+.dropdown-item {
+    color: whitesmoke;
+}
+
 .reject-btn {
     float: right;
 }
 
 .text-footer {
     color: black;
+}
+
+.btn-consent {
+    background-color: #46609f;
+    color: whitesmoke;
+    display: flex;
+    align-items: center;
 }
 
 .callout {
