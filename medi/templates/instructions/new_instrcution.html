@@ -175,9 +175,6 @@
                 'addCssClass': 'btn btn-primary',
                 'deleteCssClass': 'btn btn-danger'
             });
-            $("#alert-message").fadeTo(2000, 500).slideUp(500, function(){
-                $("#alert-message").slideUp(500);
-            });
 
             // hide same label choice
             $("input[value=" + DISORDER_BACK_SNOMED_CODE +"]").closest("div").attr('style','display:none !important');

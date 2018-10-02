@@ -4,6 +4,7 @@ from services.emisapiservices import services
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.xml.patient_list import PatientList
 from .dummy_models import (DummyInstruction, DummyClient, DummyPatient)
+from medicalreport.forms import MedicalReportFinaliseSubmitForm
 from .models import Redaction
 from instructions.models import Instruction
 from .functions import create_or_update_redaction_record
@@ -70,18 +71,17 @@ def edit_report(request, instruction_id):
     raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     dummy_instruction = DummyInstruction(instruction)
+    finalise_submit_form = MedicalReportFinaliseSubmitForm(request.user)
 
     return render(request, 'medicalreport/medicalreport_edit.html', {
         'medical_record': medical_record_decorator,
         'redaction': redaction,
-        'instruction': dummy_instruction
+        'instruction': dummy_instruction,
+        'finalise_submit_form': finalise_submit_form,
     })
 
 
 def update_report(request, instruction_id):
-    print("POST data=", request.POST)
-    print("instruction id: ", instruction_id)
-
     instruction = get_object_or_404(Instruction, id=instruction_id)
     create_or_update_redaction_record(request, instruction)
     return redirect('medicalreport:edit_report', instruction_id=instruction_id)

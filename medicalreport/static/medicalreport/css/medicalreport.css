@@ -213,3 +213,21 @@ h1 {
 .modal-reject .modal-footer {
     padding: 10px 20px;
 }
+
+.submit-panel {
+    margin: auto;
+}
+
+.finalise-submit {
+    background-color: gainsboro;
+    background-clip: content-box;
+}
+
+#last-warning {
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+.medicalreport-date {
+    margin-left: 0px;
+}

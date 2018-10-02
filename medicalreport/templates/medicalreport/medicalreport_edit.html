@@ -9,6 +9,7 @@
 {% block ExtraHead %}
     <link rel="stylesheet" href="{% static 'medicalreport/css/medicalreport.css' %}">
     <link href="{% static 'css/bootstrap-datepicker.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/accounts/view_account.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block Content %}
@@ -45,7 +46,7 @@
             <p>A full list of sensitive conditions (GP Summary Exclusion Code Lists) can be found<a target="_blank" href="https://isd.digital.nhs.uk/trud3/user/guest/group/0/pack/9/subpack/141/releases"> here.</a></p>
         </div>
         <h1>Provisional Report Contents</h1>
-        <form action="{% url 'medicalreport:update_report' instruction.id %}" method="post">
+        <form action="{% url 'medicalreport:update_report' instruction.id %}" method="post" id="medicalReportForm">
             {% csrf_token %}
             <div class="row">
                 <div class="col-md-6">
@@ -61,7 +62,41 @@
                     {% form_attachments %}
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary">Update Report</button>
+            <div class="row">
+                <div class="col-md-12">
+                    <h2 class="d-flex justify-content-center">Finalise and Submit</h2>
+                </div>
+                <div class="col-md-12 finalise-submit">
+                    <div class="col-md-12">
+                        <p style="margin-top: 15px">
+                            I confirm that this medical report is an accurate reflection of the information in the electronic medical records for the requested conditions
+                            of interest at the time of preparation. This report does not include undisclosed to be disclosed symptoms, future conditions, information not
+                            relevant to the sought after conditions of interest, information which the patient has not consented to be disclosed, nor information absent from
+                            the patient's electronic medical records. Information provided in this report doest not guarantee any feature state of health ot illness.
+                        </p>
+                    </div>
+                    <div class="row submit-panel">
+                        <div class="col-md-5">
+                            {% bootstrap_field finalise_submit_form.prepared_and_signed  show_label=Fasle%}
+                        </div>
+                            {% bootstrap_field finalise_submit_form.prepared_by show_label=Fasle %}
+                        <div class="col-md-3">
+                            {% bootstrap_field finalise_submit_form.gp_practitioner size='large' show_label=Fasle %}
+                        </div>
+                        <div class="col-md-4">
+                            <input type="hidden" name="event_flag" id="event_flag">
+                            <div class="row medicalreport-date">
+                                {{ redaction.created_at }}
+                            </div>
+                            <button type="button" onclick="subMitMedicalReport('draft')" class="btn btn-primary"><i class="fas fa-save"></i> SAVE DRAFT</button>
+                            <button type="button" onclick="subMitMedicalReport('submit')" class="btn btn-primary btn-lg"><i class="fas fa-check"></i> SUBMIT</button>
+                            <div class="row">
+                                <p id="last-warning">You will not be able to amend this report once submitted</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </form>
     </div>
 
@@ -75,8 +110,23 @@
 {% block Script %}
     <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
     <script>
-      $('input:checkbox').on('change', function(){
+        function subMitMedicalReport(event){
+            if(event == "draft"){
+                $('#event_flag').val('draft');
+            } else {
+                $('#event_flag').val('submit');
+            }
+            $('#medicalReportForm').submit();
+        }
+
+        $('input:checkbox').on('change', function(){
             $('input[key="' + $(this).attr('key') + '"]:checkbox').prop('checked', this.checked);
         });
+
+        $('.finaliseChoice').css('font-size', 'large');
+
+        $('#preparer').append($('#id_prepared_by'));
+        $('#id_prepared_by').removeClass('form-control');
+        $('#id_prepared_by').css("width", "35%")
     </script>
 {% endblock %}

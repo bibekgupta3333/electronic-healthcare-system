@@ -2,10 +2,21 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField
 from instructions.models import Instruction
 from snomedct.models import SnomedConcept
+from accounts.models import User
 
 
 # Create your models here.
 class Redaction (models.Model):
+    REDACTION_STATUS_NEW = 'NEW'
+    REDACTION_STATUS_DRAFT = 'DRAFT'
+    REDACTION_STATUS_SUBMIT = 'SUBMIT'
+
+    REDACTION_STATUS_CHOICES = (
+        (REDACTION_STATUS_NEW, 'New'),
+        (REDACTION_STATUS_DRAFT, 'Draft'),
+        (REDACTION_STATUS_SUBMIT, 'Submit')
+    )
+
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)
     consultation_notes = models.TextField(null=True)
     acute_prescription_notes = models.TextField(null=True)
@@ -18,6 +29,9 @@ class Redaction (models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     patient_emis_number = models.CharField(max_length=255, null=True, default=None)
     redacted_xpaths = JSONField(null=True)
+    review_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    prepared_by = models.CharField(max_length=255, blank=True)
+    status = models.CharField(choices=REDACTION_STATUS_CHOICES, max_length=6, default=REDACTION_STATUS_NEW)
 
     def additional_acute_medications(self):
         return AdditionalMedicationRecords.objects.filter(redaction=self.id, repeat=False)

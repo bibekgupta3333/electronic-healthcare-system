@@ -1,6 +1,8 @@
 from .models import AdditionalMedicationRecords, AdditionalAllergies, Redaction
 from snomedct.models import SnomedConcept
 from datetime import datetime
+from .forms import MedicalReportFinaliseSubmitForm
+from django.contrib import messages
 
 UI_DATE_FORMAT = '%m/%d/%Y'
 
@@ -10,6 +12,23 @@ def create_or_update_redaction_record(request, instruction):
         redaction = Redaction.objects.get(instruction=instruction)
     except Redaction.DoesNotExist:
         redaction = Redaction()
+
+    if request.method == "POST":
+        submit_form = MedicalReportFinaliseSubmitForm(request.user, request.POST)
+
+        if submit_form.is_valid():
+            redaction.review_by = submit_form.cleaned_data['gp_practitioner']
+            redaction.prepared_by = submit_form.cleaned_data['prepared_by']
+        else:
+            messages.error(request, 'INVALID: Please Enter Reviewer')
+
+    status = request.POST.get('event_flag')
+    if status == 'draft':
+        redaction.status = Redaction.REDACTION_STATUS_DRAFT
+    elif status == 'submit':
+        redaction.status = Redaction.REDACTION_STATUS_SUBMIT
+    else:
+        redaction.status = Redaction.REDACTION_STATUS_NEW
 
     redaction.redacted_xpaths
     get_redation_xpaths(request, redaction)
