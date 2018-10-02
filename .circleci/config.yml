@@ -18,11 +18,11 @@ jobs:
           key: medi-{{ .Branch }}-{{ checksum "config/requirements.txt" }}
           paths:
             - "venv"
-      #- run:
-      #name: run tests
-      #command: |
-      #. venv/bin/activate
-      #python manage.py test
+      - run:
+          name: run tests
+          command: |
+            . venv/bin/activate
+            python manage.py test
       - store_artifacts:
           path: test-reports
           destination: test-reports
@@ -54,12 +54,7 @@ workflows:
   version: 2
   build-and-deploy:
     jobs:
-      - build:
-          filters:
-            branches:
-              only:
-                - master
-                - develop
+      - build
       - deploy_staging:
           requires:
             - build
