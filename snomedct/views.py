@@ -46,7 +46,7 @@ def get_descendants(request):
     return JsonResponse(response, safe=False)
 
 
-def get_descendant_readcords(request):
+def get_descendant_readcodes(request):
     external_id = request.GET.get('snomedct')
     if external_id:
         record = SnomedConcept.objects.get(external_id=external_id)
@@ -63,7 +63,7 @@ def get_descendant_readcords(request):
     return JsonResponse(response, safe=False)
 
 
-def get_readcords(request):
+def get_readcodes(request):
     external_id = request.GET.get('snomedct')
     if external_id:
         record = SnomedConcept.objects.get(external_id=external_id)

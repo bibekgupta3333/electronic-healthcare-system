@@ -214,7 +214,7 @@ def new_instruction(request):
     addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.none())
     scope_form = ScopeInstructionForm(user=request.user)
 
-    return render(request, 'instructions/new_instrcution.html', {
+    return render(request, 'instructions/new_instruction.html', {
         'header_title': header_title,
         'patient_form': patient_form,
         'nhs_form': nhs_form,
