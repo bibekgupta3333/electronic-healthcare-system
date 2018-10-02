@@ -89,7 +89,7 @@
                           </button>
                           <div class="dropdown-menu dropdown-menu-right reject" aria-labelledby="dropdownMenuButton">
                               {% for reject_type in reject_types %}
-                              <div id="rejected_type-{{reject_type.0}}" data-toggle="modal" data-target="#modal-reject" class="dropdown-item" onclick="updateRejectType(this);">
+                              <div id="rejected_reason-{{reject_type.0}}" data-toggle="modal" data-target="#modal-reject" class="dropdown-item" onclick="updateRejectType(this);">
                                   {{reject_type.1}}
                               </div>
                               {% endfor %}
@@ -105,11 +105,11 @@
                 {% csrf_token %}
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h3>Reject reason</h3>
+                        <h3>Reject note</h3>
                     </div>
                     <div class="modal-body">
-                        <textarea name="rejected_reason"></textarea>
-                        <input name="rejected_type" id="rejected_type" type="hidden"/>
+                        <textarea name="rejected_note"></textarea>
+                        <input name="rejected_reason" id="rejected_reason" type="hidden"/>
                     </div>
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-danger reject-btn">Reject Request</a>
