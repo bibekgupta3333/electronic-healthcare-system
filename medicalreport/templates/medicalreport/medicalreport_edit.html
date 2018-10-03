@@ -100,6 +100,17 @@
             $('#medicalReportForm').submit();
         }
 
+        $('#id_gp_practitioner').removeAttr('required');
+
+        $('#id_prepared_and_signed_0').on('click', function () {
+            $('#id_prepared_by').val('');
+            $('#id_prepared_by').prop('readonly', true);
+        });
+
+        $('#id_prepared_and_signed_1').on('click', function () {
+            $('#id_prepared_by').prop('readonly', false);
+        });
+
         $('#patient-info-open-modal').on('click', function () {
            $('#patientInfo').toggle();
         });

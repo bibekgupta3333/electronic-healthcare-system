@@ -5,7 +5,7 @@ from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.xml.patient_list import PatientList
 from .dummy_models import (DummyInstruction, DummyClient, DummyPatient)
 from medicalreport.forms import MedicalReportFinaliseSubmitForm
-from .models import Redaction
+from .models import AmendmentsForRecord
 from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_REJECT_TYPE
 from .functions import create_or_update_redaction_record
@@ -39,9 +39,9 @@ def reject_request(request, instruction_id):
 
 def select_patient(request, instruction_id, patient_emis_number):
     try:
-        redaction = Redaction.objects.get(instruction__id=instruction_id)
-    except Redaction.DoesNotExist:
-        redaction = Redaction()
+        redaction = AmendmentsForRecord.objects.get(instruction__id=instruction_id)
+    except AmendmentsForRecord.DoesNotExist:
+        redaction = AmendmentsForRecord()
         instruction = get_object_or_404(Instruction, pk=instruction_id)
         redaction.instruction = instruction
 
@@ -64,17 +64,23 @@ def set_patient_emis_number(request, instruction_id):
 
 def edit_report(request, instruction_id):
     try:
-        redaction = Redaction.objects.get(instruction=instruction_id)
+        redaction = AmendmentsForRecord.objects.get(instruction=instruction_id)
         if not redaction.patient_emis_number:
-            raise Redaction.DoesNotExist
-    except Redaction.DoesNotExist:
+            raise AmendmentsForRecord.DoesNotExist
+    except AmendmentsForRecord.DoesNotExist:
         return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
 
     instruction = get_object_or_404(Instruction, id=instruction_id)
     raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     dummy_instruction = DummyInstruction(instruction)
-    finalise_submit_form = MedicalReportFinaliseSubmitForm(request.user)
+    finalise_submit_form = MedicalReportFinaliseSubmitForm(
+        initial={
+            'gp_practitioner': redaction.review_by,
+            'prepared_by': redaction.prepared_by,
+            'prepared_and_signed': redaction.submit_choice,
+        },
+        user=request.user)
 
     return render(request, 'medicalreport/medicalreport_edit.html', {
         'medical_record': medical_record_decorator,

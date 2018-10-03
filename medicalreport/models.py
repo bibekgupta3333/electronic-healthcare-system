@@ -3,10 +3,11 @@ from django.contrib.postgres.fields import JSONField
 from instructions.models import Instruction
 from snomedct.models import SnomedConcept
 from accounts.models import User
+from django.utils.html import format_html
 
 
 # Create your models here.
-class Redaction (models.Model):
+class AmendmentsForRecord (models.Model):
     REDACTION_STATUS_NEW = 'NEW'
     REDACTION_STATUS_DRAFT = 'DRAFT'
     REDACTION_STATUS_SUBMIT = 'SUBMIT'
@@ -15,6 +16,11 @@ class Redaction (models.Model):
         (REDACTION_STATUS_NEW, 'New'),
         (REDACTION_STATUS_DRAFT, 'Draft'),
         (REDACTION_STATUS_SUBMIT, 'Submit')
+    )
+
+    SUBMIT_OPTION_CHOICES = (
+        ('PREPARED_AND_SIGNED', 'Prepared and signed directly by'),
+        ('PREPARED_AND_REVIEWED', format_html('Prepared by <span id="preparer"></span>  and reviewed by')),
     )
 
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)
@@ -29,7 +35,8 @@ class Redaction (models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     patient_emis_number = models.CharField(max_length=255, null=True, default=None)
     redacted_xpaths = JSONField(null=True)
-    review_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    submit_choice = models.CharField(max_length=255, choices=SUBMIT_OPTION_CHOICES, blank=True)
+    review_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     prepared_by = models.CharField(max_length=255, blank=True)
     status = models.CharField(choices=REDACTION_STATUS_CHOICES, max_length=6, default=REDACTION_STATUS_NEW)
 
@@ -54,7 +61,7 @@ class AdditionalMedicationRecords(models.Model):
     dose = models.CharField(max_length=255)
     frequency = models.CharField(max_length=255)
     snomed_concept = models.ForeignKey(SnomedConcept, on_delete=models.CASCADE, null=True)
-    redaction = models.ForeignKey(Redaction, on_delete=models.CASCADE)
+    redaction = models.ForeignKey(AmendmentsForRecord, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     prescribed_from = models.DateField(null=True)
@@ -67,6 +74,6 @@ class AdditionalAllergies(models.Model):
     allergen = models.CharField(max_length=255)
     reaction = models.CharField(max_length=255)
     date_discovered = models.DateField(null=True)
-    redaction = models.ForeignKey(Redaction, on_delete=models.CASCADE)
+    redaction = models.ForeignKey(AmendmentsForRecord, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

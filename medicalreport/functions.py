@@ -1,4 +1,4 @@
-from .models import AdditionalMedicationRecords, AdditionalAllergies, Redaction
+from .models import AdditionalMedicationRecords, AdditionalAllergies, AmendmentsForRecord
 from snomedct.models import SnomedConcept
 from datetime import datetime
 from .forms import MedicalReportFinaliseSubmitForm
@@ -9,26 +9,26 @@ UI_DATE_FORMAT = '%m/%d/%Y'
 
 def create_or_update_redaction_record(request, instruction):
     try:
-        redaction = Redaction.objects.get(instruction=instruction)
-    except Redaction.DoesNotExist:
-        redaction = Redaction()
-
+        redaction = AmendmentsForRecord.objects.get(instruction=instruction)
+    except AmendmentsForRecord.DoesNotExist:
+        redaction = AmendmentsForRecord()
+    status = request.POST.get('event_flag')
     if request.method == "POST":
         submit_form = MedicalReportFinaliseSubmitForm(request.user, request.POST)
+        if status == 'draft':
+            redaction.status = AmendmentsForRecord.REDACTION_STATUS_DRAFT
+        elif status == 'submit':
+            redaction.status = AmendmentsForRecord.REDACTION_STATUS_SUBMIT
+        else:
+            redaction.status = AmendmentsForRecord.REDACTION_STATUS_NEW
 
-        if submit_form.is_valid():
+        if submit_form.is_valid(post_data=request.POST):
+            # TODO redirect to report page
             redaction.review_by = submit_form.cleaned_data['gp_practitioner']
+            redaction.submit_choice = submit_form.cleaned_data['prepared_and_signed']
             redaction.prepared_by = submit_form.cleaned_data['prepared_by']
         else:
             messages.error(request, 'INVALID: Please Enter Reviewer')
-
-    status = request.POST.get('event_flag')
-    if status == 'draft':
-        redaction.status = Redaction.REDACTION_STATUS_DRAFT
-    elif status == 'submit':
-        redaction.status = Redaction.REDACTION_STATUS_SUBMIT
-    else:
-        redaction.status = Redaction.REDACTION_STATUS_NEW
 
     redaction.redacted_xpaths
     get_redation_xpaths(request, redaction)
@@ -41,6 +41,9 @@ def create_or_update_redaction_record(request, instruction):
 
     redaction.instruction = instruction
     redaction.save()
+
+    if status == 'draft':
+        messages.success(request, 'Save medical report successful')
 
 
 def get_redation_xpaths(request, redaction):
