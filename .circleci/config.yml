@@ -7,7 +7,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: medi-{{ .Branch }}-{{ checksum "config/requirements.txt" }}
+          key: medi-{{ checksum "config/requirements.txt" }}
       - run:
           name: Install dependencies
           command: |
@@ -15,7 +15,7 @@ jobs:
             . venv/bin/activate
             pip install -r config/requirements.txt
       - save_cache:
-          key: medi-{{ .Branch }}-{{ checksum "config/requirements.txt" }}
+          key: medi-{{ checksum "config/requirements.txt" }}
           paths:
             - "venv"
       - run:
@@ -66,6 +66,7 @@ workflows:
       - deploy_uat:
           requires:
             - build
+            - deploy_staging
           filters:
             branches:
               only:
