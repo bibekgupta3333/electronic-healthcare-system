@@ -203,3 +203,5 @@ PIPELINE_INSTRUCTION_LINK = 'http://medi.mohub.co/instruction/view_pipeline/'
 ACCOUNT_LINK = 'http://medi.mohub.co/accounts/view_account/'
 
 DUMMY_EMAIL_LIST = ['ben.blomerley@gmail.com', 'lontharn@gmail.com', 'mooauii.lazy@gmail.com']
+
+SITE_NAME = 'http://medi.mohub.co/'
