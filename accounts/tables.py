@@ -3,7 +3,7 @@ from .models import User
 
 
 class UserTable(tables.Table):
-    checkbox = tables.CheckBoxColumn(attrs={'id': 'check_all'})
+    chkbox = tables.CheckBoxColumn(attrs={'id': 'check_all'}, accessor="email")
 
     class Meta:
         attrs = {
@@ -11,5 +11,5 @@ class UserTable(tables.Table):
             'id': 'usersTable'
         }
         model = User
-        fields = ('checkbox', 'username', 'email', 'userprofilebase.generalpracticeuser.role')
+        fields = ('chkbox', 'username', 'email', 'userprofilebase.generalpracticeuser.role')
         template_name = 'django_tables2/semantic.html'

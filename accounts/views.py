@@ -66,16 +66,36 @@ def reset_password(request):
     return JsonResponse({"success": "true"})
 
 
-def remove_gpuser(user):
-    gpuser = User.objects.get(email=user.email)
-    gpuser.userprofilebase.delete()
-    messages.success(request, "The user is deleted")
+def manage_user(request):
+    if request.method == "POST":
+        actionType = request.POST.get("actionType")
+        emails = request.POST.getlist("users[]")
+        if actionType == "Remove":
+            for email in emails:
+                gpuser = User.objects.get(email=email)
+                gpuser.userprofilebase.delete()
+            if len(emails) == 1:
+                messages.success(request, "The selected user has been deleted.")
+            else:
+                messages.success(request, "Selected users have been deleted.")
+            return JsonResponse({"success": "true"})
+        elif actionType == "Change":
+            role = request.POST.get("role")
+            for email in emails:
+                gpuser = User.objects.get(email=email)
+                gpuser.userprofilebase.generalpracticeuser.role = role
+                gpuser.userprofilebase.generalpracticeuser.save()
+            if len(emails) == 1:
+                messages.success(request, "The role of selected user has been changed.")
+            else:
+                messages.success(request, "All the roles of the selected users have been changed.")
+            return JsonResponse({"success": "true"})
 
 
 def count_users(queryset):
     all_count = queryset.count()
-    pmanager_count = queryset.filter(is_staff=True).count()
-    gp_count = queryset.exclude(is_staff=True).count()
+    pmanager_count = queryset.filter(userprofilebase__generalpracticeuser__role=0).count()
+    gp_count = queryset.filter(userprofilebase__generalpracticeuser__role=1).count()
     sars_count = queryset.filter(userprofilebase__generalpracticeuser__role=2).count()
     overall_users_number = {
         'All': all_count,
