@@ -7,7 +7,7 @@ from django.utils.html import format_html
 
 
 # Create your models here.
-class AmendmentsForRecord (models.Model):
+class AmendmentsForRecord(models.Model):
     REDACTION_STATUS_NEW = 'NEW'
     REDACTION_STATUS_DRAFT = 'DRAFT'
     REDACTION_STATUS_SUBMIT = 'SUBMIT'
@@ -61,7 +61,7 @@ class AdditionalMedicationRecords(models.Model):
     dose = models.CharField(max_length=255)
     frequency = models.CharField(max_length=255)
     snomed_concept = models.ForeignKey(SnomedConcept, on_delete=models.CASCADE, null=True)
-    redaction = models.ForeignKey(AmendmentsForRecord, on_delete=models.CASCADE)
+    amendments_for_record = models.ForeignKey(AmendmentsForRecord, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     prescribed_from = models.DateField(null=True)
@@ -74,6 +74,6 @@ class AdditionalAllergies(models.Model):
     allergen = models.CharField(max_length=255)
     reaction = models.CharField(max_length=255)
     date_discovered = models.DateField(null=True)
-    redaction = models.ForeignKey(AmendmentsForRecord, on_delete=models.CASCADE)
+    amendments_for_record = models.ForeignKey(AmendmentsForRecord, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

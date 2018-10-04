@@ -20,11 +20,7 @@ class ReadCodeAdmin(admin.ModelAdmin):
     raw_id_fields = ("concept_id",)
 
 
-class CommonSnomedConceptsAdmin(admin.ModelAdmin):
-    raw_id_fields = ("snomed_concept",)
-
-
 admin.site.register(SnomedConcept, SnomedConceptsAdmin)
 # admin.site.register(SnomedDescendant, SnomedDescendantsAdmin)
 # admin.site.register(ReadCode, ReadCodeAdmin)
-admin.site.register(CommonSnomedConcepts, CommonSnomedConceptsAdmin)
+admin.site.register(CommonSnomedConcepts)

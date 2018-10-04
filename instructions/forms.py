@@ -9,22 +9,6 @@ from common.functions import multi_getattr
 from snomedct.models import CommonSnomedConcepts, SnomedConcept
 
 
-COMMON_CONDITION_KEY_LABEL_MAPPING = {
-    56265001: 'Heart disease',
-    235856003: 'Liver disease',
-    443820000: 'Kidney disease',
-    128237006: 'Musculoskeletal',
-    33308003: 'Musculoskeletal',
-    74732009: 'Mental Disorder',
-    19829001: 'Lung disease ',
-    73211009: 'Diabetes mellitus',
-    128999004: 'Inflammatory bowel',
-    363346000: 'Cancers',
-    80690008: 'Neurodegenerative',
-    42658009: 'Neurodegenerative'
-}
-
-
 class MyMultipleChoiceField(forms.MultipleChoiceField):
 
     def validate(self, value):
@@ -51,7 +35,7 @@ class ScopeInstructionForm(forms.Form):
         ]
 
         SCOPE_COMMON_CONDITION_CHOICES = [
-            [snomed.snomed_concept.external_id, COMMON_CONDITION_KEY_LABEL_MAPPING[snomed.snomed_concept.external_id]] for snomed in CommonSnomedConcepts.objects.all()
+            [common_snomed.snomed_concept_code, common_snomed.common_name] for common_snomed in CommonSnomedConcepts.objects.all()
         ]
 
         self.fields['common_condition'] = forms.MultipleChoiceField(choices=SCOPE_COMMON_CONDITION_CHOICES, widget=forms.CheckboxSelectMultiple(), required=False)

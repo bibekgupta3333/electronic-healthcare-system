@@ -19,6 +19,8 @@ from common.functions import multi_getattr
 from medi.settings.common import PIPELINE_INSTRUCTION_LINK, get_env_variable, DUMMY_EMAIL_LIST
 from snomedct.models import SnomedConcept
 
+from itertools import chain
+import ast
 
 def count_instructions(gp_practice_id, client_organisation):
     all_count = Instruction.objects.filter(
@@ -134,9 +136,10 @@ def new_instruction(request):
         scope_form = ScopeInstructionForm(request.user, request.POST, request.FILES,)
         patient_form = PatientForm(request.POST)
         addition_question_formset = AdditionQuestionFormset(request.POST)
-        common_condition_list = request.POST.getlist('common_condition')
+        raw_common_condition = request.POST.getlist('common_condition')
+        common_condition_list = list(chain.from_iterable([ast.literal_eval(item) for item in raw_common_condition]))
         addition_condition_list = request.POST.getlist('addition_condition')
-        condition_of_interests = common_condition_list + addition_condition_list
+        condition_of_interests = list(set().union(common_condition_list, addition_condition_list))
 
         # Is from NHS or gpOrganisation
         gp_practice_code = request.POST.get('gp_practice', None)

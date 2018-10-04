@@ -1,5 +1,6 @@
 from django.db import models
 from postgres_copy import CopyManager
+from django.contrib.postgres.fields import ArrayField
 
 
 # Create your models here.
@@ -63,7 +64,8 @@ class SnomedDescendant(models.Model):
 
 
 class CommonSnomedConcepts(models.Model):
-    snomed_concept = models.ForeignKey(SnomedConcept, on_delete=models.CASCADE, null=True)
+    common_name = models.CharField(max_length=255)
+    snomed_concept_code = ArrayField(models.BigIntegerField(blank=True, null=True), null=True)
 
     def __str__(self):
-        return "{} - {}".format(self.snomed_concept.fsn_description, self.snomed_concept.external_id)
+        return self.common_name
