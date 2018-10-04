@@ -38,6 +38,11 @@ jobs:
           working_directory: ~/repo
           command: |
             ssh $STAGING_USER@$STAGING_HOST "$STAGING_COMMAND"
+      - run:
+          name: Restart server
+          working_directory: ~/repo
+          command: |
+            ssh $STAGING_USER@$STAGING_HOST "$STAGING_RESTART"
   deploy_uat:
     machine:
       enable: true
@@ -50,6 +55,11 @@ jobs:
           working_directory: ~/repo
           command: |
             ssh $UAT_USER@$UAT_HOST "$UAT_COMMAND"
+      - run:
+          name: Restart server
+          working_directory: ~/repo
+          command: |
+            ssh $UAT_USER@$UAT_HOST "$UAT_RESTART"
 workflows:
   version: 2
   build-and-deploy:
