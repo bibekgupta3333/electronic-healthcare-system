@@ -202,8 +202,9 @@ def create_user(request):
                 messages.success(request, 'New User Account created successfully.')
                 return redirect("accounts:view_users")
             else:
-                gpuser = GeneralPracticeUser.objects.get(user__in=user)
                 messages.warning(request, 'General Practice Existing In Database')
+        else:
+            messages.warning(request, 'Please input all the fields properly.')
     gpuser_form = NewUserForm()
 
     response = render(request, 'user_management/new_user.html', {
