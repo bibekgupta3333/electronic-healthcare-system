@@ -12,14 +12,4 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='redaction',
-            name='submit_choice',
-            field=models.CharField(blank=True, choices=[('PREPARED_AND_SIGNED', 'Prepared and signed directly by'), ('PREPARED_AND_REVIEWED', 'Prepared by <span id="preparer"></span>  and reviewed by')], max_length=255),
-        ),
-        migrations.AlterField(
-            model_name='redaction',
-            name='review_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
-        ),
     ]
