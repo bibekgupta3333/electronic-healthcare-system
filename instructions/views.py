@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.db.models import Q
+from django.utils.dateparse import parse_datetime
 
 from django_tables2 import RequestConfig
 
@@ -10,7 +11,7 @@ from .models import Instruction, InstructionAdditionQuestion, InstructionConditi
 from .tables import InstructionTable
 from .model_choices import *
 from .forms import ScopeInstructionForm, AdditionQuestionFormset
-from accounts.models import User, Patient
+from accounts.models import User, Patient, GENERAL_PRACTICE_USER, CLIENT_USER
 from accounts.models import PATIENT_USER
 from accounts.forms import PatientForm, GPForm
 from organisations.forms import GeneralPracticeForm
@@ -19,27 +20,24 @@ from common.functions import multi_getattr
 from medi.settings.common import PIPELINE_INSTRUCTION_LINK, get_env_variable, DUMMY_EMAIL_LIST
 from snomedct.models import SnomedConcept
 
+import pytz
 from itertools import chain
 import ast
 
-def count_instructions(gp_practice_id, client_organisation):
-    all_count = Instruction.objects.filter(
-        Q(gp_practice_id=gp_practice_id) | Q(client_user__organisation=client_organisation)).count()
-    new_count = Instruction.objects.filter(
-        Q(gp_practice_id=gp_practice_id) | Q(client_user__organisation=client_organisation),
-        status=INSTRUCTION_STATUS_NEW).count()
-    progress_count = Instruction.objects.filter(
-        Q(gp_practice_id=gp_practice_id) | Q(client_user__organisation=client_organisation),
-        status=INSTRUCTION_STATUS_PROGRESS).count()
-    overdue_count = Instruction.objects.filter(
-        Q(gp_practice_id=gp_practice_id) | Q(client_user__organisation=client_organisation),
-        status=INSTRUCTION_STATUS_OVERDUE).count()
-    complete_count = Instruction.objects.filter(
-        Q(gp_practice_id=gp_practice_id) | Q(client_user__organisation=client_organisation),
-        status=INSTRUCTION_STATUS_COMPLETE).count()
-    rejected_count = Instruction.objects.filter(
-        Q(gp_practice_id=gp_practice_id) | Q(client_user__organisation=client_organisation),
-        status=INSTRUCTION_STATUS_REJECT).count()
+
+def count_instructions(gp_practice_id, client_organisation, medidata=False):
+    naive = parse_datetime("2000-01-1 00:00:00")
+    origin_date = pytz.timezone("Europe/London").localize(naive, is_dst=None)
+    query_condition = Q(created__gt=origin_date)
+    if not medidata:
+        query_condition = Q(gp_practice_id=gp_practice_id) | Q(client_user__organisation=client_organisation)
+
+    all_count = Instruction.objects.filter(query_condition).count()
+    new_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_NEW).count()
+    progress_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_PROGRESS).count()
+    overdue_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_OVERDUE).count()
+    complete_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_COMPLETE).count()
+    rejected_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_REJECT).count()
     overall_instructions_number = {
         'All': all_count,
         'New': new_count,
@@ -108,10 +106,13 @@ def instruction_pipeline_view(request):
 
     gp_practice_id = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.id', default=None)
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
-    instruction_query_set = instruction_query_set.filter(Q(gp_practice_id=gp_practice_id) |
-                                                         Q(client_user__organisation=client_organisation))
+    overall_instructions_number = count_instructions(gp_practice_id, client_organisation, medidata=True)
+    if request.user.type in [GENERAL_PRACTICE_USER, CLIENT_USER]:
+        instruction_query_set = instruction_query_set.filter(Q(gp_practice_id=gp_practice_id) |
+                                                             Q(client_user__organisation=client_organisation))
+        overall_instructions_number = count_instructions(gp_practice_id, client_organisation)
+
     table = InstructionTable(instruction_query_set)
-    overall_instructions_number = count_instructions(gp_practice_id, client_organisation)
     table.order_by = request.GET.get('sort', '-created')
     RequestConfig(request, paginate={'per_page': 5}).configure(table)
 
