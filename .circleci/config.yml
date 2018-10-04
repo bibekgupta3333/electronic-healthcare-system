@@ -26,6 +26,17 @@ jobs:
       - store_artifacts:
           path: test-reports
           destination: test-reports
+  sonarqube:
+    docker:
+      - image: circleci/node:9
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run:
+          name: Run sonarqube
+          command: |
+            sudo npm install -g sonarqube-scanner
+            sudo sonar-scanner -Dsonar.projectKey=Medidata-$CIRCLE_BRANCH -Dsonar.projectName=MediData-$CIRCLE_BRANCH $SONAR_COMMAND
   deploy_staging:
     machine:
       enable: true
@@ -65,9 +76,17 @@ workflows:
   build-and-deploy:
     jobs:
       - build
+      - sonarqube:
+          filters:
+            branches:
+              only:
+                - master
+                - develop
+                - test
       - deploy_staging:
           requires:
             - build
+            - sonarqube
           filters:
             branches:
               only:
@@ -76,6 +95,7 @@ workflows:
       - deploy_uat:
           requires:
             - build
+            - sonarqube
             - deploy_staging
           filters:
             branches:
