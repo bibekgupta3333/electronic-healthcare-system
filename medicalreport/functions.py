@@ -9,49 +9,49 @@ UI_DATE_FORMAT = '%m/%d/%Y'
 
 def create_or_update_redaction_record(request, instruction):
     try:
-        redaction = AmendmentsForRecord.objects.get(instruction=instruction)
+        amendments_for_record = AmendmentsForRecord.objects.get(instruction=instruction)
     except AmendmentsForRecord.DoesNotExist:
-        redaction = AmendmentsForRecord()
+        amendments_for_record = AmendmentsForRecord()
     status = request.POST.get('event_flag')
     if request.method == "POST":
         submit_form = MedicalReportFinaliseSubmitForm(request.user, request.POST)
         if status == 'draft':
-            redaction.status = AmendmentsForRecord.REDACTION_STATUS_DRAFT
+            amendments_for_record.status = AmendmentsForRecord.REDACTION_STATUS_DRAFT
         elif status == 'submit':
-            redaction.status = AmendmentsForRecord.REDACTION_STATUS_SUBMIT
+            amendments_for_record.status = AmendmentsForRecord.REDACTION_STATUS_SUBMIT
         else:
-            redaction.status = AmendmentsForRecord.REDACTION_STATUS_NEW
+            amendments_for_record.status = AmendmentsForRecord.REDACTION_STATUS_NEW
 
         if submit_form.is_valid(post_data=request.POST):
             # TODO redirect to report page
-            redaction.review_by = submit_form.cleaned_data['gp_practitioner']
-            redaction.submit_choice = submit_form.cleaned_data['prepared_and_signed']
-            redaction.prepared_by = submit_form.cleaned_data['prepared_by']
+            amendments_for_record.review_by = submit_form.cleaned_data['gp_practitioner']
+            amendments_for_record.submit_choice = submit_form.cleaned_data['prepared_and_signed']
+            amendments_for_record.prepared_by = submit_form.cleaned_data['prepared_by']
         else:
             messages.error(request, 'INVALID: Please Enter Reviewer')
 
-    redaction.redacted_xpaths
-    get_redation_xpaths(request, redaction)
-    get_redaction_notes(request, redaction)
-    get_additional_medication(request, redaction)
-    get_additional_allergies(request, redaction)
+    amendments_for_record.redacted_xpaths
+    get_redation_xpaths(request, amendments_for_record)
+    get_redaction_notes(request, amendments_for_record)
+    get_additional_medication(request, amendments_for_record)
+    get_additional_allergies(request, amendments_for_record)
 
     delete_additional_medication_records(request)
     delete_additional_allergies_records(request)
 
-    redaction.instruction = instruction
-    redaction.save()
+    amendments_for_record.instruction = instruction
+    amendments_for_record.save()
 
     if status == 'draft':
         messages.success(request, 'Save medical report successful')
 
 
-def get_redation_xpaths(request, redaction):
+def get_redation_xpaths(request, amendments_for_record):
     redaction_xpaths = request.POST.getlist('redaction_xpaths')
-    redaction.redacted_xpaths = redaction_xpaths
+    amendments_for_record.redacted_xpaths = redaction_xpaths
 
 
-def get_redaction_notes(request, redaction):
+def get_redaction_notes(request, amendments_for_record):
     acute_notes = request.POST.get('redaction_acute_prescription_notes')
     repeat_notes = request.POST.get('redaction_repeat_prescription_notes')
     consultation_notes = request.POST.get('redaction_consultation_notes')
@@ -60,16 +60,16 @@ def get_redaction_notes(request, redaction):
     bloods_notes = request.POST.get('redaction_bloods_notes')
     attachment_notes = request.POST.get('redaction_attachment_notes')
 
-    redaction.acute_prescription_notes = acute_notes
-    redaction.repeat_prescription_notes = repeat_notes
-    redaction.consultation_notes = consultation_notes
-    redaction.referral_notes = referral_notes
-    redaction.significant_problem_notes = significant_problem_notes
-    redaction.bloods_notes = bloods_notes
-    redaction.attachment_notes = attachment_notes
+    amendments_for_record.acute_prescription_notes = acute_notes
+    amendments_for_record.repeat_prescription_notes = repeat_notes
+    amendments_for_record.consultation_notes = consultation_notes
+    amendments_for_record.referral_notes = referral_notes
+    amendments_for_record.significant_problem_notes = significant_problem_notes
+    amendments_for_record.bloods_notes = bloods_notes
+    amendments_for_record.attachment_notes = attachment_notes
 
 
-def get_additional_allergies(request, redaction):
+def get_additional_allergies(request, amendments_for_record):
     additional_allergies_allergen = request.POST.get('additional_allergies_allergen')
     additional_allergies_reaction = request.POST.get('additional_allergies_reaction')
     additional_allergies_date_discovered = request.POST.get('additional_allergies_date_discovered')
@@ -82,11 +82,11 @@ def get_additional_allergies(request, redaction):
         if additional_allergies_date_discovered:
             record.date_discovered = datetime.strptime(additional_allergies_date_discovered, UI_DATE_FORMAT)
 
-        record.redaction = redaction
+        record.amendments_for_record = amendments_for_record
         record.save()
 
 
-def get_additional_medication(request, redaction):
+def get_additional_medication(request, amendments_for_record):
     additional_medication_type = request.POST.get('additional_medication_records_type')
     additional_medication_snomedct = request.POST.get('additional_medication_related_condition')
     additional_medication_drug = request.POST.get('additional_medication_drug')
@@ -119,7 +119,7 @@ def get_additional_medication(request, redaction):
         if additional_medication_prescribed_to:
             record.prescribed_to = datetime.strptime(additional_medication_prescribed_to, UI_DATE_FORMAT)
 
-        record.redaction = redaction
+        record.amendments_for_record = amendments_for_record
         record.save()
 
 

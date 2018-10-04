@@ -41,13 +41,13 @@ class AmendmentsForRecord(models.Model):
     status = models.CharField(choices=REDACTION_STATUS_CHOICES, max_length=6, default=REDACTION_STATUS_NEW)
 
     def additional_acute_medications(self):
-        return AdditionalMedicationRecords.objects.filter(redaction=self.id, repeat=False)
+        return AdditionalMedicationRecords.objects.filter(amendments_for_record=self.id, repeat=False)
 
     def additional_repeat_medications(self):
-        return AdditionalMedicationRecords.objects.filter(redaction=self.id, repeat=True)
+        return AdditionalMedicationRecords.objects.filter(amendments_for_record=self.id, repeat=True)
 
     def additional_allergies(self):
-        return AdditionalAllergies.objects.filter(redaction=self.id)
+        return AdditionalAllergies.objects.filter(amendments_for_record=self.id)
 
     def redacted(self, xpaths):
         if self.redacted_xpaths is not None:
