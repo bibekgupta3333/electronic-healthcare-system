@@ -61,10 +61,11 @@
         </div>
         <div class="row bottom-line">
             <div class="col-md-3 labelText"><label>Role</label></div>
+            <input type="hidden" id="user_role" name="user_role">
             <div class="col-md-4 inputDiv rolebox">
                 <div class="checkbox rolechk">
                     <div class="pretty p-default">
-                        <input type="checkbox"/>
+                        <input type="checkbox" id="pm_role" value="0"/>
                         <div class="state p-primary">
                             <label>Practice Manager</label>
                         </div>
@@ -72,7 +73,7 @@
                 </div>
                 <div class="checkbox rolechk">
                     <div class="pretty p-default">
-                        <input type="checkbox"/>
+                        <input type="checkbox" id="gp_role" value="1"/>
                         <div class="state p-primary">
                             <label>GP</label>
                         </div>
@@ -80,7 +81,7 @@
                 </div>
                 <div class="checkbox rolechk">
                     <div class="pretty p-default">
-                        <input type="checkbox"/>
+                        <input type="checkbox" id="sars_role" value="2"/>
                         <div class="state p-primary">
                             <label>SARS responder</label>
                         </div>
@@ -125,13 +126,23 @@
 
 {% block Script %}
     <script>
-        $("#passbtn").click(function(){
-            $("input[name=password]").val("medi2018");
-            alert("Password generated");
-        });
-        $("#createuser").on("submit", function(event) {
-            var sortcode = $("#sortcode1").val() + $("#sortcode2").val() + $("#sortcode3").val();
-            $("input[name=payment_bank_sort_code").val(sortcode);
+        $(document).ready(function(){
+            $("#passbtn").click(function(){
+                $("input[name=password]").val("medi2018");
+                alert("Password generated");
+            });
+            $('.rolebox input[type="checkbox"]').click(function(){
+                if($(this).is(":checked")){
+                    $("#user_role").val($(this).val());
+                }
+                else if($(this).is(":not(:checked)")){
+                    $("#user_role").val("");
+                }
+            });
+            $("#createuser").on("submit", function(event) {
+                var sortcode = $("#sortcode1").val() + $("#sortcode2").val() + $("#sortcode3").val();
+                $("input[name=payment_bank_sort_code").val(sortcode);
+            });
         });
     </script>
 {% endblock %}

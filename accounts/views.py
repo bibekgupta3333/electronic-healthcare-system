@@ -147,6 +147,7 @@ def create_user(request):
 
     if request.method == 'POST':
         gpuser_form = NewUserForm(request.POST)
+        user_role = request.POST.get("user_role")
         if gpuser_form.is_valid():
             user = User.objects.filter(
                 Q(username=gpuser_form.cleaned_data['username']) |
@@ -165,7 +166,7 @@ def create_user(request):
                 to_email = gpuser_form.cleaned_data['email']
                 gpuser = gpuser_form.save(commit=False)
                 gpuser.organisation = organisation
-                gpuser.role = GENERAL_PRACTICE
+                gpuser.role = user_role
                 gpuser.user = user
                 gpuser.save()
                 if gpuser_form.cleaned_data['send_email']:
