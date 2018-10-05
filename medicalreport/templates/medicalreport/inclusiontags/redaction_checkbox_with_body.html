@@ -6,7 +6,7 @@
            value="{{ xpath }}">
     {% endfor %}
     <span class="redaction-checkbox__icon float-right fas fa-check-circle"></span>
-    <span class="redaction-checkbox__header">{{ header }}</span>
+    <span class="redaction-checkbox__header" title="{{ header }}" data-toggle="tooltip">{{ header }}</span>
     <span class="redaction-checkbox__text">{{ body }}</span>
 </label>
 </div>
