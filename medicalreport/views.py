@@ -53,12 +53,14 @@ def select_patient(request, instruction_id, patient_emis_number):
 def set_patient_emis_number(request, instruction_id):
     instruction = Instruction.objects.get(id=instruction_id)
     dummy_patient = DummyPatient(instruction.patient.user.first_name, instruction.patient.user.last_name, instruction.patient.date_of_birth)
+    dummy_instruction = DummyInstruction(instruction)
     patient_list = get_matched_patient(dummy_patient)
 
     return render(request, 'medicalreport/patient_emis_number.html', {
         'patient_list': patient_list,
         'reject_types': INSTRUCTION_REJECT_TYPE,
-        'instruction': instruction
+        'instruction': instruction,
+        'dummy_instruction': dummy_instruction
     })
 
 
