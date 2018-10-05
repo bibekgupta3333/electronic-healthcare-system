@@ -17,7 +17,8 @@ from accounts.forms import PatientForm, GPForm
 from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice, NHSgpPractice
 from common.functions import multi_getattr
-from medi.settings.common import PIPELINE_INSTRUCTION_LINK, get_env_variable, DUMMY_EMAIL_LIST
+from medi.utils import get_env_variable
+from medi.settings.common import PIPELINE_INSTRUCTION_LINK, DUMMY_EMAIL_LIST
 from snomedct.models import SnomedConcept
 
 import pytz

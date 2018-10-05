@@ -10,9 +10,20 @@ class EmisAPIServiceBase(object):
         if self.emis_api_config is None:
             raise ValueError('Unable to get EMIS API Configuration')
 
+    def uri(self):
+        raise NotImplementedError(
+            "Inheriting classes must implement this method."
+        )
+
     def call(self):
         request_uri = self.uri()
-        r = requests.get(request_uri, auth=(self.emis_api_config.emis_username, self.emis_api_config.emis_password))
+        r = requests.get(
+            request_uri,
+            auth=(
+                self.emis_api_config.emis_username,
+                self.emis_api_config.emis_password
+            )
+        )
         r.raise_for_status()
         return r.text
 

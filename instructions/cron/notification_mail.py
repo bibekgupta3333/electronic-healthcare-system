@@ -4,11 +4,13 @@ from django.utils import timezone
 from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS
 from accounts.models import User
-from medi.settings.common import PIPELINE_INSTRUCTION_LINK
-from medi.settings.common import get_env_variable
+from medi.utils import get_env_variable
 
 from smtplib import SMTPException
 import logging
+
+from django.conf import settings
+PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
 
 
 def instruction_notification_email_job():

@@ -79,4 +79,4 @@ class ConsultationElement(XMLModelBase):
         if problem is not None:
             return problem.is_significant()
         else:
-            False
+            return False

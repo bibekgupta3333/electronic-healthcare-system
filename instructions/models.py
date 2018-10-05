@@ -7,7 +7,8 @@ from common.models import TimeStampedModel
 from accounts.models import ClientUser, GeneralPracticeUser, Patient
 from snomedct.models import SnomedConcept
 from .model_choices import *
-from medi.settings.common import PIPELINE_INSTRUCTION_LINK, get_env_variable
+from medi.settings.common import PIPELINE_INSTRUCTION_LINK
+from medi.utils import get_env_variable
 
 
 class Instruction(TimeStampedModel, models.Model):
@@ -54,7 +55,7 @@ class Instruction(TimeStampedModel, models.Model):
             auth_password=get_env_variable('SENDGRID_PASS'),
         )
 
-    def snomed_concepts_readcords(self):
+    def snomed_concepts_readcodes(self):
         snomed_concepts = SnomedConcept.objects.filter(instructionconditionsofinterest__instruction=self.id)
         snomed_concepts_list = []
         readcodes_list = []
@@ -72,7 +73,7 @@ class Instruction(TimeStampedModel, models.Model):
 
         return (snomed_concepts_list, readcodes_list)
 
-    def selected_snomed_conceptes(self):
+    def selected_snomed_concepts(self):
         return SnomedConcept.objects.filter(instructionconditionsofinterest__instruction=self.id)
 
 

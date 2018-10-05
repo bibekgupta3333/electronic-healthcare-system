@@ -23,4 +23,4 @@ class DummyInstruction(object):
     def __init__(self, instruction):
         self.id = instruction.id
         self.client = DummyClient(instruction.client_user.organisation)
-        self.selected_snomed_concepts = instruction.selected_snomed_conceptes()
+        self.selected_snomed_concepts = instruction.selected_snomed_concepts()

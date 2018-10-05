@@ -6,7 +6,7 @@ class SocialConsultationElement(XMLModelBase):
     XPATH = ".//ConsultationElement[Header/Term='Social']"
 
     def date(self):
-        self.parsed_xml.find('Event/AssignedDate').text
+        return self.parsed_xml.find('Event/AssignedDate').text
 
     def description(self):
         display_term = self.parsed_xml.find('Event/DisplayTerm').text

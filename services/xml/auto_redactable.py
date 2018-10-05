@@ -8,7 +8,7 @@ def years_ago(years, current_date):
 
 
 def auto_redact_by_conditions(models, instruction):
-    snomed_concepts, readcodes = instruction.snomed_concepts_readcords()
+    snomed_concepts, readcodes = instruction.snomed_concepts_readcodes()
     redactor = ConditionsRedactor(concepts=snomed_concepts, codes=readcodes)
     filtered_list = filter(lambda m: redactor.is_redact(m) is not True, models)
     return list(filtered_list)

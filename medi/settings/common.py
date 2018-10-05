@@ -14,12 +14,7 @@ import os
 from django.contrib.messages import constants as messages
 from django.core.exceptions import ImproperlyConfigured
 
-
-def get_env_variable(name):
-    try:
-        return os.environ[name]
-    except KeyError:
-        raise ImproperlyConfigured('Environment variable {name} not found.'.format(name=name))
+from medi.utils import get_env_variable
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)

@@ -4,7 +4,8 @@ class DateRedactor(object):
         self.start_date = start_date
 
     def is_redact(self, model):
-        if model.parsed_date() is not None:
-            if model.parsed_date() < self.start_date:
+        parsed_date = model.parsed_date()
+        if parsed_date is not None:
+            if parsed_date < self.start_date:
                 return True
         return False
