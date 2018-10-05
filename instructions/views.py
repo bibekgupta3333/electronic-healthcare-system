@@ -158,7 +158,7 @@ def new_instruction(request):
                 user = User.objects.create(
                     username="{}.{}".format(patient_form.cleaned_data['first_name'], patient_form.cleaned_data['last_name'][0]),
                     password="{}.medi2018".format(patient_form.cleaned_data['first_name']),
-                    email=patient_form.cleaned_data['email'],
+                    email="{}.{}@medidata.com".format(patient_form.cleaned_data['first_name'], patient_form.cleaned_data['last_name'][0]),
                     type=PATIENT_USER,
                     first_name=patient_form.cleaned_data['first_name'],
                     last_name=patient_form.cleaned_data['last_name']
