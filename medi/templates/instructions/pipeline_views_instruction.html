@@ -70,6 +70,8 @@
         $(document).ready(function () {
             $('#instructionsTable').DataTable();
             $('.dataTables_filter, .dataTables_info, .dataTables_paginate, .dataTables_length').hide();
+            $('th.gp_practice > a').text('GP Practice');
+            $('th.gp_practice > a').click(false);
 
             $("<li class='page-item {{ next_prev_data|keyvalue:'prev_disabled' }}'><a class='page-link'" +
                 "href='{% url 'instructions:view_pipeline' %}?page={{ next_prev_data|keyvalue:'prev_page' }}&status={{ next_prev_data|keyvalue:'status' }}&type={{ next_prev_data|keyvalue:'type' }}'>&lt;</a>/li").insertAfter('.prev');
