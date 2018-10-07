@@ -151,3 +151,11 @@ def problem_redaction_checkboxes(model, redaction, problem_linked_lists, header=
         'xpaths': xpaths,
         'header': header
     }
+
+
+@register.inclusion_tag('medicalreport/inclusiontags/form_comments.html', takes_context=True)
+def form_comments(context):
+    return {
+        'comment_notes': context['redaction'].comment_notes
+    }
+

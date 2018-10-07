@@ -39,6 +39,7 @@ class AmendmentsForRecord(models.Model):
     review_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     prepared_by = models.CharField(max_length=255, blank=True)
     status = models.CharField(choices=REDACTION_STATUS_CHOICES, max_length=6, default=REDACTION_STATUS_NEW)
+    comment_notes = models.TextField(null=True)
 
     def additional_acute_medications(self):
         return AdditionalMedicationRecords.objects.filter(amendments_for_record=self.id, repeat=False)

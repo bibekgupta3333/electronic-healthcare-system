@@ -59,6 +59,7 @@ def get_redaction_notes(request, amendments_for_record):
     significant_problem_notes = request.POST.get('redaction_significant_problem_notes')
     bloods_notes = request.POST.get('redaction_bloods_notes')
     attachment_notes = request.POST.get('redaction_attachment_notes')
+    comment_notes = request.POST.get('redaction_comment_notes')
 
     amendments_for_record.acute_prescription_notes = acute_notes
     amendments_for_record.repeat_prescription_notes = repeat_notes
@@ -67,6 +68,7 @@ def get_redaction_notes(request, amendments_for_record):
     amendments_for_record.significant_problem_notes = significant_problem_notes
     amendments_for_record.bloods_notes = bloods_notes
     amendments_for_record.attachment_notes = attachment_notes
+    amendments_for_record.comment_notes = comment_notes
 
 
 def get_additional_allergies(request, amendments_for_record):
