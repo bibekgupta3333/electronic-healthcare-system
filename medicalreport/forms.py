@@ -25,9 +25,17 @@ class MedicalReportFinaliseSubmitForm(forms.Form):
     def is_valid(self, post_data):
         super().is_valid()
         if post_data['event_flag'] == 'submit' and not post_data['gp_practitioner']:
+            self._errors = 'Please Enter Reviewer'
             return False
-        if post_data['prepared_and_signed'] == 'PREPARED_AND_SIGNED' and post_data['prepared_by']:
+
+        if 'prepared_and_signed' not in post_data:
+            self._errors = 'Please Select Choice'
             return False
+
+        if 'prepared_and_signed' in post_data:
+            if post_data['prepared_and_signed'] == 'PREPARED_AND_REVIEWED' and not post_data['prepared_by']:
+                self._errors = 'Please Enter Preparer'
+                return False
 
         return True
 

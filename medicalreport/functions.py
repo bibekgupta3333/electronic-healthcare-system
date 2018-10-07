@@ -2,7 +2,9 @@ from .models import AdditionalMedicationRecords, AdditionalAllergies, Amendments
 from snomedct.models import SnomedConcept
 from datetime import datetime
 from .forms import MedicalReportFinaliseSubmitForm
+from django.shortcuts import redirect
 from django.contrib import messages
+from instructions import models
 
 UI_DATE_FORMAT = '%m/%d/%Y'
 
@@ -13,6 +15,17 @@ def create_or_update_redaction_record(request, instruction):
     except AmendmentsForRecord.DoesNotExist:
         amendments_for_record = AmendmentsForRecord()
     status = request.POST.get('event_flag')
+
+    get_redation_xpaths(request, amendments_for_record)
+    get_redaction_notes(request, amendments_for_record)
+    get_additional_medication(request, amendments_for_record)
+    get_additional_allergies(request, amendments_for_record)
+
+    delete_additional_medication_records(request)
+    delete_additional_allergies_records(request)
+
+    amendments_for_record.instruction = instruction
+
     if request.method == "POST":
         submit_form = MedicalReportFinaliseSubmitForm(request.user, request.POST)
         if status == 'draft':
@@ -27,23 +40,21 @@ def create_or_update_redaction_record(request, instruction):
             amendments_for_record.review_by = submit_form.cleaned_data['gp_practitioner']
             amendments_for_record.submit_choice = submit_form.cleaned_data['prepared_and_signed']
             amendments_for_record.prepared_by = submit_form.cleaned_data['prepared_by']
+            instruction.status = models.INSTRUCTION_STATUS_COMPLETE
+            instruction.save()
+            amendments_for_record.save()
+            messages.success(request, 'Completed Medical Report')
+            return True
         else:
-            messages.error(request, 'INVALID: Please Enter Reviewer')
+            messages.error(request, submit_form._errors)
+            return False
 
-    amendments_for_record.redacted_xpaths
-    get_redation_xpaths(request, amendments_for_record)
-    get_redaction_notes(request, amendments_for_record)
-    get_additional_medication(request, amendments_for_record)
-    get_additional_allergies(request, amendments_for_record)
-
-    delete_additional_medication_records(request)
-    delete_additional_allergies_records(request)
-
-    amendments_for_record.instruction = instruction
     amendments_for_record.save()
 
     if status == 'draft':
-        messages.success(request, 'Save medical report successful')
+        messages.success(request, 'Save Medical Report Successful')
+
+    return True
 
 
 def get_redation_xpaths(request, amendments_for_record):

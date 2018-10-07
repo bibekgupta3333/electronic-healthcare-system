@@ -150,16 +150,19 @@ def new_instruction(request):
             gp_practice = NHSgpPractice.objects.filter(code=gp_practice_code).first()
 
         if patient_form.is_valid() and scope_form.is_valid() and gp_practice:
+            patient_email = patient_form.cleaned_data['email'] if patient_form.cleaned_data['email'] else "{}.{}@medidata.com".format(
+                patient_form.cleaned_data['first_name'], patient_form.cleaned_data['last_name'][0]
+            )
             # find existing user if no create patient user
             user = User.objects.filter(
                 Q(username="{}.{}".format(patient_form.cleaned_data['first_name'], patient_form.cleaned_data['last_name'][0])) |
-                Q(email=patient_form.cleaned_data['email'])
+                Q(email=patient_email)
             )
             if not user.exists():
                 user = User.objects.create(
                     username="{}.{}".format(patient_form.cleaned_data['first_name'], patient_form.cleaned_data['last_name'][0]),
                     password="{}.medi2018".format(patient_form.cleaned_data['first_name']),
-                    email="{}.{}@medidata.com".format(patient_form.cleaned_data['first_name'], patient_form.cleaned_data['last_name'][0]),
+                    email=patient_email,
                     type=PATIENT_USER,
                     first_name=patient_form.cleaned_data['first_name'],
                     last_name=patient_form.cleaned_data['last_name']
