@@ -78,6 +78,8 @@ class User(AbstractUser):
                 return User.objects.filter(userprofilebase__clientuser__organisation=organisation)
             else:
                 return User.objects.all()
+        else:
+            return None
 
     def get_my_role(self):
         if self.type == MEDIDATA_USER:
@@ -130,6 +132,15 @@ class MedidataUser(UserProfileBase):
 
 
 class ClientUser(UserProfileBase):
+    CLIENT_ADMIN = 0
+    CLIENT_USER = 1
+
+    ROLE_CHOICES = (
+        (CLIENT_ADMIN, 'Client Admin'),
+        (CLIENT_USER, 'Client')
+    )
+
+    role = models.IntegerField(choices=ROLE_CHOICES, null=True, blank=True, verbose_name='Role')
     organisation = models.ForeignKey(OrganisationClient, on_delete=models.CASCADE)
 
     class Meta:

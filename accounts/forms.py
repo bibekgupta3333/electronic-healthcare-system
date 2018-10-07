@@ -1,5 +1,5 @@
 from django import forms
-from .models import Patient, GeneralPracticeUser
+from .models import Patient, GeneralPracticeUser, ClientUser
 from medi.settings.common import DATE_INPUT_FORMATS
 
 
@@ -39,7 +39,7 @@ class GPForm(forms.ModelForm):
         }
 
 
-class NewUserForm(forms.ModelForm):
+class NewGPForm(forms.ModelForm):
     
     first_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
     last_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
@@ -60,3 +60,16 @@ class NewUserForm(forms.ModelForm):
             'payment_bank_account_number': '',
             'payment_bank_sort_code': ''
         }
+
+class NewClientForm(forms.ModelForm):
+    
+    first_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
+    last_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), label='', required=True)
+    username = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
+    password = forms.CharField(required=True, widget=forms.HiddenInput())
+    send_email = forms.BooleanField(required=False, initial=False)
+
+    class Meta:
+        model = ClientUser
+        fields = ('first_name', 'last_name', 'email', 'username', 'password', 'send_email')

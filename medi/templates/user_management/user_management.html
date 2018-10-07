@@ -26,11 +26,20 @@
         </div>
         <div class="row overall-number">
             <div class="col-md-12">
-                {% for k, v in overall_users_number.items %}
-                    <div class="number" id="{{ k|cut:' ' }}">
-                        <a href="#" onclick="userStatusFilter('{{ k }}');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a>
-                    </div>
-                {% endfor %}
+                {% if user_type == "gp" %}
+                    {% for k, v in overall_users_number.items %}
+                        <div class="number" id="{{ k|cut:' ' }}">
+                            <a href="#" onclick="gpuserStatusFilter('{{ k }}');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                {% if user_type == "client" %}
+                    {% for k, v in overall_users_number.items %}
+                        <div class="number" id="{{ k|cut:' ' }}">
+                            <a href="#" onclick="clientuserStatusFilter('{{ k }}');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a>
+                        </div>
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
         <form action="{% url 'accounts:manage_user' %}" method="POST" id="tableForm">
@@ -46,12 +55,21 @@
                     {% bootstrap_button 'Apply' button_type="button" button_class="btn-primary"%}
                 </div>
                 <div class="col-md-2">
+                    {% if user_type == "gp" %}
                     <select class="form-control" id="userRoleSelect">
                         <option selected disabled>Change Role</option>
                         <option value="0">Practice Manager</option>
                         <option value="1">General Practice</option>
                         <option value="2">SARS Responder</option>
                     </select>
+                    {% endif %}
+                    {% if user_type == "client" %}
+                    <select class="form-control" id="userRoleSelect">
+                        <option selected disabled>Change Role</option>
+                        <option value="0">Client Admin</option>
+                        <option value="1">Client</option>
+                    </select>
+                    {% endif %}
                 </div>
                 <div class="col-md-2">
                     <input type="submit" id="userRoleBtn" value="Change" class="btn btn-primary" disabled="disabled">
@@ -106,7 +124,7 @@
             $('.pager').hide();
             if(getUrlParameter('status')){
                 status = getUrlParameter('status');
-                var key = getObjectKeyByValue(user_roleDict, status);
+                var key = getObjectKeyByValue(gpuser_roleDict, status);
                 $('#' + key.replace(' ', '')).css("background-color", "rgba(0, 0, 0, 0.1)");
             } else {
                 $('#All').css("background-color", "rgba(0, 0, 0, 0.1)");

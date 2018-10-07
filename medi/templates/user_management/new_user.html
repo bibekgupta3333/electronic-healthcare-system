@@ -13,36 +13,36 @@
 {% block Content %}
     <form action="{% url 'accounts:create_user' %}" method="post" id="createuser">
         {% csrf_token %}
-        {{ gpuser_form.non_field_errors }}
+        {{ newuser_form.non_field_errors }}
           
         <div class="row">
             <div class="col-md-3 labelText"><label>First Name</label></div>
             <div class="col-md-4 inputDiv">
-                {% bootstrap_field gpuser_form.first_name %}
+                {% bootstrap_field newuser_form.first_name %}
             </div>
         </div>
         <div class="row">
             <div class="col-md-3 labelText"><label>Last Name</label></div>
             <div class="col-md-4 inputDiv">
-                {% bootstrap_field gpuser_form.last_name %}
+                {% bootstrap_field newuser_form.last_name %}
             </div>
         </div>
         <div class="row">
             <div class="col-md-3 labelText"><label>Email</label></div>
             <div class="col-md-4 inputDiv">
-                {% bootstrap_field gpuser_form.email %}
+                {% bootstrap_field newuser_form.email %}
             </div>
         </div>
         <div class="row">
             <div class="col-md-3 labelText"><label>Username</label></div>
             <div class="col-md-4 inputDiv">
-                {% bootstrap_field gpuser_form.username %}
+                {% bootstrap_field newuser_form.username %}
             </div>
         </div>
         <div class="row">
             <div class="col-md-3 labelText"><label>Password</label></div>
             <div class="col-md-4 inputDiv">
-                {% bootstrap_field gpuser_form.password %}
+                {% bootstrap_field newuser_form.password %}
                 <button id="passbtn" type="button" class="btn">Generate Password</button> 
             </div>
         </div>
@@ -51,7 +51,7 @@
             <div class="col-md-4 inputDiv">
                 <div class="sendemail">
                     <div class="pretty p-default">
-                        {{ gpuser_form.send_email }}
+                        {{ newuser_form.send_email }}
                         <div class="state p-primary">
                             <label>Send the new user an email about their account</label>
                         </div>
@@ -62,6 +62,7 @@
         <div class="row bottom-line">
             <div class="col-md-3 labelText"><label>Role</label></div>
             <input type="hidden" id="user_role" name="user_role">
+            {% if user_type == "gp" %}
             <div class="col-md-4 inputDiv rolebox">
                 <div class="checkbox rolechk">
                     <div class="pretty p-default">
@@ -88,26 +89,48 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
+            {% if user_type == "client" %}
+            <div class="col-md-4 inputDiv rolebox">
+                <div class="checkbox rolechk">
+                    <div class="pretty p-default">
+                        <input type="checkbox" id="cadmin_role" value="0"/>
+                        <div class="state p-primary">
+                            <label>Client Admin</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="checkbox rolechk">
+                    <div class="pretty p-default">
+                        <input type="checkbox" id="client_role" value="1"/>
+                        <div class="state p-primary">
+                            <label>Client</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
+        {% if user_type == "gp" %}
         <div class="paragraph bottom-line">
             <div class="row banktitle"><label>Bank Details</label></div>
             <div class="row">
                 <div class="col-md-3 labelText"><label>Name of Bank</label></div>
                 <div class="col-md-4 inputDiv">
-                    {% bootstrap_field gpuser_form.payment_bank_holder_name %}
+                    {% bootstrap_field newuser_form.payment_bank_holder_name %}
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-3 labelText"><label>Account Number</label></div>
                 <div class="col-md-4 inputDiv">
-                    {% bootstrap_field gpuser_form.payment_bank_account_number %}
+                    {% bootstrap_field newuser_form.payment_bank_account_number %}
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-3 labelText"><label>Sort Code</label></div>
                 <div class="col-md-4 inputDiv">
                     <div class="row">
-                        {% bootstrap_field gpuser_form.payment_bank_sort_code %}
+                        {% bootstrap_field newuser_form.payment_bank_sort_code %}
                         <div class="sortcode"><input id="sortcode1" type="text" class="form-control" required="true"></div>
                         <p class="cusline">-</p>
                         <div class="sortcode"><input id="sortcode2" type="text" class="form-control" required="true"></div>
@@ -117,6 +140,7 @@
                 </div>
             </div>
         </div>
+        {% endif %}
         <div class="paragraph">
             <input id="submitbtn" type="submit" class="btn btn-primary" value="Add New User">
         </div>

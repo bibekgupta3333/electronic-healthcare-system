@@ -11,9 +11,9 @@ from payment.models import OrganisationFee
 from django_tables2 import RequestConfig
 
 from .models import User, UserProfileBase, GeneralPracticeUser
-from .models import GENERAL_PRACTICE_USER
-from .forms import NewUserForm
-from .tables import UserTable
+from .models import GENERAL_PRACTICE_USER, CLIENT_USER
+from .forms import NewGPForm, NewClientForm
+from .tables import GPUserTable, ClientUserTable
 from medi.settings.common import DEFAULT_FROM_EMAIL
 from medi.settings.common import ACCOUNT_LINK, get_env_variable
 
@@ -55,8 +55,8 @@ def reset_password(request):
     user.set_password(password)
     user.save()
     send_mail(
-        'Your GP account password has been changed',
-        'Your GP account password has been changed by your manager. Password: {}'.format(password),
+        'Your account password has been changed',
+        'Your account password has been changed by your manager. Password: {}'.format(password),
         DEFAULT_FROM_EMAIL,
         [user.email],
         fail_silently=False,
@@ -68,12 +68,14 @@ def reset_password(request):
 
 def manage_user(request):
     if request.method == "POST":
+        cur_user = request.user
+        cur_user = User.objects.get(username=cur_user.username)
         actionType = request.POST.get("actionType")
         emails = request.POST.getlist("users[]")
         if actionType == "Remove":
             for email in emails:
-                gpuser = User.objects.get(email=email)
-                gpuser.userprofilebase.delete()
+                user = User.objects.get(email=email)
+                user.userprofilebase.delete()
             if len(emails) == 1:
                 messages.success(request, "The selected user has been deleted.")
             else:
@@ -82,9 +84,20 @@ def manage_user(request):
         elif actionType == "Change":
             role = request.POST.get("role")
             for email in emails:
-                gpuser = User.objects.get(email=email)
-                gpuser.userprofilebase.generalpracticeuser.role = role
-                gpuser.userprofilebase.generalpracticeuser.save()
+                user = User.objects.get(email=email)
+                if role == 0:
+                    user.is_staff = True
+                else:
+                    user.is_staff = False
+                user.save()
+
+                if hasattr(cur_user.userprofilebase, 'generalpracticeuser'):
+                    user.userprofilebase.generalpracticeuser.role = role
+                    user.userprofilebase.generalpracticeuser.save()
+                elif hasattr(cur_user.userprofilebase, 'clientuser'):
+                    user.userprofilebase.clientuser.role = role
+                    user.userprofilebase.clientuser.save()
+
             if len(emails) == 1:
                 messages.success(request, "The role of selected user has been changed.")
             else:
@@ -92,7 +105,7 @@ def manage_user(request):
             return JsonResponse({"success": "true"})
 
 
-def count_users(queryset):
+def count_gpusers(queryset):
     all_count = queryset.count()
     pmanager_count = queryset.filter(userprofilebase__generalpracticeuser__role=0).count()
     gp_count = queryset.filter(userprofilebase__generalpracticeuser__role=1).count()
@@ -102,6 +115,18 @@ def count_users(queryset):
         'Manager': pmanager_count,
         'GP': gp_count,
         'SARS': sars_count
+    }
+    return overall_users_number
+
+
+def count_clientusers(queryset):
+    all_count = queryset.count()
+    admin_count = queryset.filter(is_staff=True).count()
+    client_count = queryset.filter(is_staff=False).count()
+    overall_users_number = {
+        'All': all_count,
+        'Admin': admin_count,
+        'Client': client_count
     }
     return overall_users_number
 
@@ -133,20 +158,38 @@ def view_users(request):
     elif filter_type == 'deactivated':
         query_set = query_set.filter(userprofilebase__in=profiles.dead())
 
-    overall_users_number = count_users(query_set)
+    if hasattr(user.userprofilebase, 'generalpracticeuser'):
+        overall_users_number = count_gpusers(query_set)
+    elif hasattr(user.userprofilebase, 'clientuser'):
+        overall_users_number = count_clientusers(query_set)
 
     if filter_status != -1:
-        query_set = query_set.filter(userprofilebase__generalpracticeuser__role=filter_status)
+        if hasattr(user.userprofilebase, 'generalpracticeuser'):
+            query_set = query_set.filter(userprofilebase__generalpracticeuser__role=filter_status)
+        elif hasattr(user.userprofilebase, 'clientuser'):
+            query_set = query_set.filter(userprofilebase__clientuser__role=filter_status)
 
-    table = UserTable(query_set)
+    if hasattr(user.userprofilebase, 'generalpracticeuser'):
+        table = GPUserTable(query_set)
+    elif hasattr(user.userprofilebase, 'clientuser'):
+        table = ClientUserTable(query_set)
+        
     table.order_by = request.GET.get('sort', '-created')
     RequestConfig(request, paginate={'per_page': 5}).configure(table)
+
+    if hasattr(user.userprofilebase, 'generalpracticeuser'):
+        newuser_form = NewGPForm()
+        user_type = "gp"
+    elif hasattr(user.userprofilebase, 'clientuser'):
+        newuser_form = NewClientForm()
+        user_type = "client"
 
     response = render(request, 'user_management/user_management.html', {
         'user': user,
         'table': table,
         'overall_users_number': overall_users_number,
-        'header_title': header_title
+        'header_title': header_title,
+        'user_type': user_type
     })
 
     return response
@@ -156,43 +199,53 @@ def view_users(request):
 def create_user(request):
     header_title = "Add New User"
 
-    PRACTICE_MANAGER = 0
-    GENERAL_PRACTICE = 1
-    SARS_RESPONDER = 2
-
     cur_user = request.user
     cur_user = User.objects.get(username=cur_user.username)
 
-    organisation = cur_user.userprofilebase.generalpracticeuser.organisation
-
     if request.method == 'POST':
-        gpuser_form = NewUserForm(request.POST)
+        if hasattr(cur_user.userprofilebase, 'generalpracticeuser'):
+            organisation = cur_user.userprofilebase.generalpracticeuser.organisation
+            newuser_form = NewGPForm(request.POST)
+        elif hasattr(cur_user.userprofilebase, 'clientuser'):
+            organisation = cur_user.userprofilebase.clientuser.organisation
+            newuser_form = NewClientForm(request.POST)
+        
         user_role = request.POST.get("user_role")
-        if gpuser_form.is_valid():
+        if not user_role:
+            messages.warning(request, 'Please input all the fields properly.')
+        elif newuser_form.is_valid():
             user = User.objects.filter(
-                Q(username=gpuser_form.cleaned_data['username']) |
-                Q(email=gpuser_form.cleaned_data['email'])
+                Q(username=newuser_form.cleaned_data['username']) |
+                Q(email=newuser_form.cleaned_data['email'])
             )
             if not user.exists():
                 user = User.objects.create(
-                    first_name=gpuser_form.cleaned_data['first_name'],
-                    last_name=gpuser_form.cleaned_data['last_name'],
-                    username=gpuser_form.cleaned_data['username'],
-                    email=gpuser_form.cleaned_data['email'],
-                    type=GENERAL_PRACTICE_USER
+                    first_name=newuser_form.cleaned_data['first_name'],
+                    last_name=newuser_form.cleaned_data['last_name'],
+                    username=newuser_form.cleaned_data['username'],
+                    email=newuser_form.cleaned_data['email']
                 )
-                user.set_password(gpuser_form.cleaned_data['password'])
+
+                if hasattr(cur_user.userprofilebase, 'generalpracticeuser'):
+                    user.type=GENERAL_PRACTICE_USER
+                elif hasattr(cur_user.userprofilebase, 'clientuser'):
+                    user.type=CLIENT_USER
+
+                if user_role == "0":
+                    user.is_staff = True
+                
+                user.set_password(newuser_form.cleaned_data['password'])
                 user.save()
-                to_email = gpuser_form.cleaned_data['email']
-                gpuser = gpuser_form.save(commit=False)
-                gpuser.organisation = organisation
-                gpuser.role = user_role
-                gpuser.user = user
-                gpuser.save()
-                if gpuser_form.cleaned_data['send_email']:
+                to_email = newuser_form.cleaned_data['email']
+                newuser = newuser_form.save(commit=False)
+                newuser.organisation = organisation
+                newuser.role = user_role
+                newuser.user = user
+                newuser.save()
+                if newuser_form.cleaned_data['send_email']:
                     send_mail(
                         'New Account',
-                        'You have a new General Practice Account. Click here {} to see it.'.format(ACCOUNT_LINK),
+                        'You have a new Account. Click here {} to see it.'.format(ACCOUNT_LINK),
                         DEFAULT_FROM_EMAIL,
                         [to_email],
                         fail_silently=False,
@@ -202,14 +255,21 @@ def create_user(request):
                 messages.success(request, 'New User Account created successfully.')
                 return redirect("accounts:view_users")
             else:
-                messages.warning(request, 'General Practice Existing In Database')
+                messages.warning(request, 'User Account Existing In Database')
         else:
             messages.warning(request, 'Please input all the fields properly.')
-    gpuser_form = NewUserForm()
+    
+    if hasattr(cur_user.userprofilebase, 'generalpracticeuser'):
+        newuser_form = NewGPForm()
+        user_type = "gp"
+    elif hasattr(cur_user.userprofilebase, 'clientuser'):
+        newuser_form = NewClientForm()
+        user_type = "client"
 
     response = render(request, 'user_management/new_user.html', {
         'header_title': header_title,
-        'gpuser_form': gpuser_form
+        'newuser_form': newuser_form,
+        'user_type': user_type
     })
 
     return response
