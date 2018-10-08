@@ -18,7 +18,7 @@ class SnomedConceptTest(TestCase):
     def test_string_representation(self):
         self.assertEqual(
             str(self.snomedct),
-            f'{self.snomedct.id} - fsn_description - 1234567890'
+            f'{self.snomedct.pk} - fsn_description - 1234567890'
         )
 
     def test_snomed_descendants(self):
@@ -41,7 +41,7 @@ class ReadCodeTest(TestCase):
 
     def test_string_representation(self):
         self.assertEqual(
-            str(self.readcode), f'{self.readcode.id} - fsn_description - 12345'
+            str(self.readcode), f'{self.readcode.pk} - fsn_description - 12345'
         )
 
 
@@ -57,22 +57,18 @@ class SnomedDescendantTest(TestCase):
     def test_string_representation(self):
         self.assertEqual(
             str(self.snomed_descendant),
-            f'{self.snomed_descendant.id} - fsn_description - 12345'
+            f'{self.snomed_descendant.pk} - fsn_description - 12345'
         )
 
 
 class CommonSnomedConceptsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        snomedct = mommy.make(
-            SnomedConcept, fsn_description='fsn_description',
-            external_id=1234567890
-        )
         cls.common_snomed_concepts = mommy.make(
-            CommonSnomedConcepts, snomed_concept=snomedct
+            CommonSnomedConcepts, common_name='Heart Disease', snomed_concept_code=[1234567890,],
         )
 
     def test_string_representation(self):
         self.assertEqual(
-            str(self.common_snomed_concepts), 'fsn_description - 1234567890'
+            str(self.common_snomed_concepts), 'Heart Disease'
         )

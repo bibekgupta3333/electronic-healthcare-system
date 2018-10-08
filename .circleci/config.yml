@@ -22,7 +22,7 @@ jobs:
           name: Run tests
           command: |
             . venv/bin/activate
-            python manage.py test
+            python manage.py test --pattern="test_*.py"
       - store_artifacts:
           path: test-reports
           destination: test-reports
