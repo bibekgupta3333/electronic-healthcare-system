@@ -80,7 +80,7 @@
                                     <div class="row medicalreport-date">
                                         {{ redaction.created_at }}
                                     </div>
-                                    <a href="{% url 'medicalreport:view_report' instruction.id %}" class="btn btn-info" target="_blank">
+                                    <a href="{% url 'medicalreport:final_report' instruction.id %}" class="btn btn-info" target="_blank">
                                         VIEW REPORT
                                     </a>
                                     <button type="button" onclick="subMitMedicalReport('draft')" class="btn btn-primary"><i class="fas fa-save"></i> SAVE DRAFT</button>

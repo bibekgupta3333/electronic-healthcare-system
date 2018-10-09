@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('snomedct', '0005_auto_20180928_0456'),
+        ('snomedct', '0001_initial'),
         ('template', '0001_initial'),
     ]
 

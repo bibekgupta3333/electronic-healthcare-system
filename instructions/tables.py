@@ -39,6 +39,9 @@ class InstructionTable(tables.Table):
             'Complete': 'badge-success',
             'Reject': 'badge-danger'
         }
-        return format_html('<a href='+reverse('medicalreport:edit_report', args=[record.pk])+'><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
+        if value == 'Complete':
+            return format_html('<a href='+reverse('medicalreport:final_report', args=[record.pk])+'><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
+        else:
+            return format_html('<a href='+reverse('medicalreport:edit_report', args=[record.pk])+'><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
 
 

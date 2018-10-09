@@ -102,7 +102,6 @@ def update_report(request, instruction_id):
 
     return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
-
 def view_report(request, instruction_id):
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
     if not redaction:
@@ -123,3 +122,24 @@ def view_report(request, instruction_id):
     }
 
     return MedicalReport.render(params)
+
+def final_report(request, instruction_id):
+    header_title = "Final Report"
+
+    try:
+        redaction = AmendmentsForRecord.objects.get(instruction=instruction_id)
+        if not redaction.patient_emis_number:
+            raise AmendmentsForRecord.DoesNotExist
+    except AmendmentsForRecord.DoesNotExist:
+        return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
+
+    instruction = get_object_or_404(Instruction, id=instruction_id)
+    raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
+    medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
+    attachments = medical_record_decorator.attachments
+
+    return render(request, 'medicalreport/final_report.html', {
+        'header_title': header_title,
+        'attachments': attachments,
+        'instruction': instruction
+    })

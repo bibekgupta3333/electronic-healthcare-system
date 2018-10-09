@@ -268,10 +268,38 @@ h1 {
     font-size: 12px;
 }
 
+.submit-button {
+    float: right;
+}
+
 .medicalreport-date {
     margin-left: 0px;
 }
 
-.submit-button {
-    float: right;
+.report-attachment {
+    border: 2px solid #e6e6e6;
+    padding: 0;
+    background-color: #e6e6e6;
+    color: #235597;
+    height: 100%;
+}
+
+.report-attachment .medical-report {
+    font-size: 18px;
+    font-weight: bold;
+    color: black;
+}
+
+.report-attachment li {
+    cursor: pointer;
+    padding: 20px;
+    list-style-type: none;
+}
+
+.report-attachment li:hover {
+    background-color: white;
+}
+
+.report-attachment li.active {
+    background-color: white;
 }
