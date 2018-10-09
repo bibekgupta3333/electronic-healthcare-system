@@ -38,15 +38,16 @@ def reject_request(request, instruction_id):
 
 
 def select_patient(request, instruction_id, patient_emis_number):
+    instruction = get_object_or_404(Instruction, pk=instruction_id)
     try:
         redaction = AmendmentsForRecord.objects.get(instruction__id=instruction_id)
     except AmendmentsForRecord.DoesNotExist:
         redaction = AmendmentsForRecord()
-        instruction = get_object_or_404(Instruction, pk=instruction_id)
         redaction.instruction = instruction
 
     redaction.patient_emis_number = patient_emis_number
     redaction.save()
+    instruction.in_progress(context={})
     return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 

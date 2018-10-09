@@ -36,6 +36,10 @@ class Instruction(TimeStampedModel, models.Model):
     def __str__(self):
         return self.client_user.user.first_name + "::" + self.patient.user.first_name
 
+    def in_progress(self, context):
+        self.status = INSTRUCTION_STATUS_PROGRESS
+        self.save()
+
     def reject(self, context):
         self.rejected_timestamp = timezone.now()
         self.rejected_reason = context.get('rejected_reason', None)
