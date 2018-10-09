@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.core.mail import send_mail
 from common.models import TimeStampedModel
-from accounts.models import ClientUser, GeneralPracticeUser, Patient
+from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser
 from snomedct.models import SnomedConcept
 from .model_choices import *
 from medi.settings.common import PIPELINE_INSTRUCTION_LINK
@@ -46,6 +46,9 @@ class Instruction(TimeStampedModel, models.Model):
         self.rejected_note = context.get('rejected_note', None)
         self.status = INSTRUCTION_STATUS_REJECT
         self.send_reject_email([self.client_user.user.email])
+        if self.gp_user and self.gp_user.role == GeneralPracticeUser.SARS_RESPONDER:
+            emails = [medi.user.email for medi in MedidataUser.objects.all()]
+            self.send_reject_email(emails)
         self.save()
 
     def send_reject_email(self, to_email):
