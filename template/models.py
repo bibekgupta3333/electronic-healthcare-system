@@ -2,12 +2,13 @@ from django.db import models
 
 from organisations.models import OrganisationClient
 from instructions.model_choices import INSTRUCTION_TYPE_CHOICES
+from snomedct.models import SnomedConcept
 from accounts.models import User
 from common.models import TimeStampedModel
 
 
 class TemplateInstruction(TimeStampedModel, models.Model):
-    client_organisation = models.ForeignKey(OrganisationClient, null=True, on_delete=models.CASCADE)
+    client_organisation = models.ForeignKey(OrganisationClient, null=True, on_delete=models.CASCADE, blank=True)
     title = models.CharField(max_length=255)
     description = models.TextField()
     type = models.CharField(max_length=4, choices=INSTRUCTION_TYPE_CHOICES)
@@ -39,3 +40,14 @@ class TemplateInstructionAdditionalQuestion(models.Model):
 
     def __str__(self):
         return self.question
+
+
+class TemplateConditionsOfInterest(models.Model):
+    template_instruction = models.ForeignKey(TemplateInstruction, on_delete=models.CASCADE)
+    snomedct = models.ForeignKey(SnomedConcept, on_delete=models.CASCADE, null=False)
+
+    class Meta:
+        verbose_name = "Template Conditions Of Interest"
+
+    def __str__(self) -> str:
+        return "{} ({})".format(self.snomedct.fsn_description, self.snomedct.external_id)

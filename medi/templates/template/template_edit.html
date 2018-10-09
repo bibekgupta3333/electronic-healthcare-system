@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% load static %}
+
+{% block ExtraHead %}
+    <link href="{% static 'css/instructions/new_instruction.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block Content %}
+    {% load bootstrap4 %}
+    <form method="post">{% csrf_token %}
+
+        <div class="card-deck instruction">
+            <div class="col-md-12 mt-4">
+                <div class="card">
+                    <div class="card-header"><h5>Instruction</h5></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                {% bootstrap_form form layout='inline' %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-deck instruction">
+            <div class="col-md-12 mt-4">
+                <div class="card">
+                    <div class="card-header"><h5>Addition Question</h5></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                {{ questions_formset.management_form }}
+                                <div class="form-group w-100">
+                                    {% for forma in questions_formset %}
+                                     {% bootstrap_form forma layout='inline' %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-deck instruction">
+            <div class="col-md-12 mt-4">
+                <div class="card">
+                    <div class="card-header"><h5>Conditions</h5></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                {{ conditions_formset.management_form }}
+                                <div class="form-group w-100">
+                                    {% for forms in conditions_formset%}
+                                        {% bootstrap_form forms layout='inline' %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 pt-4">
+            <button type="button" class="btn btn-primary " value="Update">Update</button>
+        </div>
+
+
+
+
+</form>
+{% endblock %}

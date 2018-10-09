@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+
+
+
+{% block Content %}
+            {% for template in object_list %}
+                <div class="template-list">
+                    <p><strong>Title:</strong> {{ template.title }}</p>
+                    <p><strong>Description:</strong> {{ template.description }}</p>
+                    {% if  template.templateconditionsofinterest_set %}
+                        <div>
+                            <strong>Conditions:</strong>
+                            <ul>
+                                {% for condition in template.templateconditionsofinterest_set.all %}
+                                <li>{{ condition.snomedct.fsn_description }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                    {% endif %}
+                    {% if  template.templateinstructionadditionalquestion_set  %}
+                        <div>
+                            <strong>Questions:</strong>
+                            <ul>
+                                {% for question in template.templateinstructionadditionalquestion_set.all %}
+                                <li>{{ question }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    <a class="btn btn-primary" href="{% url 'template:edit' template.pk %}" role="button">Edit</a>
+                </div>
+            {% endfor %}
+            {% include 'template/pagination.html' %}
+{% endblock %}
+
+{% block Script %}
+
+{% endblock %}

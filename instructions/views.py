@@ -16,6 +16,7 @@ from accounts.models import PATIENT_USER
 from accounts.forms import PatientForm, GPForm
 from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice, NHSgpPractice
+from template.forms import TemplateInstructionForm
 from common.functions import multi_getattr
 from medi.utils import get_env_variable
 from medi.settings.common import PIPELINE_INSTRUCTION_LINK, DUMMY_EMAIL_LIST
@@ -221,6 +222,7 @@ def new_instruction(request):
     nhs_form = GeneralPracticeForm()
     addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.none())
     scope_form = ScopeInstructionForm(user=request.user)
+    template_form = TemplateInstructionForm()
 
     return render(request, 'instructions/new_instruction.html', {
         'header_title': header_title,
@@ -229,4 +231,5 @@ def new_instruction(request):
         'gp_form': gp_form,
         'scope_form': scope_form,
         'addition_question_formset': addition_question_formset,
-    }) 
+        'template_form': template_form,
+    })

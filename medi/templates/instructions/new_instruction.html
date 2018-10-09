@@ -5,6 +5,7 @@
 {% bootstrap_javascript jquery='full' %}
 {% bootstrap_messages %}
 
+
 {% block ExtraHead %}
     <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/bootstrap-datepicker.min.css' %}" rel="stylesheet"/>
@@ -129,7 +130,7 @@
                 <div class="card">
                     <div class="card-header"><h5>Addition Question</h5></div>
                     <div class="card-body">
-                        <div class="row">
+                        <div class="row" id="questions_block">
                             {{ addition_question_formset.management_form }}
                             <table border="0" cellpadding="10" cellspacing="0" class="table">
                                 <thead>
@@ -150,10 +151,43 @@
                     </div>
                 </div>
             </div>
-        <div class="col-md-4 mt-4">
-            <button class="btn btn-primary btn-lg w-75" type="submit" id="submit-all">Submit</button>
-        </div>
+            <div class="col-md-4 mt-4">
+                <button class="btn btn-primary btn-lg w-75" type="submit" id="submit-all">Submit</button>
+            </div>
+            <div class="col-md-4 mt-4">
+                <button class="btn btn-primary btn-lg w-75" id="myBtn" type="button" data-toggle="modal">Save as template</button>
+            </div>
+
     </form>
+
+    <!-- Create Template Modal -->
+    <div class="modal fade" id="create_template_modal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+               <div class="form-group">
+                   <label class="sr-only" for="template_title">Title</label>
+                   <input type="text" name="title" id="template_title" maxlength="255" class="form-control form-control-sm" placeholder="Title">
+               </div>
+              <div class="form-group">
+                  <div class="form-group">
+                      <label class="sr-only" for="template_description">Description</label>
+                      <textarea name="description" cols="40" rows="10" id="template_description" class="form-control form-control-sm" placeholder="Description"></textarea>
+                  </div>
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="save_template" class="btn btn-primary">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
 {% endblock %}
 
 {% block Script %}
@@ -234,6 +268,68 @@
                 }
             });
 
+            $('#id_template').select2({
+                ajax: {
+                    delay: 500,
+                    url: "{% url 'template:search' %}",
+                    data: function (params) {
+                        let query = {
+                            title: params.term,
+                        };
+                        return query;
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        }
+                    }
+                }
+            });
+
+            //load template into the form
+            $('#id_template').on('change', function (data) {
+                $.ajax({
+                    url: "/template/details/" + this.value,
+                    method: 'get',
+                    success: function (data) {
+                        if(data.questions){
+                            data.questions.forEach(function(element, index) {
+                                question_form_html = `
+                                    <tr class="dynamic-form">
+                                        <td>
+                                            <input type="text" value="` + element["text"] + `" name="form-`+ index + `-question" class="form-control questions_inputs" maxlength="255" id="id_form-`+ index + `-question">
+                                        </td>
+                                        <td><a class="btn btn-danger" href="javascript:void(0)">X remove</a></td>
+                                    </tr>
+                                `;
+                                $('#questions_block').find('tbody').prepend(question_form_html);
+                            });
+                        };
+
+                        if(data.conditions){
+                            $('#id_type').find("input[name=type][value=AMRA]").prop('checked', true);
+                            $('.instructionType').trigger('change');
+                            data.conditions.forEach(function(element, index) {
+                                if(element['is_common_condition']){
+                                    $('#id_common_condition').find("input[name=common_condition]").each(function () {
+                                        if($(this).val()==element["id"]){
+                                            $(this).prop('checked', true);
+                                        }
+                                    })
+                                } else {
+                                    $('#id_addition_condition').append(new Option(element["text"], element["id"]));
+                                    $('#id_addition_condition').select2('val', [element["id"]]);
+                                }
+
+                            });
+                        };
+                    },
+                    error: function (errors) {
+                        create_alert('Unable to load a template.', 'error');
+                    }
+                })
+            });
+
             $('#id_addition_condition').select2({
                 minimumInputLength: 3,
                 width: 500,
@@ -289,6 +385,53 @@
                    $('.conditions').addClass('d-none');
                }
             });
+
+            $("#myBtn").click(function(){
+                $("#create_template_modal").modal();
+            });
+
+            $('#save_template').on('click', function(){
+                if($('.instructionType:checked').val() != 'AMRA'){
+                    return false;
+                }
+
+                let questions = [];
+                $(".questions_inputs").each(function (i, el) {
+                     questions.push($(el).val())
+                });
+
+                let common_conditions = [];
+                $( "input[name='common_condition']:checked" ).each(function (i, el) {
+                     common_conditions.push($(el).val())
+                });
+
+                let addition_conditions = [];
+                $( "#id_addition_condition option:selected" ).each(function (i, el) {
+                     addition_conditions.push($(el).val())
+                });
+
+                let data = {
+                    'title': $('#template_title').val(),
+                    'description': $('#template_description').val(),
+                    'questions': questions,
+                    'common_conditions': common_conditions,
+                    'addition_conditions': addition_conditions,
+                    'csrfmiddlewaretoken': '{{csrf_token}}'
+                };
+                $.ajax({
+                    url: "{% url 'template:create' %}",
+                    data: data,
+                    method: 'post',
+                    success: function () {
+                        create_alert('Template has been created successfully.', 'success')
+                    },
+                    error: function (errors) {
+                        // TODO: add validation messages to the form
+                    }
+                })
+            });
+
+
         });
     </script>
 

@@ -18,8 +18,7 @@ class MyMultipleChoiceField(forms.MultipleChoiceField):
 
 class ScopeInstructionForm(forms.Form):
     type = forms.ChoiceField(choices=[], widget=forms.RadioSelect(attrs={'class': 'd-inline instructionType'}))
-    template = forms.CharField(max_length=255, required=False)
-    # template = forms.ModelChoiceField(queryset=TemplateInstruction.objects.all(), required=False)
+    template = forms.ModelChoiceField(queryset=TemplateInstruction.objects.none(), required=False)
     common_condition = forms.MultipleChoiceField(choices=[], widget=forms.CheckboxSelectMultiple(), required=False)
     addition_condition = MyMultipleChoiceField(required=False)
     consent_form = forms.FileField(required=False)
@@ -69,6 +68,6 @@ AdditionQuestionFormset = modelformset_factory(
         fields=('question', ),
         extra=1,
         widgets={
-            'question': forms.TextInput(attrs={'class': 'form-control'}, ),
+            'question': forms.TextInput(attrs={'class': 'form-control questions_inputs'}, ),
         },
     )
