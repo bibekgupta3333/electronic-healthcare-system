@@ -31,7 +31,7 @@ def instruction_notification_email_job():
                 send_mail(
                     'New Instruction',
                     ' You have a pending or not started instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
-                    'mohara.qr@gmail.com',
+                    'MediData',
                     [gp['email'] for gp in gp_managers],
                     fail_silently=False,
                     auth_user=get_env_variable('SENDGRID_USER'),

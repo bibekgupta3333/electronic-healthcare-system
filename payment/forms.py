@@ -24,8 +24,9 @@ class OrganisationFeeForm(forms.ModelForm):
             if self.cleaned_data['max_day_lvl_2'] >= self.cleaned_data['max_day_lvl_3']:
                 raise forms.ValidationError("Day are incorrect: Max day lvl 3 must more than Max day lvl 2")
 
-            organisation_fee = self.cleaned_data['gp_practice']
-            if OrganisationFee.objects.filter(gp_practice=organisation_fee).exists():
+            organisation_gp = self.cleaned_data['gp_practice']
+            organisation_fee = OrganisationFee.objects.filter(gp_practice=organisation_gp).first()
+            if organisation_fee:
                 raise forms.ValidationError(
                     format_html(
                         '<strong>Organisation Had selected:</strong> <a href="{site_name}admin/payment/organisationfee/{id}/change/">Here</a>'.format(
