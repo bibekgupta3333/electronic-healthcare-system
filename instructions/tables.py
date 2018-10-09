@@ -2,6 +2,7 @@ import django_tables2 as tables
 from accounts import models
 from .models import Instruction
 from django.utils.html import format_html
+from django.urls import reverse
 
 
 class InstructionTable(tables.Table):
@@ -30,7 +31,7 @@ class InstructionTable(tables.Table):
     def render_patient(self, value):
         return format_html('{} {} <br><b>NHS: </b>{}', value.user.first_name, value.user.last_name, value.nhs_number)
 
-    def render_status(self, value):
+    def render_status(self, value, record):
         STATUS_DICT = {
             'New':'badge-primary',
             'In Progress': 'badge-warning',
@@ -38,5 +39,6 @@ class InstructionTable(tables.Table):
             'Complete': 'badge-success',
             'Reject': 'badge-danger'
         }
-        return format_html('<h5><span class="status badge {}">{}</span></h5>', STATUS_DICT[value], value)
+        return format_html('<a href='+reverse('medicalreport:edit_report', args=[record.pk])+'><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
+
 
