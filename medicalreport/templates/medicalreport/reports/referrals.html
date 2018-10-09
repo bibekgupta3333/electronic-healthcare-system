@@ -1,0 +1,19 @@
+{% load medi_report_tags %}
+{% load custom_filters %}
+{% load final_report_tags %}
+<div style="display:flex;background-color:#235597;margin:0;">
+    <label style="color:white;font-size:20px;">Referrals (all from the last 5 years)</label>
+</div>
+<table style="width:100%;font-size:15px;margin-top:10px;">
+    {% for model in referrals %}
+        <tr>
+        {% with header=model|general_header body=model|referral_body:locations  %} 
+            {% with model|get_redaction:redaction as redacted %}
+                {% if not redacted %}
+                    <td>{{ header }}{{ body }}</td>
+                {% endif %}
+            {% endwith %}
+        {% endwith %}
+        </tr>
+    {% endfor %}
+</table>

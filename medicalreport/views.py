@@ -1,5 +1,4 @@
 from django.shortcuts import render, redirect, get_object_or_404
-# from django.http import HttpResponse
 from services.emisapiservices import services
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.xml.patient_list import PatientList
@@ -9,6 +8,7 @@ from .models import AmendmentsForRecord
 from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_REJECT_TYPE
 from .functions import create_or_update_redaction_record
+from medicalreport.reports import MedicalReport
 
 
 # Create your views here.
@@ -100,3 +100,25 @@ def update_report(request, instruction_id):
         return redirect('instructions:view_pipeline')
 
     return redirect('medicalreport:edit_report', instruction_id=instruction_id)
+
+
+def view_report(request, instruction_id):
+    redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
+    if not redaction:
+        return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
+    if not redaction.patient_emis_number:
+        raise AmendmentsForRecord.DoesNotExist
+
+    instruction = get_object_or_404(Instruction, id=instruction_id)
+    raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
+    medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
+    dummy_instruction = DummyInstruction(instruction)
+
+    params = {
+        'medical_record': medical_record_decorator,
+        'redaction': redaction,
+        'instruction': instruction,
+        'dummy_instruction': dummy_instruction
+    }
+
+    return MedicalReport.render(params)

@@ -271,3 +271,7 @@ h1 {
 .medicalreport-date {
     margin-left: 0px;
 }
+
+.submit-button {
+    float: right;
+}
