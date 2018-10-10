@@ -19,6 +19,10 @@ from django.conf import settings
 DEFAULT_FROM = settings.DEFAULT_FROM
 ACCOUNT_LINK = settings.ACCOUNT_LINK
 
+from .functions import reset_password, change_role, remove_user
+from .functions import count_gpusers, count_clientusers, get_table_data
+from .functions import get_post_new_user_data, get_user_type_form
+
 
 @login_required(login_url='/accounts/login')
 def account_view(request):
@@ -50,87 +54,30 @@ def account_view(request):
 
 
 @login_required(login_url='/accounts/login')
-def reset_password(request):
-    user = request.user
-    user = User.objects.get(email=user.email)
-    password = request.GET.get('password', '')
-    user.set_password(password)
-    user.save()
-    send_mail(
-        'Your account password has been changed',
-        'Your account password has been changed by your manager. Password: {}'.format(password),
-        DEFAULT_FROM,
-        [user.email],
-        fail_silently=False,
-        auth_user=get_env_variable('SENDGRID_USER'),
-        auth_password=get_env_variable('SENDGRID_PASS'),
-    )
-    return JsonResponse({"success": "true"})
-
-
 def manage_user(request):
     if request.method == "POST":
         cur_user = request.user
         cur_user = User.objects.get(username=cur_user.username)
-        actionType = request.POST.get("actionType")
+        action_type = request.POST.get("action_type")
         emails = request.POST.getlist("users[]")
-        if actionType == "Remove":
-            for email in emails:
-                user = User.objects.get(email=email)
-                user.userprofilebase.delete()
-            if len(emails) == 1:
+        user_cnt = len(emails)
+        if action_type == "Remove":
+            remove_user(emails)
+            if user_cnt == 1:
                 messages.success(request, "The selected user has been deleted.")
             else:
                 messages.success(request, "Selected users have been deleted.")
-            return JsonResponse({"success": "true"})
-        elif actionType == "Change":
+        elif action_type == "Change":
             role = request.POST.get("role")
             for email in emails:
-                user = User.objects.get(email=email)
-                if role == 0:
-                    user.is_staff = True
-                else:
-                    user.is_staff = False
-                user.save()
+                change_role(cur_user, role, email)
 
-                if hasattr(cur_user.userprofilebase, 'generalpracticeuser'):
-                    user.userprofilebase.generalpracticeuser.role = role
-                    user.userprofilebase.generalpracticeuser.save()
-                elif hasattr(cur_user.userprofilebase, 'clientuser'):
-                    user.userprofilebase.clientuser.role = role
-                    user.userprofilebase.clientuser.save()
-
-            if len(emails) == 1:
+            if user_cnt == 1:
                 messages.success(request, "The role of selected user has been changed.")
             else:
                 messages.success(request, "All the roles of the selected users have been changed.")
-            return JsonResponse({"success": "true"})
 
-
-def count_gpusers(queryset):
-    all_count = queryset.count()
-    pmanager_count = queryset.filter(userprofilebase__generalpracticeuser__role=0).count()
-    gp_count = queryset.filter(userprofilebase__generalpracticeuser__role=1).count()
-    sars_count = queryset.filter(userprofilebase__generalpracticeuser__role=2).count()
-    overall_users_number = {
-        'All': all_count,
-        'Manager': pmanager_count,
-        'GP': gp_count,
-        'SARS': sars_count
-    }
-    return overall_users_number
-
-
-def count_clientusers(queryset):
-    all_count = queryset.count()
-    admin_count = queryset.filter(is_staff=True).count()
-    client_count = queryset.filter(is_staff=False).count()
-    overall_users_number = {
-        'All': all_count,
-        'Admin': admin_count,
-        'Client': client_count
-    }
-    return overall_users_number
+        return JsonResponse({"success": "true"})
 
 
 @login_required(login_url='/accounts/login')
@@ -141,18 +88,20 @@ def view_users(request):
     user = User.objects.get(username=user.username)
 
     if 'status' in request.GET:
-        filter_type = request.GET.get('type', '')
+        filter_type = request.GET.get('type', 'active')
         filter_status = request.GET.get('status', -1)
         if filter_status == 'undefined':
             filter_status = -1
         else:
             filter_status = int(filter_status)        
         if filter_type == 'undefined':
-            filter_type = 'allType'
+            filter_type = 'active'
     else:
-        filter_type = request.COOKIES.get('type', '')
+        filter_type = request.COOKIES.get('type')
         filter_status = int(request.COOKIES.get('status', -1))
 
+    if filter_type == '':
+        filter_type = "active"
     query_set = user.get_query_set_within_organisation()
 
     if filter_type == 'active':
@@ -160,38 +109,22 @@ def view_users(request):
     elif filter_type == 'deactivated':
         query_set = query_set.filter(userprofilebase__in=profiles.dead())
 
-    if hasattr(user.userprofilebase, 'generalpracticeuser'):
-        overall_users_number = count_gpusers(query_set)
-    elif hasattr(user.userprofilebase, 'clientuser'):
-        overall_users_number = count_clientusers(query_set)
-
     if filter_status != -1:
         if hasattr(user.userprofilebase, 'generalpracticeuser'):
             query_set = query_set.filter(userprofilebase__generalpracticeuser__role=filter_status)
         elif hasattr(user.userprofilebase, 'clientuser'):
             query_set = query_set.filter(userprofilebase__clientuser__role=filter_status)
-
-    if hasattr(user.userprofilebase, 'generalpracticeuser'):
-        table = GPUserTable(query_set)
-    elif hasattr(user.userprofilebase, 'clientuser'):
-        table = ClientUserTable(query_set)
         
-    table.order_by = request.GET.get('sort', '-created')
-    RequestConfig(request, paginate={'per_page': 5}).configure(table)
-
-    if hasattr(user.userprofilebase, 'generalpracticeuser'):
-        newuser_form = NewGPForm()
-        user_type = "gp"
-    elif hasattr(user.userprofilebase, 'clientuser'):
-        newuser_form = NewClientForm()
-        user_type = "client"
+    table_data = get_table_data(user, query_set)
+    RequestConfig(request, paginate={'per_page': 5}).configure(table_data['table'])
+    table_data['table'].order_by = request.GET.get('sort', '-created')
 
     response = render(request, 'user_management/user_management.html', {
         'user': user,
-        'table': table,
-        'overall_users_number': overall_users_number,
         'header_title': header_title,
-        'user_type': user_type
+        'table': table_data['table'],
+        'overall_users_number': table_data['overall_users_number'],
+        'user_type': table_data['user_type']
     })
 
     return response
@@ -205,14 +138,12 @@ def create_user(request):
     cur_user = User.objects.get(username=cur_user.username)
 
     if request.method == 'POST':
-        if hasattr(cur_user.userprofilebase, 'generalpracticeuser'):
-            organisation = cur_user.userprofilebase.generalpracticeuser.organisation
-            newuser_form = NewGPForm(request.POST)
-        elif hasattr(cur_user.userprofilebase, 'clientuser'):
-            organisation = cur_user.userprofilebase.clientuser.organisation
-            newuser_form = NewClientForm(request.POST)
-        
         user_role = request.POST.get("user_role")
+        new_user_data = get_post_new_user_data(cur_user, request, user_role)
+        organisation = new_user_data['organisation']
+        newuser_form = new_user_data['newuser_form']
+        user_type = new_user_data['user_type']
+        
         if not user_role:
             messages.warning(request, 'Please input all the fields properly.')
         elif newuser_form.is_valid():
@@ -227,14 +158,8 @@ def create_user(request):
                     username=newuser_form.cleaned_data['username'],
                     email=newuser_form.cleaned_data['email']
                 )
-
-                if hasattr(cur_user.userprofilebase, 'generalpracticeuser'):
-                    user.type=GENERAL_PRACTICE_USER
-                elif hasattr(cur_user.userprofilebase, 'clientuser'):
-                    user.type=CLIENT_USER
-
-                if user_role == "0":
-                    user.is_staff = True
+                user.type = user_type
+                user.is_staff = new_user_data['is_staff']
                 
                 user.set_password(newuser_form.cleaned_data['password'])
                 user.save()
@@ -261,12 +186,9 @@ def create_user(request):
         else:
             messages.warning(request, 'Please input all the fields properly.')
     
-    if hasattr(cur_user.userprofilebase, 'generalpracticeuser'):
-        newuser_form = NewGPForm()
-        user_type = "gp"
-    elif hasattr(cur_user.userprofilebase, 'clientuser'):
-        newuser_form = NewClientForm()
-        user_type = "client"
+    user_type_form = get_user_type_form(cur_user)
+    newuser_form = user_type_form['newuser_form']
+    user_type = user_type_form['user_type']
 
     response = render(request, 'user_management/new_user.html', {
         'header_title': header_title,
@@ -275,4 +197,3 @@ def create_user(request):
     })
 
     return response
-    
