@@ -73,3 +73,6 @@ class ConsultationElement(XMLModelBase):
             return False
         return problem.is_significant()
 
+    def xpaths(self):
+        xpath = ".//{}[GUID='{}']".format(self.content().parsed_xml.tag, self.content().guid())
+        return [xpath]

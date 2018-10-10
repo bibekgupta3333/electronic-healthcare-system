@@ -132,6 +132,7 @@ def redaction_checkbox_with_list(model, redaction, header='', dict_data='', labe
     if redaction.redacted(xpaths) is True:
         checked = "checked"
     return {
+        'redaction_checks': redaction.redacted_xpaths,
         'checked': checked,
         'xpaths': xpaths,
         'header': header,
@@ -158,4 +159,5 @@ def form_comments(context):
     return {
         'comment_notes': context['redaction'].comment_notes
     }
+
 

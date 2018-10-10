@@ -157,12 +157,20 @@ def bloods_type_value_header(key):
 
 @register.filter
 def consultation_element_list(consultation):
-    obj = {}
+    data = list()
     regex = re.compile(r"\.\s*\Z", re.IGNORECASE)
     for element in consultation.consultation_elements():
         header = element.header()
+        obj = {}
         if header in obj:
             obj[header] = regex.sub('', obj[header]) + '. {}'.format(element.content().description())
         else:
             obj[header] = element.content().description()
-    return obj
+        obj['xpath'] = element.xpaths()
+        data.append(obj)
+    return data
+
+
+@register.filter
+def hash(h, key):
+    return h[key]

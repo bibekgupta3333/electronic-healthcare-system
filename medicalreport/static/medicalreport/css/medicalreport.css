@@ -276,6 +276,10 @@ h1 {
     margin-left: 0px;
 }
 
+.head-checkbox:checked ~ ul {
+    pointer-events: none;
+}
+
 .report-attachment {
     border: 2px solid #e6e6e6;
     padding: 0;

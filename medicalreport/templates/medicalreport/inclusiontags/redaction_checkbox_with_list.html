@@ -1,24 +1,35 @@
+{% load custom_filters %}
 <div>
-<label class="redaction-checkbox">
-    {% for xpath in xpaths %}
-    <input name="redaction_xpaths" key="{{ header }}"
-            {{ checked }} readonly="" type="checkbox" class="redaction-checkbox__input" 
-            value="{{ xpath }}">
-    {% endfor %}
-    <span class="redaction-checkbox__icon float-right fas fa-check-circle"></span>
-    <span class="redaction-checkbox__header">{{ header }}</span>
-    <ul class="redaction-checkbox__text no-bullet redaction-checkbox__list">
-        {% for key, value in dict_data.items %}
-        <li class="redaction-checkbox__list-item">
-            <strong>{{key}}: </strong>{{value}}
-        </li>
+    <label class="redaction-checkbox">
+        {% for xpath in xpaths %}
+        <input name="redaction_xpaths" key="{{ header }}" data-redaction_xpaths = "{{ xpath }}"
+                {{ checked }} readonly="" type="checkbox" class="redaction-checkbox__input head-checkbox"
+                value="{{ xpath }}">
         {% endfor %}
-        {% if label %}
-        <li>
-            <span class="badge badge-warning">{{ label }}</span>
-        </li>
-        {% endif %}
-    </ul>
+        <span class="redaction-checkbox__icon float-right fas fa-check-circle"></span>
+        <span class="redaction-checkbox__header">{{ header }}</span>
+        <ul class="redaction-checkbox__text no-bullet redaction-checkbox__list">
+            {% for item in dict_data %}
+                <li class="redaction-checkbox__list-item">
+                {% for key, value in item.items %}
+                    <label class="redaction-checkbox">
 
-</label>
+                        {% if key != 'xpath' %}
+                             <input name="redaction_xpaths" key="{{ key }}"
+                                 {% if item|hash:'xpath'|first in redaction_checks %}
+                                 checked
+                                 {% endif %}
+                                 data-redaction_xpaths="{{item|hash:'xpath'|first }}"
+                                 readonly type="checkbox" class="redaction-checkbox__input">
+                            <span class="redaction-checkbox__icon float-right fas fa-check-circle"></span>
+                            <span class="redaction-checkbox__text"><strong>{{key}}: </strong>{{value}}</span>
+                        {% endif %}
+                    </label>
+            {% endfor %}
+                </li>
+        {% endfor %}
+        </ul>
+    </label>
 </div>
+
+
