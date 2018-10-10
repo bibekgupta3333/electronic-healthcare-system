@@ -1,14 +1,24 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from .models import Patient, GeneralPracticeUser, ClientUser
 
 from django.conf import settings
 DATE_INPUT_FORMATS = settings.DATE_INPUT_FORMATS
+
+
+class MyChoiceField(forms.ChoiceField):
+
+    def validate(self, value):
+        if self.required and not value:
+            raise ValidationError(self.error_messages['required'], code='required')
+
 
 class PatientForm(forms.ModelForm):
     first_name = forms.CharField(max_length=255, required=True, label='First name*', widget=forms.TextInput(attrs={'placeholder': ''}))
     last_name = forms.CharField(max_length=255, required=True, label='Last name*', widget=forms.TextInput(attrs={'placeholder': ''}))
     email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), required=False)
     date_of_birth = forms.DateField(input_formats=DATE_INPUT_FORMATS, widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': ''}))
+    address_postcode = MyChoiceField(required=False)
 
     class Meta:
         model = Patient
