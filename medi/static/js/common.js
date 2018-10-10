@@ -24,5 +24,5 @@ function create_alert(message, level) {
         ` + message + `
       </div>
     `;
-    $('header').after(alert_html)
+    $('#alerts_block').html(alert_html)
 }

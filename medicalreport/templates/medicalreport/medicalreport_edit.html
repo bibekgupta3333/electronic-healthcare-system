@@ -116,6 +116,23 @@
             $('#medicalReportForm').submit();
         }
 
+        function saveReport(){
+            var post_url = $('#medicalReportForm').attr("action"); //get form action url
+            var request_method = $('#medicalReportForm').attr("method"); //get form GET/POST method
+            var form_data = $('#medicalReportForm').serialize(); //Encode form elements for submission
+            $.ajax({
+                url : post_url,
+                type: request_method,
+                data : form_data
+            })
+            .done(function(){
+                create_alert('Report has been saved.', 'success');
+            })
+            .fail(function() {
+                create_alert('Something went wrong, please try again.', 'error');
+            });
+        }
+
         $('#id_gp_practitioner').removeAttr('required');
 
         $('#id_prepared_and_signed_0').on('click', function () {
@@ -139,6 +156,23 @@
 
         $('#preparer').append($('#id_prepared_by'));
         $('#id_prepared_by').removeClass('form-control');
-        $('#id_prepared_by').css("width", "35%")
+        $('#id_prepared_by').css("width", "35%");
+
+        $(".update_report_btn").on('click', function(event){
+            event.preventDefault(); //prevent default action
+            saveReport();
+        });
+
+        var t_id = null;
+        $('#medicalReportForm').find('input, textarea').on('change', function () {
+            let form_save_delay = 10000;
+            // remove previews timeout
+            if(t_id){
+                clearTimeout(t_id);
+            }
+            t_id = setTimeout(function () {
+                saveReport();
+            }, form_save_delay)
+        })
     </script>
 {% endblock %}

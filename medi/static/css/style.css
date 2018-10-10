@@ -571,3 +571,10 @@ header {
 .template-list  strong {
   margin-right:  20px;
 }
+.alerts {
+  position: fixed;
+  right: 10px;
+  top: 60px;
+  width:  300px;
+  z-index: 10;
+}
