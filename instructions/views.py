@@ -173,10 +173,15 @@ def instruction_pipeline_view(request):
     gp_practice_id = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.id', default=None)
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
     overall_instructions_number = count_instructions(gp_practice_id, client_organisation, medidata=True)
-    if request.user.type in [GENERAL_PRACTICE_USER, CLIENT_USER]:
+    if request.user.type == CLIENT_USER:
         instruction_query_set = instruction_query_set.filter(Q(gp_practice_id=gp_practice_id) |
                                                              Q(client_user__organisation=client_organisation))
         overall_instructions_number = count_instructions(gp_practice_id, client_organisation)
+
+    if request.user.type == GENERAL_PRACTICE_USER:
+        instruction_query_set = instruction_query_set.filter(Q(gp_user__user_id=request.user.id) |
+                                                             Q(gp_user__isnull=True))
+
 
     table = InstructionTable(instruction_query_set)
     table.order_by = request.GET.get('sort', '-created')

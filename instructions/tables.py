@@ -9,6 +9,7 @@ class InstructionTable(tables.Table):
     checkbox = tables.CheckBoxColumn(attrs={'id': 'check_all'})
     patient = tables.Column()
     status = tables.Column()
+    user = None
 
     class Meta:
         attrs = {
@@ -27,6 +28,7 @@ class InstructionTable(tables.Table):
             self.columns.hide('client_user')
         elif request.user.type == models.GENERAL_PRACTICE_USER:
             self.columns.hide('gp_practice')
+        self.user = request.user
 
     def render_patient(self, value):
         return format_html('{} {} <br><b>NHS: </b>{}', value.user.first_name, value.user.last_name, value.nhs_number)
@@ -39,9 +41,11 @@ class InstructionTable(tables.Table):
             'Complete': 'badge-success',
             'Reject': 'badge-danger'
         }
+        url = 'medicalreport:edit_report'
         if value == 'Complete':
-            return format_html('<a href='+reverse('medicalreport:final_report', args=[record.pk])+'><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
-        else:
-            return format_html('<a href='+reverse('medicalreport:edit_report', args=[record.pk])+'><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
+            url = 'medicalreport:final_report'
+        elif self.user and self.user.type != models.GENERAL_PRACTICE_USER:
+            return format_html('<a><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
+        return format_html('<a href='+reverse(url, args=[record.pk])+'><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
 
 
