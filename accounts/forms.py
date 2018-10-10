@@ -38,15 +38,15 @@ class PatientForm(forms.ModelForm):
 
 
 class GPForm(forms.ModelForm):
-    initial = forms.CharField(max_length=255, required=True, label='Initials*', widget=forms.TextInput(attrs={'placeholder': ''}))
-    last_name = forms.CharField(max_length=255, required=True, label='Last Name*', widget=forms.TextInput(attrs={'id': 'gp_last_name', 'placeholder': '',}))
+    initial = forms.CharField(max_length=255, required=False, label='Initials', widget=forms.TextInput(attrs={'placeholder': ''}))
+    last_name = forms.CharField(max_length=255, required=False, label='Last Name', widget=forms.TextInput(attrs={'id': 'gp_last_name', 'placeholder': '',}))
 
     class Meta:
         model = GeneralPracticeUser
         fields = ('title', 'initial', 'last_name')
 
         labels = {
-            'title': 'Title*'
+            'title': 'Title'
         }
 
 

@@ -11,6 +11,8 @@ class XMLBase:
         value = self.parsed_xml.find(element_name)
         if value is None:
             return ''
+        if value.text is None:
+            return ''
         return value.text.strip() or ''
 
 

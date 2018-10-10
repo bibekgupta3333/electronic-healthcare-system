@@ -58,7 +58,7 @@ def form_significant_problems(context):
     return {
         'significant_active_problems': context['medical_record'].significant_active_problems,
         'significant_past_problems': context['medical_record'].significant_past_problems,
-        'problem_linked_lists': context['medical_record'].problem_link_lists,
+        'problem_linked_lists': context['medical_record'].problem_linked_lists,
         'redaction': context['redaction']
     }
 
