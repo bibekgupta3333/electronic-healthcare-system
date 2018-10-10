@@ -4,7 +4,7 @@ from django.utils import timezone
 from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS
 from accounts.models import User
-from medi.utils import get_env_variable
+from common.functions import get_env_variable
 
 from smtplib import SMTPException
 import logging

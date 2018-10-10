@@ -1,33 +1,27 @@
 from .xml_base import XMLModelBase
 
+from typing import List
+
 
 class Referral(XMLModelBase):
     XPATH = './/Referral'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Referral"
 
-    def description(self):
-        display_term = self.parsed_xml.find('DisplayTerm')
-        if display_term is not None:
-            display_term = display_term.text
+    def description(self) -> str:
+        display_term = self.get_element_text('DisplayTerm')
+        referral_reason = self.get_element_text('ReferralReason')
 
-        referral_reason = self.parsed_xml.find('ReferralReason')
-        if referral_reason is not None:
-            referral_reason = referral_reason.text
-
-        filter_list = list(filter(None, [display_term, referral_reason]))
+        filter_list = [t for t in [display_term, referral_reason] if t]
         if filter_list:
             return ', '.join(filter_list)
         else:
             return 'Referral'
 
-    def date(self):
-        return self.parsed_xml.find('AssignedDate').text
+    def provider_refid(self) -> str:
+        return self.get_element_text('Provider/RefID')
 
-    def provider_refid(self):
-        return self.parsed_xml.find('Provider/RefID').text
-
-    def xpaths(self):
+    def xpaths(self) -> List[str]:
         xpath = ".//ConsultationElement[Referral/GUID='{}']".format(self.guid())
         return [xpath]

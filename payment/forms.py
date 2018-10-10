@@ -2,7 +2,8 @@ from django import forms
 from django.utils.html import format_html
 
 from .models import OrganisationFee
-from medi.settings.common import SITE_NAME
+from django.conf import settings
+SITE_NAME = settings.SITE_NAME
 
 
 class OrganisationFeeForm(forms.ModelForm):

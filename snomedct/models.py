@@ -31,6 +31,12 @@ class SnomedConcept(models.Model):
     def readcodes(self):
         return ReadCode.objects.filter(concept_id=self.external_id)
 
+    def combined_readcodes(self):
+        """
+        Return readcodes of this snomed concept and its descendants.
+        """
+        return self.readcodes().union(self.snomed_descendant_readcodes())
+
 
 class ReadCode(models.Model):
     ext_read_code = models.CharField(max_length=255)

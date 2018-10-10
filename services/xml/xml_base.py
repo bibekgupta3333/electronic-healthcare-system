@@ -1,31 +1,40 @@
 from . import xml_utils
-import datetime
+from datetime import datetime, date as date_type
+from typing import List, Optional
 
 
-class XMLBase(object):
+class XMLBase:
     def __init__(self, xml_data):
         self.parsed_xml = xml_utils.xml_parse(xml_data)
 
+    def get_element_text(self, element_name: str) -> str:
+        value = self.parsed_xml.find(element_name)
+        if value is None:
+            return ''
+        return value.text.strip() or ''
+
 
 class XMLModelBase(XMLBase):
-    def xpaths(self):
+    def xpaths(self) -> List[str]:
         xpath = ".//{}[GUID='{}']".format(self.parsed_xml.tag, self.guid())
         return [xpath]
 
-    def guid(self):
-        return self.parsed_xml.find('GUID').text if self.parsed_xml.find('GUID') is not None else None
+    def guid(self) -> str:
+        return self.get_element_text('GUID')
 
-    def parsed_date(self):
-        date = self.date()
-        if date is not None:
-            return datetime.datetime.strptime(date, "%d/%m/%Y")
-        else:
+    def date(self) -> str:
+        return self.get_element_text('AssignedDate')
+
+    def parsed_date(self) -> Optional[date_type]:
+        date_str = self.date()
+        if not date_str:
             return None
+        return datetime.strptime(date_str, "%d/%m/%Y").date()
 
-    def readcodes(self):
+    def readcodes(self) -> List[str]:
         codes = self.parsed_xml.findall(".//Code[Scheme='READ2']/Value")
         return [code.text for code in codes]
 
-    def snomed_concepts(self):
+    def snomed_concepts(self) -> List[str]:
         snomeds = self.parsed_xml.findall(".//Code[Scheme='SNOMED']/Value")
         return [snomed.text for snomed in snomeds]

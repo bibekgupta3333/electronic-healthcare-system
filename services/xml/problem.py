@@ -1,52 +1,53 @@
 from .xml_base import XMLModelBase
-import datetime
+from datetime import datetime
+from typing import List
 
 
 class Problem(XMLModelBase):
     XPATH = './/*[Problem]'
 
-    def is_active(self):
-        value = self.parsed_xml.find('Problem/ProblemStatus').text if self.parsed_xml.find('Problem/ProblemStatus') is not None else None
+    def is_active(self) -> bool:
+        value = self.get_element_text('Problem/ProblemStatus')
+        if not value:
+            return None
         return value == '1'
 
-    def is_past(self):
-        value = self.parsed_xml.find('Problem/ProblemStatus').text if self.parsed_xml.find('Problem/ProblemStatus') is not None else None
+    def is_past(self) -> bool:
+        value = self.get_element_text('Problem/ProblemStatus')
+        if not value:
+            return None
         return value == '0'
 
-    def is_significant(self):
-        value = self.parsed_xml.find('Problem/Significance').text if self.parsed_xml.find('Problem/Significance') is not None else None
+    def is_significant(self) -> bool:
+        value = self.get_element_text('Problem/Significance')
+        if not value:
+            return None
         return value == '1'
 
-    def date(self):
-        return self.parsed_xml.find('AssignedDate').text if self.parsed_xml.find('AssignedDate') is not None else None
+    def end_date(self) -> str:
+        if self.is_active():
+            return ''
+        return self.get_element_text('Problem/EndDate')
 
-    def end_date(self):
-        if not self.is_active():
-            return self.parsed_xml.find('Problem/EndDate').text if self.parsed_xml.find('Problem/EndDate') is not None else None
-        else:
-            return None
-
-    def parsed_end_date(self):
+    def parsed_end_date(self) -> datetime.date:
         end_date = self.end_date()
-        if end_date is not None:
-            return datetime.datetime.strptime(end_date, "%d/%m/%Y")
-        else:
+        if not end_date:
             return None
+        return datetime.strptime(end_date, "%d/%m/%Y").date()
 
-    def description(self):
-        display_term = self.parsed_xml.find('DisplayTerm').text if self.parsed_xml.find('DisplayTerm') is not None else None
-        if display_term is not None:
-            description = display_term
-        else:
-            description = self.parsed_xml.find('Code/Term').text if self.parsed_xml.find('Code/Term') is not None else None
-        return description
+    def description(self) -> str:
+        return (
+            self.get_element_text('DisplayTerm')
+            or self.get_element_text('Code/Term')
+        )
 
-    def xpaths(self):
+    def xpaths(self) -> List[str]:
         xpaths = self.__parent_xpath() + self.__problem_xpath()
         return list(set(xpaths))
 
     # private
-    def __parent_xpath(self):
+    # JT - this method looks pretty brittle.
+    def __parent_xpath(self) -> List[str]:
         parent = self.parsed_xml.getparent().getparent().getparent()
         if parent is not None:
             xpath = ".//{}[GUID='{}']".format(parent.tag, parent.find('GUID').text)

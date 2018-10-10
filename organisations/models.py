@@ -89,6 +89,7 @@ class OrganisationGeneralPractice(OrganisationBase):
         return self.trading_name
 
 
+# TODO JT 2018-09-24 This model is not named nicely.
 class NHSgpPractice(models.Model):
     code = models.CharField(max_length=6, primary_key=True)
     reference = models.PositiveIntegerField()

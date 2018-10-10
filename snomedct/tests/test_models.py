@@ -18,7 +18,7 @@ class SnomedConceptTest(TestCase):
     def test_string_representation(self):
         self.assertEqual(
             str(self.snomedct),
-            f'{self.snomedct.pk} - fsn_description - 1234567890'
+            f'{self.snomedct.pk} - fsn_description'
         )
 
     def test_snomed_descendants(self):

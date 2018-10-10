@@ -2,7 +2,6 @@ from .models import AdditionalMedicationRecords, AdditionalAllergies, Amendments
 from snomedct.models import SnomedConcept
 from datetime import datetime
 from .forms import MedicalReportFinaliseSubmitForm
-from django.shortcuts import redirect
 from django.contrib import messages
 from instructions import models
 

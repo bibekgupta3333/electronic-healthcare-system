@@ -1,13 +1,14 @@
 from django import forms
 from .models import Patient, GeneralPracticeUser, ClientUser
-from medi.settings.common import DATE_INPUT_FORMATS
 
+from django.conf import settings
+DATE_INPUT_FORMATS = settings.DATE_INPUT_FORMATS
 
 class PatientForm(forms.ModelForm):
     first_name = forms.CharField(max_length=255, required=True, label='First name*', widget=forms.TextInput(attrs={'placeholder': ''}))
     last_name = forms.CharField(max_length=255, required=True, label='Last name*', widget=forms.TextInput(attrs={'placeholder': ''}))
     email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), required=False)
-    date_of_birth = forms.DateField(input_formats=DATE_INPUT_FORMATS, widget=forms.DateInput(attrs={'autocomplete': 'off', 'palceholder': ''}))
+    date_of_birth = forms.DateField(input_formats=DATE_INPUT_FORMATS, widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': ''}))
 
     class Meta:
         model = Patient

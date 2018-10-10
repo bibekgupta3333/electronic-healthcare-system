@@ -12,190 +12,152 @@ from .person import Person
 from .location import Location
 from .problem_link_list import ProblemLinkList
 from .social_consultation_element import SocialConsultationElement
-from .xml_base import XMLBase
+from .xml_base import XMLBase, XMLModelBase
+
+from typing import List
 
 
 class MedicalRecord(XMLBase):
     XPATH = './/MedicalRecord'
-    PROFILE_EVENT_TYPES = ['height', 'weight', 'bmi', 'smoking', 'alcohol', 'systolic_blood_pressure', 'diastolic_blood_pressure']
+    PROFILE_EVENT_TYPES = [
+        'height', 'weight', 'bmi', 'smoking', 'alcohol',
+        'systolic_blood_pressure', 'diastolic_blood_pressure'
+    ]
 
-    def consultations(self):
+    def consultations(self) -> List[Consultation]:
         elements = self.parsed_xml.findall(Consultation.XPATH)
         result_list = [Consultation(element) for element in elements]
         return result_list
 
-    def registration(self):
+    def registration(self) -> Registration:
         return Registration(self.parsed_xml.find(Registration.XPATH))
 
-    def acute_medications(self):
-        medications = self.__medications()
-        result_list = []
-        for medication in medications:
-            if medication.is_acute():
-                result_list.append(medication)
-        return result_list
+    def acute_medications(self) -> List[Medication]:
+        return [m for m in self.__medications() if m.is_acute()]
 
-    def repeat_medications(self):
-        medications = self.__medications()
-        result_list = []
-        for medication in medications:
-            if medication.is_repeat():
-                result_list.append(medication)
-        return result_list
+    def repeat_medications(self) -> List[Medication]:
+        return [m for m in self.__medications() if m.is_repeat()]
 
-    def referrals(self):
+    # JT - This is quite dangerous - mixing a list with two different types of
+    # element.
+    def referrals(self) -> List[XMLModelBase]:
         referral_items = self.__referral_items()
         referral_event_items = self.__referral_event_items()
         return referral_items + referral_event_items
 
-    def attachments(self):
+    def attachments(self) -> List[Attachment]:
         elements = self.parsed_xml.findall(Attachment.XPATH)
         result_list = [Attachment(element) for element in elements]
         return result_list
 
-    def all_allergies(self):
+    def all_allergies(self) -> List[XMLModelBase]:
         allergies_list = self.__allergies()
         event_allergies = self.__event_allergies()
         return allergies_list + event_allergies
 
-    def people(self):
+    def people(self) -> List[Person]:
         elements = self.parsed_xml.findall(Person.XPATH)
         result_list = [Person(element) for element in elements]
         return result_list
 
-    def locations(self):
+    def locations(self) -> List[Location]:
         elements = self.parsed_xml.findall(Location.XPATH)
         result_list = [Location(element) for element in elements]
         return result_list
 
-    def problem_linked_lists(self):
+    def problem_linked_lists(self) -> List[ProblemLinkList]:
         elements = self.parsed_xml.findall(ProblemLinkList.XPATH)
         result_list = [ProblemLinkList(element) for element in elements]
         return result_list
 
-    def height(self):
-        result_list = []
-        value_events = self.__value_events()
-        for event in value_events:
-            if event.has_height():
-                result_list.append(event)
-        return result_list
+    def height(self) -> List[ValueEvent]:
+        return [ve for ve in self.__value_events() if ve.has_height()]
 
-    def weight(self):
-        result_list = []
-        value_events = self.__value_events()
-        for event in value_events:
-            if event.has_weight():
-                result_list.append(event)
-        return result_list
+    def weight(self) -> List[ValueEvent]:
+        return [ve for ve in self.__value_events() if ve.has_weight()]
 
-    def bmi(self):
-        result_list = []
-        value_events = self.__value_events()
-        for event in value_events:
-            if event.has_bmi():
-                result_list.append(event)
-        return result_list
+    def bmi(self) -> List[ValueEvent]:
+        return [ve for ve in self.__value_events() if ve.has_bmi()]
 
-    def systolic_blood_pressure(self):
-        result_list = []
-        value_events = self.__value_events()
-        for event in value_events:
-            if event.has_systolic_blood_pressure():
-                result_list.append(event)
-        return result_list
+    def systolic_blood_pressure(self) -> List[ValueEvent]:
+        return [
+            ve for ve in self.__value_events()
+            if ve.has_systolic_blood_pressure()
+        ]
 
-    def diastolic_blood_pressure(self):
-        result_list = []
-        value_events = self.__value_events()
-        for event in value_events:
-            if event.has_diastolic_blood_pressure():
-                result_list.append(event)
-        return result_list
+    def diastolic_blood_pressure(self) -> List[ValueEvent]:
+        return [
+            ve for ve in self.__value_events()
+            if ve.has_diastolic_blood_pressure()
+        ]
 
-    def blood_test(self, type):
-        result_list = []
-        value_events = self.__value_events()
-        for event in value_events:
-            if event.has_blood_test(type):
-                result_list.append(event)
-        return result_list
+    def blood_test(self, blood_type: str) -> List[ValueEvent]:
+        return [
+            ve for ve in self.__value_events()
+            if ve.has_blood_test(blood_type)
+        ]
 
-    def profile_event(self, type):
-        if type in self.PROFILE_EVENT_TYPES:
-            function = getattr(self, type)
-            return function()
-        return []
+    def profile_event(self, profile_event_type) -> List[XMLModelBase]:
+        if profile_event_type not in self.PROFILE_EVENT_TYPES:
+            return []
+        event_function = getattr(self, profile_event_type)
+        return event_function()
 
-    def smoking(self):
-        result_list = []
-        social_consultation_elements = self.__social_consultation_elements()
-        for element in social_consultation_elements:
-            if element.is_smoking():
-                result_list.append(element)
-        return result_list
+    def smoking(self) -> List[SocialConsultationElement]:
+        return [
+            sce for sce in self.__social_consultation_elements()
+            if sce.is_smoking()
+        ]
 
-    def alcohol(self):
-        result_list = []
-        social_consultation_elements = self.__social_consultation_elements()
-        for element in social_consultation_elements:
-            if element.is_alcohol():
-                result_list.append(element)
-        return result_list
+    def alcohol(self) -> List[SocialConsultationElement]:
+        return [
+            sce for sce in self.__social_consultation_elements()
+            if sce.is_alcohol()
+        ]
 
-    def significant_active_problems(self):
-        result_list = []
-        significant_problems = self.__significant_problems()
-        for problem in significant_problems:
-            if problem.is_active():
-                result_list.append(problem)
-        return result_list
+    def significant_active_problems(self) -> List[Problem]:
+        return [sp for sp in self.__significant_problems() if sp.is_active()]
 
-    def significant_past_problems(self):
-        result_list = []
-        significant_problems = self.__significant_problems()
-        for problem in significant_problems:
-            if problem.is_past():
-                result_list.append(problem)
-        return result_list
+    def significant_past_problems(self) -> List[Problem]:
+        return [sp for sp in self.__significant_problems() if sp.is_past()]
 
     # private method
-    def __event_allergies(self):
+    def __event_allergies(self) -> List[AllergyEvent]:
         elements = self.parsed_xml.findall(AllergyEvent.XPATH)
         result_list = [AllergyEvent(element) for element in elements]
         return result_list
 
-    def __allergies(self):
+    def __allergies(self) -> List[Allergy]:
         elements = self.parsed_xml.findall(Allergy.XPATH)
         result_list = [Allergy(element) for element in elements]
         return result_list
 
-    def __medications(self):
+    def __medications(self) -> List[Medication]:
         elements = self.parsed_xml.findall(Medication.XPATH)
         result_list = [Medication(element) for element in elements]
         return result_list
 
-    def __value_events(self):
+    def __value_events(self) -> List[ValueEvent]:
         elements = self.parsed_xml.findall(ValueEvent.XPATH)
         result_list = [ValueEvent(element) for element in elements]
         return result_list
 
-    def __social_consultation_elements(self):
+    def __social_consultation_elements(self) -> List[SocialConsultationElement]:
         elements = self.parsed_xml.xpath(SocialConsultationElement.XPATH)
         result_list = [SocialConsultationElement(element) for element in elements]
         return result_list
 
-    def __significant_problems(self):
+    def __significant_problems(self) -> List[Problem]:
         elements = self.parsed_xml.xpath(Problem.XPATH)
         problem_list = [Problem(element) for element in elements]
         return list(filter(lambda problem: problem.is_significant() is True, problem_list))
 
-    def __referral_items(self):
+    def __referral_items(self) -> List[Referral]:
         elements = self.parsed_xml.findall(Referral.XPATH)
         result_list = [Referral(element) for element in elements]
         return result_list
 
-    def __referral_event_items(self):
+    def __referral_event_items(self) -> List[ReferralEvent]:
         elements = self.parsed_xml.findall(ReferralEvent.XPATH)
         result_list = [ReferralEvent(element) for element in elements]
         return result_list

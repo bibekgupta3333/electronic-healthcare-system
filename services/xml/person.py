@@ -3,26 +3,24 @@ from .xml_base import XMLBase
 
 class Person(XMLBase):
     XPATH = './/Person'
-
     NAME_XPATHS = ['FirstNames', 'LastName']
 
-    def full_name(self):
+    def full_name(self) -> str:
         result = self.name()
         if self.category_description() is not '':
             result = '{} ({})'.format(result, self.category_description())
         return result
 
-    def category_description(self):
-        return self.parsed_xml.find('Category/Description').text if self.parsed_xml.find('Category/Description') is not None else ''
+    def category_description(self) -> str:
+        return self.get_element_text('Category/Description')
 
-    def name(self):
+    def name(self) -> str:
         result = []
         for xpath in self.NAME_XPATHS:
-            value = self.parsed_xml.find(xpath).text if self.parsed_xml.find(xpath) is not None else None
+            value = self.parsed_xml.find(xpath)
             if value is not None:
-                result.append(value)
-
+                result.append(value.text)
         return ' '.join(result)
 
-    def ref_id(self):
-        return self.parsed_xml.find('RefID').text if self.parsed_xml.find('RefID') is not None else None
+    def ref_id(self) -> str:
+        return self.get_element_text('RefID')

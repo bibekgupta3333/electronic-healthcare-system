@@ -8,32 +8,27 @@ from .referral import Referral
 from .allergy import Allergy
 from .problem import Problem
 
+from typing import Optional
+
 
 class GenericContent(XMLModelBase):
     XPATH = '*[last()]'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "GenericContent"
 
-    def description(self):
-        display_term = self.parsed_xml.find('DisplayTerm')
-        code_term = self.parsed_xml.find('Code/Term')
-        term = None
-        if display_term is not None:
-            term = display_term.text
-        elif code_term is not None:
-            term = code_term.text
+    def description(self) -> str:
+        term = (
+            self.get_element_text('DisplayTerm')
+            or self.get_element_text('Code/Term')
+        )
+        descriptive_text = self.get_element_text('DescriptiveText')
 
-        descriptive_text = self.parsed_xml.find('DescriptiveText')
-        if descriptive_text is not None:
-            descriptive_text = descriptive_text.text
-
-        filter_list = list(filter(None, [term, descriptive_text]))
-
-        if filter_list is not None:
-            return ', '.join(filter_list)
+        terms = [t for t in [term, descriptive_text] if t]
+        if terms:
+            return ', '.join(terms)
         else:
-            return None
+            return ''
 
 
 class ConsultationElement(XMLModelBase):
@@ -48,17 +43,16 @@ class ConsultationElement(XMLModelBase):
         Allergy,
     ]
 
-    def header(self):
-        return self.parsed_xml.find('Header/Term').text
+    def header(self) -> str:
+        return self.get_element_text('Header/Term')
 
-    def display_order(self):
-        display_order = self.parsed_xml.find('DisplayOrder')
-        if display_order is not None:
-            return int(display_order.text)
-        else:
+    def display_order(self) -> int:
+        display_order = self.get_element_text('DisplayOrder')
+        if not display_order:
             return -1
+        return int(display_order)
 
-    def content(self):
+    def content(self) -> XMLModelBase:
         for klass in self.CONTENT_CLASSES:
             element = self.parsed_xml.find(klass.XPATH)
             if element is not None:
@@ -67,16 +61,15 @@ class ConsultationElement(XMLModelBase):
         generic_content = self.parsed_xml.xpath(GenericContent.XPATH)[0]
         return GenericContent(generic_content)
 
-    def problem(self):
+    def problem(self) -> Optional[Problem]:
         problem = self.content().parsed_xml.xpath('.//Problem')
-        if problem:
-            return Problem(self.content().parsed_xml)
-        else:
+        if not problem:
             return None
+        return Problem(self.content().parsed_xml)
 
-    def is_significant_problem(self):
+    def is_significant_problem(self) -> bool:
         problem = self.problem()
-        if problem is not None:
-            return problem.is_significant()
-        else:
+        if problem is None:
             return False
+        return problem.is_significant()
+

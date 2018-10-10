@@ -5,8 +5,8 @@ from snomedct.models import SnomedConcept
 from accounts.models import User
 from django.utils.html import format_html
 
+# TODO JT 2018-09-24 Why are there not any __str__ methods here?
 
-# Create your models here.
 class AmendmentsForRecord(models.Model):
     REDACTION_STATUS_NEW = 'NEW'
     REDACTION_STATUS_DRAFT = 'DRAFT'

@@ -1,25 +1,24 @@
+from django.conf import settings
 from .xml_base import XMLModelBase
+
 import yaml
 import os
-from django.conf import settings
+from typing import List
 
 
 class ValueEvent(XMLModelBase):
     XPATH = ".//Event[EventType='5']"
     SPECIFIED_BLOOD_CODES = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "ValueEvent"
 
-    def date(self):
-        return self.parsed_xml.find('AssignedDate').text
-
-    def description(self):
-        value = self.parsed_xml.find('NumericValue/Value').text
-        unit = self.parsed_xml.find('NumericValue/Units').text
+    def description(self) -> str:
+        value = self.get_element_text('NumericValue/Value')
+        unit = self.get_element_text('NumericValue/Units')
         return "{} {}".format(value, unit)
 
-    def has_bmi(self):
+    def has_bmi(self) -> bool:
         readcodes = self.readcodes()
         if readcodes:
             if '22K..' in readcodes:
@@ -32,7 +31,7 @@ class ValueEvent(XMLModelBase):
             else:
                 return False
 
-    def has_weight(self):
+    def has_weight(self) -> bool:
         readcodes = self.readcodes()
         if readcodes:
             if '22A..' in readcodes:
@@ -45,7 +44,7 @@ class ValueEvent(XMLModelBase):
             else:
                 return False
 
-    def has_height(self):
+    def has_height(self) -> bool:
         readcodes = self.readcodes()
         if readcodes:
             if '229..' in readcodes:
@@ -58,7 +57,7 @@ class ValueEvent(XMLModelBase):
             else:
                 return False
 
-    def has_systolic_blood_pressure(self):
+    def has_systolic_blood_pressure(self) -> bool:
         readcodes = self.readcodes()
         if readcodes:
             if '2469.' in readcodes:
@@ -71,7 +70,7 @@ class ValueEvent(XMLModelBase):
             else:
                 return False
 
-    def has_diastolic_blood_pressure(self):
+    def has_diastolic_blood_pressure(self) -> bool:
         readcodes = self.readcodes()
         if readcodes:
             if '246A.' in readcodes:
@@ -84,9 +83,9 @@ class ValueEvent(XMLModelBase):
             else:
                 return False
 
-    def has_blood_test(self, type):
-        blood_snomed_concept_ids = self.SPECIFIED_BLOOD_CODES.get(type).get('snomed_concept_ids')
-        blood_read_codes = self.SPECIFIED_BLOOD_CODES.get(type).get('read_codes')
+    def has_blood_test(self, blood_type: str) -> bool:
+        blood_snomed_concept_ids = self.SPECIFIED_BLOOD_CODES.get(blood_type).get('snomed_concept_ids')
+        blood_read_codes = self.SPECIFIED_BLOOD_CODES.get(blood_type).get('read_codes')
         read_codes = self.readcodes()
         snomed_concepts = self.snomed_concepts()
 
@@ -101,12 +100,13 @@ class ValueEvent(XMLModelBase):
         return False
 
     @classmethod
-    def blood_test_types(cls):
+    def blood_test_types(cls) -> List[str]:
         return cls.SPECIFIED_BLOOD_CODES.keys()
 
 
-def load_bloods_data():
-        filepath = os.path.join(settings.CONFIG_DIR, 'data/bloods.yml')
+def load_bloods_data(filepath=''):
+        if not filepath:
+            filepath = os.path.join(settings.CONFIG_DIR, 'data/bloods.yml')
         with open(filepath, 'r') as stream:
             try:
                 return yaml.load(stream)

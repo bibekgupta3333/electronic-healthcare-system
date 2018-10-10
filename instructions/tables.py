@@ -33,7 +33,7 @@ class InstructionTable(tables.Table):
 
     def render_status(self, value, record):
         STATUS_DICT = {
-            'New':'badge-primary',
+            'New': 'badge-primary',
             'In Progress': 'badge-warning',
             'Overdue': 'badge-info',
             'Complete': 'badge-success',

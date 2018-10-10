@@ -1,5 +1,7 @@
-import datetime
+from datetime import datetime
 from .xml_base import XMLBase
+
+from typing import List
 
 
 class Registration(XMLBase):
@@ -7,20 +9,19 @@ class Registration(XMLBase):
     NAME_XPATHS = ['Title', 'FirstNames', 'FamilyName']
     ADDRESS_XPATHS = ['HouseNameFlat', 'Street', 'Village', 'Town', 'County', 'PostCode']
 
-    def date_of_birth(self):
-        return self.parsed_xml.find('DateOfBirth').text if self.parsed_xml.find('DateOfBirth') is not None else None
+    def date_of_birth(self) -> str:
+        return self.get_element_text('DateOfBirth')
 
-    def parsed_date_of_birth(self):
-        parsed_date = None
+    def parsed_date_of_birth(self) -> datetime.date:
         date_of_birth = self.date_of_birth()
-        if date_of_birth is not None:
-            parsed_date = datetime.datetime.strptime(date_of_birth, "%d/%m/%Y")
-        return parsed_date
+        if not date_of_birth:
+            return None
+        return datetime.strptime(date_of_birth, "%d/%m/%Y").date()
 
-    def sex(self):
-        return self.parsed_xml.find('Sex').text if self.parsed_xml.find('Sex') is not None else None
+    def sex(self) -> str:
+        return self.get_element_text('Sex')
 
-    def full_name(self):
+    def full_name(self) -> str:
         name = []
         for xpath in self.NAME_XPATHS:
             value = self.parsed_xml.find(xpath)
@@ -28,10 +29,10 @@ class Registration(XMLBase):
                 name.append(value.text)
         return ' '.join(name)
 
-    def nhs_number(self):
-        return self.parsed_xml.find('NhsNumber').text if self.parsed_xml.find('NhsNumber') is not None else None
+    def nhs_number(self) -> str:
+        return self.get_element_text('NhsNumber')
 
-    def address_lines(self):
+    def address_lines(self) -> List[str]:
         address = []
         for xpath in self.ADDRESS_XPATHS:
             value = self.parsed_xml.find('Address/{}'.format(xpath))
@@ -39,5 +40,5 @@ class Registration(XMLBase):
                 address.append(value.text)
         return address
 
-    def ref_id(self):
-        return self.parsed_xml.find('RefID').text if self.parsed_xml.find('RefID') is not None else None
+    def ref_id(self) -> str:
+        return self.get_element_text('RefID')

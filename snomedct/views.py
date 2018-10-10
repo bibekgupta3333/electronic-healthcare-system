@@ -6,7 +6,7 @@ QUERY_METHOD = ['istartswith', 'iendswith', 'icontains']
 
 
 # Create your views here.
-def query_snomed(request):
+def query_snomed(request) -> JsonResponse:
     query = request.GET.get('keyword')
     method = request.GET.get('method', 'icontains')
 
@@ -30,7 +30,8 @@ def query_snomed(request):
     return JsonResponse(response, safe=False)
 
 
-def get_descendants(request):
+def get_descendants(request) -> JsonResponse:
+    snomed_descendants = []
     external_id = request.GET.get('snomedct')
     if external_id:
         record = SnomedConcept.objects.get(external_id=external_id)
@@ -46,7 +47,8 @@ def get_descendants(request):
     return JsonResponse(response, safe=False)
 
 
-def get_descendant_readcodes(request):
+def get_descendant_readcodes(request) -> JsonResponse:
+    readcodes = []
     external_id = request.GET.get('snomedct')
     if external_id:
         record = SnomedConcept.objects.get(external_id=external_id)
@@ -63,7 +65,8 @@ def get_descendant_readcodes(request):
     return JsonResponse(response, safe=False)
 
 
-def get_readcodes(request):
+def get_readcodes(request) -> JsonResponse:
+    readcodes = []
     external_id = request.GET.get('snomedct')
     if external_id:
         record = SnomedConcept.objects.get(external_id=external_id)

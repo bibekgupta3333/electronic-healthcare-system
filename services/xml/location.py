@@ -1,22 +1,24 @@
 from .xml_base import XMLBase
 
+from typing import List
+
 
 class Location(XMLBase):
     ADDRESS_XPATHS = ['HouseNameFlat', 'Street', 'Village', 'Town', 'County', 'PostCode']
     XPATH = './/Location'
 
-    def address_lines(self):
+    def address_lines(self) -> List[str]:
         address_values = []
         for xpath in self.ADDRESS_XPATHS:
-            value = self.parsed_xml.find("Address/{}".format(xpath)).text if self.parsed_xml.find("Address/{}".format(xpath)) is not None else None
+            value = self.parsed_xml.find("Address/{}".format(xpath))
             if value is not None:
-                address_values.append(value)
+                address_values.append(value.text)
 
-        location_name = [self.location_name()]
+        location_name = list(filter(None, [self.location_name()]))
         return location_name + address_values
 
-    def location_name(self):
-        return self.parsed_xml.find('LocationName').text if self.parsed_xml.find('LocationName') is not None else None
+    def location_name(self) -> str:
+        return self.get_element_text('LocationName')
 
-    def ref_id(self):
-        return self.parsed_xml.find('RefID').text if self.parsed_xml.find('RefID') is not None else None
+    def ref_id(self) -> str:
+        return self.get_element_text('RefID')

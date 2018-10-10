@@ -2,20 +2,21 @@ from django.conf import settings
 import urllib
 import requests
 from ..models import EmisAPIConfig
+from accounts.models import Patient
 
 
-class EmisAPIServiceBase(object):
+class EmisAPIServiceBase:
     def __init__(self):
         self.emis_api_config = EmisAPIConfig.objects.first()
         if self.emis_api_config is None:
             raise ValueError('Unable to get EMIS API Configuration')
 
-    def uri(self):
+    def uri(self) -> str:
         raise NotImplementedError(
             "Inheriting classes must implement this method."
         )
 
-    def call(self):
+    def call(self) -> str:
         request_uri = self.uri()
         r = requests.get(
             request_uri,
@@ -29,12 +30,12 @@ class EmisAPIServiceBase(object):
 
 
 class GetAttachment(EmisAPIServiceBase):
-    def __init__(self, patient_number, attachment_identifier):
+    def __init__(self, patient_number: str, attachment_identifier: str):
         super().__init__()
         self.patient_number = patient_number
         self.attachment_identifier = attachment_identifier
 
-    def uri(self):
+    def uri(self) -> str:
         uri = "{host}/api/organisations/{organisation_id}/patients/{patient_number}/attachments/{attachment_identifier}".format(
             host=settings.EMIS_API_HOST,
             organisation_id=self.emis_api_config.emis_organisation_id,
@@ -44,14 +45,18 @@ class GetAttachment(EmisAPIServiceBase):
 
 
 class GetPatientList(EmisAPIServiceBase):
-    def __init__(self, patient):
+    def __init__(self, patient: Patient):
         super().__init__()
         self.patient = patient
 
-    def search_term(self):
-        terms = [self.patient.first_name, self.patient.last_name, self.patient.dob.strftime("%d/%m/%Y")]
-        terms = list(filter(None, terms))
-        terms = " ".join(terms)
+    def search_term(self) -> str:
+        terms = [
+            self.patient.user.first_name,
+            self.patient.user.last_name,
+        ]
+        if self.patient.date_of_birth is not None:
+            terms.append(self.patient.date_of_birth.strftime("%d/%m/%Y"))
+        terms = " ".join([term for term in terms if term])
         return urllib.parse.quote(terms, safe='')
 
     def uri(self):
@@ -63,11 +68,11 @@ class GetPatientList(EmisAPIServiceBase):
 
 
 class GetMedicalRecord(EmisAPIServiceBase):
-    def __init__(self, patient_number):
+    def __init__(self, patient_number: str):
         super().__init__()
         self.patient_number = patient_number
 
-    def uri(self):
+    def uri(self) -> str:
         uri = "{host}/api/organisations/{organisation_id}/patients/{patient_number}/medical_record".format(
             host=settings.EMIS_API_HOST,
             organisation_id=self.emis_api_config.emis_organisation_id,

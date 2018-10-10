@@ -17,9 +17,12 @@ from accounts.forms import PatientForm, GPForm
 from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice, NHSgpPractice
 from template.forms import TemplateInstructionForm
-from common.functions import multi_getattr
-from medi.utils import get_env_variable
-from medi.settings.common import PIPELINE_INSTRUCTION_LINK, DUMMY_EMAIL_LIST
+from common.functions import multi_getattr, get_env_variable
+
+from django.conf import settings
+PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
+DUMMY_EMAIL_LIST = settings.DUMMY_EMAIL_LIST
+
 from snomedct.models import SnomedConcept
 
 import pytz

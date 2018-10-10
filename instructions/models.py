@@ -7,8 +7,11 @@ from common.models import TimeStampedModel
 from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser
 from snomedct.models import SnomedConcept
 from .model_choices import *
-from medi.settings.common import PIPELINE_INSTRUCTION_LINK
-from medi.utils import get_env_variable
+from common.functions import get_env_variable
+from django.conf import settings
+PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
+
+from typing import List, Tuple
 
 
 class Instruction(TimeStampedModel, models.Model):
@@ -62,23 +65,37 @@ class Instruction(TimeStampedModel, models.Model):
             auth_password=get_env_variable('SENDGRID_PASS'),
         )
 
-    def snomed_concepts_readcodes(self):
-        snomed_concepts = SnomedConcept.objects.filter(instructionconditionsofinterest__instruction=self.id)
+    # JT - this is not a nice function. Should be rewritten with one function
+    # for snomed_concepts, one function for readcodes.
+    # todo: delete this method.
+    def snomed_concepts_readcodes(self) -> Tuple[List[int], List[str]]:
         snomed_concepts_list = []
         readcodes_list = []
-        for snomed_concept in snomed_concepts:
+        for snomed_concept in self.selected_snomed_concepts():
             snomed_concepts_list.append(snomed_concept.external_id)
-            snomed_descendants = snomed_concept.snomed_descendants()
+            for snomed_descendant in snomed_concept.snomed_descendants():
+                snomed_concepts_list.append(snomed_descendant.external_id)
 
-            readcodes = list(snomed_concept.readcodes()) + list(snomed_concept.snomed_descendant_readcodes())
-            if snomed_descendants:
-                for snomed_descendant in snomed_descendants:
-                    snomed_concepts_list.append(snomed_descendant.external_id)
-            if readcodes:
-                for readcode in readcodes:
-                    readcodes_list.append(readcode.ext_read_code)
+            for readcode in snomed_concept.combined_readcodes():
+                readcodes_list.append(readcode.ext_read_code)
 
-        return (snomed_concepts_list, readcodes_list)
+        return snomed_concepts_list, readcodes_list
+
+    def snomed_concepts_ids(self) -> List[int]:
+        snomed_concepts_ids = []
+        for sct in self.selected_snomed_concepts():
+            snomed_concepts_ids.append(sct.external_id)
+            for sd in sct.snomed_descendants():
+                snomed_concepts_ids.append(sd.external_id)
+        return snomed_concepts_ids
+
+    def readcodes(self) -> List[str]:
+        readcodes = []
+        for snomed_concept in self.selected_snomed_concepts():
+            readcodes += [
+                rc.ext_read_code for rc in snomed_concept.combined_readcodes()
+            ]
+        return readcodes
 
     def selected_snomed_concepts(self):
         return SnomedConcept.objects.filter(instructionconditionsofinterest__instruction=self.id)

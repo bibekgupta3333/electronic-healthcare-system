@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.shortcuts import redirect
 from django.http import JsonResponse
 
-from common.functions import multi_getattr
+from common.functions import multi_getattr, get_env_variable
 from payment.models import OrganisationFee
 from django_tables2 import RequestConfig
 
@@ -14,8 +14,10 @@ from .models import User, UserProfileBase, GeneralPracticeUser
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER
 from .forms import NewGPForm, NewClientForm
 from .tables import GPUserTable, ClientUserTable
-from medi.settings.common import DEFAULT_FROM_EMAIL
-from medi.settings.common import ACCOUNT_LINK, get_env_variable
+
+from django.conf import settings
+DEFAULT_FROM_EMAIL = settings.DEFAULT_FROM_EMAIL
+ACCOUNT_LINK = settings.ACCOUNT_LINK
 
 
 @login_required(login_url='/accounts/login')

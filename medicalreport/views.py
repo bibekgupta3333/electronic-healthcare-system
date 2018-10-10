@@ -11,7 +11,6 @@ from .functions import create_or_update_redaction_record
 from medicalreport.reports import MedicalReport
 
 
-# Create your views here.
 def get_matched_patient(patient):
     raw_xml = services.GetPatientList(patient).call()
     patients = PatientList(raw_xml).patients()
