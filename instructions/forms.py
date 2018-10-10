@@ -2,11 +2,11 @@ from django import forms
 from django.forms.models import modelformset_factory
 from django.core.exceptions import ValidationError
 
-from instructions.model_choices import INSTRUCTION_TYPE_CHOICES, AMRA_TYPE, SARS_TYPE
+from instructions.model_choices import AMRA_TYPE, SARS_TYPE
 from .models import InstructionAdditionQuestion
 from template.models import TemplateInstruction
 from common.functions import multi_getattr
-from snomedct.models import CommonSnomedConcepts, SnomedConcept
+from snomedct.models import CommonSnomedConcepts
 
 
 class MyMultipleChoiceField(forms.MultipleChoiceField):
@@ -24,9 +24,9 @@ class ScopeInstructionForm(forms.Form):
     consent_form = forms.FileField(required=False)
     send_to_patient = forms.BooleanField(widget=forms.CheckboxInput(), label='Send copy of medical report to patient?', required=False)
 
-    def __init__(self, user=None, *args, **kwargs):
+    def __init__(self, user=None, patient_email=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        self.patient_email = patient_email
         FORM_INSTRUCTION_TYPE_CHOICES = [
             (AMRA_TYPE, 'Underwriting(AMRA)'),
             (AMRA_TYPE, 'Claim(AMRA)'),
@@ -48,12 +48,25 @@ class ScopeInstructionForm(forms.Form):
                 del FORM_INSTRUCTION_TYPE_CHOICES[0]
             elif not client_organisation.can_create_sars:
                 del FORM_INSTRUCTION_TYPE_CHOICES[2]
-            self.fields['type'] = forms.ChoiceField(
-                choices=FORM_INSTRUCTION_TYPE_CHOICES,
-                widget=forms.RadioSelect(
-                    attrs={'class': 'd-inline instructionType'}
-                )
+
+        gp_organisation = multi_getattr(user, 'userprofilebase.generalpracticeuser.organisation', default=None)
+        if gp_organisation:
+            del FORM_INSTRUCTION_TYPE_CHOICES[0]
+            del FORM_INSTRUCTION_TYPE_CHOICES[0]
+
+        self.fields['type'] = forms.ChoiceField(
+            choices=FORM_INSTRUCTION_TYPE_CHOICES,
+            widget=forms.RadioSelect(
+                attrs={'class': 'd-inline instructionType'}
             )
+        )
+
+    def clean(self):
+        super().clean()
+        if self.cleaned_data['type'] == "AMRA" and not self.patient_email and not self.cleaned_data['consent_form']:
+            raise ValidationError(
+                "You must supply a valid consent form, or the patient's e-mail address when creating an AMRA instruction!")
+        return self.cleaned_data
 
 
 class AdditionQuestionForm(forms.ModelForm):

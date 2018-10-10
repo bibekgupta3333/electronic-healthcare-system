@@ -35,14 +35,19 @@ def create_or_update_redaction_record(request, instruction):
             amendments_for_record.status = AmendmentsForRecord.REDACTION_STATUS_NEW
 
         if submit_form.is_valid(post_data=request.POST):
-            # TODO redirect to report page
             amendments_for_record.review_by = submit_form.cleaned_data['gp_practitioner']
             amendments_for_record.submit_choice = submit_form.cleaned_data['prepared_and_signed']
             amendments_for_record.prepared_by = submit_form.cleaned_data['prepared_by']
-            instruction.status = models.INSTRUCTION_STATUS_COMPLETE
+
+            if status == 'submit':
+                instruction.status = models.INSTRUCTION_STATUS_COMPLETE
+                messages.success(request, 'Completed Medical Report')
+            else:
+                messages.success(request, 'Updated Report Successful')
+
             instruction.save()
             amendments_for_record.save()
-            messages.success(request, 'Completed Medical Report')
+
             return True
         else:
             messages.error(request, submit_form._errors)

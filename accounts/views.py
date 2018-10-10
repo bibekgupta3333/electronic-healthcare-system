@@ -16,7 +16,7 @@ from .forms import NewGPForm, NewClientForm
 from .tables import GPUserTable, ClientUserTable
 
 from django.conf import settings
-DEFAULT_FROM_EMAIL = settings.DEFAULT_FROM_EMAIL
+DEFAULT_FROM = settings.DEFAULT_FROM
 ACCOUNT_LINK = settings.ACCOUNT_LINK
 
 
@@ -59,7 +59,7 @@ def reset_password(request):
     send_mail(
         'Your account password has been changed',
         'Your account password has been changed by your manager. Password: {}'.format(password),
-        DEFAULT_FROM_EMAIL,
+        DEFAULT_FROM,
         [user.email],
         fail_silently=False,
         auth_user=get_env_variable('SENDGRID_USER'),
@@ -248,7 +248,7 @@ def create_user(request):
                     send_mail(
                         'New Account',
                         'You have a new Account. Click here {} to see it.'.format(ACCOUNT_LINK),
-                        DEFAULT_FROM_EMAIL,
+                        DEFAULT_FROM,
                         [to_email],
                         fail_silently=False,
                         auth_user=get_env_variable('SENDGRID_USER'),

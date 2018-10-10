@@ -1,8 +1,10 @@
 from django.db import models
+from django import forms
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.core.mail import send_mail
+from django.core.exceptions import ValidationError
 from common.models import TimeStampedModel
 from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser
 from snomedct.models import SnomedConcept
@@ -15,7 +17,7 @@ from typing import List, Tuple
 
 
 class Instruction(TimeStampedModel, models.Model):
-    client_user = models.ForeignKey(ClientUser, on_delete=models.CASCADE, verbose_name='Client')
+    client_user = models.ForeignKey(ClientUser, on_delete=models.CASCADE, verbose_name='Client', null=True)
     gp_user = models.ForeignKey(GeneralPracticeUser, on_delete=models.CASCADE, verbose_name='GP Allocated', null=True)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, verbose_name='Patient')
     completed_signed_off_timestamp = models.DateTimeField(null=True, blank=True)
@@ -37,7 +39,7 @@ class Instruction(TimeStampedModel, models.Model):
         ordering = ('-created',)
 
     def __str__(self):
-        return self.client_user.user.first_name + "::" + self.patient.user.first_name
+        return 'Instruction #{pk}'.format(pk=self.pk)
 
     def in_progress(self, context):
         self.status = INSTRUCTION_STATUS_PROGRESS

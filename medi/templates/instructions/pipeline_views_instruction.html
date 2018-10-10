@@ -16,7 +16,8 @@
 {% block Content %}
         <div class="row" >
             <div class="col-md-3">
-                <button class="btn btn-primary" id="addInstructionButton">Add New</button>
+                <a href="{% url 'instructions:new_instruction' %}" class="btn btn-primary" id="addInstructionButton">
+                    {% if request.user.type == 'GP' %}New SARS Instruction{% else %}New Instruction {% endif %}</a>
             </div>
             <div class="col-md-4 offset-md-5">
                 <form id="topsearchform" role="search" method="post" action="" class="" autocomplete="off">

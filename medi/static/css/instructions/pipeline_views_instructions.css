@@ -4,5 +4,6 @@
 }
 
 #addInstructionButton {
-  width: 130px;
+  color: white;
+  font-weight: bold;
 }

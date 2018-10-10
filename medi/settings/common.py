@@ -170,7 +170,7 @@ EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = get_env_variable('SENDGRID_USER')
 EMAIL_HOST_PASSWORD = get_env_variable('SENDGRID_PASS')
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM = 'MediData'
 
 
 LOGIN_URL = '/accounts/login/'

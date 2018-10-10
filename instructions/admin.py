@@ -19,7 +19,10 @@ class InstructionAdmin(admin.ModelAdmin):
             pk = form.instance.id
             instruction = get_object_or_404(models.Instruction, pk=pk)
             if instruction.status == INSTRUCTION_STATUS_REJECT:
-                instruction.send_reject_email([instruction.client_user.user.email,instruction.gp_user.user.email])
+                if instruction.client_user:
+                    instruction.send_reject_email([instruction.client_user.user.email, instruction.gp_user.user.email])
+                else:
+                    instruction.send_reject_email([instruction.gp_user.user.email])
 
 
 admin.site.register(models.Instruction, InstructionAdmin)

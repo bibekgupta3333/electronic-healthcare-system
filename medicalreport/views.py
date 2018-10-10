@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.mail import send_mail
+# from django.http import HttpResponse
 from services.emisapiservices import services
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.xml.patient_list import PatientList
@@ -99,9 +101,17 @@ def update_report(request, instruction_id):
     is_valid = create_or_update_redaction_record(request, instruction)
 
     if request.POST.get('event_flag') == 'submit' and is_valid:
+        send_mail(
+            'Patient Notification',
+            'Your instruction has been completed',
+            'MediData',
+            [instruction.patient.user.email],
+            fail_silently=False,
+        )
         return redirect('instructions:view_pipeline')
 
     return redirect('medicalreport:edit_report', instruction_id=instruction_id)
+
 
 def view_report(request, instruction_id):
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
@@ -123,6 +133,7 @@ def view_report(request, instruction_id):
     }
 
     return MedicalReport.render(params)
+
 
 def final_report(request, instruction_id):
     header_title = "Final Report"

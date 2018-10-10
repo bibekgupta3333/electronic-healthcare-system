@@ -28,7 +28,7 @@ class MedicalReportFinaliseSubmitForm(forms.Form):
             self._errors = 'Please Enter Reviewer'
             return False
 
-        if 'prepared_and_signed' not in post_data:
+        if post_data['event_flag'] == 'submit' and 'prepared_and_signed' not in post_data:
             self._errors = 'Please Select Choice'
             return False
 
