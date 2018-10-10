@@ -41,6 +41,8 @@ class Instruction(TimeStampedModel, models.Model):
 
     def in_progress(self, context):
         self.status = INSTRUCTION_STATUS_PROGRESS
+        if not self.gp_user:
+            self.gp_user = context.get('gp_user', None)
         self.save()
 
     def reject(self, context):

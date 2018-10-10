@@ -8,23 +8,29 @@
             </div>
         </div>
         <ul class="mainmenu">
-            <li class="{% if request.resolver_match.url_name == 'new_instruction' %}active{% endif %}">
-                <a href="{% url 'instructions:new_instruction' %}">New Instructions</a>
-            </li>
+            {% if user.type == 'CLT' %}
+                <li class="{% if request.resolver_match.url_name == 'new_instruction' %}active{% endif %}">
+                    <a href="{% url 'instructions:new_instruction' %}">New Instructions</a>
+                </li>
+            {% endif %}
             <li class="{% if request.resolver_match.url_name == 'view_pipeline' %}active{% endif %}">
                 <a href="{% url 'instructions:view_pipeline' %}" >Instructions</a>
             </li>
             {% if user.is_staff == True or user.userprofilebase.generalpracticeuser.role == 0 %}
-            <li class="{% if request.resolver_match.namespace == 'organisations' %}active{% endif %}">
-                <a href="{% url 'accounts:view_users' %}">User Management</a>
-            </li>
+                <li class="{% if request.resolver_match.namespace == 'organisations' %}active{% endif %}">
+                    <a href="{% url 'accounts:view_users' %}">User Management</a>
+                </li>
             {% endif %}
-            <li>
-                <a href="#" >Income</a>
-            </li>
-            <li class="{% if request.resolver_match.namespace == 'view_account' %}active{% endif %}">
-                <a href="{% url 'accounts:view_account' %}" >Account</a>
-            </li>
+            {% if user.type == 'MEDI' %}
+                <li>
+                    <a href="#" >Income</a>
+                </li>
+            {% endif %}
+            {% if user.userprofilebase.generalpracticeuser.role == 0 %}
+                <li class="{% if request.resolver_match.namespace == 'view_account' %}active{% endif %}">
+                    <a href="{% url 'accounts:view_account' %}" >Account</a>
+                </li>
+            {% endif %}
         </ul>
     </nav>
 </aside>

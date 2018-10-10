@@ -9,6 +9,7 @@ from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_REJECT_TYPE
 from .functions import create_or_update_redaction_record
 from medicalreport.reports import MedicalReport
+from accounts.models import GeneralPracticeUser
 
 
 def get_matched_patient(patient):
@@ -46,7 +47,8 @@ def select_patient(request, instruction_id, patient_emis_number):
 
     redaction.patient_emis_number = patient_emis_number
     redaction.save()
-    instruction.in_progress(context={})
+    gp_user = get_object_or_404(GeneralPracticeUser, user_id=request.user.id)
+    instruction.in_progress(context={'gp_user': gp_user})
     return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
