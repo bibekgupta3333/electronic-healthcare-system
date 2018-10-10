@@ -1,6 +1,7 @@
 from .common import *
 
 ALLOWED_HOSTS.append('medi.mohub.co')
+ALLOWED_HOSTS.append('web02-cl02-mde.flexiion-customer.net')
 
 DEBUG = True
 

@@ -350,6 +350,23 @@
                 }
             });
 
+            $('#id_address_postcode').select2({
+                ajax: {
+                    url: function (params) {
+                        return "https://api.postcodes.io/postcodes/"+ params.term +"/autocomplete"
+                    },
+                    processResults: function (data) {
+                        let formed_data = [];
+                        for(let i=0; i < data['result'].length; i++){
+                            formed_data.push({'id': data['result'][i], 'text': data['result'][i]});
+                        }
+                        return {
+                            results: formed_data
+                        }
+                    }
+                }
+            });
+
             var $selectAllButton = $('<button class="btn btn-default btn-xs" id="selectAllButton" type="button">Select All</button>');
             var $deSelectAllButton = $('<button class="btn btn-default btn-xs" id="deSelectAllButton" type="button">Deselect All</button>');
             $('#id_common_condition').append([$selectAllButton, $deSelectAllButton]);
@@ -374,6 +391,20 @@
                         $('#nhsData').text(
                             data.address
                         );
+                    }
+                })
+            });
+
+             $('#id_address_postcode').on('change', function () {
+                $.ajax({
+                    type: "GET",
+                    url: "https://api.postcodes.io/postcodes/"+ $(this).val(),
+                    success: function (data) {
+                        if(data['status'] == 200) {
+                            let formed_data = data['result']['admin_ward']+ '  ' +data['result']['admin_district']+ '  ' + data['result']['admin_county'];
+                            let cleaned_formed_data = formed_data.replace("null", '');
+                            $('#id_address_name_number').val(cleaned_formed_data);
+                        }
                     }
                 })
             });
