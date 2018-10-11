@@ -52,9 +52,11 @@
                                   </div>
                               </div>
                           </div>
-                          <div class="patient-consent">
-                            <button class="btn btn-consent"><i class="fas fa-file-medical icon"></i> View consent form</button>
-                          </div>
+                          {% ifequal instruction.type amra_type %}
+                              <div class="patient-consent">
+                                  <button class="btn btn-consent"><i class="fas fa-file-medical icon"></i> View consent form</button>
+                              </div>
+                          {% endifequal %}
                       </div>
                   </div>
               </div>
