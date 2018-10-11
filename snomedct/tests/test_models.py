@@ -66,6 +66,7 @@ class SnomedDescendantTest(TestCase):
 
 class CommonSnomedConceptsTest(TestCase):
     @classmethod
+    @tag('notimplemented')
     def setUpTestData(cls):
         cls.common_snomed_concepts = mommy.make(
             CommonSnomedConcepts, common_name='Heart Disease', snomed_concept_code=[1234567890, None]
