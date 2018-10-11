@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% load static %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% bootstrap_messages %}
+
+
+{% block ExtraHead %}
+    <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/bootstrap-datepicker.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/style.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/instructions/new_instruction.css' %}" rel="stylesheet"/>
+    <link rel="stylesheet" href="{% static 'assets/kartik-v-boostrap-fileinput/css/fileinput.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/kartik-v-boostrap-fileinput/themes/explorer-fas/theme.css' %}">
+    <script src="{% static 'assets/kartik-v-boostrap-fileinput/js/fileinput.js' %}"></script>
+    <script src="{% static 'assets/kartik-v-boostrap-fileinput/js/locales/LANG.js' %}"></script>
+    <script src="{% static 'assets/kartik-v-boostrap-fileinput/themes/fas/theme.js' %}"></script>
+{% endblock %}
+
+{% block Content %}
+    <div class="card-deck instruction">
+        <div class="pr-0 col-md-6">
+            <div class="card mr-2">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Patient</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2 rowTitle">Name*:</div>
+                        {% bootstrap_field patient_form.title size='small' form_group_class='form-group col-md-2 p-0'%}
+                        {% bootstrap_field patient_form.first_name size='small' form_group_class='form-group-plaintext  col-md-4 px-2' %}
+                        {% bootstrap_field patient_form.last_name size='small' form_group_class='form-group col-md-4 px-1' %}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2 rowTitle">Date of Birth*:</div>
+                        {% bootstrap_field patient_form.date_of_birth size='small' form_group_class='form-group col-md-6 p-0 input-group dob' show_label=False %}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2 rowTitle">Address*:</div>
+                        {% bootstrap_field patient_form.address_postcode size='small' form_group_class='form-group col-md-4 p-0 ' %}
+                        {% bootstrap_field patient_form.address_name_number size='small' form_group_class='form-group col-md-6 px-1' %}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2 rowTitle">NHS #:</div>
+                        {% bootstrap_field patient_form.nhs_number size='small' form_group_class='form-group col-md-4 p-0 mt-1' show_label=False placeholder='' %}
+                        <div class="col-md-2 pl-4 rowTitle">Email:</div>
+                        {% bootstrap_field patient_form.email size='small' form_group_class='form-group input-group col-md-4 px-1 emailField' show_label=False %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 ">
+            <div class="card ">
+                <div class="card-header"><h5>GP and GP Practice</h5></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 rowTitle">Search GP Practice:</div>
+                        {% bootstrap_field nhs_form.gp_practice size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
+                    </div>
+                    <div class="row " style="height: 130px">
+                        <div class="col-md-3 d-flex">GP Practice*:</div>
+                        <div class="col-md-6 p-0"><p id="nhsData">{{ nhs_address }}</p></div>
+                    </div>
+                    <div class="row ">
+                        <div class="col-md-3 rowTitle">Named GP:</div>
+                        {% bootstrap_field gp_form.title size='small' form_group_class='form-group col-md-2 p-0' %}
+                        {% bootstrap_field gp_form.initial size='small' form_group_class='form-group col-md-3 px-2' %}
+                        {% bootstrap_field gp_form.last_name size='small' form_group_class='form-group col-md-4 px-2' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 mt-4">
+            <div class="card">
+                <div class="card-header"><h5>Scope</h5></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2 d-flex">Type of Instruction*:</div>
+                        {% bootstrap_field scope_form.type size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
+                    </div>
+                    <div class="conditions">
+                        <div class="row">
+                            <div class="col-md-2 rowTitle" >Conditions of Interest:</div>
+                            <ul class="pl-0">
+                                {% for condition in condition_of_interest %}
+                                    <li>{{ condition }}</li>
+                                {% endfor %}
+                            </ul>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 mt-4">
+            <div class="card">
+                <div class="card-header"><h5>Consent and Patient Copy</h5></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2 rowTitle">Upload consent form:</div>
+                        <div class="col-md-10">
+                            <div class="form-group">
+                                <div class="file-loading">
+                                    {% bootstrap_field scope_form.consent_form show_label=False %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 mt-4">
+            <div class="card">
+                <div class="card-header"><h5>Addition Question</h5></div>
+                <div class="card-body">
+                    <div class="row" id="questions_block">
+                        {{ addition_question_formset.management_form }}
+                        <table border="0" cellpadding="10" cellspacing="0" class="table">
+                            <thead>
+                                <tr>
+                                    <th>Questions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for form in addition_question_formset.forms %}
+                                <tr>
+                                    <td>{{ form.question }}</td>
+                                    <td></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row ml-1 mt-4  allocate-section">
+    <form method="POST">
+        <div class="col-md-6">
+                {% csrf_token %}
+                <div class="row ml-1">
+                    {% if not request.user.userprofilebase.generalpracticeuser.role %}
+                        <div class="col-md-8 pl-0">
+                            {% bootstrap_field allocate_form.gp_practitioner show_label=False %}
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-primary btn-lg " type="submit" id="allocateButton">Allocate</button>
+                        </div>
+                    {% endif %}
+                </div>
+        </div>
+        {% if request.user.userprofilebase.generalpracticeuser.role %}
+            <div class="col-md-6">
+                <button class="btn btn-primary btn-lg" type="submit" id="processButton">Allocate to me and Process Instruction</button>
+            </div>
+        {% endif %}
+    </form>
+    </div>
+{% endblock %}
+
+{% block Script %}
+    <script>
+    $(document).ready(function () {
+        $('input').attr('readonly', true);
+
+        $("#id_consent_form").fileinput({
+            theme: 'fas',
+            showUpload: false,
+            {% if consent_form_data.path %}
+                initialPreview: [
+                    '{% static consent_form_data.path %}'
+                ],
+                initialPreviewAsData: true,
+                initialPreviewConfig: [
+                    {type: "{{ consent_form_data.type }}", url: "{% static consent_form_data.path %}" }
+                ]
+            {% endif %}
+        });
+
+        let total_addition_form = $('#id_form-TOTAL_FORMS').val() - 1;
+
+        $('#id_form-'+ total_addition_form.toString() +'-question').remove();
+        $('button[title="View Details"]').removeAttr('disabled');
+    });
+    </script>
+
+{% endblock %}

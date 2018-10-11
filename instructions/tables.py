@@ -46,6 +46,8 @@ class InstructionTable(tables.Table):
             url = 'medicalreport:final_report'
         elif self.user and self.user.type != models.GENERAL_PRACTICE_USER:
             return format_html('<a><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
+        elif value == 'New':
+            url = 'instructions:allocate_instruction'
         return format_html('<a href='+reverse(url, args=[record.pk])+'><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
 
 

@@ -11,7 +11,7 @@ def create_organisation(request):
     })
 
 
-def get_nhs_data(request):
+def get_nhs_data(request, **kwargs):
     code = request.GET.get('code', '')
     if code:
         nhs_gp = NHSgpPractice.objects.filter(code=code).first()
@@ -34,6 +34,9 @@ def get_nhs_data(request):
                 'name': organisation_gp.trading_name,
                 'address': organisation_gp.address
             }
+
+    if kwargs.get('need_dict'):
+        return data
 
     return JsonResponse(data)
 

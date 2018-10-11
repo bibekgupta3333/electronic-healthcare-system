@@ -36,10 +36,19 @@ class PatientForm(forms.ModelForm):
             'address_name_number': 'Select address*',
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        initial_data = kwargs.get('initial')
+        if initial_data:
+            post_code = initial_data.get('address_postcode')
+            if post_code:
+                self.fields['address_postcode'] = forms.CharField(max_length=255)
+            self.fields['title'] = forms.CharField(max_length=255)
+
 
 class GPForm(forms.ModelForm):
     initial = forms.CharField(max_length=255, required=False, label='Initials', widget=forms.TextInput(attrs={'placeholder': ''}))
-    last_name = forms.CharField(max_length=255, required=False, label='Last Name', widget=forms.TextInput(attrs={'id': 'gp_last_name', 'placeholder': '',}))
+    last_name = forms.CharField(max_length=255, required=False, label='Last Name', widget=forms.TextInput(attrs={'id': 'gp_last_name', 'name': 'gp_last_name', 'placeholder': '',}))
 
     class Meta:
         model = GeneralPracticeUser
@@ -48,6 +57,12 @@ class GPForm(forms.ModelForm):
         labels = {
             'title': 'Title'
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        initial_data = kwargs.get('initial')
+        if initial_data:
+            self.fields['title'] = forms.CharField(max_length=255)
 
 
 class NewGPForm(forms.ModelForm):
