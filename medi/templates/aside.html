@@ -13,9 +13,11 @@
                     <a href="{% url 'instructions:new_instruction' %}">New Instructions</a>
                 </li>
             {% endif %}
-            <li class="{% if request.resolver_match.url_name == 'view_pipeline' %}active{% endif %}">
-                <a href="{% url 'instructions:view_pipeline' %}" >Instructions</a>
-            </li>
+            {% if user.type %}
+                <li class="{% if request.resolver_match.url_name == 'view_pipeline' %}active{% endif %}">
+                    <a href="{% url 'instructions:view_pipeline' %}" >Instructions</a>
+                </li>
+            {% endif %}
             {% if user.is_staff == True or user.userprofilebase.generalpracticeuser.role == 0 %}
                 <li class="{% if request.resolver_match.namespace == 'organisations' %}active{% endif %}">
                     <a href="{% url 'accounts:view_users' %}">User Management</a>

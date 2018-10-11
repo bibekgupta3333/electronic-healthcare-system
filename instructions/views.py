@@ -4,11 +4,10 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.utils.dateparse import parse_datetime
+from django.forms import ValidationError
 from django.http import HttpRequest
-
 from django_tables2 import RequestConfig
-
-from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest
+from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest, Setting
 from .tables import InstructionTable
 from .model_choices import *
 from .forms import ScopeInstructionForm, AdditionQuestionFormset, AllocateInstructionForm
@@ -254,6 +253,18 @@ def new_instruction(request):
                     fail_silently=False,
                 )
 
+            if instruction.type == AMRA_TYPE and not instruction.consent_form:
+                instruction_setting = Setting.objects.all().first()
+                message = 'Your instruction has request consent form. Please upload or accept consent form in this link {}'\
+                    .format(instruction_setting.site + '/instruction/upload_consent/' + str(instruction.id) + '/')
+                send_mail(
+                    'Request consent',
+                    message,
+                    'MediData',
+                    [patient_email],
+                    fail_silently=False,
+                )
+
             medidata_emails_list = [user.email for user in User.objects.filter(type=MEDIDATA_USER)]
             gp_emails_list = []
             # Notification: client selected NHS GP
@@ -300,6 +311,26 @@ def new_instruction(request):
         'addition_question_formset': addition_question_formset,
         'template_form': template_form,
     })
+
+
+def upload_consent(request, instruction_id):
+    setting = Setting.objects.all().first()
+    instruction = get_object_or_404(Instruction, pk=instruction_id)
+    uploaded = False
+    if instruction.status != INSTRUCTION_STATUS_NEW:
+        uploaded = True
+    if request.method == "POST":
+        if request.POST.get('select_type') == 'accept':
+            instruction.consent_form = setting.consent_form
+        else:
+            instruction.consent_form = request.FILES.getlist('consent_form')
+        instruction.save()
+        uploaded = True
+    return render(request, 'instructions/upload_consent.html',{
+            'instruction': instruction,
+            'setting': setting,
+            'uploaded': uploaded,
+        })
 
 
 @login_required(login_url='/accounts/login')
