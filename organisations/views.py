@@ -42,16 +42,33 @@ def get_nhs_data(request, **kwargs):
 
 
 def get_nhs_autocomplete(request):
-    data = {'items': []}
+    data = {
+        'items': [
+            {
+                'text': 'GP Organisations',
+                'children': []
+            },
+            {
+                'text': 'NHS Organisations',
+                'children': []
+            }
+        ]
+    }
     search = request.GET.get('search', '')
     if search:
-        nhs_gps = NHSgpPractice.objects.filter(name__icontains=search)
-        if nhs_gps.exists():
-            for nhs_gp in nhs_gps:
-                data['items'].append({'id': nhs_gp.code, 'text':nhs_gp.name})
-
         organisation_gps = OrganisationGeneralPractice.objects.filter(trading_name__icontains=search)
-        if organisation_gps.exists():
-            for organisation_gp in organisation_gps:
-                data['items'].append({'id': organisation_gp.practice_code, 'text': organisation_gp.trading_name})
+        nhs_gps = NHSgpPractice.objects.filter(name__icontains=search)
+    else:
+        organisation_gps = OrganisationGeneralPractice.objects.all()[:10]
+        nhs_gps = NHSgpPractice.objects.all()[:10]
+
+    if organisation_gps.exists():
+        for organisation_gp in organisation_gps:
+            data['items'][0]['children'].append(
+                {'id': organisation_gp.practice_code, 'text': organisation_gp.trading_name})
+
+    if nhs_gps.exists():
+        for nhs_gp in nhs_gps:
+            data['items'][1]['children'].append({'id': nhs_gp.code, 'text': nhs_gp.name})
+
     return JsonResponse(data)
