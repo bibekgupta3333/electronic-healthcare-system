@@ -23,6 +23,7 @@ from common.functions import multi_getattr, get_env_variable
 from django.conf import settings
 PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
 DUMMY_EMAIL_LIST = settings.DUMMY_EMAIL_LIST
+SITE_NAME = settings.SITE_NAME
 
 from snomedct.models import SnomedConcept
 
@@ -252,9 +253,8 @@ def new_instruction(request):
                 )
 
             if instruction.type == AMRA_TYPE and not instruction.consent_form:
-                instruction_setting = Setting.objects.all().first()
                 message = 'Your instruction has request consent form. Please upload or accept consent form in this link {}'\
-                    .format(instruction_setting.site + '/instruction/upload_consent/' + str(instruction.id) + '/')
+                    .format(SITE_NAME + '/instruction/upload_consent/' + str(instruction.id) + '/')
                 send_mail(
                     'Request consent',
                     message,
