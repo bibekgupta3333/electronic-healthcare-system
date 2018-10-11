@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.mail import send_mail
 from django.http import JsonResponse
-# from django.http import HttpResponse
 from services.emisapiservices import services
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.xml.patient_list import PatientList
@@ -127,11 +126,13 @@ def view_report(request, instruction_id):
     raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     dummy_instruction = DummyInstruction(instruction)
+    gp_name = redaction.get_gp_name
 
     params = {
         'medical_record': medical_record_decorator,
         'redaction': redaction,
         'instruction': instruction,
+        'gp_name': gp_name,
         'dummy_instruction': dummy_instruction
     }
 

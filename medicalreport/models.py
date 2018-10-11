@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.postgres.fields import JSONField
 from instructions.models import Instruction
+from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE
 from snomedct.models import SnomedConcept
 from accounts.models import User
 from django.utils.html import format_html
@@ -40,6 +41,15 @@ class AmendmentsForRecord(models.Model):
     prepared_by = models.CharField(max_length=255, blank=True)
     status = models.CharField(choices=REDACTION_STATUS_CHOICES, max_length=6, default=REDACTION_STATUS_NEW)
     comment_notes = models.TextField(null=True)
+
+    def get_gp_name(self):
+        gp_name = None
+        if self.instruction.status == INSTRUCTION_STATUS_COMPLETE:
+            if self.prepared_by:
+                gp_name = self.prepared_by
+            elif self.review_by:
+                gp_name = self.review_by.get_full_name()
+        return gp_name
 
     def additional_acute_medications(self):
         return AdditionalMedicationRecords.objects.filter(amendments_for_record=self.id, repeat=False)
