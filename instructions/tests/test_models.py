@@ -23,7 +23,7 @@ class InstructionTest(TestCase):
 
     def test_string_representation(self):
         instruction_string = str(self.instruction)
-        self.assertEqual(instruction_string, 'Instruction #3')
+        self.assertEqual(instruction_string, 'Instruction #1')
 
     @tag('notimplemented')
     def test_snomed_concepts_readcodes(self):
