@@ -90,15 +90,15 @@ def create_instruction(request, patient, scope_form=None, gp_practice=None) -> I
         instruction.type = scope_form.cleaned_data['type']
         instruction.gp_practice = gp_practice
         instruction.consent_form = scope_form.cleaned_data['consent_form']
+        instruction.gp_title_from_client = request.POST.get('title')
+        instruction.gp_initial_from_client = request.POST.get('initial')
+        instruction.gp_last_name_from_client = request.POST.get('gp_last_name')
     else:
         instruction.type = SARS_TYPE
         instruction.gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
         instruction.gp_user = request.user.userprofilebase.generalpracticeuser
 
     instruction.patient = patient
-    instruction.gp_title_from_client = request.POST.get('title')
-    instruction.gp_initial_from_client = request.POST.get('initial')
-    instruction.gp_last_name_from_client = request.POST.get('gp_last_name')
     instruction.save()
 
     return instruction
@@ -138,10 +138,8 @@ def create_patient_user(request, patient_form, patient_email) -> Patient:
         patient.organisation_gp = OrganisationGeneralPractice.objects.first()
         patient.user = user
         patient.save()
-        messages.success(request, 'Form submission successful')
     else:
         patient = Patient.objects.get(user=user)
-        messages.warning(request, 'Patient Existing In Database')
 
     return patient
 
@@ -287,6 +285,7 @@ def new_instruction(request):
                 medidata_emails_list + gp_emails_list,
                 fail_silently=False,
             )
+            messages.success(request, 'Form submission successful')
         else:
             messages.error(request, scope_form.errors['__all__'].data[0].messages[0])
             return render(request, 'instructions/new_instruction.html', {
