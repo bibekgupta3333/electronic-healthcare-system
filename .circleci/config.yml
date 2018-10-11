@@ -22,7 +22,7 @@ jobs:
           name: Run tests
           command: |
             . venv/bin/activate
-            python manage.py test --pattern="test_*.py"
+            python manage.py test --pattern="test_*.py" --exclude-tag=notimplemented
       - store_artifacts:
           path: test-reports
           destination: test-reports
