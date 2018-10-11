@@ -1,8 +1,9 @@
 from django.test import TestCase
-
+from django.test import tag
 from services.xml.medical_report_decorator import MedicalReportDecorator
 
 
+@tag('notimplemented')
 class MedicalReportDecoratorTest(TestCase):
     def test_consultations(self):
         self.fail('Not implemented')

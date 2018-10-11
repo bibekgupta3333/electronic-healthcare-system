@@ -1,6 +1,7 @@
 from django.test import TestCase
+from django.test import tag
 
-
+@tag('notimplemented')
 class RedactionTest(TestCase):
     def test_additional_acute_medications(self):
         self.fail('Not implemented')

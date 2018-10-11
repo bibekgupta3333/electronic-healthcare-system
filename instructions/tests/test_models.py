@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.test import tag
 
 from model_mommy import mommy
 
@@ -22,11 +23,13 @@ class InstructionTest(TestCase):
 
     def test_string_representation(self):
         instruction_string = str(self.instruction)
-        self.assertEqual(instruction_string, 'client::patient')
+        self.assertEqual(instruction_string, 'Instruction #3')
 
+    @tag('notimplemented')
     def test_snomed_concepts_readcodes(self):
         self.fail('Not implemented')
 
+    @tag('notimplemented')
     def test_selected_snomed_concepts(self):
         self.fail('Not implemented')
 
