@@ -3,6 +3,10 @@ jobs:
   build:
     docker:
       - image: circleci/python:3.6.5
+      - image: circleci/postgres:10.5
+        environment:
+          POSTGRES_USER: medi
+          POSTGRES_DB: medi
     working_directory: ~/repo
     steps:
       - checkout
@@ -22,6 +26,7 @@ jobs:
           name: Run tests
           command: |
             . venv/bin/activate
+            export DJANGO_SETTINGS_MODULE="medi.settings.test_settings"
             python manage.py test --pattern="test_*.py" --exclude-tag=notimplemented
       - store_artifacts:
           path: test-reports
@@ -101,4 +106,3 @@ workflows:
             branches:
               only:
                 - master
-                - develop

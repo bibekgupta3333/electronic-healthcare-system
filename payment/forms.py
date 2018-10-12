@@ -27,15 +27,30 @@ class OrganisationFeeForm(forms.ModelForm):
 
             organisation_gp = self.cleaned_data['gp_practice']
             organisation_fee = OrganisationFee.objects.filter(gp_practice=organisation_gp).first()
-            if organisation_fee:
-                raise forms.ValidationError(
-                    format_html(
-                        '<strong>Organisation Had selected:</strong> <a href="{site_name}admin/payment/organisationfee/{id}/change/">Here</a>'.format(
-                            id=organisation_fee.pk,
-                            site_name=SITE_NAME
+            owning_gp = ''
+            if self.initial:
+                owning_gp = self.initial['gp_practice']
+
+            if owning_gp:
+                if organisation_fee and organisation_gp.pk != owning_gp:
+                    raise forms.ValidationError(
+                        format_html(
+                            '<strong>Organisation Had selected:</strong> <a href="{site_name}admin/payment/organisationfee/{id}/change/">Here</a>'.format(
+                                id=organisation_fee.pk,
+                                site_name=SITE_NAME
+                            )
                         )
                     )
-                )
+            else:
+                if organisation_fee:
+                    raise forms.ValidationError(
+                        format_html(
+                            '<strong>Organisation Had selected:</strong> <a href="{site_name}admin/payment/organisationfee/{id}/change/">Here</a>'.format(
+                                id=organisation_fee.pk,
+                                site_name=SITE_NAME
+                            )
+                        )
+                    )
 
             return self.cleaned_data
         except KeyError:

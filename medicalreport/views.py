@@ -111,7 +111,7 @@ def update_report(request, instruction_id):
                 [instruction.patient.user.email],
                 fail_silently=False,
             )
-            return redirect('instructions:view_pipeline')
+            return redirect('medicalreport:final_report', instruction_id=instruction_id)
 
         return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 

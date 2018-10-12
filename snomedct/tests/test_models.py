@@ -64,7 +64,6 @@ class SnomedDescendantTest(TestCase):
         )
 
 
-@tag('notimplemented')
 class CommonSnomedConceptsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
