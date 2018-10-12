@@ -18,7 +18,7 @@ class Person(XMLBase):
         result = []
         for xpath in self.NAME_XPATHS:
             value = self.parsed_xml.find(xpath)
-            if value is not None:
+            if hasattr(value, 'text') and value.text is not None:
                 result.append(value.text)
         return ' '.join(result)
 
