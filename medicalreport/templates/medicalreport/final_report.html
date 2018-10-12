@@ -3,6 +3,7 @@
 {% load bootstrap4 %}
 {% load custom_filters %}
 {% load medi_report_tags %}
+{% load final_report_tags %}
 {% bootstrap_css %}
 {% bootstrap_javascript jquery='full' %}
 {% bootstrap_messages %}
@@ -22,7 +23,11 @@
                                 <li id="report-0" class="medical-report reports active" onclick="renderReport(this)"><i class="fas fa-file"></i> Medical Report</li>
                                 {% for attachment in attachments %}
                                     {% with header=attachment.parsed_date|format_date_filter|add:" - "|add:attachment.description %}
-                                        <li id="report-{{forloop.counter}}" class="reports" onclick="renderReport(this)"><i class="fas fa-paperclip"></i> {{header}}</li>
+                                        {% with attachment|get_redaction:redaction as redacted %}
+                                            {% if not redacted %}
+                                                <li id="report-{{forloop.counter}}" class="reports" onclick="renderReport(this)"><i class="fas fa-paperclip"></i> {{header}}</li>
+                                            {% endif %}
+                                        {% endwith %}
                                     {% endwith %}
                                 {% endfor %}
                         </div>
@@ -30,7 +35,11 @@
                             <embed id="attachment-0" class="attachments" src="{% url 'medicalreport:view_report' instruction.id %}" width="100%" height="100%" alt="pdf">
                             {% for attachment in attachments %}
                                 {% with header=attachment.parsed_date|format_date_filter|add:" - "|add:attachment.description %}
-                                    <embed id="attachment-{{forloop.counter}}" class="attachments" src="/medicalreport/attachments/{{ attachment.dds_identifier }}" width="100%" height="100%" alt="pdf" style="display:none">
+                                    {% with attachment|get_redaction:redaction as redacted %}
+                                        {% if not redacted %}
+                                            <embed id="attachment-{{forloop.counter}}" class="attachments" src="/medicalreport/attachments/{{ attachment.dds_identifier }}" width="100%" height="100%" alt="pdf" style="display:none">
+                                        {% endif %}
+                                    {% endwith %}
                                 {% endwith %}
                             {% endfor %}
                         </div>

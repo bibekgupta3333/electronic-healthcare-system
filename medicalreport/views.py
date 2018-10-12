@@ -158,5 +158,6 @@ def final_report(request, instruction_id):
     return render(request, 'medicalreport/final_report.html', {
         'header_title': header_title,
         'attachments': attachments,
+        'redaction': redaction,
         'instruction': instruction
     })
