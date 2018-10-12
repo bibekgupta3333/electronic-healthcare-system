@@ -10,3 +10,42 @@ function renderReport(element){
   $('.attachments').hide();
   $('#attachment-' + reportID).show();
 }
+
+function enable_submit_button(){
+  $('#submitButton').prop('disabled', true);
+  if($('#id_gp_practitioner').val()){
+      if($('#id_prepared_and_signed_0').is(':checked')){
+          $('#submitButton').prop('disabled', false);
+      } else if($('#id_prepared_and_signed_1').is(':checked')){
+          if($('#id_prepared_by').val()){
+              $('#submitButton').prop('disabled', false);
+          }
+      }
+  }
+}
+
+function subMitMedicalReport(event){
+    if(event == "draft"){
+        $('#event_flag').val('draft');
+    } else {
+        $('#event_flag').val('submit');
+    }
+    $('#medicalReportForm').submit();
+}
+
+function saveReport(){
+    var post_url = $('#medicalReportForm').attr("action"); //get form action url
+    var request_method = $('#medicalReportForm').attr("method"); //get form GET/POST method
+    var form_data = $('#medicalReportForm').serialize(); //Encode form elements for submission
+    $.ajax({
+        url : post_url,
+        type: request_method,
+        data : form_data
+    })
+    .done(function(){
+        create_alert('Report has been saved.', 'success');
+    })
+    .fail(function() {
+        create_alert('Something went wrong, please try again.', 'error');
+    });
+}
