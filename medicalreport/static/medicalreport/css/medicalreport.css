@@ -258,6 +258,18 @@ h1 {
     margin: auto;
 }
 
+.final-report {
+    height: 80vh;
+}
+
+.final-report .row {
+    height: 100%;
+}
+
+.final-report .files {
+    overflow-y: scroll;
+}
+
 .finalise-submit {
     background-color: gainsboro;
     background-clip: content-box;
