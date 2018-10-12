@@ -1,6 +1,6 @@
 from datetime import date
 from django.test import TestCase
-
+from django.test import tag
 from model_mommy import mommy
 
 from services.emisapiservices.services import (
@@ -28,6 +28,7 @@ class EmisAPIServiceBaseTest(TestCase):
     def test_uri_raises_error(self):
         self.assertRaises(NotImplementedError, self.emis_api_service_base.uri)
 
+    @tag('notimplemented')
     def test_call(self):
         self.fail('Not implemented')
 

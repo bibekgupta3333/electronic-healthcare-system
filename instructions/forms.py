@@ -26,40 +26,44 @@ class ScopeInstructionForm(forms.Form):
 
     def __init__(self, user=None, patient_email=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.patient_email = patient_email
-        FORM_INSTRUCTION_TYPE_CHOICES = [
-            (AMRA_TYPE, 'Underwriting(AMRA)'),
-            (AMRA_TYPE, 'Claim(AMRA)'),
-            (SARS_TYPE, 'SAR')
-        ]
+        initial_data = kwargs.get('initial')
+        if initial_data:
+            self.fields['type'] = forms.CharField(max_length=255, widget=forms.TextInput(attrs={'class': 'w-25'}))
+        else:
+            self.patient_email = patient_email
+            FORM_INSTRUCTION_TYPE_CHOICES = [
+                (AMRA_TYPE, 'Underwriting(AMRA)'),
+                (AMRA_TYPE, 'Claim(AMRA)'),
+                (SARS_TYPE, 'SAR')
+            ]
 
-        SCOPE_COMMON_CONDITION_CHOICES = [
-            [common_snomed.snomed_concept_code, common_snomed.common_name] for common_snomed in CommonSnomedConcepts.objects.all()
-        ]
+            SCOPE_COMMON_CONDITION_CHOICES = [
+                [common_snomed.snomed_concept_code, common_snomed.common_name] for common_snomed in CommonSnomedConcepts.objects.all()
+            ]
 
-        self.fields['common_condition'] = forms.MultipleChoiceField(choices=SCOPE_COMMON_CONDITION_CHOICES, widget=forms.CheckboxSelectMultiple(), required=False)
+            self.fields['common_condition'] = forms.MultipleChoiceField(choices=SCOPE_COMMON_CONDITION_CHOICES, widget=forms.CheckboxSelectMultiple(), required=False)
 
-        client_organisation = multi_getattr(user, 'userprofilebase.clientuser.organisation', default=None)
-        if client_organisation:
-            if not client_organisation.can_create_amra and not client_organisation.can_create_sars:
-                FORM_INSTRUCTION_TYPE_CHOICES = ()
-            elif not client_organisation.can_create_amra:
+            client_organisation = multi_getattr(user, 'userprofilebase.clientuser.organisation', default=None)
+            if client_organisation:
+                if not client_organisation.can_create_amra and not client_organisation.can_create_sars:
+                    FORM_INSTRUCTION_TYPE_CHOICES = ()
+                elif not client_organisation.can_create_amra:
+                    del FORM_INSTRUCTION_TYPE_CHOICES[0]
+                    del FORM_INSTRUCTION_TYPE_CHOICES[0]
+                elif not client_organisation.can_create_sars:
+                    del FORM_INSTRUCTION_TYPE_CHOICES[2]
+
+            gp_organisation = multi_getattr(user, 'userprofilebase.generalpracticeuser.organisation', default=None)
+            if gp_organisation:
                 del FORM_INSTRUCTION_TYPE_CHOICES[0]
                 del FORM_INSTRUCTION_TYPE_CHOICES[0]
-            elif not client_organisation.can_create_sars:
-                del FORM_INSTRUCTION_TYPE_CHOICES[2]
 
-        gp_organisation = multi_getattr(user, 'userprofilebase.generalpracticeuser.organisation', default=None)
-        if gp_organisation:
-            del FORM_INSTRUCTION_TYPE_CHOICES[0]
-            del FORM_INSTRUCTION_TYPE_CHOICES[0]
-
-        self.fields['type'] = forms.ChoiceField(
-            choices=FORM_INSTRUCTION_TYPE_CHOICES,
-            widget=forms.RadioSelect(
-                attrs={'class': 'd-inline instructionType'}
+            self.fields['type'] = forms.ChoiceField(
+                choices=FORM_INSTRUCTION_TYPE_CHOICES,
+                widget=forms.RadioSelect(
+                    attrs={'class': 'd-inline instructionType'}
+                )
             )
-        )
 
     def clean(self):
         super().clean()
@@ -76,11 +80,21 @@ class AdditionQuestionForm(forms.ModelForm):
 
 
 AdditionQuestionFormset = modelformset_factory(
-        InstructionAdditionQuestion,
-        form=AdditionQuestionForm,
-        fields=('question', ),
-        extra=1,
-        widgets={
-            'question': forms.TextInput(attrs={'class': 'form-control questions_inputs'}, ),
-        },
-    )
+    InstructionAdditionQuestion,
+    form=AdditionQuestionForm,
+    fields=('question', ),
+    extra=1,
+    widgets={
+        'question': forms.TextInput(attrs={'class': 'form-control questions_inputs'}, ),
+    },
+)
+
+
+class AllocateInstructionForm(forms.Form):
+    gp_practitioner = forms.ModelChoiceField(queryset=None, required=False)
+
+    def __init__(self, user=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['gp_practitioner'] = forms.ModelChoiceField(queryset=user.get_query_set_within_organisation(),
+                                                                    required=False)

@@ -1,5 +1,5 @@
 from django.test import TestCase
-
+from django.test import tag
 from model_mommy import mommy
 
 from snomedct.models import (
@@ -21,12 +21,15 @@ class SnomedConceptTest(TestCase):
             f'{self.snomedct.pk} - fsn_description'
         )
 
+    @tag('notimplemented')
     def test_snomed_descendants(self):
         self.fail('Not implemented')
 
+    @tag('notimplemented')
     def test_snomed_descendant_readcodes(self):
         self.fail('Not implemented')
 
+    @tag('notimplemented')
     def test_readcodes(self):
         self.fail('Not implemented')
 
@@ -61,11 +64,12 @@ class SnomedDescendantTest(TestCase):
         )
 
 
+@tag('notimplemented')
 class CommonSnomedConceptsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.common_snomed_concepts = mommy.make(
-            CommonSnomedConcepts, common_name='Heart Disease', snomed_concept_code=[1234567890,],
+            CommonSnomedConcepts, common_name='Heart Disease', snomed_concept_code=[1234567890,]
         )
 
     def test_string_representation(self):

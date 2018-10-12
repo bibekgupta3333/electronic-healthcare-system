@@ -7,11 +7,13 @@ from django.core.mail import send_mail
 from django.core.exceptions import ValidationError
 from common.models import TimeStampedModel
 from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser
+from accounts import models as account_models
 from snomedct.models import SnomedConcept
 from .model_choices import *
 from common.functions import get_env_variable
 from django.conf import settings
 PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
+TITLE_CHOICE = account_models.TITLE_CHOICE
 
 from typing import List, Tuple
 
@@ -29,6 +31,9 @@ class Instruction(TimeStampedModel, models.Model):
     initial_monetary_value = models.FloatField(null=True, blank=True, verbose_name='Value £')
     status = models.IntegerField(choices=INSTRUCTION_STATUS_CHOICES, default=INSTRUCTION_STATUS_NEW)
     consent_form = models.FileField(upload_to='consent_forms', null=True, blank=True)
+    gp_title_from_client = models.CharField(max_length=5, choices=TITLE_CHOICE, blank=True)
+    gp_initial_from_client = models.CharField(max_length=20, blank=True)
+    gp_last_name_from_client = models.CharField(max_length=255, blank=True)
 
     gp_practice_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     gp_practice_id = models.CharField(max_length=255)
@@ -126,3 +131,19 @@ class InstructionConditionsOfInterest(models.Model):
 
     def __str__(self):
         return "{} ({})".format(self.snomedct.fsn_description, self.snomedct.external_id)
+
+
+class Setting(models.Model):
+    consent_form = models.FileField(upload_to='consent_forms', null=True, blank=True)
+    site = models.URLField(max_length=255, blank=True)
+
+    def save(self, *args, **kwargs):
+        self.__class__.objects.exclude(id=self.id).delete()
+        super(Setting, self).save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        try:
+            return cls.objects.get()
+        except cls.DoesNotExist:
+            return cls()

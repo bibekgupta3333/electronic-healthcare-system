@@ -27,3 +27,4 @@ class InstructionAdmin(admin.ModelAdmin):
 
 admin.site.register(models.Instruction, InstructionAdmin)
 admin.site.register(models.InstructionAdditionQuestion)
+admin.site.register(models.Setting)
