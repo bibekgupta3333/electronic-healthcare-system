@@ -1,21 +1,18 @@
 {% load custom_filters %}
+{% load final_report_tags %}
 <div style="display:flex;background-color:#235597;margin:0;">
     <label style="color:white;font-size:20px;">Appendices</label>
 </div>
 <table style="width:100%;font-size:15px;margin-top:10px;">
-    <tr>
-      <td>19 Feb 2018 - Life ass. - preliminary report (19-Feb-2018)</td>
-    </tr>
-    <tr>
-      <td>25 Jan 2018 - Fit Note Document (Diagnosis: Acute gout; Duration 25-Jan-2018 - 29-Jan-2018)</td>
-    </tr>
-    <tr>
-      <td>15 Jan 2018 - Rheumatology Clinic</td>
-    </tr>
-    <tr>
-      <td>22 Jul 2017 - Diabetic Foot Clinic</td>
-    </tr>
-    <tr>
-      <td>10 Mar 2017 - Diabetic Foot Clinic</td>
-    </tr>
+    {% for attachment in attachments %}
+        {% with header=attachment.parsed_date|format_date_filter|add:" - "|add:attachment.description %}
+            {% with attachment|get_redaction:redaction as redacted %}
+                {% if not redacted %}
+                    <tr>
+                      <td>{{ header }}</td>
+                    </tr>
+                {% endif %}
+            {% endwith %}
+        {% endwith %}
+    {% endfor %}
 </table>

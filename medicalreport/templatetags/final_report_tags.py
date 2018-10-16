@@ -75,7 +75,8 @@ def medications(context):
 @register.inclusion_tag('medicalreport/reports/appendices.html', takes_context=True)
 def appendices(context):
     return {
-        'instruction': context['instruction']
+        'attachments': context['medical_record'].attachments,
+        'redaction': context['redaction']
     }
 
 def get_redaction(model, redaction):

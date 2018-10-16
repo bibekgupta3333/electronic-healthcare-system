@@ -7,6 +7,7 @@ from .models import InstructionAdditionQuestion
 from template.models import TemplateInstruction
 from common.functions import multi_getattr
 from snomedct.models import CommonSnomedConcepts
+from accounts.models import User, GeneralPracticeUser
 
 
 class MyMultipleChoiceField(forms.MultipleChoiceField):
@@ -96,5 +97,8 @@ class AllocateInstructionForm(forms.Form):
     def __init__(self, user=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if user:
-            self.fields['gp_practitioner'] = forms.ModelChoiceField(queryset=user.get_query_set_within_organisation(),
+            organisation = user.userprofilebase.generalpracticeuser.organisation
+            queryset = User.objects.filter(userprofilebase__generalpracticeuser__organisation=organisation)
+            queryset = queryset.exclude(userprofilebase__generalpracticeuser__role=GeneralPracticeUser.PRACTICE_MANAGER)
+            self.fields['gp_practitioner'] = forms.ModelChoiceField(queryset,
                                                                     required=False)

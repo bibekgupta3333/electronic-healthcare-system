@@ -32,12 +32,20 @@ from itertools import chain
 import ast
 
 
-def count_instructions(gp_practice_id, client_organisation, medidata=False):
+def count_instructions(user, gp_practice_id, client_organisation):
     naive = parse_datetime("2000-01-1 00:00:00")
     origin_date = pytz.timezone("Europe/London").localize(naive, is_dst=None)
     query_condition = Q(created__gt=origin_date)
-    if not medidata:
-        query_condition = Q(gp_practice_id=gp_practice_id) | Q(client_user__organisation=client_organisation)
+    if user.type == GENERAL_PRACTICE_USER:
+        if user.userprofilebase.generalpracticeuser.role == GeneralPracticeUser.PRACTICE_MANAGER:
+            query_condition = Q(gp_practice_id=gp_practice_id)
+        else:
+            query_condition = Q(gp_practice_id=gp_practice_id) & (Q(gp_user=user.userprofilebase.generalpracticeuser) | Q(gp_user__isnull=True))
+    elif user.type == CLIENT_USER:
+        if user.is_staff:
+            query_condition = Q(client_user__organisation=client_organisation)
+        else:
+            query_condition = Q(client_user=user.userprofilebase.clientuser)
 
     all_count = Instruction.objects.filter(query_condition).count()
     new_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_NEW).count()
@@ -174,11 +182,14 @@ def instruction_pipeline_view(request):
 
     gp_practice_id = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.id', default=None)
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
-    overall_instructions_number = count_instructions(gp_practice_id, client_organisation, medidata=True)
+    overall_instructions_number = count_instructions(request.user, gp_practice_id, client_organisation)
     if request.user.type == CLIENT_USER:
-        instruction_query_set = instruction_query_set.filter(Q(gp_practice_id=gp_practice_id) |
-                                                             Q(client_user__organisation=client_organisation))
-        overall_instructions_number = count_instructions(gp_practice_id, client_organisation)
+        overall_instructions_number = count_instructions(request.user, gp_practice_id, client_organisation)
+        if request.user.is_staff:
+            instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
+        else:
+            instruction_query_set = instruction_query_set.filter(client_user__user_id=request.user.id,
+                                                                 client_user__organisation=client_organisation)
 
     if request.user.type == GENERAL_PRACTICE_USER:
         gp_role = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.role')
@@ -186,7 +197,7 @@ def instruction_pipeline_view(request):
             instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_id)
         else:
             instruction_query_set = instruction_query_set.filter(Q(gp_user__user_id=request.user.id) |
-                                                                 Q(gp_user__isnull=True))
+                                                                 Q(gp_user__isnull=True), gp_practice_id=gp_practice_id)
 
     table = InstructionTable(instruction_query_set)
     table.order_by = request.GET.get('sort', '-created')
@@ -344,7 +355,7 @@ def allocate_instruction(request, instruction_id):
         if allocate_form.is_valid():
             if allocate_form.cleaned_data['gp_practitioner']:
                 instruction.gp_user = allocate_form.cleaned_data['gp_practitioner'].userprofilebase.generalpracticeuser
-            else:
+            elif request.user.userprofilebase.generalpracticeuser.role == GeneralPracticeUser.GENERAL_PRACTICE:
                 instruction.gp_user = request.user.userprofilebase.generalpracticeuser
                 instruction.status = INSTRUCTION_STATUS_PROGRESS
             instruction.save()
