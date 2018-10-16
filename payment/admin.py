@@ -15,4 +15,8 @@ class OrganisationFeeAdmin(admin.ModelAdmin):
         js = ('js/custom_admin/payment_fee_admin.js', )
 
 
+    def delete_model(self, request, obj):
+        super().delete_model(request, obj)
+        obj.hard_delete()
+
 admin.site.register(OrganisationFee, OrganisationFeeAdmin)

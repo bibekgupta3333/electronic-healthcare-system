@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+
+{% block ExtraHead %}
+    <link href="{% static 'css/instructions/view_reject.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block Content %}
+      <div class="container-fluid">
+          <div class="card-deck">
+              <div class="card">
+                  <div class="card-header">
+                      <h4 class="text-bold">Instruction Details</h4>
+                  </div>
+                  <div class="card-body">
+                      <div class="patient-content">
+                          <div class="col-md-6">
+                              <div class="row">
+                                  <h4 class="text-bold">{{instruction.patient.user.first_name|default:"N/A"}}</h4>
+                              </div>
+                              <div class="row">
+                                  <h5 class="text-bold">Date of birth:&nbsp</h5>
+                                  <h5>{{instruction.patient.date_of_birth|format_date_filter|default:"N/A"}}</h5>
+                              </div>
+                              <div class="row">
+                                  <h5 class="text-bold">Address:&nbsp</h5>
+                                  <h5>{{instruction.patient|instruction_patient_address|default:"N/A"}}</h5>
+                              </div>
+                          </div>
+                          <div class="col-md-6">
+                              <div class="row">
+                                  <h4 class="text-bold">{{instruction.client_user.organisation.trading_name|default:"N/A"}}</h4>
+                              </div>
+                              <div class="row">
+                                  <div>
+                                      <h5 class="text-bold">Requested Conditions:</h5>
+                                      <ul>
+                                      {% if not dummy_instruction.selected_snomed_concepts %}
+                                          <li>No conditions</li>
+                                      {% else %}
+                                          {% for snomed in dummy_instruction.selected_snomed_concepts %}
+                                              <li>{{ snomed.fsn_description }}</li>
+                                          {% endfor %}
+                                      {% endif %}
+                                      </ul>
+                                  </div>
+                              </div>
+                          </div>
+                          {% ifequal instruction.type amra_type %}
+                              <div class="patient-consent">
+                                  <button class="btn btn-consent"><i class="fas fa-file-medical icon"></i> View consent form</button>
+                              </div>
+                          {% endifequal %}
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <div class="card-deck mt-4">
+              <div class="card">
+                  <div class="card-header reject">
+                      <h4>Reject Details</h4>
+                  </div>
+                  <div class="card-body">
+                      <div class="row">
+                          <div class="col-md-2">
+                              <h5 class="text-bold">Reject reason:</h5>
+                          </div>
+                          <div class="col-md-10">
+                              <h5>{{instruction.get_rejected_reason_display}}</h5>
+                          </div>
+                      </div>
+                      <div class="row">
+                          <div class="col-md-2">
+                              <h5 class="text-bold">Notes:</h5>
+                          </div>
+                          <div class="col-md-10">
+                              <textarea class="rejected-note" readonly>{{instruction.rejected_note}}</textarea>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+    </div>
+{% endblock %}

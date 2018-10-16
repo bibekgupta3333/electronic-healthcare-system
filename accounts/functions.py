@@ -10,44 +10,65 @@ DEFAULT_FROM = settings.DEFAULT_FROM
 
 
 def reset_password(request):
-    user = request.user
-    user = User.objects.get(email=user.email)
-    password = request.GET.get('password', '')
-    user.set_password(password)
-    user.save()
-    send_mail(
-        'Your account password has been changed',
-        'Your account password has been changed by your manager. Password: {}'.format(password),
-        DEFAULT_FROM,
-        [user.email],
-        fail_silently=False,
-        auth_user=get_env_variable('SENDGRID_USER'),
-        auth_password=get_env_variable('SENDGRID_PASS'),
-    )
-    return {"success": "true"}
+    emails = request.POST.getlist("users[]")
+    PASSWORD = 'medi2018'
+    user_cnt = len(emails)
+    for email in emails:
+        user = User.objects.get(email=email)
+        user.set_password(PASSWORD)
+        user.save()
+        # send_mail(
+        #     'Your account password has been changed',
+        #     'Your account password has been changed by your manager. Password: {}'.format(PASSWORD),
+        #     DEFAULT_FROM,
+        #     [user.email],
+        #     fail_silently=False,
+        #     auth_user=get_env_variable('SENDGRID_USER'),
+        #     auth_password=get_env_variable('SENDGRID_PASS'),
+        # )
 
-
-def change_role(cur_user, role, email):
-    user = User.objects.get(email=email)
-    if role == 0:
-        user.is_staff = True
+    if user_cnt == 1:
+        messages.success(request, "The selected user's password has been reset. Password: {}".format(PASSWORD))
     else:
-        user.is_staff = False
-    user.save()
+        messages.success(request, "All the passwords of the selected users have been reset. Password: {}".format(PASSWORD))
 
-    if hasattr(cur_user.userprofilebase, 'generalpracticeuser'):
-        user.userprofilebase.generalpracticeuser.role = role
-        user.userprofilebase.generalpracticeuser.save()
-    elif hasattr(cur_user.userprofilebase, 'clientuser'):
-        user.userprofilebase.clientuser.role = role
-        user.userprofilebase.clientuser.save()
+def change_role(request):
+    cur_user = request.user
+    cur_user = User.objects.get(username=cur_user.username)
+    role = request.POST.get("role")
+    emails = request.POST.getlist("users[]")
+    user_cnt = len(emails)
+    for email in emails:
+        user = User.objects.get(email=email)
+        if role == 0:
+            user.is_staff = True
+        else:
+            user.is_staff = False
+        user.save()
 
+        if hasattr(cur_user.userprofilebase, 'generalpracticeuser'):
+            user.userprofilebase.generalpracticeuser.role = role
+            user.userprofilebase.generalpracticeuser.save()
+        elif hasattr(cur_user.userprofilebase, 'clientuser'):
+            user.userprofilebase.clientuser.role = role
+            user.userprofilebase.clientuser.save()
 
-def remove_user(emails):
+    if user_cnt == 1:
+        messages.success(request, "The role of selected user has been changed.")
+    else:
+        messages.success(request, "All the roles of the selected users have been changed.")
+
+def remove_user(request):
+    emails = request.POST.getlist("users[]")
+    user_cnt = len(emails)
     for email in emails:
         user = User.objects.get(email=email)
         user.userprofilebase.delete()
 
+    if user_cnt == 1:
+        messages.success(request, "The selected user has been deleted.")
+    else:
+        messages.success(request, "Selected users have been deleted.")
 
 def count_gpusers(queryset):
     all_count = queryset.count()
@@ -75,17 +96,22 @@ def count_clientusers(queryset):
     return overall_users_number
 
 
+def get_users_count(user, query_set):
+    if hasattr(user.userprofilebase, 'generalpracticeuser'):
+        return count_gpusers(query_set)
+    elif hasattr(user.userprofilebase, 'clientuser'):
+        return count_clientusers(query_set)
+
+
 def get_table_data(user, query_set):
     if hasattr(user.userprofilebase, 'generalpracticeuser'):
         return {
             "user_type": "gp",
-            "overall_users_number": count_gpusers(query_set),
             "table": GPUserTable(query_set)
         }
     elif hasattr(user.userprofilebase, 'clientuser'):
         return {
             "user_type": "client",
-            "overall_users_number": count_clientusers(query_set),
             "table": ClientUserTable(query_set)
         }
 

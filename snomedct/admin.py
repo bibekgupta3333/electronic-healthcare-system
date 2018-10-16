@@ -5,7 +5,7 @@ from .models import CommonSnomedConcepts, SnomedConcept, SnomedDescendant, ReadC
 # Register your models here.
 class SnomedConceptsAdmin(admin.ModelAdmin):
     ordering = ['external_id']
-    search_fields = ['fsn_description']
+    search_fields = ['external_id' ,'fsn_description']
 
 
 class SnomedDescendantsAdmin(admin.ModelAdmin):
@@ -20,7 +20,11 @@ class ReadCodeAdmin(admin.ModelAdmin):
     raw_id_fields = ("concept_id",)
 
 
+class CommonSnomedConceptsAdmin(admin.ModelAdmin):
+    raw_id_fields = ('snomed_concept_code', )
+
+
 admin.site.register(SnomedConcept, SnomedConceptsAdmin)
 # admin.site.register(SnomedDescendant, SnomedDescendantsAdmin)
 # admin.site.register(ReadCode, ReadCodeAdmin)
-admin.site.register(CommonSnomedConcepts)
+admin.site.register(CommonSnomedConcepts, CommonSnomedConceptsAdmin)

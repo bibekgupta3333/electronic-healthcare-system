@@ -3,7 +3,8 @@ import xhtml2pdf.pisa as pisa
 from io import BytesIO
 from django.http import HttpResponse
 from django.template.loader import get_template
-from medi.settings import common as settings
+
+from django.conf import settings
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

@@ -71,12 +71,14 @@
                     </select>
                     {% endif %}
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-1">
                     <input type="submit" id="userRoleBtn" value="Change" class="btn btn-primary" disabled="disabled">
                 </div>
-                <div class="col-md-2">
-                    <input type="hidden" id="removeUser" name="removeUser" >
+                <div class="col-md-1">
                     <input type="submit" id="removeUserBtn" value="Remove" class="btn btn-primary" disabled="disabled">
+                </div>
+                <div class="col-md-2">
+                    <input type="submit" id="resetPwdBtn" value="Reset Password" class="btn btn-primary" disabled="disabled">
                 </div>
                 <div class="col-md-2">
                     <select class="form-control" id="filterUserType" onchange="userTypeFilter();">
@@ -158,8 +160,10 @@
                         selectedUsers.push($(this).val());
                     });
                     $("#removeUserBtn").removeAttr('disabled');
+                    $("#resetPwdBtn").removeAttr('disabled');
                 } else {
                     $("#removeUserBtn").attr('disabled','disabled');
+                    $("#resetPwdBtn").attr('disabled','disabled');
                 }
 
                 if($("#userRoleSelect").val() != null && userSelectedCnt > 0) {

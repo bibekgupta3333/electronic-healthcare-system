@@ -19,6 +19,7 @@ from organisations.models import OrganisationGeneralPractice, NHSgpPractice
 from organisations.views import get_nhs_data
 from template.forms import TemplateInstructionForm
 from common.functions import multi_getattr, get_env_variable
+from medicalreport.dummy_models import DummyInstruction
 
 from django.conf import settings
 PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
@@ -30,6 +31,10 @@ from snomedct.models import SnomedConcept
 import pytz
 from itertools import chain
 import ast
+
+from django.conf import settings
+PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
+DUMMY_EMAIL_LIST = settings.DUMMY_EMAIL_LIST
 
 
 def count_instructions(user, gp_practice_id, client_organisation):
@@ -123,8 +128,10 @@ def create_addition_question(instruction, addition_question_formset):
 
 def create_snomed_relations(instruction, condition_of_interests):
     for condition_code in condition_of_interests:
-        snomedct = SnomedConcept.objects.get(external_id=condition_code)
-        InstructionConditionsOfInterest.objects.create(instruction=instruction, snomedct=snomedct)
+        snomedct = SnomedConcept.objects.filter(external_id=condition_code)
+        if snomedct.exists():
+            snomedct = snomedct.first()
+            InstructionConditionsOfInterest.objects.create(instruction=instruction, snomedct=snomedct)
 
 
 def create_patient_user(request, patient_form, patient_email) -> Patient:
@@ -428,4 +435,14 @@ def allocate_instruction(request, instruction_id):
         'condition_of_interest': condition_of_interest,
         'consent_form_data': consent_form_data,
         'allocate_form': allocate_form,
+    })
+
+
+@login_required(login_url='/accounts/login')
+def view_reject(request, instruction_id):
+    instruction = Instruction.objects.get(id=instruction_id)
+    dummy_instruction = DummyInstruction(instruction)
+    return render(request, 'instructions/view_reject.html', {
+        'instruction': instruction,
+        'dummy_instruction': dummy_instruction
     })

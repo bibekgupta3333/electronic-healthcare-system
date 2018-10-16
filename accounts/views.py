@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordResetForm
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.db.models import Q
@@ -10,7 +11,7 @@ from common.functions import multi_getattr, get_env_variable
 from payment.models import OrganisationFee
 from django_tables2 import RequestConfig
 
-from .models import User, UserProfileBase, GeneralPracticeUser
+from .models import User, UserProfileBase
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER
 from .forms import NewGPForm, NewClientForm
 from .tables import GPUserTable, ClientUserTable
@@ -22,6 +23,7 @@ ACCOUNT_LINK = settings.ACCOUNT_LINK
 from .functions import reset_password, change_role, remove_user
 from .functions import count_gpusers, count_clientusers, get_table_data
 from .functions import get_post_new_user_data, get_user_type_form
+from .functions import get_users_count
 
 
 @login_required(login_url='/accounts/login')
@@ -56,26 +58,15 @@ def account_view(request):
 @login_required(login_url='/accounts/login')
 def manage_user(request):
     if request.method == "POST":
-        cur_user = request.user
-        cur_user = User.objects.get(username=cur_user.username)
         action_type = request.POST.get("action_type")
-        emails = request.POST.getlist("users[]")
-        user_cnt = len(emails)
         if action_type == "Remove":
-            remove_user(emails)
-            if user_cnt == 1:
-                messages.success(request, "The selected user has been deleted.")
-            else:
-                messages.success(request, "Selected users have been deleted.")
-        elif action_type == "Change":
-            role = request.POST.get("role")
-            for email in emails:
-                change_role(cur_user, role, email)
+            remove_user(request)
 
-            if user_cnt == 1:
-                messages.success(request, "The role of selected user has been changed.")
-            else:
-                messages.success(request, "All the roles of the selected users have been changed.")
+        elif action_type == "Change":
+            change_role(request)
+
+        elif action_type == "Reset Password":
+            reset_password(request)
 
         return JsonResponse({"success": "true"})
 
@@ -109,6 +100,8 @@ def view_users(request):
     elif filter_type == 'deactivated':
         query_set = query_set.filter(userprofilebase__in=profiles.dead())
 
+    overall_users_number = get_users_count(user, query_set)
+    
     if filter_status != -1:
         if hasattr(user.userprofilebase, 'generalpracticeuser'):
             query_set = query_set.filter(userprofilebase__generalpracticeuser__role=filter_status)
@@ -123,7 +116,7 @@ def view_users(request):
         'user': user,
         'header_title': header_title,
         'table': table_data['table'],
-        'overall_users_number': table_data['overall_users_number'],
+        'overall_users_number': overall_users_number,
         'user_type': table_data['user_type']
     })
 
@@ -163,22 +156,18 @@ def create_user(request):
                 
                 user.set_password(newuser_form.cleaned_data['password'])
                 user.save()
-                to_email = newuser_form.cleaned_data['email']
                 newuser = newuser_form.save(commit=False)
                 newuser.organisation = organisation
                 newuser.role = user_role
                 newuser.user = user
                 newuser.save()
-                if newuser_form.cleaned_data['send_email']:
-                    send_mail(
-                        'New Account',
-                        'You have a new Account. Click here {} to see it.'.format(ACCOUNT_LINK),
-                        DEFAULT_FROM,
-                        [to_email],
-                        fail_silently=False,
-                        auth_user=get_env_variable('SENDGRID_USER'),
-                        auth_password=get_env_variable('SENDGRID_PASS'),
-                    )
+                reset_password_form = PasswordResetForm(data={'email': user.email})
+                if newuser_form.cleaned_data['send_email'] and reset_password_form.is_valid():
+                    reset_password_form.save(
+                        request=request,
+                        from_email=DEFAULT_FROM,
+                        subject_template_name='registration/password_reset_subject_new.txt',
+                        email_template_name='registration/password_reset_email_new.html')
                 messages.success(request, 'New User Account created successfully.')
                 return redirect("accounts:view_users")
             else:

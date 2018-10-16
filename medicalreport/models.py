@@ -24,7 +24,7 @@ class AmendmentsForRecord(models.Model):
         ('PREPARED_AND_REVIEWED', format_html('Prepared by <span id="preparer"></span>  and reviewed by')),
     )
 
-    instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)
+    instruction = models.OneToOneField(Instruction, on_delete=models.CASCADE)
     consultation_notes = models.TextField(null=True)
     acute_prescription_notes = models.TextField(null=True)
     repeat_prescription_notes = models.TextField(null=True)
