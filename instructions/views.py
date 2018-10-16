@@ -31,6 +31,10 @@ import pytz
 from itertools import chain
 import ast
 
+from django.conf import settings
+PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
+DUMMY_EMAIL_LIST = settings.DUMMY_EMAIL_LIST
+
 
 def count_instructions(user, gp_practice_id, client_organisation):
     naive = parse_datetime("2000-01-1 00:00:00")

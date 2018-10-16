@@ -11,7 +11,7 @@ from common.functions import multi_getattr, get_env_variable
 from payment.models import OrganisationFee
 from django_tables2 import RequestConfig
 
-from .models import User, UserProfileBase, GeneralPracticeUser
+from .models import User, UserProfileBase
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER
 from .forms import NewGPForm, NewClientForm
 from .tables import GPUserTable, ClientUserTable
