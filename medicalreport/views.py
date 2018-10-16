@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.mail import send_mail
+from django.contrib import messages
 from django.http import JsonResponse
 from services.emisapiservices import services
 from services.xml.medical_report_decorator import MedicalReportDecorator
@@ -98,20 +99,25 @@ def edit_report(request, instruction_id):
 
 def update_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
-    is_valid = create_or_update_redaction_record(request, instruction)
 
     if request.is_ajax():
+        create_or_update_redaction_record(request, instruction)
         return JsonResponse({'message': 'Report has been saved.'})
     else:
-        if request.POST.get('event_flag') == 'submit' and is_valid:
-            send_mail(
-                'Patient Notification',
-                'Your instruction has been completed',
-                'MediData',
-                [instruction.patient.user.email],
-                fail_silently=False,
-            )
-            return redirect('medicalreport:final_report', instruction_id=instruction_id)
+        if not instruction.consent_form:
+            messages.error(request, "You do not have a consent form")
+        else:
+            is_valid = create_or_update_redaction_record(request, instruction)
+            if request.POST.get('event_flag') == 'submit' and is_valid:
+                send_mail(
+                    'Patient Notification',
+                    'Your instruction has been completed',
+                    'MediData',
+                    [instruction.patient.user.email],
+                    fail_silently=False,
+                )
+                return redirect('instructions:view_pipeline')
+       
 
         return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
