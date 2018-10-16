@@ -67,8 +67,12 @@ class SnomedDescendantTest(TestCase):
 class CommonSnomedConceptsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
+        cls.snomedct = mommy.make(
+            SnomedConcept, fsn_description='fsn_description',
+            external_id=1234567890
+        )
         cls.common_snomed_concepts = mommy.make(
-            CommonSnomedConcepts, common_name='Heart Disease', snomed_concept_code=[1234567890,]
+            CommonSnomedConcepts, common_name='Heart Disease', snomed_concept_code=[cls.snomedct]
         )
 
     def test_string_representation(self):

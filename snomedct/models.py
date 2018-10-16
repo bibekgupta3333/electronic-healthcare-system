@@ -71,7 +71,7 @@ class SnomedDescendant(models.Model):
 
 class CommonSnomedConcepts(models.Model):
     common_name = models.CharField(max_length=255)
-    snomed_concept_code = ArrayField(models.BigIntegerField(blank=True, null=True), null=True)
+    snomed_concept_code = models.ManyToManyField(SnomedConcept)
 
     def __str__(self):
         return self.common_name

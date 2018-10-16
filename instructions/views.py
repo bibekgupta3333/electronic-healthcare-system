@@ -128,8 +128,10 @@ def create_addition_question(instruction, addition_question_formset):
 
 def create_snomed_relations(instruction, condition_of_interests):
     for condition_code in condition_of_interests:
-        snomedct = SnomedConcept.objects.get(external_id=condition_code)
-        InstructionConditionsOfInterest.objects.create(instruction=instruction, snomedct=snomedct)
+        snomedct = SnomedConcept.objects.filter(external_id=condition_code)
+        if snomedct.exists():
+            snomedct = snomedct.first()
+            InstructionConditionsOfInterest.objects.create(instruction=instruction, snomedct=snomedct)
 
 
 def create_patient_user(request, patient_form, patient_email) -> Patient:
