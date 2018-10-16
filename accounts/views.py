@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordResetForm
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.db.models import Q
@@ -155,22 +156,18 @@ def create_user(request):
                 
                 user.set_password(newuser_form.cleaned_data['password'])
                 user.save()
-                to_email = newuser_form.cleaned_data['email']
                 newuser = newuser_form.save(commit=False)
                 newuser.organisation = organisation
                 newuser.role = user_role
                 newuser.user = user
                 newuser.save()
-                if newuser_form.cleaned_data['send_email']:
-                    send_mail(
-                        'New Account',
-                        'You have a new Account. Click here {} to see it.'.format(ACCOUNT_LINK),
-                        DEFAULT_FROM,
-                        [to_email],
-                        fail_silently=False,
-                        auth_user=get_env_variable('SENDGRID_USER'),
-                        auth_password=get_env_variable('SENDGRID_PASS'),
-                    )
+                reset_password_form = PasswordResetForm(data={'email': user.email})
+                if newuser_form.cleaned_data['send_email'] and reset_password_form.is_valid():
+                    reset_password_form.save(
+                        request=request,
+                        from_email=DEFAULT_FROM,
+                        subject_template_name='registration/password_reset_subject_new.txt',
+                        email_template_name='registration/password_reset_email_new.html')
                 messages.success(request, 'New User Account created successfully.')
                 return redirect("accounts:view_users")
             else:
