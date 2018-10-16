@@ -44,6 +44,8 @@ class InstructionTable(tables.Table):
         url = 'medicalreport:edit_report'
         if value == 'Complete':
             url = 'medicalreport:final_report'
+        elif value == 'Reject':
+            url = 'instructions:view_reject'
         elif self.user and self.user.type != models.GENERAL_PRACTICE_USER:
             return format_html('<a><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
         elif value == 'New':

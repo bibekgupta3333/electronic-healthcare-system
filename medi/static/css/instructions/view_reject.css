@@ -1,0 +1,20 @@
+.patient-content {
+  display: flex;
+}
+
+.text-bold {
+  color: black;
+  font-weight: bold;
+}
+
+.reject {
+  background-color: #36569a;
+  color: whitesmoke
+}
+
+.rejected-note {
+  color: #797979;
+  width: 100%;
+  min-height: 80px;
+  font-size: 1.25rem;
+}
