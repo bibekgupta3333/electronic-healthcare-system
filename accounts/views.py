@@ -22,6 +22,7 @@ ACCOUNT_LINK = settings.ACCOUNT_LINK
 from .functions import reset_password, change_role, remove_user
 from .functions import count_gpusers, count_clientusers, get_table_data
 from .functions import get_post_new_user_data, get_user_type_form
+from .functions import get_users_count
 
 
 @login_required(login_url='/accounts/login')
@@ -56,26 +57,15 @@ def account_view(request):
 @login_required(login_url='/accounts/login')
 def manage_user(request):
     if request.method == "POST":
-        cur_user = request.user
-        cur_user = User.objects.get(username=cur_user.username)
         action_type = request.POST.get("action_type")
-        emails = request.POST.getlist("users[]")
-        user_cnt = len(emails)
         if action_type == "Remove":
-            remove_user(emails)
-            if user_cnt == 1:
-                messages.success(request, "The selected user has been deleted.")
-            else:
-                messages.success(request, "Selected users have been deleted.")
-        elif action_type == "Change":
-            role = request.POST.get("role")
-            for email in emails:
-                change_role(cur_user, role, email)
+            remove_user(request)
 
-            if user_cnt == 1:
-                messages.success(request, "The role of selected user has been changed.")
-            else:
-                messages.success(request, "All the roles of the selected users have been changed.")
+        elif action_type == "Change":
+            change_role(request)
+
+        elif action_type == "Reset Password":
+            reset_password(request)
 
         return JsonResponse({"success": "true"})
 
@@ -109,6 +99,8 @@ def view_users(request):
     elif filter_type == 'deactivated':
         query_set = query_set.filter(userprofilebase__in=profiles.dead())
 
+    overall_users_number = get_users_count(user, query_set)
+    
     if filter_status != -1:
         if hasattr(user.userprofilebase, 'generalpracticeuser'):
             query_set = query_set.filter(userprofilebase__generalpracticeuser__role=filter_status)
@@ -123,7 +115,7 @@ def view_users(request):
         'user': user,
         'header_title': header_title,
         'table': table_data['table'],
-        'overall_users_number': table_data['overall_users_number'],
+        'overall_users_number': overall_users_number,
         'user_type': table_data['user_type']
     })
 
