@@ -83,7 +83,7 @@ def edit_report(request, instruction_id):
     dummy_instruction = DummyInstruction(instruction)
     finalise_submit_form = MedicalReportFinaliseSubmitForm(
         initial={
-            'gp_practitioner': redaction.review_by,
+            'gp_practitioner': redaction.review_by if redaction.review_by else request.user,
             'prepared_by': redaction.prepared_by,
             'prepared_and_signed': redaction.submit_choice,
         },
