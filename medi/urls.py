@@ -16,6 +16,8 @@ Including another URLconf
 from django.contrib import admin
 
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from instructions.views import instruction_pipeline_view
 
@@ -36,5 +38,5 @@ urlpatterns = [
     path('template/', include('template.urls', namespace='template')),
     path('select2/', include('django_select2.urls')),
 ]
-
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += staticfiles_urlpatterns()

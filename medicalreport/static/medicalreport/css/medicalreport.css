@@ -319,3 +319,21 @@ h1 {
 .report-attachment li.active {
     background-color: white;
 }
+
+.pdf-modal .modal-dialog .modal-body {
+    padding: 0;
+}
+
+.pdf-modal .modal-dialog .modal-header {
+    padding: .5rem 1rem;
+}
+
+.pdf-modal .modal-dialog iframe {
+    border: 0;
+}
+
+@media (min-width: 576px) {
+    .pdf-modal .modal-dialog {
+        max-width: 1300px;
+    }
+}

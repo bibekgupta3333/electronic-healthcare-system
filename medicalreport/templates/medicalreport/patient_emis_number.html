@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load custom_filters %}
+{% load staticfiles %}
 {% load bootstrap4 %}
 {% bootstrap_css %}
 {% bootstrap_javascript jquery='full' %}
@@ -52,6 +53,10 @@
                                   </div>
                               </div>
                           </div>
+                          <div class="patient-consent">
+                            <button class="btn btn-consent" data-toggle="modal" data-target="#pdfModal"><i class="fas fa-file-medical icon"></i> View consent form</button>
+                          </div>
+
                           {% ifequal instruction.type amra_type %}
                               <div class="patient-consent">
                                   <button class="btn btn-consent"><i class="fas fa-file-medical icon"></i> View consent form</button>
@@ -114,11 +119,27 @@
                         <input name="rejected_reason" id="rejected_reason" type="hidden"/>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-danger reject-btn">Reject Request</a>
+                        <button type="submit" class="btn btn-danger reject-btn">Reject Request</button>
                     </div>
                 </div>
             </form>
         </div>
+    </div>
+
+    <div class="modal fade pdf-modal" id="pdfModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Consents Form</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+              <iframe src="{{ instruction.consent_form.url }}#zoom=200" height="735px" width="100%"></iframe>
+          </div>
+        </div>
+      </div>
     </div>
     
 {% endblock %}
