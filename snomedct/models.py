@@ -10,6 +10,7 @@ class SnomedConcept(models.Model):
     updated_at = models.DateTimeField()
     file_path = models.CharField(max_length=255)
     fsn_description = models.CharField(max_length=255)
+    children = models.ManyToManyField('SnomedConcept', through='SnomedDescendant')
     external_fsn_description_id = models.BigIntegerField()
     objects = CopyManager()
 
@@ -23,10 +24,10 @@ class SnomedConcept(models.Model):
         ]
 
     def snomed_descendants(self):
-        return SnomedConcept.objects.filter(snomeddescendant__external_id=self.external_id)
+        return SnomedConcept.objects.filter(external_ids=self.external_id)
 
     def snomed_descendant_readcodes(self):
-        return ReadCode.objects.filter(concept_id__snomeddescendant__external_id=self.external_id)
+        return ReadCode.objects.filter(concept_id__external_ids=self.external_id)
 
     def readcodes(self):
         return ReadCode.objects.filter(concept_id=self.external_id)
@@ -56,8 +57,10 @@ class ReadCode(models.Model):
 
 
 class SnomedDescendant(models.Model):
-    descendant_external_id = models.ForeignKey(SnomedConcept, to_field='external_id', on_delete=models.CASCADE, db_column="descendant_external_id", null=True)
-    external_id = models.BigIntegerField()
+    descendant_external_id = models.ForeignKey(SnomedConcept, to_field='external_id', on_delete=models.CASCADE,
+                                               db_column="descendant_external_id", null=True, related_name='descendant_external_id')
+    external_id = models.ForeignKey(SnomedConcept, to_field='external_id', on_delete=models.CASCADE,
+                                    db_column="external_id", null=True, related_name='external_ids')
     objects = CopyManager()
 
     def __str__(self):
