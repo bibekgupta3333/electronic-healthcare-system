@@ -41,6 +41,7 @@ class AmendmentsForRecord(models.Model):
     prepared_by = models.CharField(max_length=255, blank=True)
     status = models.CharField(choices=REDACTION_STATUS_CHOICES, max_length=6, default=REDACTION_STATUS_NEW)
     comment_notes = models.TextField(null=True)
+    instruction_checked = models.BooleanField(default=False, blank=True, null=True)
 
     def get_gp_name(self):
         gp_name = None

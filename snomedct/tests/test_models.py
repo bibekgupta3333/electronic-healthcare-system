@@ -51,16 +51,16 @@ class ReadCodeTest(TestCase):
 class SnomedDescendantTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        snomedct = mommy.make(SnomedConcept, fsn_description='fsn_description')
+        cls.snomedct = mommy.make(SnomedConcept, fsn_description='fsn_description')
         cls.snomed_descendant = mommy.make(
-            SnomedDescendant, descendant_external_id=snomedct,
-            external_id='12345'
+            SnomedDescendant, descendant_external_id=cls.snomedct,
+            external_id=cls.snomedct
         )
 
     def test_string_representation(self):
         self.assertEqual(
             str(self.snomed_descendant),
-            f'{self.snomed_descendant.pk} - fsn_description - 12345'
+            f'{self.snomed_descendant.pk} - fsn_description - {self.snomedct.pk} - fsn_description'
         )
 
 

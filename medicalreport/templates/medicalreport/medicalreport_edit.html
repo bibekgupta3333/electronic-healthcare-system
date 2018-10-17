@@ -9,7 +9,6 @@
 {% block ExtraHead %}
     <link rel="stylesheet" href="{% static 'medicalreport/css/medicalreport.css' %}">
     <link href="{% static 'css/bootstrap-datepicker.min.css' %}" rel="stylesheet"/>
-    <link href="{% static 'css/accounts/view_account.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block Content %}
@@ -17,14 +16,27 @@
         <div class="container-fluid callout callout--top">
             {% patient_info %}
         </div>
-        <div class="sensitive-information-instructions alert alert-warning">
-            <h6>Sensitive information instructions:</h6>
-            <ul>
-                <li>Do not include any history of sensitive conditions (e.g. sexually transmitted infections, terminations of pregnancy, domestic abuse) unless they have long term health implications and the patient consents to disclose such information.</li>
-                <li>The signing GP must check the report for any errors and remove any references to third parties before submitting a final report.</li>
-                <li>Do not include information about negative blood borne virus tests (HIV, Hepatitis B, Hepatitis C)./Do not include genetic test results unless there is a favourable test result stating that the patient has not inherited a condition.</li>
-            </ul>
-            <p>A full list of sensitive conditions (GP Summary Exclusion Code Lists) can be found<a target="_blank" href="https://isd.digital.nhs.uk/trud3/user/guest/group/0/pack/9/subpack/141/releases"> here.</a></p>
+        {% if not redaciton.instruction_checked %}
+        <div class="modal fade" id="form-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content sensitive-information-instructions alert-warning">
+                    <h6>Sensitive information instructions:</h6>
+                    <ul>
+                        <li>Do not include any history of sensitive conditions (e.g. sexually transmitted infections, terminations of pregnancy, domestic abuse) unless they have long term health implications and the patient consents to disclose such information.</li>
+                        <li>The signing GP must check the report for any errors and remove any references to third parties before submitting a final report.</li>
+                        <li>Do not include information about negative blood borne virus tests (HIV, Hepatitis B, Hepatitis C)./Do not include genetic test results unless there is a favourable test result stating that the patient has not inherited a condition.</li>
+                    </ul>
+                    <p>A full list of sensitive conditions (GP Summary Exclusion Code Lists) can be found<a target="_blank" href="https://isd.digital.nhs.uk/trud3/user/guest/group/0/pack/9/subpack/141/releases"> here.</a></p>
+                    <div class="inst_chk">
+                        <div class="pretty p-default right">
+                            {{ finalise_submit_form.instruction_checked }}
+                            <div class="state p-primary">
+                                <label>I understand</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <h1>Provisional Report Contents</h1>
         <form action="{% url 'medicalreport:update_report' instruction.id %}" method="post" id="medicalReportForm">
@@ -112,6 +124,9 @@
     <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
     <script src="{% static 'medicalreport/js/medicalreport.js' %}"></script>
     <script>
+        $("#form-modal").modal({
+            backdrop: 'static'
+        }); 
         $('#id_gp_practitioner').removeAttr('required');
 
         $('#id_prepared_and_signed_0').on('click', function () {
@@ -167,7 +182,12 @@
         $('#id_gp_practitioner').on('change', function () {
             enable_submit_button();
         });
-
-
+        $("input[type='checkbox'][name='instruction_checked']").click(function(){
+            if($(this).is(":checked")){
+                setTimeout(function(){ 
+                    $("#form-modal").modal('hide');
+                }, 600);
+            }
+        });
     </script>
 {% endblock %}

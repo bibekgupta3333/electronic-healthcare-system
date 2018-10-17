@@ -86,6 +86,7 @@ def edit_report(request, instruction_id):
             'gp_practitioner': redaction.review_by if redaction.review_by else request.user,
             'prepared_by': redaction.prepared_by,
             'prepared_and_signed': redaction.submit_choice,
+            'instruction_checked': redaction.instruction_checked
         },
         user=request.user)
 
