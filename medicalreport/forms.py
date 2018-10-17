@@ -16,6 +16,7 @@ class MedicalReportFinaliseSubmitForm(forms.Form):
         required=False,
     )
     gp_practitioner = forms.ModelChoiceField(queryset=None, required=False)
+    instruction_checked = forms.BooleanField(required=False, initial=False, label='')
 
     def __init__(self, user=None, *args, **kwargs):
         super().__init__(*args, **kwargs)

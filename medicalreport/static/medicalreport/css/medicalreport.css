@@ -337,3 +337,12 @@ h1 {
         max-width: 1300px;
     }
 }
+
+.modal-content {
+    color: #856404;
+    background-color: #fff3cd;
+}
+
+.right {
+    float: right;
+}

@@ -27,6 +27,8 @@ def create_or_update_redaction_record(request, instruction):
 
     if request.method == "POST":
         submit_form = MedicalReportFinaliseSubmitForm(request.user, request.POST)
+        amendments_for_record.instruction_checked = submit_form.cleaned_data['instruction_checked']
+        amendments_for_record.save()
         if status == 'draft':
             amendments_for_record.status = AmendmentsForRecord.REDACTION_STATUS_DRAFT
         elif status == 'submit':
