@@ -18,7 +18,7 @@
                     <a href="{% url 'instructions:view_pipeline' %}" >Instructions</a>
                 </li>
             {% endif %}
-            {% if user.is_staff == True or user.userprofilebase.generalpracticeuser.role == 0 %}
+            {% if user.userprofilebase.clientuser.role == 0 or user.userprofilebase.generalpracticeuser.role == 0 %}
                 <li class="{% if request.resolver_match.namespace == 'organisations' %}active{% endif %}">
                     <a href="{% url 'accounts:view_users' %}">User Management</a>
                 </li>
