@@ -1,3 +1,6 @@
+from itertools import chain
+import ast
+
 from django.http import JsonResponse, HttpResponseRedirect
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
@@ -88,19 +91,22 @@ class TemplateCreate(LoginRequiredMixin, AjaxableResponseMixin, CreateView):
                 'template_instruction': template_instruction_id
             }
             template_questions_form = TemplateInstructionAdditionalQuestionForm(data=data)
-            template_questions_form.save()
+            if template_questions_form.is_valid():
+                template_questions_form.save()
 
         # save conditions
-        common_conditions = request.POST.getlist('common_conditions[]')
-        addition_conditions = request.POST.getlist('addition_conditions')
-        conditions = common_conditions + addition_conditions
-        for condition in conditions:
+        raw_common_condition = request.POST.getlist('common_conditions[]')
+        common_condition_list = list(chain.from_iterable([ast.literal_eval(item) for item in raw_common_condition]))
+        addition_condition_list = request.POST.getlist('addition_conditions')
+        condition_of_interests = list(set().union(common_condition_list, addition_condition_list))
+        for condition in condition_of_interests:
             data = {
                 'snomedct': condition,
                 'template_instruction': template_instruction_id
             }
             template_conditions_form = TemplateConditionsOfInterestForm(data=data)
-            template_conditions_form.save()
+            if template_conditions_form.is_valid():
+                template_conditions_form.save()
 
         return JsonResponse(response)
 
@@ -202,7 +208,7 @@ class TemplateDetails(LoginRequiredMixin, DetailView):
 
         for condition in template_conditions:
             response['conditions'].append({
-                "id": condition.snomedct.pk,
+                "id": str([condition.snomedct.pk]),
                 "text": condition.snomedct.fsn_description,
                 "is_common_condition": bool(condition.snomedct.commonsnomedconcepts_set.count()),
             })
