@@ -578,3 +578,10 @@ header {
   width:  300px;
   z-index: 10;
 }
+.agreement-checkbox {
+  display: flex;
+}
+
+.agreement-checkbox span {
+  padding-left: 6px;
+}
