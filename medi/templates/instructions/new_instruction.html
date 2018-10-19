@@ -89,7 +89,7 @@
                             <div class="row">
                                 <div class="col-md-2 rowTitle">Set from Template?</div>
                                 {% bootstrap_field scope_form.template size='small' form_group_class='form-group col-md-6 px-0' show_label=False %}
-                                {% bootstrap_button 'Set conditions' button_type="button" extra_classes='btn-xs' %}
+                                {% bootstrap_button 'Set conditions' button_type="button" extra_classes='btn-xs' id='save_from_template_btn' %}
                             </div>
                             <div class="conditions d-none">
                                 <div class="row">
@@ -159,7 +159,7 @@
             </div>
             {% if request.user.type == 'CLT' %}
                 <div class="col-md-4 mt-4">
-                    <button class="btn btn-primary btn-lg w-75" id="myBtn" type="button" data-toggle="modal">Save as template</button>
+                    <button class="btn btn-primary btn-lg w-75" id="template_modal_btn" type="button" data-toggle="modal" disabled="true">Save as template</button>
                 </div>
             {% endif %}
     </form>
@@ -205,6 +205,10 @@
         const PERIPHERAL_SNOMED_CODE = '42658009';
 
         $(document).ready(function () {
+            var template_data = null;
+            function reset_template_attrs(){
+                $('#questions_block').find('tbody').find('.dynamic-form').remove();
+            }
             $('#gp_last_name').attr('name', 'gp_last_name');
 
             $('#newInstructionForm tbody tr').formset({
@@ -291,47 +295,52 @@
             });
 
             //load template into the form
-            $('#id_template').on('change', function (data) {
+            $('#id_template').on('change', function () {
                 $.ajax({
                     url: "/template/details/" + this.value,
                     method: 'get',
                     success: function (data) {
-                        if(data.questions){
-                            data.questions.forEach(function(element, index) {
-                                question_form_html = `
-                                    <tr class="dynamic-form">
-                                        <td>
-                                            <input type="text" value="` + element["text"] + `" name="form-`+ index + `-question" class="form-control questions_inputs" maxlength="255" id="id_form-`+ index + `-question">
-                                        </td>
-                                        <td><a class="btn btn-danger" href="javascript:void(0)">X remove</a></td>
-                                    </tr>
-                                `;
-                                $('#questions_block').find('tbody').prepend(question_form_html);
-                            });
-                        };
-
-                        if(data.conditions){
-                            $('#id_type').find("input[name=type][value=AMRA]").prop('checked', true);
-                            $('.instructionType').trigger('change');
-                            data.conditions.forEach(function(element, index) {
-                                if(element['is_common_condition']){
-                                    $('#id_common_condition').find("input[name=common_condition]").each(function () {
-                                        if($(this).val()==element["id"]){
-                                            $(this).prop('checked', true);
-                                        }
-                                    })
-                                } else {
-                                    $('#id_addition_condition').append(new Option(element["text"], element["id"]));
-                                    $('#id_addition_condition').select2('val', [element["id"]]);
-                                }
-
-                            });
-                        };
+                        template_data = data;
                     },
                     error: function (errors) {
                         create_alert('Unable to load a template.', 'error');
                     }
                 })
+            });
+
+            $('#save_from_template_btn').on('click', function () {
+                reset_template_attrs();
+                if(template_data.questions){
+                    template_data.questions.forEach(function(element, index) {
+                        question_form_html = `
+                            <tr class="dynamic-form">
+                                <td>
+                                    <input type="text" value="` + element["text"] + `" name="form-`+ index + `-question" class="form-control questions_inputs" maxlength="255" id="id_form-`+ index + `-question">
+                                </td>
+                                <td><a class="btn btn-danger" href="javascript:void(0)">X remove</a></td>
+                            </tr>
+                        `;
+                        $('#questions_block').find('tbody').prepend(question_form_html);
+                    });
+                };
+
+                if(template_data.conditions){
+                    $('#id_type').find("input[name=type][value=AMRA]").prop('checked', true);
+                    $('.instructionType').trigger('change');
+                    template_data.conditions.forEach(function(element, index) {
+                        if(element['is_common_condition']){
+                            $('#id_common_condition').find("input[name=common_condition]").each(function () {
+                                if($(this).val()==element["id"]){
+                                    $(this).prop('checked', true);
+                                }
+                            })
+                        } else {
+                            $('#id_addition_condition').append(new Option(element["text"], element["id"]));
+                            $('#id_addition_condition').select2('val', [element["id"]]);
+                        }
+
+                    });
+                };
             });
 
             $('#id_addition_condition').select2({
@@ -415,34 +424,49 @@
 
             $('.instructionType').on('change', function () {
                if($(this).is(':checked') && $(this).val() == 'AMRA'){
+                   $('#template_modal_btn').attr('disabled', false);
                    $('.conditions').removeClass('d-none');
                }else if($(this).is(':checked')){
+                   $('#template_modal_btn').attr('disabled', true);
                    $('.conditions').addClass('d-none');
                }
             });
 
-            $("#myBtn").click(function(){
+            $("#template_modal_btn").click(function(){
                 $("#create_template_modal").modal();
             });
 
             $('#save_template').on('click', function(){
+                if($('#template_title').val() == '') {
+                    $('#template_title').addClass('is-invalid');
+                    return false;
+                } else {
+                    $('#template_title').removeClass('is-invalid');
+                }
+                if($('#template_description').val() == '') {
+                    $('#template_description').addClass('is-invalid');
+                    return false;
+                } else {
+                    $('#template_description').removeClass('is-invalid');
+                }
+
                 if($('.instructionType:checked').val() != 'AMRA'){
                     return false;
                 }
 
                 let questions = [];
                 $(".questions_inputs").each(function (i, el) {
-                     questions.push($(el).val())
+                     questions.push($(el).val());
                 });
 
                 let common_conditions = [];
                 $( "input[name='common_condition']:checked" ).each(function (i, el) {
-                     common_conditions.push($(el).val())
+                     common_conditions.push($(el).val());
                 });
 
                 let addition_conditions = [];
                 $( "#id_addition_condition option:selected" ).each(function (i, el) {
-                     addition_conditions.push($(el).val())
+                     addition_conditions.push($(el).val());
                 });
 
                 let data = {
@@ -458,10 +482,17 @@
                     data: data,
                     method: 'post',
                     success: function () {
-                        create_alert('Template has been created successfully.', 'success')
+                        create_alert('Template has been created successfully.', 'success');
+                        $('#create_template_modal').modal('toggle');
                     },
                     error: function (errors) {
-                        // TODO: add validation messages to the form
+                        errors = errors.responseJSON.errors;
+                        let msg = '';
+                        Object.keys(errors).forEach(function(key) {
+                            msg += errors[key].join();
+                        });
+
+                        create_alert('Template save failed. ' + msg, 'error');
                     }
                 })
             });

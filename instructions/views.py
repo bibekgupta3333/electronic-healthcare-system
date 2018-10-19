@@ -360,9 +360,10 @@ def allocate_instruction(request, instruction_id):
     if request.method == "POST":
         allocate_form = AllocateInstructionForm(request.user, request.POST)
         if allocate_form.is_valid():
+            role = request.user.userprofilebase.generalpracticeuser.role
             if allocate_form.cleaned_data['gp_practitioner']:
                 instruction.gp_user = allocate_form.cleaned_data['gp_practitioner'].userprofilebase.generalpracticeuser
-            elif request.user.userprofilebase.generalpracticeuser.role == GeneralPracticeUser.GENERAL_PRACTICE:
+            elif role in [GeneralPracticeUser.GENERAL_PRACTICE, GeneralPracticeUser.SARS_RESPONDER]:
                 instruction.gp_user = request.user.userprofilebase.generalpracticeuser
                 instruction.status = INSTRUCTION_STATUS_PROGRESS
             instruction.save()

@@ -17,27 +17,28 @@
             {% patient_info %}
         </div>
         {% if not redaciton.instruction_checked %}
-        <div class="modal fade" id="form-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content sensitive-information-instructions alert-warning">
-                    <h6>Sensitive information instructions:</h6>
-                    <ul>
-                        <li>Do not include any history of sensitive conditions (e.g. sexually transmitted infections, terminations of pregnancy, domestic abuse) unless they have long term health implications and the patient consents to disclose such information.</li>
-                        <li>The signing GP must check the report for any errors and remove any references to third parties before submitting a final report.</li>
-                        <li>Do not include information about negative blood borne virus tests (HIV, Hepatitis B, Hepatitis C)./Do not include genetic test results unless there is a favourable test result stating that the patient has not inherited a condition.</li>
-                    </ul>
-                    <p>A full list of sensitive conditions (GP Summary Exclusion Code Lists) can be found<a target="_blank" href="https://isd.digital.nhs.uk/trud3/user/guest/group/0/pack/9/subpack/141/releases"> here.</a></p>
-                    <div class="inst_chk">
-                        <div class="pretty p-default right">
-                            {{ finalise_submit_form.instruction_checked }}
-                            <div class="state p-primary">
-                                <label>I understand</label>
+            <div class="modal fade" id="form-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content sensitive-information-instructions alert-warning">
+                        <h6>Sensitive information instructions:</h6>
+                        <ul>
+                            <li>Do not include any history of sensitive conditions (e.g. sexually transmitted infections, terminations of pregnancy, domestic abuse) unless they have long term health implications and the patient consents to disclose such information.</li>
+                            <li>The signing GP must check the report for any errors and remove any references to third parties before submitting a final report.</li>
+                            <li>Do not include information about negative blood borne virus tests (HIV, Hepatitis B, Hepatitis C)./Do not include genetic test results unless there is a favourable test result stating that the patient has not inherited a condition.</li>
+                        </ul>
+                        <p>A full list of sensitive conditions (GP Summary Exclusion Code Lists) can be found<a target="_blank" href="https://isd.digital.nhs.uk/trud3/user/guest/group/0/pack/9/subpack/141/releases"> here.</a></p>
+                        <div class="inst_chk">
+                            <div class="pretty p-default right">
+                                {{ finalise_submit_form.instruction_checked }}
+                                <div class="state p-primary">
+                                    <label>I understand</label>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
         <h1>Provisional Report Contents</h1>
         <form action="{% url 'medicalreport:update_report' instruction.id %}" method="post" id="medicalReportForm">
             {% csrf_token %}
@@ -78,6 +79,10 @@
                             <div class="row ml-2">
                                 <div class="col-md-6">
                                     {% bootstrap_field finalise_submit_form.prepared_and_signed  show_label=Fasle%}
+                                    <label class="agreement-checkbox" for="accept_disclaimer" style="font-size: large;">
+                                        <input type="checkbox" id="accept_disclaimer" class="mt-2">
+                                        <span>I accept that MediData Exchange Ltd cannot be held responsible for the content of this report as the data redaction process is approved by me, the Data Controller.</span>
+                                    </label>
                                 </div>
                                     {% bootstrap_field finalise_submit_form.prepared_by show_label=Fasle %}
                                 <div class="col-md-6">
@@ -97,7 +102,7 @@
                                     <a href="{% url 'medicalreport:final_report' instruction.id %}" class="btn btn-info" target="_blank">
                                         VIEW REPORT
                                     </a>
-                                    <button type="button" onclick="subMitMedicalReport('draft')" class="btn btn-primary"><i class="fas fa-save"></i> SAVE DRAFT</button>
+                                    <button type="button" id="saveDraftButton" onclick="subMitMedicalReport('draft')" class="btn btn-primary"><i class="fas fa-save"></i> SAVE DRAFT</button>
                                     <button type="button" id="submitButton" onclick="subMitMedicalReport('submit')" class="btn btn-primary btn-lg" disabled><i class="fas fa-check"></i> SUBMIT</button>
                                     <div class="row">
                                         <div class="col-md-9 offset-3 p-0">
