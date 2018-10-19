@@ -1,0 +1,16 @@
+.emr-setup .card-header {
+  background-color: #36569a;
+  color: whitesmoke;
+}
+
+.subheader {
+  margin-bottom: 20px;
+}
+
+.accept-policy, .consent {
+  margin-right: 10px;
+}
+
+.card-body {
+  color: black;
+}

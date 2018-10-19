@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% load static %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% bootstrap_messages %}
+
+
+{% block ExtraHead %}
+    <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/onboarding/emr_setup.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block Content %}
+    {% if created %}
+        <h1>eMR setup successfully</h1>
+    {% else %}
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="card-deck emr-setup">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>eMR Set Up</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row subheader">
+                            To be completed by an authorised member of the practice
+                        </div>
+                        <div class="row form-group">
+                            <h5>Surgery details</h5>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-2">Surgery Name</div>
+                            {% bootstrap_field emr_form.surgery_name show_label=False form_group_class='col-md-10' placeholder='' %}
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-md-4">Address Line 1</div>
+                                    {% bootstrap_field emr_form.address_line1 show_label=False form_group_class='col-md-8' placeholder='' %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-md-4">Surgery Code</div>
+                                    {% bootstrap_field emr_form.surgery_code show_label=False form_group_class='col-md-8' placeholder='' %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-md-4">Address Line 2</div>
+                                    {% bootstrap_field emr_form.address_line2 show_label=False form_group_class='col-md-8' placeholder='' %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-md-4">Telephone No.</div>
+                                    {% bootstrap_field emr_form.phone show_label=False form_group_class='col-md-8' placeholder='' %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-md-4">City</div>
+                                    {% bootstrap_field emr_form.city show_label=False form_group_class='col-md-8' placeholder='' %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-md-4">Surgery email</div>
+                                    {% bootstrap_field emr_form.surgery_email show_label=False form_group_class='col-md-8' placeholder='' %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-2">Postcode</div>
+                            {% bootstrap_field emr_form.post_code show_label=False form_group_class='col-md-4' placeholder='' %}
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-md-4">PM or Lead role name</div>
+                                    {% bootstrap_field emr_form.pm_name show_label=False form_group_class='col-md-8' placeholder='' %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-md-4">Email to receive SAR & AMRA requests</div>
+                                    {% bootstrap_field emr_form.receive_email show_label=False form_group_class='col-md-8' placeholder='' %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-2">PM or Lead role email</div>
+                            {% bootstrap_field emr_form.pm_email show_label=False form_group_class='col-md-4' placeholder='' %}
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-2">Name of one GP</div>
+                            {% bootstrap_field emr_form.gp_name show_label=False form_group_class='col-md-4' placeholder='' %}
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-3">Primary care records system</div>
+                            {% bootstrap_field emr_form.primary_care show_label=False form_group_class='col-md-4' placeholder='' %}
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-3">Name of person completing this form</div>
+                            {% bootstrap_field emr_form.person_completeing show_label=False form_group_class='col-md-4' placeholder='' %}
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-3">Job title</div>
+                            {% bootstrap_field emr_form.job_title show_label=False form_group_class='col-md-4' placeholder='' %}
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-12">
+                                <input type="checkbox" class="accept-policy" name="accept_policy">I accept all T&Cs, End User Licence and data policy. View all documents here</input>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-12">
+                                <input type="checkbox" class="consent" name="consented">I consent to MediData Exchange contacting the surgery regarding eMR.</input>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-primary" type="submit">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    {% endif %}
+{% endblock %}
+
+{% block Script %}
+    <script src="{% static 'js/select2.min.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            $('#id_gp_practice').select2();
+        });
+    </script>
+{% endblock %}
