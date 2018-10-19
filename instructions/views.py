@@ -341,7 +341,7 @@ def upload_consent(request, instruction_id):
         if request.POST.get('select_type') == 'accept':
             instruction.consent_form = setting.consent_form
         else:
-            instruction.consent_form = request.FILES.getlist('consent_form')
+            instruction.consent_form = request.FILES.get('consent_form')
         instruction.save()
         uploaded = True
     return render(request, 'instructions/upload_consent.html',{
