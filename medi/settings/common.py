@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'medicalreport',
     'snomedct',
     'template',
+    'onboarding',
     'payment'
 ]
 
