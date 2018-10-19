@@ -34,6 +34,7 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('instruction/', include('instructions.urls', namespace='instructions')),
+    path('onboarding/', include('onboarding.urls', namespace='onboarding')),
     path('organisation/', include('organisations.urls', namespace='organisations')),
     path('template/', include('template.urls', namespace='template')),
     path('select2/', include('django_select2.urls')),
