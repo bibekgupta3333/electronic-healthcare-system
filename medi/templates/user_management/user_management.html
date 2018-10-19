@@ -15,7 +15,9 @@
 {% block Content %}
         <div class="row" >
             <div class="col-md-3">
-                <a href="/accounts/create_user" class="btn btn-primary" id="addUserButton">Add New</a>
+                {% if user_type != "medidata" %}
+                    <a href="/accounts/create_user" class="btn btn-primary" id="addUserButton">Add New</a>
+                {% endif %}
             </div>
             <div class="col-md-4 offset-md-5">
                 <form id="topsearchform" role="search" method="post" action="" class="" autocomplete="off">
@@ -26,20 +28,17 @@
         </div>
         <div class="row overall-number">
             <div class="col-md-12">
-                {% if user_type == "gp" %}
                     {% for k, v in overall_users_number.items %}
                         <div class="number" id="{{ k|cut:' ' }}">
-                            <a href="#" onclick="gpuserStatusFilter('{{ k }}');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a>
+                            {% if k == "Admin" or k == "Client" %}
+                                <a href="#" onclick="clientuserStatusFilter('{{ k }}');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a>
+                            {% elif k == "Medidata" %}
+                                <a href="#" onclick="mediuserStatusFilter('{{ k }}');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a>
+                            {% else %}
+                                <a href="#" onclick="gpuserStatusFilter('{{ k }}');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a>
+                            {% endif %}
                         </div>
                     {% endfor %}
-                {% endif %}
-                {% if user_type == "client" %}
-                    {% for k, v in overall_users_number.items %}
-                        <div class="number" id="{{ k|cut:' ' }}">
-                            <a href="#" onclick="clientuserStatusFilter('{{ k }}');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a>
-                        </div>
-                    {% endfor %}
-                {% endif %}
             </div>
         </div>
         <form action="{% url 'accounts:manage_user' %}" method="POST" id="tableForm">
@@ -72,7 +71,9 @@
                     {% endif %}
                 </div>
                 <div class="col-md-1">
-                    <input type="submit" id="userRoleBtn" value="Change" class="btn btn-primary" disabled="disabled">
+                    {% if user_type != "medidata" %}
+                        <input type="submit" id="userRoleBtn" value="Change" class="btn btn-primary" disabled="disabled">
+                    {% endif %}
                 </div>
                 <div class="col-md-1">
                     <input type="submit" id="removeUserBtn" value="Remove" class="btn btn-primary" disabled="disabled">
@@ -126,7 +127,14 @@
             $('.pager').hide();
             if(getUrlParameter('status')){
                 status = getUrlParameter('status');
-                var key = getObjectKeyByValue(gpuser_roleDict, status);
+                type = getUrlParameter('user_type');
+                if (type === 'CLT') {
+                    var key = getObjectKeyByValue(clientuser_roleDict, status);
+                } else if (type === 'MEDI') {
+                    var key = getObjectKeyByValue(medidatauser_roleDict, status);
+                } else {
+                    var key = getObjectKeyByValue(gpuser_roleDict, status);
+                }
                 $('#' + key.replace(' ', '')).css("background-color", "rgba(0, 0, 0, 0.1)");
             } else {
                 $('#All').css("background-color", "rgba(0, 0, 0, 0.1)");

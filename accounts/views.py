@@ -12,18 +12,15 @@ from payment.models import OrganisationFee
 from django_tables2 import RequestConfig
 
 from .models import User, UserProfileBase
-from .models import GENERAL_PRACTICE_USER, CLIENT_USER
+from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from .forms import NewGPForm, NewClientForm
-from .tables import GPUserTable, ClientUserTable
 
 from django.conf import settings
 DEFAULT_FROM = settings.DEFAULT_FROM
 ACCOUNT_LINK = settings.ACCOUNT_LINK
 
-from .functions import reset_password, change_role, remove_user
-from .functions import count_gpusers, count_clientusers, get_table_data
-from .functions import get_post_new_user_data, get_user_type_form
-from .functions import get_users_count
+from .functions import change_role, remove_user, get_table_data,\
+        get_post_new_user_data, get_user_type_form, reset_password
 
 
 @login_required(login_url='/accounts/login')
@@ -81,34 +78,38 @@ def view_users(request):
     if 'status' in request.GET:
         filter_type = request.GET.get('type', 'active')
         filter_status = request.GET.get('status', -1)
+        filter_user_type = request.GET.get('user_type', None)
         if filter_status == 'undefined':
             filter_status = -1
         else:
-            filter_status = int(filter_status)        
+            filter_status = int(filter_status)
         if filter_type == 'undefined':
             filter_type = 'active'
     else:
         filter_type = request.COOKIES.get('type')
         filter_status = int(request.COOKIES.get('status', -1))
+        filter_user_type = request.COOKIES.get('user_type', None)
 
     if filter_type == '':
         filter_type = "active"
-    query_set = user.get_query_set_within_organisation()
+    user_types = [MEDIDATA_USER, CLIENT_USER, GENERAL_PRACTICE_USER]
+    query_set = user.get_query_set_within_organisation().filter(type__in=user_types)
 
     if filter_type == 'active':
         query_set = query_set.filter(userprofilebase__in=profiles.alive())
     elif filter_type == 'deactivated':
         query_set = query_set.filter(userprofilebase__in=profiles.dead())
 
-    overall_users_number = get_users_count(user, query_set)
-    
+    filter_query = query_set
     if filter_status != -1:
-        if hasattr(user.userprofilebase, 'generalpracticeuser'):
-            query_set = query_set.filter(userprofilebase__generalpracticeuser__role=filter_status)
-        elif hasattr(user.userprofilebase, 'clientuser'):
-            query_set = query_set.filter(userprofilebase__clientuser__role=filter_status)
-        
-    table_data = get_table_data(user, query_set)
+        if (filter_user_type and filter_user_type == GENERAL_PRACTICE_USER) or hasattr(user.userprofilebase, 'generalpracticeuser'):
+            filter_query = query_set.filter(userprofilebase__generalpracticeuser__role=filter_status)
+        elif (filter_user_type and filter_user_type == CLIENT_USER) or hasattr(user.userprofilebase, 'clientuser'):
+            filter_query = query_set.filter(userprofilebase__clientuser__role=filter_status)
+        else:
+            filter_query = query_set.filter(type=MEDIDATA_USER)
+
+    table_data = get_table_data(user, query_set, filter_query)
     RequestConfig(request, paginate={'per_page': 5}).configure(table_data['table'])
     table_data['table'].order_by = request.GET.get('sort', '-created')
 
@@ -116,7 +117,7 @@ def view_users(request):
         'user': user,
         'header_title': header_title,
         'table': table_data['table'],
-        'overall_users_number': overall_users_number,
+        'overall_users_number': table_data['overall_users_number'],
         'user_type': table_data['user_type']
     })
 
@@ -136,7 +137,7 @@ def create_user(request):
         organisation = new_user_data['organisation']
         newuser_form = new_user_data['newuser_form']
         user_type = new_user_data['user_type']
-        
+
         if not user_role:
             messages.warning(request, 'Please input all the fields properly.')
         elif newuser_form.is_valid():
@@ -153,7 +154,7 @@ def create_user(request):
                 )
                 user.type = user_type
                 user.is_staff = new_user_data['is_staff']
-                
+
                 user.set_password(newuser_form.cleaned_data['password'])
                 user.save()
                 newuser = newuser_form.save(commit=False)
@@ -174,7 +175,7 @@ def create_user(request):
                 messages.warning(request, 'User Account Existing In Database')
         else:
             messages.warning(request, 'Please input all the fields properly.')
-    
+
     user_type_form = get_user_type_form(cur_user)
     newuser_form = user_type_form['newuser_form']
     user_type = user_type_form['user_type']
