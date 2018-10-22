@@ -66,7 +66,7 @@
             <div class="col-md-4 inputDiv rolebox">
                 <div class="checkbox rolechk">
                     <div class="pretty p-default">
-                        <input type="checkbox" id="pm_role" value="0"/>
+                        <input type="checkbox" id="pm_role" value="0" class="gp_btn"/>
                         <div class="state p-primary">
                             <label>Practice Manager</label>
                         </div>
@@ -74,7 +74,7 @@
                 </div>
                 <div class="checkbox rolechk">
                     <div class="pretty p-default">
-                        <input type="checkbox" id="gp_role" value="1"/>
+                        <input type="checkbox" id="gp_role" value="1" class="gp_btn"/>
                         <div class="state p-primary">
                             <label>GP</label>
                         </div>
@@ -82,7 +82,7 @@
                 </div>
                 <div class="checkbox rolechk">
                     <div class="pretty p-default">
-                        <input type="checkbox" id="sars_role" value="2"/>
+                        <input type="checkbox" id="sars_role" value="2" class="gp_btn"/>
                         <div class="state p-primary">
                             <label>SARS responder</label>
                         </div>
@@ -94,7 +94,7 @@
             <div class="col-md-4 inputDiv rolebox">
                 <div class="checkbox rolechk">
                     <div class="pretty p-default">
-                        <input type="checkbox" id="cadmin_role" value="0"/>
+                        <input type="checkbox" id="cadmin_role" value="0" class="client_btn"/>
                         <div class="state p-primary">
                             <label>Client Admin</label>
                         </div>
@@ -102,7 +102,7 @@
                 </div>
                 <div class="checkbox rolechk">
                     <div class="pretty p-default">
-                        <input type="checkbox" id="client_role" value="1"/>
+                        <input type="checkbox" id="client_role" value="1" class="client_btn"/>
                         <div class="state p-primary">
                             <label>Client</label>
                         </div>
@@ -155,17 +155,26 @@
                 $("input[name=password]").val("medi2018");
                 alert("Password generated");
             });
-            $('.rolebox input[type="checkbox"]').click(function(){
-                if($(this).is(":checked")){
+            $(".gp_btn").change(function() {
+                var checked = $(this).is(':checked');
+                $(".gp_btn").prop('checked',false);
+                if(checked) {
+                    $(this).prop('checked',true);
                     $("#user_role").val($(this).val());
                 }
-                else if($(this).is(":not(:checked)")){
-                    $("#user_role").val("");
+            });
+            $(".client_btn").change(function() {
+                var checked = $(this).is(':checked');
+                $(".client_btn").prop('checked',false);
+                if(checked) {
+                    $(this).prop('checked',true);
+                    $("#user_role").val($(this).val());
                 }
             });
             $("#createuser").on("submit", function(event) {
                 var sortcode = $("#sortcode1").val() + $("#sortcode2").val() + $("#sortcode3").val();
                 $("input[name=payment_bank_sort_code").val(sortcode);
+                $("#submitbtn").attr("disabled", "true");
             });
         });
     </script>
