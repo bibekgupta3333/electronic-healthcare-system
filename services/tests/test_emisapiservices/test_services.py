@@ -58,14 +58,14 @@ class GetPatientListTest(TestCase):
     def test_search_term(self):
         self.assertEqual(
             self.get_patient_list.search_term(),
-            'first_name%20last_name%2002%2F01%2F1990'
+            'first_name%20last_name'
         )
 
     def test_search_term_with_blank_fields(self):
         self.assertEqual(self.get_patient_list_blank.search_term(), '')
 
     def test_uri(self):
-        expected = f'{EMIS_API_HOST}/api/organisations/emis_id/patients?q=first_name%20last_name%2002%2F01%2F1990'
+        expected = f'{EMIS_API_HOST}/api/organisations/emis_id/patients?q=first_name%20last_name'
         self.assertEqual(self.get_patient_list.uri(), expected)
 
 

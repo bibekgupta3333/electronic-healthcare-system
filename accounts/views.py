@@ -41,9 +41,14 @@ def account_view(request):
             max_day_level_2=organisation_fee.max_day_lvl_2,
             amount_rate_level_2=organisation_fee.amount_rate_lvl_2)
         )
-        organisation_fee_data.append('{max_day_level_3} days or more @ £{amount_rate_level_3}'.format(
+        organisation_fee_data.append('{min_day_level_3}-{max_day_level_3} days @ £{amount_rate_level_3}'.format(
+            min_day_level_3=organisation_fee.max_day_lvl_2 + 1,
             max_day_level_3=organisation_fee.max_day_lvl_3,
             amount_rate_level_3=organisation_fee.amount_rate_lvl_3)
+        )
+        organisation_fee_data.append('{max_day_level_4} days or more @ £{amount_rate_level_4}'.format(
+            max_day_level_4=organisation_fee.max_day_lvl_4,
+            amount_rate_level_4=organisation_fee.amount_rate_lvl_4)
         )
 
     return render(request, 'accounts/accounts_view.html', {

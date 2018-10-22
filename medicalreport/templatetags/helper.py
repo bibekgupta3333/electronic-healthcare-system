@@ -3,7 +3,9 @@ register = template.Library()
 
 
 def format_date(date):
-    return date.strftime("%d %b %Y")
+    if date:
+        return date.strftime("%d %b %Y")
+    return None
 
 
 def end_date(problem):

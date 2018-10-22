@@ -11,6 +11,7 @@ SEX_CHOICES = (
 )
 
 TITLE_CHOICE = (
+    ('', '----'),
     ('DR', 'Dr.'),
     ('MR', 'Mr.'),
     ('MRS', 'Mrs.'),
@@ -175,6 +176,7 @@ class GeneralPracticeUser(UserProfileBase):
     SARS_RESPONDER = 2
 
     ROLE_CHOICES = (
+        ('', '----'),
         (PRACTICE_MANAGER, 'Manager'),
         (GENERAL_PRACTICE, 'GP'),
         (SARS_RESPONDER, 'SARS')

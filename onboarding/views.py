@@ -1,12 +1,16 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.template import loader
 from django.core.mail import send_mail
-from onboarding.forms import EMRSetupForm
 from instructions.models import Setting
 from django.conf import settings
+from django.forms import formset_factory
+from django.contrib import messages
+from .functions import *
+from .forms import *
 
 
+@login_required(login_url='/accounts/login')
 def emr_setup(request):
     emr_form = EMRSetupForm()
     created = False
@@ -23,6 +27,7 @@ def emr_setup(request):
         'created': created
     })
 
+
 def send_email_emr(request, emr):
     setting = Setting.objects.all().first()
     if setting:
@@ -32,3 +37,52 @@ def send_email_emr(request, emr):
             'link': '{}/onboarding/emr_setup_stage_2/{}'.format(setting.site, emr.id)
         })
         send_mail('Completely eMR','',from_email,to_list,fail_silently=True,html_message=html_message)
+
+
+def emr_setup_stage_2(request, emrsetup_id=None):
+    emr_setup = get_object_or_404(EMRSetup, pk=emrsetup_id)
+    surgery_form = SurgeryEmrSetUpStage2Form(initial={
+        'surgery_name': emr_setup.surgery_name,
+        'surgery_code': emr_setup.surgery_code,
+        'address': emr_setup.address_line1 + emr_setup.address_line2,
+        'postcode': emr_setup.post_code,
+        'surgery_tel_number': emr_setup.phone,
+        'surgery_email': emr_setup.surgery_email
+    })
+
+    UserEmrSetUpStage2Formset = formset_factory(UserEmrSetUpStage2Form, min_num=2, validate_min=True, extra=2)
+    user_formset = UserEmrSetUpStage2Formset()
+    bank_details_form = BankDetailsEmrSetUpStage2Form()
+
+    if request.method == "POST":
+        user_formset = UserEmrSetUpStage2Formset(request.POST)
+        bank_details_form = BankDetailsEmrSetUpStage2Form(request.POST)
+        if user_formset.is_valid() and bank_details_form.is_valid():
+            gp_organisation = create_gp_organisation(emr_setup, bank_details_form)
+            gp_payments_fee = create_gp_payments_fee(bank_details_form, gp_organisation)
+            created_user_list = []
+            for user in user_formset:
+                if user.is_valid() and user.cleaned_data:
+                    created_user_list.append(create_gp_user(user.cleaned_data, gp_organisation))
+
+            for user in created_user_list:
+                html_message = loader.render_to_string('onboarding/emr_setup_2_email.html', {
+                    'user_email': user['general_pratice_user'].user.email,
+                    'user_password': user['password']
+                })
+                send_mail(
+                    'eMR Account Information',
+                    '',
+                    settings.DEFAULT_FROM,
+                    [user['general_pratice_user'].user.email],
+                    fail_silently=True,
+                    html_message=html_message,
+                )
+            messages.success(request, 'Create User Successful!')
+            return redirect('instructions:view_pipeline')
+
+    return render(request, 'onboarding/emr_setup_stage_2.html', {
+        'surgery_form': surgery_form,
+        'user_formset': user_formset,
+        'bank_details_form': bank_details_form,
+    })

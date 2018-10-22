@@ -7,8 +7,8 @@ class OrganisationFeeAdmin(admin.ModelAdmin):
     form = OrganisationFeeForm
     fields = (
         'gp_practice',
-        'max_day_lvl_1', 'max_day_lvl_2', 'max_day_lvl_3',
-        'amount_rate_lvl_1', 'amount_rate_lvl_2', 'amount_rate_lvl_3'
+        'max_day_lvl_1', 'max_day_lvl_2', 'max_day_lvl_3', 'max_day_lvl_4',
+        'amount_rate_lvl_1', 'amount_rate_lvl_2', 'amount_rate_lvl_3', 'amount_rate_lvl_4',
     )
 
     class Media:
