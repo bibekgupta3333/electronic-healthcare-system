@@ -6,27 +6,45 @@ from .forms import BankDetailsEmrSetUpStage2Form
 from .models import EMRSetup
 
 
-def create_gp_user(user_form: dict, gp_organisation: OrganisationGeneralPractice) -> dict:
+def create_gp_user(gp_organisation: OrganisationGeneralPractice, user_form: dict=None, emr_setup: EMRSetup=None) -> dict:
     password = User.objects.make_random_password()
-    user = User.objects._create_user(
-        email=user_form['email'],
-        username="{}.{}".format(user_form['first_name'],user_form['last_name']),
-        password=password,
-        first_name=user_form['first_name'],
-        last_name=user_form['last_name'],
-        type=GENERAL_PRACTICE_USER,
-        is_staff=user_form['admin'],
-    )
+    if user_form:
+        if not User.objects.filter(email=user_form['email']).exists():
+            user = User.objects._create_user(
+                email=user_form['email'],
+                username="{}.{}".format(user_form['first_name'],user_form['last_name']),
+                password=password,
+                first_name=user_form['first_name'],
+                last_name=user_form['last_name'],
+                type=GENERAL_PRACTICE_USER,
+                is_staff=user_form['admin'],
+            )
 
-    general_pratice_user = GeneralPracticeUser.objects.create(
-        user=user,
-        title=user_form['title'],
-        role=user_form['role'],
-        organisation=gp_organisation,
-        code=user_form['gp_code'],
-        can_complete_amra=user_form['amra'],
-        can_complete_sars=user_form['sars'],
-    )
+            general_pratice_user = GeneralPracticeUser.objects.create(
+                user=user,
+                title=user_form['title'],
+                role=user_form['role'],
+                organisation=gp_organisation,
+                code=user_form['gp_code'],
+                can_complete_amra=user_form['amra'],
+                can_complete_sars=user_form['sars'],
+            )
+    elif emr_setup:
+        if not User.objects.filter(email=emr_setup.pm_email).exists():
+            gp_manager_user = User.objects._create_user(
+                email=emr_setup.pm_email,
+                username=emr_setup.pm_name,
+                password=password,
+                first_name=emr_setup.pm_name,
+                type=GENERAL_PRACTICE_USER,
+                is_staff=True,
+            )
+
+            general_pratice_user = GeneralPracticeUser.objects.create(
+                user=gp_manager_user,
+                role=GeneralPracticeUser.PRACTICE_MANAGER,
+                organisation=gp_organisation,
+            )
 
     return {
         'general_pratice_user': general_pratice_user,

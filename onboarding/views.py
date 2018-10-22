@@ -41,10 +41,15 @@ def send_email_emr(request, emr):
 
 def emr_setup_stage_2(request, emrsetup_id=None):
     emr_setup = get_object_or_404(EMRSetup, pk=emrsetup_id)
+    address = ''
+    if emr_setup.address_line1:
+        address += emr_setup.address_line1
+    if emr_setup.address_line2:
+        address += ' ' + emr_setup.address_line2
     surgery_form = SurgeryEmrSetUpStage2Form(initial={
         'surgery_name': emr_setup.surgery_name,
         'surgery_code': emr_setup.surgery_code,
-        'address': emr_setup.address_line1 + emr_setup.address_line2,
+        'address': address,
         'postcode': emr_setup.post_code,
         'surgery_tel_number': emr_setup.phone,
         'surgery_email': emr_setup.surgery_email
@@ -61,9 +66,10 @@ def emr_setup_stage_2(request, emrsetup_id=None):
             gp_organisation = create_gp_organisation(emr_setup, bank_details_form)
             gp_payments_fee = create_gp_payments_fee(bank_details_form, gp_organisation)
             created_user_list = []
+            create_gp_user(gp_organisation, emr_setup=emr_setup)
             for user in user_formset:
                 if user.is_valid() and user.cleaned_data:
-                    created_user_list.append(create_gp_user(user.cleaned_data, gp_organisation))
+                    created_user_list.append(create_gp_user(gp_organisation, user_form=user.cleaned_data))
 
             for user in created_user_list:
                 html_message = loader.render_to_string('onboarding/emr_setup_2_email.html', {
