@@ -116,6 +116,10 @@ class User(AbstractUser):
         else:
             return 'Patient User'
 
+    def __str__(self):
+        user_profile = self.userprofilebase
+        return ' '.join([user_profile.get_title_display(), self.first_name, self.last_name])
+
 
 class UserProfileBase(TimeStampedModel, models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -167,7 +171,8 @@ class ClientUser(UserProfileBase):
         verbose_name = 'Client User'
 
     def __str__(self):
-        return self.user.first_name
+        user = self.user
+        return ' '.join([self.get_title_display(), user.first_name, user.last_name])
 
 
 class GeneralPracticeUser(UserProfileBase):
@@ -195,7 +200,8 @@ class GeneralPracticeUser(UserProfileBase):
         verbose_name = 'General Practice User'
 
     def __str__(self):
-        return self.user.first_name
+        user = self.user
+        return ' '.join([self.get_title_display(), user.first_name, user.last_name])
 
 
 class Patient(UserProfileBase):
