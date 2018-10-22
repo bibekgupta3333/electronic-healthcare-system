@@ -70,7 +70,7 @@ def remove_user(request):
     else:
         messages.success(request, "Selected users have been deleted.")
 
-def count_gpusera(queryset):
+def count_gpusers(queryset):
     all_count = queryset.count()
     pmanager_count = queryset.filter(userprofilebase__generalpracticeuser__role=0).count()
     gp_count = queryset.filter(userprofilebase__generalpracticeuser__role=1).count()
