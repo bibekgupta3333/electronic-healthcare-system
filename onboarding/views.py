@@ -66,10 +66,14 @@ def emr_setup_stage_2(request, emrsetup_id=None):
             gp_organisation = create_gp_organisation(emr_setup, bank_details_form)
             gp_payments_fee = create_gp_payments_fee(bank_details_form, gp_organisation)
             created_user_list = []
-            create_gp_user(gp_organisation, emr_setup=emr_setup)
+            created_manager_user_dict = create_gp_user(gp_organisation, emr_setup=emr_setup)
+            if created_manager_user_dict:
+                created_user_list.append(created_manager_user_dict)
             for user in user_formset:
                 if user.is_valid() and user.cleaned_data:
-                    created_user_list.append(create_gp_user(gp_organisation, user_form=user.cleaned_data))
+                    created_user_dict = create_gp_user(gp_organisation, user_form=user.cleaned_data)
+                    if created_user_dict:
+                        created_user_list.append(created_user_dict)
 
             for user in created_user_list:
                 html_message = loader.render_to_string('onboarding/emr_setup_2_email.html', {

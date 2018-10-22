@@ -29,6 +29,10 @@ def create_gp_user(gp_organisation: OrganisationGeneralPractice, user_form: dict
                 can_complete_amra=user_form['amra'],
                 can_complete_sars=user_form['sars'],
             )
+            return {
+                'general_pratice_user': general_pratice_user,
+                'password': password
+            }
     elif emr_setup:
         if not User.objects.filter(email=emr_setup.pm_email).exists():
             gp_manager_user = User.objects._create_user(
@@ -46,10 +50,12 @@ def create_gp_user(gp_organisation: OrganisationGeneralPractice, user_form: dict
                 organisation=gp_organisation,
             )
 
-    return {
-        'general_pratice_user': general_pratice_user,
-        'password': password
-    }
+            return {
+                'general_pratice_user': general_pratice_user,
+                'password': password
+            }
+    else:
+        return {}
 
 
 def create_gp_organisation(emr_setup: EMRSetup, bank_details_form: BankDetailsEmrSetUpStage2Form) -> OrganisationGeneralPractice:
