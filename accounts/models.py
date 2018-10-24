@@ -117,8 +117,11 @@ class User(AbstractUser):
             return 'Patient User'
 
     def __str__(self):
-        user_profile = self.userprofilebase
-        return ' '.join([user_profile.get_title_display(), self.first_name, self.last_name])
+        title = ''
+        if hasattr(self, 'userprofilebase'):
+            user_profile = self.userprofilebase
+            title = user_profile.get_title_display()
+        return ' '.join([title, self.first_name, self.last_name])
 
 
 class UserProfileBase(TimeStampedModel, models.Model):
