@@ -25,9 +25,11 @@ class OrganisationFeeModelTest(TestCase):
             max_day_lvl_1=3,
             max_day_lvl_2=6,
             max_day_lvl_3=8,
+            max_day_lvl_4=10,
             amount_rate_lvl_1=70,
             amount_rate_lvl_2=50,
-            amount_rate_lvl_3=30
+            amount_rate_lvl_3=30,
+            amount_rate_lvl_4=20
         )
 
     def test_string_representation(self):

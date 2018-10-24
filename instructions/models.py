@@ -55,7 +55,7 @@ class Instruction(TimeStampedModel, models.Model):
     def reject(self, context):
         self.rejected_timestamp = timezone.now()
         self.rejected_reason = context.get('rejected_reason', None)
-        self.rejected_note = context.get('rejected_note', None)
+        self.rejected_note = context.get('rejected_note', '')
         self.status = INSTRUCTION_STATUS_REJECT
         self.send_reject_email([self.client_user.user.email])
         if self.gp_user and self.gp_user.role == GeneralPracticeUser.SARS_RESPONDER:
@@ -70,8 +70,8 @@ class Instruction(TimeStampedModel, models.Model):
             'MediData',
             to_email,
             fail_silently=False,
-            auth_user=get_env_variable('SENDGRID_USER'),
-            auth_password=get_env_variable('SENDGRID_PASS'),
+            auth_user=settings.EMAIL_HOST_USER,
+            auth_password=settings.EMAIL_HOST_PASSWORD,
         )
 
     # JT - this is not a nice function. Should be rewritten with one function

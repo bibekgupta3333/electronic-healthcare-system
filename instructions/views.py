@@ -20,12 +20,6 @@ from organisations.views import get_nhs_data
 from template.forms import TemplateInstructionForm
 from common.functions import multi_getattr, get_env_variable
 from medicalreport.dummy_models import DummyInstruction
-
-from django.conf import settings
-PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
-DUMMY_EMAIL_LIST = settings.DUMMY_EMAIL_LIST
-SITE_NAME = settings.SITE_NAME
-
 from snomedct.models import SnomedConcept
 
 import pytz
@@ -35,6 +29,7 @@ import ast
 from django.conf import settings
 PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
 DUMMY_EMAIL_LIST = settings.DUMMY_EMAIL_LIST
+SITE_NAME = settings.SITE_NAME
 
 
 def count_instructions(user, gp_practice_id, client_organisation):

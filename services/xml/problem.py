@@ -1,24 +1,24 @@
 from .xml_base import XMLModelBase
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 
 class Problem(XMLModelBase):
     XPATH = './/*[Problem]'
 
-    def is_active(self) -> bool:
+    def is_active(self) -> Optional[bool]:
         value = self.get_element_text('Problem/ProblemStatus')
         if not value:
             return None
         return value == '1'
 
-    def is_past(self) -> bool:
+    def is_past(self) -> Optional[bool]:
         value = self.get_element_text('Problem/ProblemStatus')
         if not value:
             return None
         return value == '0'
 
-    def is_significant(self) -> bool:
+    def is_significant(self) -> Optional[bool]:
         value = self.get_element_text('Problem/Significance')
         if not value:
             return None
@@ -29,7 +29,7 @@ class Problem(XMLModelBase):
             return ''
         return self.get_element_text('Problem/EndDate')
 
-    def parsed_end_date(self) -> datetime.date:
+    def parsed_end_date(self) -> Optional[datetime.date]:
         end_date = self.end_date()
         if not end_date:
             return None

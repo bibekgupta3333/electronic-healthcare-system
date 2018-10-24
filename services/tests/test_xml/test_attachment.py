@@ -1,6 +1,5 @@
 from services.tests.xml_test_case import XMLTestCase
 from services.xml.attachment import Attachment
-from django.test import tag
 
 
 class AttachmentTest(XMLTestCase):
@@ -29,7 +28,3 @@ class AttachmentTest(XMLTestCase):
             [".//ConsultationElement[Attachment/GUID='387678']"],
             self.attachments[0].xpaths()
         )
-
-    @tag('notimplemented')
-    def test_xpaths_for_attachment_in_attachment_list(self):
-        self.fail('Not implemented')

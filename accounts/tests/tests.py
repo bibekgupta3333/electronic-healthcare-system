@@ -46,7 +46,7 @@ class UserTestCase(TestCase):
         self.medidata_user2 = User.objects._create_user(email='medidata_user2@mohara.co', username='medidata_user2', password='medi2018', type=MEDIDATA_USER)
 
         # create claim organisation's user
-        ClientUser.objects.create(user=self.claim_user_admin, organisation=self.claim_organisation)
+        ClientUser.objects.create(user=self.claim_user_admin, organisation=self.claim_organisation, role=ClientUser.CLIENT_ADMIN)
         ClientUser.objects.create(user=self.claim_user2, organisation=self.claim_organisation)
         ClientUser.objects.create(user=self.claim_user3, organisation=self.claim_organisation)
 
@@ -55,8 +55,8 @@ class UserTestCase(TestCase):
         ClientUser.objects.create(user=self.underwriter_user2, organisation=self.underwriter_organisation)
 
         # create gp organisation's user
-        GeneralPracticeUser.objects.create(user=self.gp_user_admin, organisation=self.gp_organisation)
-        GeneralPracticeUser.objects.create(user=self.gp_user2, organisation=self.gp_organisation)
+        GeneralPracticeUser.objects.create(user=self.gp_user_admin, organisation=self.gp_organisation, role=GeneralPracticeUser.PRACTICE_MANAGER)
+        GeneralPracticeUser.objects.create(user=self.gp_user2, organisation=self.gp_organisation, role=GeneralPracticeUser.GENERAL_PRACTICE)
 
         # create medidata organisation's user
         MedidataUser.objects.create(user=self.medidata_user1, organisation=self.medidata_organisation)

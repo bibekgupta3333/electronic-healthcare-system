@@ -1,6 +1,7 @@
 from django.conf import settings
 import urllib
 import requests
+
 from ..models import EmisAPIConfig
 from accounts.models import Patient
 
