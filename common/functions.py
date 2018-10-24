@@ -20,4 +20,4 @@ def get_env_variable(name):
     try:
         return os.environ[name]
     except KeyError:
-        raise ImproperlyConfigured('Environment variable {name} not found.'.format(name=name))
+        raise ImproperlyConfigured('Environment variable {env_name} not found.'.format(env_name=name))
