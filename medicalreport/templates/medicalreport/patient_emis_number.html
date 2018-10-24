@@ -3,6 +3,7 @@
 {% load custom_filters %}
 {% load staticfiles %}
 {% load bootstrap4 %}
+{% load get_permissions %}
 {% bootstrap_css %}
 {% bootstrap_javascript jquery='full' %}
 {% bootstrap_messages %}
@@ -91,9 +92,11 @@
                   <div class="card-footer">
                       <label class="text-footer">Reject this request if there are no suitable matching patients:</label>
                       <div class="btn-group reject-btn">
-                          <button class="btn btn-danger dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Reject Request
-                          </button>
+                          {% if user.id|reject_instruction:instruction.id %}
+                              <button class="btn btn-danger dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Reject Request
+                              </button>
+                          {% endif %}
                           <div class="dropdown-menu dropdown-menu-right reject" aria-labelledby="dropdownMenuButton">
                               {% for reject_type in reject_types %}
                               <div id="rejected_reason-{{reject_type.0}}" data-toggle="modal" data-target="#modal-reject" class="dropdown-item" onclick="updateRejectType(this);">

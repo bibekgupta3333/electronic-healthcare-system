@@ -15,7 +15,7 @@
 {% block Content %}
         <div class="row" >
             <div class="col-md-3">
-                {% if user_type != "medidata" %}
+                {% if user_type == "gp" and user.get_short_my_role == "Manager" or user_type == "client" %}
                     <a href="/accounts/create_user" class="btn btn-primary" id="addUserButton">Add New</a>
                 {% endif %}
             </div>
@@ -41,7 +41,7 @@
                     {% endfor %}
             </div>
         </div>
-        <form action="{% url 'accounts:manage_user' %}" method="POST" id="tableForm">
+        <form action="{% url 'accounts:manage_user' %}" method="POST" id="tableForm" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="row">
                 <div class="col-md-2">
@@ -95,6 +95,39 @@
                     {% bootstrap_pagination  page=table.page pages_to_show=10 size='small' %}
                 </div>
             </div>
+        </form>
+        <form action="{% url 'accounts:view_users' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <table class="table table-striped table-bordered table-hover dataTable no-footer">
+                {{ permission_formset.management_form }}
+                <thead>
+                    {% for form in permission_formset.forms %}
+                        {% if forloop.first %}
+                            {% for field in form %}
+                                {% if field.label != 'Id' %}
+                                    <th>{{field.label}}</th>
+                                {% else %}
+                                    <th style="display: none">{{field.label}}</th>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                </thead>
+                <tbody>
+                    {% for form in permission_formset.forms %}
+                        <tr>
+                            {% for field in form %}
+                                {% if field.label != 'Id' %}
+                                    <td>{{field}}</td>
+                                {% else %}
+                                    <td style="display: none">{{field}}</td>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-primary">Update Permission</button>
         </form>
 
 

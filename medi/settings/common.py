@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'snomedct',
     'template',
     'onboarding',
+    'permissions',
     'payment'
 ]
 
