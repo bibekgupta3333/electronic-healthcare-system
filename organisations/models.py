@@ -73,14 +73,14 @@ class OrganisationGeneralPractice(OrganisationBase):
     )
 
     operating_system = models.CharField(max_length=2, choices=GP_OP_SYS_CHOICES)
-    operating_system_socket_endpoint = models.CharField(max_length=255)
-    operating_system_auth_token = models.CharField(max_length=255)
+    operating_system_socket_endpoint = models.CharField(max_length=255, blank=True)
+    operating_system_auth_token = models.CharField(max_length=255, blank=True)
     practice_code = models.CharField(max_length=255)
-    payment_timing = models.CharField(max_length=2, choices=PAYMENT_TIMING_CHOICES)
+    payment_timing = models.CharField(max_length=2, choices=PAYMENT_TIMING_CHOICES, blank=True)
     payment_bank_holder_name = models.CharField(max_length=255)
     payment_bank_sort_code = models.CharField(max_length=255)
     payment_bank_account_number = models.CharField(max_length=255)
-    payment_preference = models.CharField(max_length=255)
+    payment_preference = models.CharField(max_length=255, blank=True)
 
     class Meta:
         verbose_name = 'Organisation GeneralPractice'

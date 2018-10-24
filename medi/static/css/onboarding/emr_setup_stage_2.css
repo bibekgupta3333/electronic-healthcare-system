@@ -1,0 +1,13 @@
+.emrSetupStage2 {
+    color: #333333;
+}
+
+.red{
+    color: #e80000;
+}
+
+#consentCheckBox {
+    margin-top: 7px;
+    width: 23px;
+    height: 23px;
+}

@@ -1,9 +1,9 @@
 from .models import User, UserProfileBase, GeneralPracticeUser
-from .models import GENERAL_PRACTICE_USER, CLIENT_USER
+from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from django.contrib import messages
 from django.core.mail import send_mail
 from .forms import NewGPForm, NewClientForm
-from .tables import GPUserTable, ClientUserTable
+from .tables import UserTable
 from common.functions import get_env_variable
 from django.conf import settings
 DEFAULT_FROM = settings.DEFAULT_FROM
@@ -96,23 +96,44 @@ def count_clientusers(queryset):
     return overall_users_number
 
 
-def get_users_count(user, query_set):
-    if hasattr(user.userprofilebase, 'generalpracticeuser'):
-        return count_gpusers(query_set)
-    elif hasattr(user.userprofilebase, 'clientuser'):
-        return count_clientusers(query_set)
+def count_users(queryset):
+    all_count = queryset.count()
+    admin_count = queryset.filter(userprofilebase__clientuser__role=0).count()
+    client_count = queryset.filter(userprofilebase__clientuser__role=1).count()
+    pmanager_count = queryset.filter(userprofilebase__generalpracticeuser__role=0).count()
+    gp_count = queryset.filter(userprofilebase__generalpracticeuser__role=1).count()
+    sars_count = queryset.filter(userprofilebase__generalpracticeuser__role=2).count()
+    medi_count = queryset.filter(type=MEDIDATA_USER).count()
+    overall_users_number = {
+        'All': all_count,
+        'Admin': admin_count,
+        'Client': client_count,
+        'Manager': pmanager_count,
+        'GP': gp_count,
+        'SARS': sars_count,
+        'Medidata': medi_count
+    }
+    return overall_users_number
 
 
-def get_table_data(user, query_set):
+def get_table_data(user, query_set, filter_query):
     if hasattr(user.userprofilebase, 'generalpracticeuser'):
         return {
             "user_type": "gp",
-            "table": GPUserTable(query_set)
+            "overall_users_number": count_gpusers(query_set),
+            "table": UserTable(filter_query)
         }
     elif hasattr(user.userprofilebase, 'clientuser'):
         return {
             "user_type": "client",
-            "table": ClientUserTable(query_set)
+            "overall_users_number": count_clientusers(query_set),
+            "table": UserTable(filter_query)
+        }
+    elif hasattr(user.userprofilebase, 'medidatauser'):
+        return {
+            "user_type": "medidata",
+            "overall_users_number": count_users(query_set),
+            "table": UserTable(filter_query)
         }
 
 

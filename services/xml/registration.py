@@ -6,17 +6,32 @@ from typing import List
 
 class Registration(XMLBase):
     XPATH = './/Registration'
+    REGISTRATION_STATUS_XPATH = './/RegistrationStatus'
     NAME_XPATHS = ['Title', 'FirstNames', 'FamilyName']
     ADDRESS_XPATHS = ['HouseNameFlat', 'Street', 'Village', 'Town', 'County', 'PostCode']
 
     def date_of_birth(self) -> str:
         return self.get_element_text('DateOfBirth')
 
+    def date_of_registration(self) -> str:
+        value = self.parsed_xml.find('CurrentStatus/{}'.format('StatusDate'))
+        if value is None:
+            return ''
+        if value.text is None:
+            return ''
+        return value.text.strip() or ''
+
     def parsed_date_of_birth(self) -> datetime.date:
         date_of_birth = self.date_of_birth()
         if not date_of_birth:
             return None
         return datetime.strptime(date_of_birth, "%d/%m/%Y").date()
+
+    def parsed_registartion_status_date(self) ->datetime.date:
+        regisstration_data = self.date_of_registration()
+        if not regisstration_data:
+            return None
+        return datetime.strptime(regisstration_data, "%d/%m/%Y").date()
 
     def sex(self) -> str:
         return self.get_element_text('Sex')

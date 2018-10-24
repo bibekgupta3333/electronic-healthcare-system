@@ -32,6 +32,9 @@ class MedicalRecord(XMLBase):
     def registration(self) -> Registration:
         return Registration(self.parsed_xml.find(Registration.XPATH))
 
+    def registration_status(self) -> Registration:
+        return Registration(self.parsed_xml.find(Registration.REGISTRATION_STATUS_XPATH))
+
     def acute_medications(self) -> List[Medication]:
         return [m for m in self.__medications() if m.is_acute()]
 

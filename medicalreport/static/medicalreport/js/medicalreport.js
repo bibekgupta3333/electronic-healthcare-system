@@ -37,7 +37,7 @@ function subMitMedicalReport(event){
     $('#medicalReportForm').submit();
 }
 
-function saveReport(){
+function saveReport(inst = false){
     var post_url = $('#medicalReportForm').attr("action"); //get form action url
     var request_method = $('#medicalReportForm').attr("method"); //get form GET/POST method
     var form_data = $('#medicalReportForm').serialize(); //Encode form elements for submission
@@ -47,7 +47,9 @@ function saveReport(){
         data : form_data
     })
     .done(function(){
-        create_alert('Report has been saved.', 'success');
+        if (!inst) {
+            create_alert('Report has been saved.', 'success');
+        }
     })
     .fail(function() {
         create_alert('Something went wrong, please try again.', 'error');

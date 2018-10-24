@@ -11,6 +11,7 @@ SEX_CHOICES = (
 )
 
 TITLE_CHOICE = (
+    ('', '----'),
     ('DR', 'Dr.'),
     ('MR', 'Mr.'),
     ('MRS', 'Mrs.'),
@@ -76,25 +77,48 @@ class User(AbstractUser):
             elif hasattr(self.userprofilebase, 'clientuser'):
                 organisation = self.userprofilebase.clientuser.organisation
                 return User.objects.filter(userprofilebase__clientuser__organisation=organisation)
+            elif hasattr(self.userprofilebase, 'medidatauser'):
+                return User.objects.filter(type__in=[MEDIDATA_USER, CLIENT_USER, GENERAL_PRACTICE_USER])
             else:
                 return User.objects.all()
         else:
             return None
 
+    def get_short_my_role(self):
+        profile = self.userprofilebase
+        if self.type == MEDIDATA_USER:
+            return 'Medidata'
+        elif self.type == CLIENT_USER and hasattr(profile, 'clientuser'):
+            return profile.clientuser.get_role_display() or '--'
+        elif self.type == GENERAL_PRACTICE_USER and hasattr(profile, 'generalpracticeuser'):
+            return profile.generalpracticeuser.get_role_display() or '--'
+        else:
+            return 'Patient'
+
     def get_my_role(self):
+        profile = self.userprofilebase
         if self.type == MEDIDATA_USER:
             return 'Medidata User'
-        else:
-            if self.is_staff:
-                if self.type == GENERAL_PRACTICE_USER:
-                    return 'General Practice Manager'
-                elif self.type == CLIENT_USER:
-                    return 'Client Admin'
+        elif self.type == CLIENT_USER and hasattr(profile, 'clientuser'):
+            role = profile.clientuser.role
+            if role == ClientUser.CLIENT_ADMIN:
+                return 'Client Admin'
             else:
-                if self.type == GENERAL_PRACTICE_USER:
-                    return 'General Practice User'
-                elif self.type == CLIENT_USER:
-                    return 'Client User'
+                return 'Client User'
+        elif self.type == GENERAL_PRACTICE_USER and hasattr(profile, 'generalpracticeuser'):
+            role = profile.generalpracticeuser.role
+            if role == GeneralPracticeUser.PRACTICE_MANAGER:
+                return 'General Practice Manager'
+            elif role == GeneralPracticeUser.GENERAL_PRACTICE:
+                return 'General Practice User'
+            else:
+                return 'SARS'
+        else:
+            return 'Patient User'
+
+    def __str__(self):
+        user_profile = self.userprofilebase
+        return ' '.join([user_profile.get_title_display(), self.first_name, self.last_name])
 
 
 class UserProfileBase(TimeStampedModel, models.Model):
@@ -147,7 +171,8 @@ class ClientUser(UserProfileBase):
         verbose_name = 'Client User'
 
     def __str__(self):
-        return self.user.first_name
+        user = self.user
+        return ' '.join([self.get_title_display(), user.first_name, user.last_name])
 
 
 class GeneralPracticeUser(UserProfileBase):
@@ -156,6 +181,7 @@ class GeneralPracticeUser(UserProfileBase):
     SARS_RESPONDER = 2
 
     ROLE_CHOICES = (
+        ('', '----'),
         (PRACTICE_MANAGER, 'Manager'),
         (GENERAL_PRACTICE, 'GP'),
         (SARS_RESPONDER, 'SARS')
@@ -174,7 +200,8 @@ class GeneralPracticeUser(UserProfileBase):
         verbose_name = 'General Practice User'
 
     def __str__(self):
-        return self.user.first_name
+        user = self.user
+        return ' '.join([self.get_title_display(), user.first_name, user.last_name])
 
 
 class Patient(UserProfileBase):

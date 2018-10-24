@@ -149,7 +149,7 @@ USE_TZ = True
 STATIC_ROOT = 'static'
 STATIC_URL = '/static/'
 
-EMIS_API_HOST = 'http://localhost:3000/emis'
+EMIS_API_HOST = 'http://medi2data.net:9443'
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static/'),

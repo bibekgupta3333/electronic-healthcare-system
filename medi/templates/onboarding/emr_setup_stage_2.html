@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% load static %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% bootstrap_messages %}
+
+{% block ExtraHead %}
+    <link rel="stylesheet" href="{% static 'css/onboarding/emr_setup_stage_2.css' %}">
+{% endblock %}
+
+{% block Content %}
+    <div class="col-md-12 pt-3 pb-3 bg-white emrSetupStage2">
+        <form method="POST" enctype="multipart/form-data" id="newInstructionForm">
+            {% csrf_token %}
+            <div class="col-md-12">
+                <h2><b>eMR Set Up-Stage 2</b></h2>
+                <p class="mt-3 mb-3">To be completed by an authorised member of the surgery only.</p>
+            </div>
+            <div class="col-md-12">
+                <h4 class="mb-3"><b>Surgery details</b></h4>
+                <div class="row">
+                    <div class="col-md-2"><b>Surgery Name</b></div>
+                    <div class="col-md-10">
+                        {% bootstrap_field surgery_form.surgery_name %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2"><b>Surgery Code</b></div>
+                    <div class="col-md-4">
+                        {% bootstrap_field surgery_form.surgery_code placeholder='' %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">Address</div>
+                    <div class="col-md-4">
+                        {% bootstrap_field surgery_form.address placeholder='' %}
+                    </div>
+                    <div class="col-md-2">Postcode</div>
+                    <div class="col-md-4">
+                        {% bootstrap_field surgery_form.postcode placeholder='' %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">Surgery Tel number</div>
+                    <div class="col-md-4">
+                        {% bootstrap_field surgery_form.surgery_tel_number placeholder='' %}
+                    </div>
+                    <div class="col-md-2">Surgery email</div>
+                    <div class="col-md-4">
+                        {% bootstrap_field surgery_form.surgery_email placeholder='' %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 mt-5">
+                <h4><b>eMr Users <span class="red">*</span></b></h4>
+                <p class="mt-3 mb-3 red">
+                    Please complete details of people who will be using eMR for SARS, Medical Reports. management of
+                    workflow and payment of fees.
+                </p>
+                {{ user_formset.management_form }}
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th style="width: 10%;">Title*</th>
+                            <th style="width: 14%;">First Name*</th>
+                            <th style="width: 14%;">Surname*</th>
+                            <th style="width: 14%;">Email*</th>
+                            <th style="width: 13%;">Role(GP, Other)</th>
+                            <th style="width: 14%;">GP Code if any</th>
+                            <th style="width: 7%;">AMRA</th>
+                            <th style="width: 7%;">SARS</th>
+                            <th style="width: 7%;">Admin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for form in user_formset.forms %}
+                        <tr>
+                            <td>{% bootstrap_field form.title placeholder='' %}</td>
+                            <td>{% bootstrap_field form.first_name placeholder='' %}</td>
+                            <td>{% bootstrap_field form.last_name placeholder='' %}</td>
+                            <td>{% bootstrap_field form.email placeholder='' %}</td>
+                            <td>{% bootstrap_field form.role placeholder='' %}</td>
+                            <td>{% bootstrap_field form.gp_code placeholder='' %}</td>
+                            <td class="text-center align-middle">{% bootstrap_field form.amra size='large' placeholder='' %}</td>
+                            <td class="text-center align-middle">{% bootstrap_field form.sars size='large' placeholder='' %}</td>
+                            <td class="text-center align-middle">{% bootstrap_field form.admin size='large' placeholder='' %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            </div>
+            <div class="col-md-12 mt-5">
+                <h4 class="mb-4"><b>Bank Details for Fee Payments</b></h4>
+                 <div class="row">
+                    <div class="col-md-3">Bank Account Name</div>
+                    <div class="col-md-6">
+                        {% bootstrap_field bank_details_form.bank_account_name placeholder='' %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">Bank Account Number</div>
+                    <div class="col-md-4">
+                        {% bootstrap_field bank_details_form.bank_account_number placeholder='' %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">Bank Account Sort Code</div>
+                    <div class="col-md-4">
+                        {% bootstrap_field bank_details_form.bank_account_sort_code placeholder='' %}
+                    </div>
+                </div>
+                <h5>Your fee per medical report</h5>
+                <div class="row">
+                    <div class="col-md-3"><b>Received within 3 days</b></div>
+                    <div class="col-md-3">
+                        {% bootstrap_field bank_details_form.received_within_3_days form_group_class='form-group input-group' placeholder='' %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3"><b>Received within 4-6 days</b></div>
+                    <div class="col-md-3">
+                        {% bootstrap_field bank_details_form.received_within_4_to_6_days form_group_class='form-group input-group' placeholder='' %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3"><b>Received within 7-10 days</b></div>
+                    <div class="col-md-3">
+                        {% bootstrap_field bank_details_form.received_within_7_to_10_days form_group_class='form-group input-group' placeholder='' %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3"><b>Received after 10 days</b></div>
+                    <div class="col-md-3">
+                        {% bootstrap_field bank_details_form.received_after_10_days form_group_class='form-group input-group' placeholder='' %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3"><b>Name of person completing this form</b></div>
+                    <div class="col-md-4">
+                        {% bootstrap_field bank_details_form.completed_by placeholder='' %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3"><b>Job title</b></div>
+                    <div class="col-md-4">
+                        {% bootstrap_field bank_details_form.job_title placeholder='' %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 mt">
+                <div class="row">
+                    <div class="col-md-1 text-center">
+                        <input class="form-control-lg" type="checkbox" id="consentCheckBox">
+                    </div>
+                    <div class="col-md-10 p-0">
+                        <label for="consentCheckBox">
+                            I consent to MediData Exchange Ltd securely retaining this information and to be able to contact the Surgery about eMR via contact details provided.
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 mt">
+                <div class="row">
+                    <div class="col-md-2 mt-3">
+                        {% bootstrap_button content='Submit' button_type='submit' size='medium' button_class='btn btn-primary'  %}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block Script %}
+    <script src="{% static 'js/jquery.formset.js' %}"></script>
+    <script>
+    $(document).ready(function () {
+
+        $('#min_fee_payments').on('change keyup', function () {
+            $('#level_1_payments').val(($(this).val()*0.85).toFixed(2));
+            $('#level_2_payments').val(($('#level_1_payments').val()*0.85).toFixed(2));
+            $('#level_3_payments').val(($('#level_2_payments').val()*0.85).toFixed(2));
+        });
+
+        $('input[type=number]').each(function (idx, element) {
+            $('<div class="input-group-prepend">\n' +
+            '    <div class="input-group-text">\n' +
+            '      <i class="fas fa-pound-sign"></i>\n' +
+            '    </div>\n' +
+            '  </div>').insertBefore(element);
+        });
+
+        $('#min_fee_payments').trigger('change');
+
+        $(':input[type="submit"]').prop('disabled', true);
+        $("#consentCheckBox").change(function() {
+            if(this.checked) {
+                $(':input[type="submit"]').prop('disabled', false);
+            } else {
+                $(':input[type="submit"]').prop('disabled', true);
+            }
+        });
+    });
+    </script>
+{% endblock %}
