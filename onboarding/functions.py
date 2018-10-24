@@ -65,6 +65,7 @@ def create_gp_organisation(emr_setup: EMRSetup, bank_details_form: BankDetailsEm
 
     gp_organisation = OrganisationGeneralPractice.objects.create(
         trading_name=emr_setup.surgery_name,
+        accept_policy=emr_setup.accept_policy,
         legal_name=emr_setup.surgery_name,
         address=gp_address,
         contact_telephone=emr_setup.phone,
