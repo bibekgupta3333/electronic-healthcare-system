@@ -347,3 +347,8 @@ h1 {
 .right {
     float: right;
 }
+
+.modal-select-patient {
+    color: #797979; !important;
+    background-color: white; !important;
+}

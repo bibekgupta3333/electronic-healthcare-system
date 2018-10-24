@@ -10,7 +10,7 @@ from django_tables2 import RequestConfig
 from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest, Setting
 from .tables import InstructionTable
 from .model_choices import *
-from .forms import ScopeInstructionForm, AdditionQuestionFormset, AllocateInstructionForm
+from .forms import ScopeInstructionForm, AdditionQuestionFormset
 from accounts.models import User, Patient, GeneralPracticeUser
 from accounts.models import PATIENT_USER, GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from accounts.forms import PatientForm, GPForm
@@ -350,22 +350,6 @@ def upload_consent(request, instruction_id):
 def allocate_instruction(request, instruction_id):
     header_title = "GP Allocation"
     instruction = get_object_or_404(Instruction, pk=instruction_id)
-    allocate_form = AllocateInstructionForm(user=request.user)
-
-    if request.method == "POST":
-        allocate_form = AllocateInstructionForm(request.user, request.POST)
-        if allocate_form.is_valid():
-            role = request.user.userprofilebase.generalpracticeuser.role
-            if allocate_form.cleaned_data['gp_practitioner']:
-                instruction.gp_user = allocate_form.cleaned_data['gp_practitioner'].userprofilebase.generalpracticeuser
-            elif role in [GeneralPracticeUser.GENERAL_PRACTICE, GeneralPracticeUser.SARS_RESPONDER]:
-                instruction.gp_user = request.user.userprofilebase.generalpracticeuser
-                instruction.status = INSTRUCTION_STATUS_PROGRESS
-            instruction.save()
-            return redirect('instructions:view_pipeline')
-        else:
-            messages.error(request, 'Invalid GP User')
-
     patient = instruction.patient
     # Initial Patient Form
     patient_form = PatientForm(
@@ -397,12 +381,7 @@ def allocate_instruction(request, instruction_id):
         }
     )
     # Initial Scope/Consent Form
-    scope_form = ScopeInstructionForm(
-        user=request.user,
-        initial={
-            'type': instruction.type,
-        }
-    )
+    scope_form = ScopeInstructionForm(user=request.user, initial={'type': instruction.type, })
 
     consent_type = 'pdf'
     consent_extension = ''
@@ -430,7 +409,7 @@ def allocate_instruction(request, instruction_id):
         'nhs_address': nhs_address,
         'condition_of_interest': condition_of_interest,
         'consent_form_data': consent_form_data,
-        'allocate_form': allocate_form,
+        'instruction_id': instruction_id,
     })
 
 

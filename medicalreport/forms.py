@@ -2,6 +2,7 @@ from django import forms
 from django.contrib import messages
 
 from .models import AmendmentsForRecord
+from accounts.models import User, GeneralPracticeUser
 
 
 class MedicalReportFinaliseSubmitForm(forms.Form):
@@ -46,4 +47,26 @@ class MedicalReportFinaliseSubmitForm(forms.Form):
             self.cleaned_data['prepared_by'] = ''
 
         return self.cleaned_data
+
+
+class AllocateInstructionForm(forms.Form):
+    PROCEED_REPORT = 0
+    ALLOCATE = 1
+    RETURN_TO_PIPELINE = 2
+    ALLOCATE_OPTIONS_CHOICE = (
+        (PROCEED_REPORT, 'Proceed with report'),
+        (ALLOCATE, 'Allocate to'),
+        (RETURN_TO_PIPELINE, 'Return to pipeline view')
+    )
+    allocate_options = forms.ChoiceField(choices=ALLOCATE_OPTIONS_CHOICE, widget=forms.RadioSelect())
+    gp_practitioner = forms.ModelChoiceField(queryset=None, required=False)
+
+    def __init__(self, user=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user:
+            organisation = user.userprofilebase.generalpracticeuser.organisation
+            queryset = User.objects.filter(userprofilebase__generalpracticeuser__organisation=organisation)
+            queryset = queryset.exclude(userprofilebase__generalpracticeuser__role=GeneralPracticeUser.PRACTICE_MANAGER)
+            self.fields['gp_practitioner'] = forms.ModelChoiceField(queryset,
+                                                                    required=False)
 
