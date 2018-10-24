@@ -227,6 +227,7 @@ def new_instruction(request):
     template_form = TemplateInstructionForm()
 
     if request.method == "POST":
+        gp_form = GPForm(request.POST)
         patient_form = PatientForm(request.POST)
         addition_question_formset = AdditionQuestionFormset(request.POST)
         raw_common_condition = request.POST.getlist('common_condition')
@@ -238,6 +239,9 @@ def new_instruction(request):
         # Is from NHS or gpOrganisation
         gp_practice_code = request.POST.get('gp_practice', None)
         gp_practice = OrganisationGeneralPractice.objects.filter(practice_code=gp_practice_code).first()
+        gp_practice_request = HttpRequest()
+        gp_practice_request.GET['code'] = gp_practice_code
+        nhs_address = get_nhs_data(gp_practice_request, need_dict=True)['address']
         if not gp_practice:
             gp_practice = NHSgpPractice.objects.filter(code=gp_practice_code).first()
 
@@ -307,6 +311,7 @@ def new_instruction(request):
                 'patient_form': patient_form,
                 'nhs_form': nhs_form,
                 'gp_form': gp_form,
+                'nhs_address': nhs_address,
                 'scope_form': scope_form,
                 'addition_question_formset': addition_question_formset,
                 'template_form': template_form,
