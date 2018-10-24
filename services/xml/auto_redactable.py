@@ -12,13 +12,6 @@ def years_ago(years: int, current_date: date) -> date:
     return current_date - relativedelta(years=years)
 
 
-def auto_redact_by_conditions(models, instruction):
-    snomed_concepts, readcodes = instruction.snomed_concepts_readcodes()
-    redactor = ConditionsRedactor(concepts=snomed_concepts, codes=readcodes)
-    filtered_list = filter(lambda m: redactor.is_redact(m) is not True, models)
-    return list(filtered_list)
-
-
 def auto_redact_by_conditions(
         models: Iterable[XMLModelBase],
         instruction: Instruction
