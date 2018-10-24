@@ -30,6 +30,9 @@ class InstructionTable(tables.Table):
             self.columns.hide('gp_practice')
         self.user = request.user
 
+    def render_client_user(self, value):
+        return format_html(value.user.userprofilebase.clientuser.organisation.trading_name)
+
     def render_patient(self, value):
         return format_html('{} {} <br><b>NHS: </b>{}', value.user.first_name, value.user.last_name, value.nhs_number)
 
