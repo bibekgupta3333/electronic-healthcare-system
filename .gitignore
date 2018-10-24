@@ -113,3 +113,6 @@ venv.bak/
 Dockerfile
 config/nginx/
 docker-compose.yml
+
+#Media files
+medi/media
