@@ -13,7 +13,11 @@
 
 {% block Content %}
     {% if created %}
-        <h1>eMR setup successfully</h1>
+        <p>Thank you for setting up eMR. A completely free tool that allows you to process SARs and AMRA requests at a click of a button.
+
+A confirmation email has been sent to your registered Surgery email address. If one was not provided, a member of the MediData will be in touch shortly.
+
+If you have any queries please email us on emr@medi2data.com or contact our support team on 03333 0 55774</p>
     {% else %}
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
