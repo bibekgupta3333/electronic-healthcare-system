@@ -103,6 +103,7 @@ def edit_report(request, instruction_id):
 
     raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
+    questions = instruction.addition_questions.all()
     dummy_instruction = DummyInstruction(instruction)
     finalise_submit_form = MedicalReportFinaliseSubmitForm(
         initial={
@@ -118,6 +119,7 @@ def edit_report(request, instruction_id):
         'redaction': redaction,
         'instruction': dummy_instruction,
         'finalise_submit_form': finalise_submit_form,
+        'questions': questions,
     })
 
 

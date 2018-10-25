@@ -161,3 +161,8 @@ def form_comments(context):
     }
 
 
+@register.inclusion_tag('medicalreport/inclusiontags/form_addition_answers.html', takes_context=True)
+def form_addition_answers(context):
+    return {
+        'questions': context['questions']
+    }

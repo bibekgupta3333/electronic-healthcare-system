@@ -114,7 +114,7 @@ class Instruction(TimeStampedModel, models.Model):
 
 
 class InstructionAdditionQuestion(models.Model):
-    instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)
+    instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE, related_name='addition_questions')
     question = models.CharField(max_length=255, blank=True)
     response_mandatory = models.BooleanField(default=False)
 
@@ -123,6 +123,17 @@ class InstructionAdditionQuestion(models.Model):
 
     def __str__(self):
         return self.question
+
+
+class InstructionAdditionAnswer(models.Model):
+    question = models.OneToOneField(InstructionAdditionQuestion, on_delete=models.CASCADE)
+    answer = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = "Instruction Addition Answer"
+
+    def __str__(self):
+        return self.answer
 
 
 class InstructionConditionsOfInterest(models.Model):
