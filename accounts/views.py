@@ -6,7 +6,10 @@ from django.core.mail import send_mail
 from django.db.models import Q
 from django.shortcuts import redirect
 from django.http import JsonResponse
+from django.forms import modelformset_factory
 
+from permissions.forms import InstructionPermissionForm
+from permissions.models import InstructionPermission
 from common.functions import multi_getattr, get_env_variable
 from payment.models import OrganisationFee
 from django_tables2 import RequestConfig
@@ -95,6 +98,12 @@ def view_users(request):
         filter_status = int(request.COOKIES.get('status', -1))
         filter_user_type = request.COOKIES.get('user_type', None)
 
+    if request.method == 'POST':
+        permission_set = modelformset_factory(InstructionPermission, form=InstructionPermissionForm, extra=0)
+        permission_formset = permission_set(request.POST, form_kwargs={'empty_permitted': False})
+        if permission_formset.is_valid():
+            permission_formset.save()
+
     if filter_type == '':
         filter_type = "active"
     user_types = [MEDIDATA_USER, CLIENT_USER, GENERAL_PRACTICE_USER]
@@ -117,12 +126,16 @@ def view_users(request):
     table_data = get_table_data(user, query_set, filter_query)
     RequestConfig(request, paginate={'per_page': 5}).configure(table_data['table'])
     table_data['table'].order_by = request.GET.get('sort', '-created')
+    permissions = InstructionPermission.objects.all()
+    permission_set = modelformset_factory(InstructionPermission, form=InstructionPermissionForm, extra=(3-permissions.count()))
+    permission_formset = permission_set(queryset=permissions)
 
     response = render(request, 'user_management/user_management.html', {
         'user': user,
         'header_title': header_title,
         'table': table_data['table'],
         'overall_users_number': table_data['overall_users_number'],
+        'permission_formset': permission_formset,
         'user_type': table_data['user_type']
     })
 

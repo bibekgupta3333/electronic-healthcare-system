@@ -15,7 +15,7 @@ def create_or_update_redaction_record(request, instruction):
         amendments_for_record = AmendmentsForRecord()
     status = request.POST.get('event_flag')
 
-    get_redation_xpaths(request, amendments_for_record)
+    get_redaction_xpaths(request, amendments_for_record)
     get_redaction_notes(request, amendments_for_record)
     get_additional_medication(request, amendments_for_record)
     get_additional_allergies(request, amendments_for_record)
@@ -37,7 +37,6 @@ def create_or_update_redaction_record(request, instruction):
 
         if submit_form.is_valid(post_data=request.POST):
             amendments_for_record.instruction_checked = submit_form.cleaned_data['instruction_checked']
-
             amendments_for_record.review_by = submit_form.cleaned_data['gp_practitioner']
             amendments_for_record.submit_choice = submit_form.cleaned_data['prepared_and_signed']
             amendments_for_record.prepared_by = submit_form.cleaned_data['prepared_by']
@@ -64,20 +63,20 @@ def create_or_update_redaction_record(request, instruction):
     return True
 
 
-def get_redation_xpaths(request, amendments_for_record):
+def get_redaction_xpaths(request, amendments_for_record):
     redaction_xpaths = request.POST.getlist('redaction_xpaths')
     amendments_for_record.redacted_xpaths = redaction_xpaths
 
 
 def get_redaction_notes(request, amendments_for_record):
-    acute_notes = request.POST.get('redaction_acute_prescription_notes')
-    repeat_notes = request.POST.get('redaction_repeat_prescription_notes')
-    consultation_notes = request.POST.get('redaction_consultation_notes')
-    referral_notes = request.POST.get('redaction_referral_notes')
-    significant_problem_notes = request.POST.get('redaction_significant_problem_notes')
-    bloods_notes = request.POST.get('redaction_bloods_notes')
-    attachment_notes = request.POST.get('redaction_attachment_notes')
-    comment_notes = request.POST.get('redaction_comment_notes')
+    acute_notes = request.POST.get('redaction_acute_prescription_notes', '')
+    repeat_notes = request.POST.get('redaction_repeat_prescription_notes', '')
+    consultation_notes = request.POST.get('redaction_consultation_notes', '')
+    referral_notes = request.POST.get('redaction_referral_notes', '')
+    significant_problem_notes = request.POST.get('redaction_significant_problem_notes', '')
+    bloods_notes = request.POST.get('redaction_bloods_notes', '')
+    attachment_notes = request.POST.get('redaction_attachment_notes', '')
+    comment_notes = request.POST.get('redaction_comment_notes', '')
 
     amendments_for_record.acute_prescription_notes = acute_notes
     amendments_for_record.repeat_prescription_notes = repeat_notes

@@ -69,9 +69,6 @@
                             <th style="width: 14%;">Email*</th>
                             <th style="width: 13%;">Role(GP, Other)</th>
                             <th style="width: 14%;">GP Code if any</th>
-                            <th style="width: 7%;">AMRA</th>
-                            <th style="width: 7%;">SARS</th>
-                            <th style="width: 7%;">Admin</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -83,9 +80,6 @@
                             <td>{% bootstrap_field form.email placeholder='' %}</td>
                             <td>{% bootstrap_field form.role placeholder='' %}</td>
                             <td>{% bootstrap_field form.gp_code placeholder='' %}</td>
-                            <td class="text-center align-middle">{% bootstrap_field form.amra size='large' placeholder='' %}</td>
-                            <td class="text-center align-middle">{% bootstrap_field form.sars size='large' placeholder='' %}</td>
-                            <td class="text-center align-middle">{% bootstrap_field form.admin size='large' placeholder='' %}</td>
                         </tr>
                         {% endfor %}
                     </tbody>

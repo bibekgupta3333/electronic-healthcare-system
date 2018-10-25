@@ -89,16 +89,3 @@ AdditionQuestionFormset = modelformset_factory(
         'question': forms.TextInput(attrs={'class': 'form-control questions_inputs'}, ),
     },
 )
-
-
-class AllocateInstructionForm(forms.Form):
-    gp_practitioner = forms.ModelChoiceField(queryset=None, required=False)
-
-    def __init__(self, user=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if user:
-            organisation = user.userprofilebase.generalpracticeuser.organisation
-            queryset = User.objects.filter(userprofilebase__generalpracticeuser__organisation=organisation)
-            queryset = queryset.exclude(userprofilebase__generalpracticeuser__role=GeneralPracticeUser.PRACTICE_MANAGER)
-            self.fields['gp_practitioner'] = forms.ModelChoiceField(queryset,
-                                                                    required=False)

@@ -12,7 +12,6 @@ class MyChoiceField(forms.ChoiceField):
         if self.required and not value:
             raise ValidationError(self.error_messages['required'], code='required')
 
-
 class PatientForm(forms.ModelForm):
     first_name = forms.CharField(max_length=255, required=True, label='First name*', widget=forms.TextInput(attrs={'placeholder': ''}))
     last_name = forms.CharField(max_length=255, required=True, label='Last name*', widget=forms.TextInput(attrs={'placeholder': ''}))

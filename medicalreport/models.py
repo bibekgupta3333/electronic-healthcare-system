@@ -6,7 +6,6 @@ from snomedct.models import SnomedConcept
 from accounts.models import User
 from django.utils.html import format_html
 
-# TODO JT 2018-09-24 Why are there not any __str__ methods here?
 
 class AmendmentsForRecord(models.Model):
     REDACTION_STATUS_NEW = 'NEW'
@@ -24,27 +23,30 @@ class AmendmentsForRecord(models.Model):
         ('PREPARED_AND_REVIEWED', format_html('Prepared by <span id="preparer"></span>  and reviewed by')),
     )
 
-    instruction = models.OneToOneField(Instruction, on_delete=models.CASCADE)
-    consultation_notes = models.TextField(null=True)
-    acute_prescription_notes = models.TextField(null=True)
-    repeat_prescription_notes = models.TextField(null=True)
-    referral_notes = models.TextField(null=True)
-    significant_problem_notes = models.TextField(null=True)
-    attachment_notes = models.TextField(null=True)
-    bloods_notes = models.TextField(null=True)
+    instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)
+    consultation_notes = models.TextField(blank=True)
+    acute_prescription_notes = models.TextField(blank=True)
+    repeat_prescription_notes = models.TextField(blank=True)
+    referral_notes = models.TextField(blank=True)
+    significant_problem_notes = models.TextField(blank=True)
+    attachment_notes = models.TextField(blank=True)
+    bloods_notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    patient_emis_number = models.CharField(max_length=255, null=True, default=None)
     redacted_xpaths = JSONField(null=True)
     submit_choice = models.CharField(max_length=255, choices=SUBMIT_OPTION_CHOICES, blank=True)
     review_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     prepared_by = models.CharField(max_length=255, blank=True)
     status = models.CharField(choices=REDACTION_STATUS_CHOICES, max_length=6, default=REDACTION_STATUS_NEW)
-    comment_notes = models.TextField(null=True)
+    comment_notes = models.TextField(blank=True)
     instruction_checked = models.BooleanField(default=False, blank=True, null=True)
 
-    def get_gp_name(self):
-        gp_name = None
+    @property
+    def patient_emis_number(self) -> str:
+        return self.instruction.patient.emis_number
+
+    def get_gp_name(self) -> str:
+        gp_name = ''
         if self.instruction.status == INSTRUCTION_STATUS_COMPLETE:
             if self.prepared_by:
                 gp_name = self.prepared_by
@@ -61,7 +63,7 @@ class AmendmentsForRecord(models.Model):
     def additional_allergies(self):
         return AdditionalAllergies.objects.filter(amendments_for_record=self.id)
 
-    def redacted(self, xpaths):
+    def redacted(self, xpaths) -> bool:
         if self.redacted_xpaths is not None:
             return all(xpath in self.redacted_xpaths for xpath in xpaths)
         else:

@@ -2,7 +2,7 @@
 <div class="col-md-12 mt-4 mb-2">
     <div class="row">
         <div class="col-md-6">
-            <h6><strong>{{ medical_record.registration.full_name }}</strong><span class="ml-4 color-grey ">({{ medical_record.registration_status.parsed_registartion_status_date|format_date_filter}})</span></h6>
+            <h6><strong>{{ medical_record.registration.full_name }}</strong><span class="ml-4 color-grey ">({{ medical_record.registration_status.parsed_registration_status_date|format_date_filter}})</span></h6>
             <ul class='no-bullet '>
                 <li><strong>Date of birth: </strong>{{ medical_record.registration.parsed_date_of_birth|format_date_filter }}</li>
                 <li><strong>Sex: </strong>{{ medical_record.registration.sex }}</li>
@@ -25,6 +25,30 @@
             </ul>
             {% endif %}
         </div>
+
+    </div>
+    <div class="row">
+        <div class="col-md-12 text-right">
+            <button class="btn btn-consent inline-block" data-toggle="modal" data-target="#pdfModal"><i class="fas fa-file-medical icon"></i> View consent form</button>
+        </div>
     </div>
 </div>
+<div class="modal fade pdf-modal" id="pdfModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+       <div class="modal-dialog" role="document">
+         <div class="modal-content">
+           <div class="modal-header">
+             <h5 class="modal-title" id="exampleModalLongTitle">Consents Form</h5>
+             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+               <span aria-hidden="true">&times;</span>
+             </button>
+           </div>
+           <div class="modal-body">
+               {% if instruction.consent_form %}
+                   <iframe src="/{{ instruction.consent_form.url }}#zoom=200" height="735px" width="100%"></iframe>
+               {% else %}
+               <p>No consent form </p>
+               {% endif %}
+           </div>
+         </div>
+       </div>
 

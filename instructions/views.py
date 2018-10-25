@@ -10,7 +10,7 @@ from django_tables2 import RequestConfig
 from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest, Setting
 from .tables import InstructionTable
 from .model_choices import *
-from .forms import ScopeInstructionForm, AdditionQuestionFormset, AllocateInstructionForm
+from .forms import ScopeInstructionForm, AdditionQuestionFormset
 from accounts.models import User, Patient, GeneralPracticeUser
 from accounts.models import PATIENT_USER, GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from accounts.forms import PatientForm, GPForm
@@ -20,12 +20,6 @@ from organisations.views import get_nhs_data
 from template.forms import TemplateInstructionForm
 from common.functions import multi_getattr, get_env_variable
 from medicalreport.dummy_models import DummyInstruction
-
-from django.conf import settings
-PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
-DUMMY_EMAIL_LIST = settings.DUMMY_EMAIL_LIST
-SITE_NAME = settings.SITE_NAME
-
 from snomedct.models import SnomedConcept
 
 import pytz
@@ -35,6 +29,7 @@ import ast
 from django.conf import settings
 PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
 DUMMY_EMAIL_LIST = settings.DUMMY_EMAIL_LIST
+SITE_NAME = settings.SITE_NAME
 
 
 def count_instructions(user, gp_practice_id, client_organisation):
@@ -192,12 +187,8 @@ def instruction_pipeline_view(request):
     overall_instructions_number = count_instructions(request.user, gp_practice_id, client_organisation)
     if request.user.type == CLIENT_USER:
         overall_instructions_number = count_instructions(request.user, gp_practice_id, client_organisation)
-        if request.user.is_staff:
-            instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
-        else:
-            instruction_query_set = instruction_query_set.filter(client_user__user_id=request.user.id,
-                                                                 client_user__organisation=client_organisation)
-
+        instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
+        
     if request.user.type == GENERAL_PRACTICE_USER:
         gp_role = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.role')
         if gp_role == GeneralPracticeUser.PRACTICE_MANAGER:
@@ -232,6 +223,7 @@ def new_instruction(request):
     template_form = TemplateInstructionForm()
 
     if request.method == "POST":
+        gp_form = GPForm(request.POST)
         patient_form = PatientForm(request.POST)
         addition_question_formset = AdditionQuestionFormset(request.POST)
         raw_common_condition = request.POST.getlist('common_condition')
@@ -243,6 +235,9 @@ def new_instruction(request):
         # Is from NHS or gpOrganisation
         gp_practice_code = request.POST.get('gp_practice', None)
         gp_practice = OrganisationGeneralPractice.objects.filter(practice_code=gp_practice_code).first()
+        gp_practice_request = HttpRequest()
+        gp_practice_request.GET['code'] = gp_practice_code
+        nhs_address = get_nhs_data(gp_practice_request, need_dict=True)['address']
         if not gp_practice:
             gp_practice = NHSgpPractice.objects.filter(code=gp_practice_code).first()
 
@@ -312,6 +307,7 @@ def new_instruction(request):
                 'patient_form': patient_form,
                 'nhs_form': nhs_form,
                 'gp_form': gp_form,
+                'nhs_address': nhs_address,
                 'scope_form': scope_form,
                 'addition_question_formset': addition_question_formset,
                 'template_form': template_form,
@@ -355,22 +351,6 @@ def upload_consent(request, instruction_id):
 def allocate_instruction(request, instruction_id):
     header_title = "GP Allocation"
     instruction = get_object_or_404(Instruction, pk=instruction_id)
-    allocate_form = AllocateInstructionForm(user=request.user)
-
-    if request.method == "POST":
-        allocate_form = AllocateInstructionForm(request.user, request.POST)
-        if allocate_form.is_valid():
-            role = request.user.userprofilebase.generalpracticeuser.role
-            if allocate_form.cleaned_data['gp_practitioner']:
-                instruction.gp_user = allocate_form.cleaned_data['gp_practitioner'].userprofilebase.generalpracticeuser
-            elif role in [GeneralPracticeUser.GENERAL_PRACTICE, GeneralPracticeUser.SARS_RESPONDER]:
-                instruction.gp_user = request.user.userprofilebase.generalpracticeuser
-                instruction.status = INSTRUCTION_STATUS_PROGRESS
-            instruction.save()
-            return redirect('instructions:view_pipeline')
-        else:
-            messages.error(request, 'Invalid GP User')
-
     patient = instruction.patient
     # Initial Patient Form
     patient_form = PatientForm(
@@ -402,12 +382,7 @@ def allocate_instruction(request, instruction_id):
         }
     )
     # Initial Scope/Consent Form
-    scope_form = ScopeInstructionForm(
-        user=request.user,
-        initial={
-            'type': instruction.type,
-        }
-    )
+    scope_form = ScopeInstructionForm(user=request.user, initial={'type': instruction.type, })
 
     consent_type = 'pdf'
     consent_extension = ''
@@ -435,7 +410,7 @@ def allocate_instruction(request, instruction_id):
         'nhs_address': nhs_address,
         'condition_of_interest': condition_of_interest,
         'consent_form_data': consent_form_data,
-        'allocate_form': allocate_form,
+        'instruction_id': instruction_id,
     })
 
 

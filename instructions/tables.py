@@ -3,6 +3,7 @@ from accounts import models
 from .models import Instruction
 from django.utils.html import format_html
 from django.urls import reverse
+from permissions.templatetags.get_permissions import view_complete_report
 
 
 class InstructionTable(tables.Table):
@@ -30,6 +31,9 @@ class InstructionTable(tables.Table):
             self.columns.hide('gp_practice')
         self.user = request.user
 
+    def render_client_user(self, value):
+        return format_html(value.user.userprofilebase.clientuser.organisation.trading_name)
+
     def render_patient(self, value):
         return format_html('{} {} <br><b>NHS: </b>{}', value.user.first_name, value.user.last_name, value.nhs_number)
 
@@ -42,8 +46,14 @@ class InstructionTable(tables.Table):
             'Reject': 'badge-danger'
         }
         url = 'medicalreport:edit_report'
-        if value == 'Complete':
+        view_report = view_complete_report(self.user.id, record.pk)
+        if value == 'Complete' and self.user.type != models.GENERAL_PRACTICE_USER:
             url = 'medicalreport:final_report'
+        elif value == 'Complete' and self.user.type == models.GENERAL_PRACTICE_USER:
+            if view_report:
+                url = 'medicalreport:final_report'
+            else:
+                return format_html('<a><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
         elif value == 'Reject':
             url = 'instructions:view_reject'
         elif self.user and self.user.type != models.GENERAL_PRACTICE_USER:

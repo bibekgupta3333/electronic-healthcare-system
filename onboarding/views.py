@@ -20,6 +20,7 @@ def emr_setup(request):
         if emr_form.is_valid():
             emr = emr_form.save()
             send_email_emr(request, emr)
+            send_email_pm(request, emr)
             created = True
 
     return render(request, 'onboarding/emr_setup.html', {
@@ -37,6 +38,13 @@ def send_email_emr(request, emr):
             'link': '{}/onboarding/emr_setup_stage_2/{}'.format(setting.site, emr.id)
         })
         send_mail('Completely eMR','',from_email,to_list,fail_silently=True,html_message=html_message)
+
+
+def send_email_pm(request, emr):
+    from_email = settings.DEFAULT_FROM
+    to_list = [emr.pm_email]
+    html_message = loader.render_to_string('onboarding/emr_email_PM.html')
+    send_mail('Completely eMR', '', from_email, to_list, fail_silently=True, html_message=html_message)
 
 
 def emr_setup_stage_2(request, emrsetup_id=None):

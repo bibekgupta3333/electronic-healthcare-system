@@ -26,15 +26,6 @@ class InstructionTest(TestCase):
         instruction_id = self.instruction.id
         self.assertEqual(instruction_string, 'Instruction #{id}'.format(id=instruction_id))
 
-    @tag('notimplemented')
-    def test_snomed_concepts_readcodes(self):
-        self.fail('Not implemented')
-
-    @tag('notimplemented')
-    def test_selected_snomed_concepts(self):
-        self.fail('Not implemented')
-
-
 class InstructionAdditionQuestionTest(TestCase):
     def test_string_representation(self):
         instruction_addition_question = mommy.make(

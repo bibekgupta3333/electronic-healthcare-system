@@ -27,11 +27,11 @@ class Registration(XMLBase):
             return None
         return datetime.strptime(date_of_birth, "%d/%m/%Y").date()
 
-    def parsed_registartion_status_date(self) ->datetime.date:
-        regisstration_data = self.date_of_registration()
-        if not regisstration_data:
+    def parsed_registration_status_date(self) -> datetime.date:
+        registration_date = self.date_of_registration()
+        if not registration_date:
             return None
-        return datetime.strptime(regisstration_data, "%d/%m/%Y").date()
+        return datetime.strptime(registration_date, "%d/%m/%Y").date()
 
     def sex(self) -> str:
         return self.get_element_text('Sex')

@@ -54,4 +54,4 @@ LOGGING = {
     }
 }
 
-EMIS_API_HOST = 'http://medi.mohub.co:3001/emis'
+EMIS_API_HOST = 'http://medi2data.net:9443'

@@ -25,9 +25,6 @@ class UserEmrSetUpStage2Form(forms.Form):
     email = forms.EmailField(max_length=255, label='')
     role = forms.ChoiceField(choices=accounts_models.GeneralPracticeUser.ROLE_CHOICES, label='')
     gp_code = forms.CharField(max_length=255, required=False, label='')
-    amra = forms.BooleanField(label='', required=False)
-    sars = forms.BooleanField(label='', required=False)
-    admin = forms.BooleanField(label='', required=False)
 
 
 class BankDetailsEmrSetUpStage2Form(forms.Form):

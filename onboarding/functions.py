@@ -17,7 +17,6 @@ def create_gp_user(gp_organisation: OrganisationGeneralPractice, user_form: dict
                 first_name=user_form['first_name'],
                 last_name=user_form['last_name'],
                 type=GENERAL_PRACTICE_USER,
-                is_staff=user_form['admin'],
             )
 
             general_pratice_user = GeneralPracticeUser.objects.create(
@@ -26,8 +25,6 @@ def create_gp_user(gp_organisation: OrganisationGeneralPractice, user_form: dict
                 role=user_form['role'],
                 organisation=gp_organisation,
                 code=user_form['gp_code'],
-                can_complete_amra=user_form['amra'],
-                can_complete_sars=user_form['sars'],
             )
             return {
                 'general_pratice_user': general_pratice_user,
@@ -68,6 +65,7 @@ def create_gp_organisation(emr_setup: EMRSetup, bank_details_form: BankDetailsEm
 
     gp_organisation = OrganisationGeneralPractice.objects.create(
         trading_name=emr_setup.surgery_name,
+        accept_policy=emr_setup.accept_policy,
         legal_name=emr_setup.surgery_name,
         address=gp_address,
         contact_telephone=emr_setup.phone,

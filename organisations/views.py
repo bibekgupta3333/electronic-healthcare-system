@@ -56,10 +56,10 @@ def get_nhs_autocomplete(request):
     }
     search = request.GET.get('search', '')
     if search:
-        organisation_gps = OrganisationGeneralPractice.objects.filter(trading_name__icontains=search)
+        organisation_gps = OrganisationGeneralPractice.objects.filter(accept_policy=True).filter(trading_name__icontains=search)
         nhs_gps = NHSgpPractice.objects.filter(name__icontains=search)
     else:
-        organisation_gps = OrganisationGeneralPractice.objects.all()[:10]
+        organisation_gps = OrganisationGeneralPractice.objects.filter(accept_policy=True).all()[:10]
         nhs_gps = NHSgpPractice.objects.all()[:10]
 
     if organisation_gps.exists():

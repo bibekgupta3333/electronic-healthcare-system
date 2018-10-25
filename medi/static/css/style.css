@@ -590,3 +590,11 @@ header {
 .color-grey {
   color: #575757;
 }
+
+.text-right {
+  text-align: right;
+}
+
+.btn-consent.inline-block{
+  display: inline-block;
+}

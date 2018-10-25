@@ -22,6 +22,7 @@ class DummySnomedConcept(object):
 class DummyInstruction(object):
     def __init__(self, instruction):
         self.id = instruction.id
+        self.consent_form = instruction.consent_form
         self.selected_snomed_concepts = instruction.selected_snomed_concepts()
         if instruction.client_user:
             self.client = DummyClient(instruction.client_user.organisation)
