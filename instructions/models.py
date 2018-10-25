@@ -57,7 +57,8 @@ class Instruction(TimeStampedModel, models.Model):
         self.rejected_reason = context.get('rejected_reason', None)
         self.rejected_note = context.get('rejected_note', '')
         self.status = INSTRUCTION_STATUS_REJECT
-        self.send_reject_email([self.client_user.user.email])
+        if self.client_user:
+            self.send_reject_email([self.client_user.user.email])
         if self.gp_user and self.gp_user.role == GeneralPracticeUser.SARS_RESPONDER:
             emails = [medi.user.email for medi in MedidataUser.objects.all()]
             self.send_reject_email(emails)
