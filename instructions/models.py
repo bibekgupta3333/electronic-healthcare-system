@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.core.exceptions import ValidationError
 from common.models import TimeStampedModel
-from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser
+from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser, User
 from accounts import models as account_models
 from snomedct.models import SnomedConcept
 from .model_choices import *
@@ -24,6 +24,7 @@ class Instruction(TimeStampedModel, models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, verbose_name='Patient')
     completed_signed_off_timestamp = models.DateTimeField(null=True, blank=True)
     rejected_timestamp = models.DateTimeField(null=True, blank=True)
+    rejected_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     rejected_note = models.TextField(blank=True)
     rejected_reason = models.IntegerField(choices=INSTRUCTION_REJECT_TYPE, null=True, blank=True)
     type = models.CharField(max_length=4, choices=INSTRUCTION_TYPE_CHOICES)
@@ -52,12 +53,14 @@ class Instruction(TimeStampedModel, models.Model):
             self.gp_user = context.get('gp_user', None)
         self.save()
 
-    def reject(self, context):
+    def reject(self, request, context):
         self.rejected_timestamp = timezone.now()
+        self.rejected_by = request.user
         self.rejected_reason = context.get('rejected_reason', None)
         self.rejected_note = context.get('rejected_note', '')
         self.status = INSTRUCTION_STATUS_REJECT
-        self.send_reject_email([self.client_user.user.email])
+        if self.client_user:
+            self.send_reject_email([self.client_user.user.email])
         if self.gp_user and self.gp_user.role == GeneralPracticeUser.SARS_RESPONDER:
             emails = [medi.user.email for medi in MedidataUser.objects.all()]
             self.send_reject_email(emails)
@@ -111,7 +114,7 @@ class Instruction(TimeStampedModel, models.Model):
 
 
 class InstructionAdditionQuestion(models.Model):
-    instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)
+    instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE, related_name='addition_questions')
     question = models.CharField(max_length=255, blank=True)
     response_mandatory = models.BooleanField(default=False)
 
@@ -120,6 +123,17 @@ class InstructionAdditionQuestion(models.Model):
 
     def __str__(self):
         return self.question
+
+
+class InstructionAdditionAnswer(models.Model):
+    question = models.OneToOneField(InstructionAdditionQuestion, on_delete=models.CASCADE)
+    answer = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = "Instruction Addition Answer"
+
+    def __str__(self):
+        return self.answer
 
 
 class InstructionConditionsOfInterest(models.Model):

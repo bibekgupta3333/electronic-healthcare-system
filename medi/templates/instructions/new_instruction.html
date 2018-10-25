@@ -409,16 +409,32 @@
             });
 
              $('#id_address_postcode').on('change', function () {
-                $.ajax({
-                    type: "GET",
-                    url: "https://api.postcodes.io/postcodes/"+ $(this).val(),
-                    success: function (data) {
-                        if(data['status'] == 200) {
-                            let formed_data = data['result']['admin_ward']+ '  ' +data['result']['admin_district']+ '  ' + data['result']['admin_county'];
-                            let cleaned_formed_data = formed_data.replace("null", '');
-                            $('#id_address_name_number').val(cleaned_formed_data);
+                     var form_data = new FormData();
+                     form_data.append('ApiKey', {{ GET_ADDRESS_API_KEY }});
+                     form_data.append('Postcode',$(this).val());
+                     $.ajax({
+                        data: form_data,
+                        type: "POST",
+                        processData: false,
+                        url: "https://api.getAddress.io/find/",
+                        success: function (data) {
+                            data.addresses = data.addresses.map(function(item){
+                                return item.split(',').filter(function(s){ return s != ' ' }).join(',')
+                            });
+                            $('#id_address_name_number').select2({
+                                data: data.addresses
+                             });
+                            $('#id_address_name_number').on('select2:select', function (e) {
+                                var data = e.params.data;
+                                console.log(data.text)
+                            });
+                            $('#id_address_name_number').trigger({
+                                type: 'select2:select',
+                                params: {
+                                    data: {text: data.addresses[0]}
+                                }
+                            });
                         }
-                    }
                 })
             });
 

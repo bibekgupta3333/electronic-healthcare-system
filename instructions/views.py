@@ -324,6 +324,7 @@ def new_instruction(request):
         'scope_form': scope_form,
         'addition_question_formset': addition_question_formset,
         'template_form': template_form,
+        'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
     })
 
 
@@ -416,9 +417,65 @@ def allocate_instruction(request, instruction_id):
 
 @login_required(login_url='/accounts/login')
 def view_reject(request, instruction_id):
-    instruction = Instruction.objects.get(id=instruction_id)
-    dummy_instruction = DummyInstruction(instruction)
+    instruction = get_object_or_404(Instruction, pk=instruction_id)
+    patient = instruction.patient
+    # Initial Patient Form
+    patient_form = PatientForm(
+        instance=patient,
+        initial={
+            'first_name': patient.user.first_name, 'last_name': patient.user.last_name,
+            'address_postcode': patient.address_postcode
+        }
+    )
+    # Initial GP/NHS Organisation Form
+    if isinstance(instruction.gp_practice, OrganisationGeneralPractice):
+        gp_practice_code = instruction.gp_practice.practice_code
+    else:
+        gp_practice_code = instruction.gp_practice.pk
+    gp_practice_request = HttpRequest()
+    gp_practice_request.GET['code'] = gp_practice_code
+    nhs_address = get_nhs_data(gp_practice_request, need_dict=True)['address']
+    nhs_form = GeneralPracticeForm(
+        initial={
+            'gp_practice': instruction.gp_practice
+        }
+    )
+    # Initial GP Practitioner Form
+    gp_form = GPForm(
+        initial={
+            'title': instruction.gp_title_from_client,
+            'initial': instruction.gp_initial_from_client,
+            'last_name': instruction.gp_last_name_from_client,
+        }
+    )
+    # Initial Scope/Consent Form
+    scope_form = ScopeInstructionForm(user=request.user, initial={'type': instruction.type, })
+
+    consent_type = 'pdf'
+    consent_extension = ''
+    consent_path = ''
+    if instruction.consent_form:
+        consent_extension = (instruction.consent_form.url).split('.')[1]
+        consent_path = instruction.consent_form.url
+    if consent_extension in ['jpeg', 'png', 'gif']:
+        consent_type = 'image'
+    consent_form_data = {
+        'type': consent_type,
+        'path': consent_path
+    }
+
+    condition_of_interest = [snomed.fsn_description for snomed in instruction.selected_snomed_concepts()]
+    addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.filter(instruction=instruction))
+
     return render(request, 'instructions/view_reject.html', {
+        'patient_form': patient_form,
+        'nhs_form': nhs_form,
+        'gp_form': gp_form,
+        'scope_form': scope_form,
+        'addition_question_formset': addition_question_formset,
+        'nhs_address': nhs_address,
+        'condition_of_interest': condition_of_interest,
+        'consent_form_data': consent_form_data,
         'instruction': instruction,
-        'dummy_instruction': dummy_instruction
+        'instruction_id': instruction_id,
     })

@@ -344,7 +344,7 @@ header {
 
 .navbar-top .dropdown-menu{
   margin-left: 0px;
-  width: 100%;
+  width: 200px;
 }
 
 .navbar-toggle .icon-bar {
@@ -597,4 +597,9 @@ header {
 
 .btn-consent.inline-block{
   display: inline-block;
+}
+
+.header-menu {
+  right: 0;
+  left: auto;
 }

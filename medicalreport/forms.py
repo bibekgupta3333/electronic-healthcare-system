@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib import messages
-
+from permissions.templatetags.get_permissions import process_instruction, allocate_instruction
 from .models import AmendmentsForRecord
 from accounts.models import User, GeneralPracticeUser
 
@@ -61,7 +61,7 @@ class AllocateInstructionForm(forms.Form):
     allocate_options = forms.ChoiceField(choices=ALLOCATE_OPTIONS_CHOICE, widget=forms.RadioSelect())
     gp_practitioner = forms.ModelChoiceField(queryset=None, required=False)
 
-    def __init__(self, user=None, *args, **kwargs):
+    def __init__(self, user=None, instruction_id=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if user:
             organisation = user.userprofilebase.generalpracticeuser.organisation
@@ -69,4 +69,17 @@ class AllocateInstructionForm(forms.Form):
             queryset = queryset.exclude(userprofilebase__generalpracticeuser__role=GeneralPracticeUser.PRACTICE_MANAGER)
             self.fields['gp_practitioner'] = forms.ModelChoiceField(queryset,
                                                                     required=False)
+            if user and instruction_id:
+                self.fields['allocate_options'] = self.set_allocate_by_permission(user, instruction_id, queryset)
 
+    def set_allocate_by_permission(self, user, instruction_id, queryset):
+        can_proceed = process_instruction(user.id, instruction_id)
+        can_allocate = allocate_instruction(user.id)
+        ALLOCATE_OPTIONS_CHOICE = [(self.RETURN_TO_PIPELINE, 'Return to pipeline view')]
+        if can_allocate:
+            ALLOCATE_OPTIONS_CHOICE.append((self.ALLOCATE, 'Allocate to'))
+        else:
+            self.fields['gp_practitioner'] = forms.ModelChoiceField(queryset, required=False, widget=forms.HiddenInput())
+        if can_proceed:
+            ALLOCATE_OPTIONS_CHOICE.append((self.PROCEED_REPORT, 'Proceed with report'))
+        return forms.ChoiceField(choices=ALLOCATE_OPTIONS_CHOICE, widget=forms.RadioSelect())

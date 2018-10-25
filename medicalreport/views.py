@@ -41,7 +41,7 @@ def get_patient_record(patient_number):
 
 def reject_request(request, instruction_id):
     instruction = Instruction.objects.get(id=instruction_id)
-    instruction.reject(request.POST)
+    instruction.reject(request, request.POST)
     return redirect('instructions:view_pipeline')
 
 
@@ -51,7 +51,7 @@ def select_patient(request, instruction_id, patient_emis_number):
     patient.emis_number = patient_emis_number
     patient.save()
     if request.method == 'POST':
-        allocate_instruction_form = AllocateInstructionForm(request.user, request.POST)
+        allocate_instruction_form = AllocateInstructionForm(request.user, instruction_id, request.POST)
         if allocate_instruction_form.is_valid():
             allocate_option = int(allocate_instruction_form.cleaned_data['allocate_options'])
             if allocate_option == AllocateInstructionForm.PROCEED_REPORT:
@@ -76,7 +76,7 @@ def set_patient_emis_number(request, instruction_id):
     instruction = Instruction.objects.get(id=instruction_id)
     dummy_instruction = DummyInstruction(instruction)
     patient_list = get_matched_patient(instruction.patient)
-    allocate_instruction_form = AllocateInstructionForm(user=request.user)
+    allocate_instruction_form = AllocateInstructionForm(user=request.user, instruction_id=instruction_id)
 
     return render(request, 'medicalreport/patient_emis_number.html', {
         'patient_list': patient_list,
@@ -103,6 +103,7 @@ def edit_report(request, instruction_id):
 
     raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
+    questions = instruction.addition_questions.all()
     dummy_instruction = DummyInstruction(instruction)
     finalise_submit_form = MedicalReportFinaliseSubmitForm(
         initial={
@@ -118,6 +119,7 @@ def edit_report(request, instruction_id):
         'redaction': redaction,
         'instruction': dummy_instruction,
         'finalise_submit_form': finalise_submit_form,
+        'questions': questions,
     })
 
 

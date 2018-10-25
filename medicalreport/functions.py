@@ -24,6 +24,15 @@ def create_or_update_redaction_record(request, instruction):
     delete_additional_allergies_records(request)
 
     amendments_for_record.instruction = instruction
+    questions = instruction.addition_questions.all()
+    for question in questions:
+        input_answer = request.POST.get('answer-question-{question_id}'.format(question_id=question.id))
+        answer_obj = models.InstructionAdditionAnswer.objects.filter(question=question).first()
+        if answer_obj:
+            answer_obj.answer = input_answer
+            answer_obj.save()
+        else:
+            models.InstructionAdditionAnswer.objects.create(question=question, answer=input_answer)
 
     if request.method == "POST":
         submit_form = MedicalReportFinaliseSubmitForm(request.user, request.POST)
