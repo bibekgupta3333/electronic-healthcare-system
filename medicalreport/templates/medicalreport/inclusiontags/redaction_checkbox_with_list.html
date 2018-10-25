@@ -2,7 +2,7 @@
 <div>
     <label class="redaction-checkbox">
         {% for xpath in xpaths %}
-        <input name="redaction_xpaths" key="{{ header }}" data-redaction_xpaths = "{{ xpath }}"
+        <input name="redaction_xpaths" key="{{ xpath }}" data-redaction_xpaths = "{{ xpath }}"
                 {{ checked }} readonly="" type="checkbox" class="redaction-checkbox__input head-checkbox"
                 value="{{ xpath }}">
         {% endfor %}
@@ -15,14 +15,14 @@
                     <label class="redaction-checkbox">
 
                         {% if key != 'xpath' %}
-                             <input name="redaction_xpaths" key="{{ key }}"
+                             <input name="redaction_xpaths"  key="{{ item|hash:'xpath'|first }}"
                                  {% if item|hash:'xpath'|first in redaction_checks %}
                                  checked
                                  {% endif %}
-                                 data-redaction_xpaths="{{item|hash:'xpath'|first }}"
+                                 data-redaction_xpaths="{{item|hash:'xpath'|first }}" value="{{item|hash:'xpath'|first }}"
                                  readonly type="checkbox" class="redaction-checkbox__input">
                             <span class="redaction-checkbox__icon float-right fas fa-check-circle"></span>
-                            <span class="redaction-checkbox__text"><strong>{{key}}: </strong>{{value}}</span>
+                            <span class="redaction-checkbox__text"><strong>{{ key }}: </strong>{{value}}</span>
                         {% endif %}
                     </label>
             {% endfor %}
