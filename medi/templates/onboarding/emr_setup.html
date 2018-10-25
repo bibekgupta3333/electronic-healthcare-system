@@ -123,7 +123,8 @@ If you have any queries please email us on emr@medi2data.com or contact our supp
                         </div>
                         <div class="row form-group">
                             <div class="col-md-12">
-                                <input type="checkbox" class="accept-policy" name="accept_policy">I accept all T&Cs, End User Licence and data policy. View all documents here</input>
+                              <input type="checkbox" class="accept-policy" name="accept_policy" id="accept-policy" disabled>I accept all T&Cs, End User Licence and data policy. View all documents </input>
+                              <a href="#" class="active-a" data-toggle="modal" data-target="#acceptTCs">here</a>
                             </div>
                         </div>
                         <div class="row form-group">
@@ -133,11 +134,34 @@ If you have any queries please email us on emr@medi2data.com or contact our supp
                         </div>
                     </div>
                     <div class="card-footer">
-                        <button class="btn btn-primary" type="submit">Submit</button>
+                        <button id="BtnSubmit" class="btn btn-primary" type="submit" disabled>Submit</button>
                     </div>
                 </div>
             </div>
         </form>
+        <div class="modal fade pdf-modal" id="acceptTCs" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+          <div class="modal-dialog policy-modal" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">T&Cs</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                {% if setting and setting.policy_form %}
+                  <div class="iframe" id="iframe">
+                    <iframe id="policyForm" src="/{{ setting.policy_form.url }}#zoom=100" height="400px" width="100%"></iframe>
+                  </div>
+                {% endif %}
+              </div>
+              <div class="modal-footer">
+                <button id="goBack" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Go back
+                <button id="acceptPolicy" type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Accept
+              </div>
+            </div>
+          </div>
+        </div>
     {% endif %}
 {% endblock %}
 
@@ -146,6 +170,14 @@ If you have any queries please email us on emr@medi2data.com or contact our supp
     <script>
         $(document).ready(function () {
             $('#id_gp_practice').select2();
+            $('#acceptPolicy').click(function() {
+              $('#accept-policy').attr("checked", true);
+              $('#BtnSubmit').attr("disabled", false);
+            });
+            $('#goBack').click(function() {
+              $('#accept-policy').attr("checked", false);
+              $('#BtnSubmit').attr("disabled", true);
+            });
         });
     </script>
 {% endblock %}

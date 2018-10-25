@@ -14,3 +14,12 @@
 .card-body {
   color: black;
 }
+
+.active-a {
+  text-decoration: underline;
+  color: #007bff;
+}
+
+.policy-modal {
+  max-width: 80%;
+}

@@ -10,10 +10,10 @@ from .functions import *
 from .forms import *
 
 
-@login_required(login_url='/accounts/login')
 def emr_setup(request):
     emr_form = EMRSetupForm()
     created = False
+    setting = Setting.objects.all().first()
 
     if request.method == "POST":
         emr_form = EMRSetupForm(request.POST)
@@ -25,7 +25,8 @@ def emr_setup(request):
 
     return render(request, 'onboarding/emr_setup.html', {
         'emr_form': emr_form,
-        'created': created
+        'created': created,
+        'setting': setting
     })
 
 
