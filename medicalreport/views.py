@@ -41,7 +41,7 @@ def get_patient_record(patient_number):
 
 def reject_request(request, instruction_id):
     instruction = Instruction.objects.get(id=instruction_id)
-    instruction.reject(request.POST)
+    instruction.reject(request, request.POST)
     return redirect('instructions:view_pipeline')
 
 

@@ -1,87 +1,175 @@
 {% extends 'base.html' %}
-{% load static %}
-{% load custom_filters %}
 {% load bootstrap4 %}
+{% load static %}
+{% load instruction_templatetags %}
 {% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% bootstrap_messages %}
+
 
 {% block ExtraHead %}
-    <link href="{% static 'css/instructions/view_reject.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/bootstrap-datepicker.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/style.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/instructions/new_instruction.css' %}" rel="stylesheet"/>
+    <link rel="stylesheet" href="{% static 'assets/kartik-v-boostrap-fileinput/css/fileinput.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/kartik-v-boostrap-fileinput/themes/explorer-fas/theme.css' %}">
+    <script src="{% static 'assets/kartik-v-boostrap-fileinput/js/fileinput.js' %}"></script>
+    <script src="{% static 'assets/kartik-v-boostrap-fileinput/js/locales/LANG.js' %}"></script>
+    <script src="{% static 'assets/kartik-v-boostrap-fileinput/themes/fas/theme.js' %}"></script>
 {% endblock %}
 
 {% block Content %}
-      <div class="container-fluid">
-          <div class="card-deck">
-              <div class="card">
-                  <div class="card-header">
-                      <h4 class="text-bold">Instruction Details</h4>
-                  </div>
-                  <div class="card-body">
-                      <div class="patient-content">
-                          <div class="col-md-6">
-                              <div class="row">
-                                  <h4 class="text-bold">{{instruction.patient.user.first_name|default:"N/A"}}</h4>
-                              </div>
-                              <div class="row">
-                                  <h5 class="text-bold">Date of birth:&nbsp</h5>
-                                  <h5>{{instruction.patient.date_of_birth|format_date_filter|default:"N/A"}}</h5>
-                              </div>
-                              <div class="row">
-                                  <h5 class="text-bold">Address:&nbsp</h5>
-                                  <h5>{{instruction.patient|instruction_patient_address|default:"N/A"}}</h5>
-                              </div>
-                          </div>
-                          <div class="col-md-6">
-                              <div class="row">
-                                  <h4 class="text-bold">{{instruction.client_user.organisation.trading_name|default:"N/A"}}</h4>
-                              </div>
-                              <div class="row">
-                                  <div>
-                                      <h5 class="text-bold">Requested Conditions:</h5>
-                                      <ul>
-                                      {% if not dummy_instruction.selected_snomed_concepts %}
-                                          <li>No conditions</li>
-                                      {% else %}
-                                          {% for snomed in dummy_instruction.selected_snomed_concepts %}
-                                              <li>{{ snomed.fsn_description }}</li>
-                                          {% endfor %}
-                                      {% endif %}
-                                      </ul>
-                                  </div>
-                              </div>
-                          </div>
-                          {% ifequal instruction.type amra_type %}
-                              <div class="patient-consent">
-                                  <button class="btn btn-consent"><i class="fas fa-file-medical icon"></i> View consent form</button>
-                              </div>
-                          {% endifequal %}
-                      </div>
-                  </div>
-              </div>
-          </div>
-          <div class="card-deck mt-4">
-              <div class="card">
-                  <div class="card-header reject">
-                      <h4>Reject Details</h4>
-                  </div>
-                  <div class="card-body">
-                      <div class="row">
-                          <div class="col-md-2">
-                              <h5 class="text-bold">Reject reason:</h5>
-                          </div>
-                          <div class="col-md-10">
-                              <h5>{{instruction.get_rejected_reason_display}}</h5>
-                          </div>
-                      </div>
-                      <div class="row">
-                          <div class="col-md-2">
-                              <h5 class="text-bold">Notes:</h5>
-                          </div>
-                          <div class="col-md-10">
-                              <textarea class="rejected-note" readonly>{{instruction.rejected_note}}</textarea>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-          </div>
+    <div class="alert alert-danger" role="alert">
+      <h5>Instruction Rejected</h5>
+      <span>Rejected by <label class="text-bold">{{instruction.rejected_by.get_full_name}}</label> at {{instruction.rejected_timestamp|format_date}} for reason: <label class="reject-reason">{{instruction.get_rejected_reason_display}}.</label></span>
     </div>
+    <div class="card-deck instruction">
+        <div class="pr-0 col-md-6">
+            <div class="card mr-2">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Patient</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2 rowTitle">Name*:</div>
+                        {% bootstrap_field patient_form.title size='small' form_group_class='form-group col-md-2 p-0'%}
+                        {% bootstrap_field patient_form.first_name size='small' form_group_class='form-group-plaintext  col-md-4 px-2' %}
+                        {% bootstrap_field patient_form.last_name size='small' form_group_class='form-group col-md-4 px-1' %}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2 rowTitle">Date of Birth*:</div>
+                        {% bootstrap_field patient_form.date_of_birth size='small' form_group_class='form-group col-md-6 p-0 input-group dob' show_label=False %}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2 rowTitle">Address*:</div>
+                        {% bootstrap_field patient_form.address_postcode size='small' form_group_class='form-group col-md-4 p-0 ' %}
+                        {% bootstrap_field patient_form.address_name_number size='small' form_group_class='form-group col-md-6 px-1' %}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2 rowTitle">NHS #:</div>
+                        {% bootstrap_field patient_form.nhs_number size='small' form_group_class='form-group col-md-4 p-0 mt-1' show_label=False placeholder='' %}
+                        <div class="col-md-2 pl-4 rowTitle">Email:</div>
+                        {% bootstrap_field patient_form.email size='small' form_group_class='form-group input-group col-md-4 px-1 emailField' show_label=False %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 ">
+            <div class="card ">
+                <div class="card-header"><h5>GP and GP Practice</h5></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 rowTitle">Search GP Practice:</div>
+                        {% bootstrap_field nhs_form.gp_practice size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
+                    </div>
+                    <div class="row " style="height: 130px">
+                        <div class="col-md-3 d-flex">GP Practice*:</div>
+                        <div class="col-md-6 p-0"><p id="nhsData">{{ nhs_address }}</p></div>
+                    </div>
+                    <div class="row ">
+                        <div class="col-md-3 rowTitle">Named GP:</div>
+                        {% bootstrap_field gp_form.title size='small' form_group_class='form-group col-md-2 p-0' %}
+                        {% bootstrap_field gp_form.initial size='small' form_group_class='form-group col-md-3 px-2' %}
+                        {% bootstrap_field gp_form.last_name size='small' form_group_class='form-group col-md-4 px-2' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 mt-4">
+            <div class="card">
+                <div class="card-header"><h5>Scope</h5></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2 d-flex">Type of Instruction*:</div>
+                        {% bootstrap_field scope_form.type size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
+                    </div>
+                    <div class="conditions">
+                        <div class="row">
+                            <div class="col-md-2 rowTitle" >Conditions of Interest:</div>
+                            <ul class="pl-0">
+                                {% for condition in condition_of_interest %}
+                                    <li>{{ condition }}</li>
+                                {% endfor %}
+                            </ul>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 mt-4">
+            <div class="card">
+                <div class="card-header"><h5>Consent and Patient Copy</h5></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2 rowTitle">Upload consent form:</div>
+                        <div class="col-md-10">
+                            <div class="form-group">
+                                <div class="file-loading">
+                                    {% bootstrap_field scope_form.consent_form show_label=False %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 mt-4">
+            <div class="card">
+                <div class="card-header"><h5>Addition Question</h5></div>
+                <div class="card-body">
+                    <div class="row" id="questions_block">
+                        {{ addition_question_formset.management_form }}
+                        <table border="0" cellpadding="10" cellspacing="0" class="table">
+                            <thead>
+                                <tr>
+                                    <th>Questions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for form in addition_question_formset.forms %}
+                                <tr>
+                                    <td>{{ form.question }}</td>
+                                    <td></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block Script %}
+    <script>
+    $(document).ready(function () {
+        $('input').attr('readonly', true);
+
+        $("#id_consent_form").fileinput({
+            theme: 'fas',
+            showUpload: false,
+            {% if consent_form_data.path %}
+                initialPreview: [
+                    '{% static consent_form_data.path %}'
+                ],
+                initialPreviewAsData: true,
+                initialPreviewConfig: [
+                    {type: "{{ consent_form_data.type }}", url: "{% static consent_form_data.path %}" }
+                ]
+            {% endif %}
+        });
+
+        let total_addition_form = $('#id_form-TOTAL_FORMS').val() - 1;
+
+        $('#id_form-'+ total_addition_form.toString() +'-question').remove();
+    });
+    </script>
+
 {% endblock %}

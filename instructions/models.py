@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.core.exceptions import ValidationError
 from common.models import TimeStampedModel
-from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser
+from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser, User
 from accounts import models as account_models
 from snomedct.models import SnomedConcept
 from .model_choices import *
@@ -24,6 +24,7 @@ class Instruction(TimeStampedModel, models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, verbose_name='Patient')
     completed_signed_off_timestamp = models.DateTimeField(null=True, blank=True)
     rejected_timestamp = models.DateTimeField(null=True, blank=True)
+    rejected_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     rejected_note = models.TextField(blank=True)
     rejected_reason = models.IntegerField(choices=INSTRUCTION_REJECT_TYPE, null=True, blank=True)
     type = models.CharField(max_length=4, choices=INSTRUCTION_TYPE_CHOICES)
@@ -52,8 +53,9 @@ class Instruction(TimeStampedModel, models.Model):
             self.gp_user = context.get('gp_user', None)
         self.save()
 
-    def reject(self, context):
+    def reject(self, request, context):
         self.rejected_timestamp = timezone.now()
+        self.rejected_by = request.user
         self.rejected_reason = context.get('rejected_reason', None)
         self.rejected_note = context.get('rejected_note', '')
         self.status = INSTRUCTION_STATUS_REJECT

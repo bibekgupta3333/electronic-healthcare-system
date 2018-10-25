@@ -31,3 +31,12 @@
   color: #222;
   border-color: #222;
 }
+
+.text-bold {
+  font-weight: bold;
+  font-family: sans-serif;
+}
+
+.reject-reason {
+  font-style: italic;
+}
