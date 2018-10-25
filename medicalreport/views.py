@@ -47,6 +47,9 @@ def reject_request(request, instruction_id):
 
 def select_patient(request, instruction_id, patient_emis_number):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
+    patient = instruction.patient
+    patient.emis_number = patient_emis_number
+    patient.save()
     if request.method == 'POST':
         allocate_instruction_form = AllocateInstructionForm(request.user, request.POST)
         if allocate_instruction_form.is_valid():
