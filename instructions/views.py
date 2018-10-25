@@ -324,6 +324,7 @@ def new_instruction(request):
         'scope_form': scope_form,
         'addition_question_formset': addition_question_formset,
         'template_form': template_form,
+        'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
     })
 
 

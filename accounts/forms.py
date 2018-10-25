@@ -18,6 +18,7 @@ class PatientForm(forms.ModelForm):
     email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), required=False)
     date_of_birth = forms.DateField(input_formats=DATE_INPUT_FORMATS, widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': ''}))
     address_postcode = MyChoiceField(required=False)
+    address_name_number = MyChoiceField(required=False)
 
     class Meta:
         model = Patient
