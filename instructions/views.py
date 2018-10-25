@@ -187,12 +187,8 @@ def instruction_pipeline_view(request):
     overall_instructions_number = count_instructions(request.user, gp_practice_id, client_organisation)
     if request.user.type == CLIENT_USER:
         overall_instructions_number = count_instructions(request.user, gp_practice_id, client_organisation)
-        if request.user.is_staff:
-            instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
-        else:
-            instruction_query_set = instruction_query_set.filter(client_user__user_id=request.user.id,
-                                                                 client_user__organisation=client_organisation)
-
+        instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
+        
     if request.user.type == GENERAL_PRACTICE_USER:
         gp_role = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.role')
         if gp_role == GeneralPracticeUser.PRACTICE_MANAGER:
