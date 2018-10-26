@@ -13,6 +13,10 @@ def create_organisation(request):
 
 def get_nhs_data(request, **kwargs):
     code = request.GET.get('code', '')
+    data = {
+        'name': '',
+        'address': '',
+    }
     if code:
         nhs_gp = NHSgpPractice.objects.filter(code=code).first()
         if nhs_gp:
@@ -25,7 +29,7 @@ def get_nhs_data(request, **kwargs):
                         nhs_gp.address_line3,
                         nhs_gp.country,
                         nhs_gp.post_code
-                     )
+                    )
                 )
             }
         else:

@@ -23,6 +23,20 @@ class SnomedConcept(models.Model):
             models.Index(fields=['external_id']),
         ]
 
+    def _get_children(self):
+        return SnomedConcept.objects.filter(children__external_id=self.pk)
+
+    def get_all_children(self, include_self=True):
+        # recursive function
+        all_children = []
+        if include_self:
+            all_children.append(self)
+        for child in self._get_children():
+            _all_children = child.get_all_children(include_self=True)
+            if 0 < len(_all_children):
+                all_children.extend(_all_children)
+        return all_children
+
     def snomed_descendants(self):
         return SnomedConcept.objects.filter(external_ids=self.external_id)
 
