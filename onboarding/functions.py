@@ -58,7 +58,7 @@ def create_gp_user(gp_organisation: OrganisationGeneralPractice, user_form: dict
 def create_gp_organisation(emr_setup: EMRSetup, bank_details_form: BankDetailsEmrSetUpStage2Form) -> OrganisationGeneralPractice:
     gp_address = ' '.join([
         emr_setup.address_line1,
-        emr_setup.address_line2,
+        emr_setup.address_line2 if emr_setup.address_line2 else '',
         emr_setup.city,
         emr_setup.post_code
     ])
