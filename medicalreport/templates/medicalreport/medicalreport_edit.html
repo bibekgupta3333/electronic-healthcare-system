@@ -21,7 +21,7 @@
         <h1>Provisional Report Contents</h1>
         <form action="{% url 'medicalreport:update_report' instruction.id %}" method="post" id="medicalReportForm">
             {% csrf_token %}
-            {% if not redaciton.instruction_checked %}
+            {% if not redaction.instruction_checked %}
                 <div class="modal fade" id="form-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content sensitive-information-instructions alert-warning">
