@@ -61,7 +61,7 @@ class Instruction(TimeStampedModel, models.Model):
         self.status = INSTRUCTION_STATUS_REJECT
         if self.client_user:
             self.send_reject_email([self.client_user.user.email])
-        if self.gp_user and self.gp_user.role == GeneralPracticeUser.SARS_RESPONDER:
+        if self.gp_user and self.gp_user.role == GeneralPracticeUser.OTHER_PRACTICE:
             emails = [medi.user.email for medi in MedidataUser.objects.all()]
             self.send_reject_email(emails)
         self.save()

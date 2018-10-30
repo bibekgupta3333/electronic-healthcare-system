@@ -181,13 +181,13 @@ class ClientUser(UserProfileBase):
 class GeneralPracticeUser(UserProfileBase):
     PRACTICE_MANAGER = 0
     GENERAL_PRACTICE = 1
-    SARS_RESPONDER = 2
+    OTHER_PRACTICE = 2
 
     ROLE_CHOICES = (
         ('', '----'),
         (PRACTICE_MANAGER, 'Manager'),
         (GENERAL_PRACTICE, 'GP'),
-        (SARS_RESPONDER, 'SARS')
+        (OTHER_PRACTICE, 'Other practice staff')
     )
 
     role = models.IntegerField(choices=ROLE_CHOICES, null=True, blank=True, verbose_name='Role')
