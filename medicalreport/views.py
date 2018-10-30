@@ -15,7 +15,7 @@ from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT
 from .functions import create_or_update_redaction_record
 from medicalreport.reports import MedicalReport
-from accounts.models import GeneralPracticeUser, Patient
+from accounts.models import GeneralPracticeUser, Patient, User
 from .forms import AllocateInstructionForm
 import io as BytesIO
 from typing import List
@@ -123,12 +123,15 @@ def edit_report(request, instruction_id):
         },
         user=request.user)
 
+    inst_gp_user = User.objects.get(username=instruction.gp_user.user.username)
+    cur_user = User.objects.get(username=request.user.username)
     return render(request, 'medicalreport/medicalreport_edit.html', {
         'medical_record': medical_record_decorator,
         'redaction': redaction,
         'instruction': dummy_instruction,
         'finalise_submit_form': finalise_submit_form,
         'questions': questions,
+        'show_alert': True if inst_gp_user == cur_user else False
     })
 
 
