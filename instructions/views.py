@@ -292,6 +292,7 @@ def new_instruction(request):
                 fail_silently=False,
             )
             messages.success(request, 'Form submission successful')
+            return redirect('instructions:view_pipeline')
         else:
             messages.error(request, scope_form.errors['__all__'].data[0].messages[0])
             return render(request, 'instructions/new_instruction.html', {
