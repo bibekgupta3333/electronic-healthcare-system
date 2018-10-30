@@ -3,6 +3,7 @@ from django.contrib import messages
 from permissions.templatetags.get_permissions import process_instruction, allocate_instruction
 from .models import AmendmentsForRecord
 from accounts.models import User, GeneralPracticeUser
+from accounts import models
 
 
 class MedicalReportFinaliseSubmitForm(forms.Form):
@@ -63,7 +64,7 @@ class AllocateInstructionForm(forms.Form):
 
     def __init__(self, user=None, instruction_id=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if user:
+        if user and user.type == models.GENERAL_PRACTICE_USER:
             organisation = user.userprofilebase.generalpracticeuser.organisation
             queryset = User.objects.filter(userprofilebase__generalpracticeuser__organisation=organisation)
             queryset = queryset.exclude(userprofilebase__generalpracticeuser__role=GeneralPracticeUser.PRACTICE_MANAGER)

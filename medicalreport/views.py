@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.mail import send_mail
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
+from django.urls import reverse
 from services.emisapiservices import services
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.xml.patient_list import PatientList
@@ -10,7 +11,7 @@ from .dummy_models import (DummyInstruction, DummyClient, DummyPatient)
 from medicalreport.forms import MedicalReportFinaliseSubmitForm
 from .models import AmendmentsForRecord
 from instructions.models import Instruction
-from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE
+from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT
 from .functions import create_or_update_redaction_record
 from medicalreport.reports import MedicalReport
 from accounts.models import GeneralPracticeUser, Patient
@@ -42,7 +43,7 @@ def get_patient_record(patient_number):
 def reject_request(request, instruction_id):
     instruction = Instruction.objects.get(id=instruction_id)
     instruction.reject(request, request.POST)
-    return redirect('instructions:view_pipeline')
+    return HttpResponseRedirect("%s?%s"%(reverse('instructions:view_pipeline'),"status=%s&type=allType"%INSTRUCTION_STATUS_REJECT))
 
 
 def select_patient(request, instruction_id, patient_emis_number):
@@ -92,12 +93,6 @@ def edit_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
     try:
         redaction = AmendmentsForRecord.objects.get(instruction=instruction_id)
-        # todo: this check needs to go. There is no reason why a redaction shouldn't
-        # have a patient emis number
-        if not redaction.patient_emis_number:
-            # JT - Raising this exception is wrong. There should be a custom
-            # exception for this scenario. It is misleading like this.
-            raise AmendmentsForRecord.DoesNotExist
     except AmendmentsForRecord.DoesNotExist:
         return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
 
@@ -143,18 +138,13 @@ def update_report(request, instruction_id):
                     fail_silently=False,
                 )
                 return redirect('instructions:view_pipeline')
-       
+
         return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
 def view_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
-
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
-    # todo: this check needs to go. There is no reason why a redaction shouldn't
-    # have a patient emis number
-    if not redaction.patient_emis_number:
-        return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
 
     raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
@@ -175,17 +165,10 @@ def view_report(request, instruction_id):
 def final_report(request, instruction_id):
     header_title = "Final Report"
     instruction = get_object_or_404(Instruction, id=instruction_id)
+    redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
-    try:
-        redaction = AmendmentsForRecord.objects.get(instruction=instruction_id)
-        # todo: this check needs to go. There is no reason why a redaction shouldn't
-        # have a patient emis number
-        if not redaction.patient_emis_number:
-            raise AmendmentsForRecord.DoesNotExist
-    except AmendmentsForRecord.DoesNotExist:
-        return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
-
-    raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
+    patient_emis_number = instruction.patient.emis_number
+    raw_xml = services.GetMedicalRecord(patient_emis_number).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     attachments = medical_record_decorator.attachments
 

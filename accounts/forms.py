@@ -12,10 +12,10 @@ class MyChoiceField(forms.ChoiceField):
         if self.required and not value:
             raise ValidationError(self.error_messages['required'], code='required')
 
+
 class PatientForm(forms.ModelForm):
     first_name = forms.CharField(max_length=255, required=True, label='First name*', widget=forms.TextInput(attrs={'placeholder': ''}))
     last_name = forms.CharField(max_length=255, required=True, label='Last name*', widget=forms.TextInput(attrs={'placeholder': ''}))
-    email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), required=False)
     date_of_birth = forms.DateField(input_formats=DATE_INPUT_FORMATS, widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': ''}))
     address_postcode = MyChoiceField(required=False)
     address_name_number = MyChoiceField(required=False)
@@ -23,7 +23,7 @@ class PatientForm(forms.ModelForm):
     class Meta:
         model = Patient
         fields = ('title', 'first_name', 'last_name', 'date_of_birth', 'address_postcode', 'address_name_number',
-                  'nhs_number', 'email')
+                  'nhs_number', 'patient_input_email')
         widgets = {
             'address_postcode': forms.TextInput(attrs={'placeholder': '', }, ),
             'date_of_birth': forms.DateTimeInput(attrs={'placeholder': '', 'autocomplete': 'off'}, ),

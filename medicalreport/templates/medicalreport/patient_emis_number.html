@@ -61,6 +61,10 @@
                                   <h5 class="text-bold">Address:&nbsp</h5>
                                   <h5>{{instruction.patient|instruction_patient_address|default:"N/A"}}</h5>
                               </div>
+                              <div class="row">
+                                  <h5 class="text-bold">NHS number:&nbsp</h5>
+                                  <h5>{{instruction.patient.nhs_number|default:"N/A"}}</h5>
+                              </div>
                           </div>
                           <div class="col-md-6">
                               <div class="row">
