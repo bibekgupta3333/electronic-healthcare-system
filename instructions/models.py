@@ -77,27 +77,11 @@ class Instruction(TimeStampedModel, models.Model):
             auth_password=settings.EMAIL_HOST_PASSWORD,
         )
 
-    # JT - this is not a nice function. Should be rewritten with one function
-    # for snomed_concepts, one function for readcodes.
-    # todo: delete this method.
-    def snomed_concepts_readcodes(self) -> Tuple[List[int], List[str]]:
-        snomed_concepts_list = []
-        readcodes_list = []
-        for snomed_concept in self.selected_snomed_concepts():
-            snomed_concepts_list.append(snomed_concept.external_id)
-            for snomed_descendant in snomed_concept.snomed_descendants():
-                snomed_concepts_list.append(snomed_descendant.external_id)
-
-            for readcode in snomed_concept.combined_readcodes():
-                readcodes_list.append(readcode.ext_read_code)
-
-        return snomed_concepts_list, readcodes_list
-
     def snomed_concepts_ids(self) -> List[int]:
         snomed_concepts_ids = []
         for sct in self.selected_snomed_concepts():
             snomed_concepts_ids.append(sct.external_id)
-            for sd in sct.snomed_descendants():
+            for sd in sct.descendants():
                 snomed_concepts_ids.append(sd.external_id)
         return snomed_concepts_ids
 
@@ -105,7 +89,7 @@ class Instruction(TimeStampedModel, models.Model):
         readcodes = []
         for snomed_concept in self.selected_snomed_concepts():
             readcodes += [
-                rc.ext_read_code for rc in snomed_concept.combined_readcodes()
+                rc.ext_read_code for rc in snomed_concept.descendant_readcodes()
             ]
         return readcodes
 
