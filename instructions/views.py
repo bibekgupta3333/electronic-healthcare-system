@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
@@ -145,6 +145,7 @@ def create_patient_user(request, patient_form) -> Patient:
         title=patient_form.cleaned_data['title'],
         date_of_birth=patient_form.cleaned_data['date_of_birth'],
         nhs_number=patient_form.cleaned_data['nhs_number'],
+        address_postcode=patient_form.cleaned_data['address_postcode'],
         address_name_number=patient_form.cleaned_data['address_name_number'],
         patient_input_email=patient_form.cleaned_data['patient_input_email']
     )
@@ -292,7 +293,10 @@ def new_instruction(request):
                 fail_silently=False,
             )
             messages.success(request, 'Form submission successful')
-            return redirect('instructions:view_pipeline')
+            if instruction.type == SARS_TYPE:
+                return redirect('medicalreport:edit_report', instruction_id=instruction.id)
+            else:
+                return redirect('instructions:view_pipeline')
         else:
             messages.error(request, scope_form.errors['__all__'].data[0].messages[0])
             return render(request, 'instructions/new_instruction.html', {
