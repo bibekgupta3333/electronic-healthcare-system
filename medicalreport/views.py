@@ -93,12 +93,6 @@ def edit_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
     try:
         redaction = AmendmentsForRecord.objects.get(instruction=instruction_id)
-        # todo: this check needs to go. There is no reason why a redaction shouldn't
-        # have a patient emis number
-        if not redaction.patient_emis_number:
-            # JT - Raising this exception is wrong. There should be a custom
-            # exception for this scenario. It is misleading like this.
-            raise AmendmentsForRecord.DoesNotExist
     except AmendmentsForRecord.DoesNotExist:
         return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
 
@@ -144,18 +138,13 @@ def update_report(request, instruction_id):
                     fail_silently=False,
                 )
                 return redirect('instructions:view_pipeline')
-       
+
         return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
 def view_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
-
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
-    # todo: this check needs to go. There is no reason why a redaction shouldn't
-    # have a patient emis number
-    if not redaction.patient_emis_number:
-        return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
 
     raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
@@ -176,16 +165,9 @@ def view_report(request, instruction_id):
 def final_report(request, instruction_id):
     header_title = "Final Report"
     instruction = get_object_or_404(Instruction, id=instruction_id)
-    patient_emis_number = instruction.patient.emis_number
-    try:
-        redaction = AmendmentsForRecord.objects.get(instruction=instruction_id)
-        # todo: this check needs to go. There is no reason why a redaction shouldn't
-        # have a patient emis number
-        if not patient_emis_number:
-            raise AmendmentsForRecord.DoesNotExist
-    except AmendmentsForRecord.DoesNotExist:
-        return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
+    redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
+    patient_emis_number = instruction.patient.emis_number
     raw_xml = services.GetMedicalRecord(patient_emis_number).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     attachments = medical_record_decorator.attachments
