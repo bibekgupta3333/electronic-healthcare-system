@@ -2,6 +2,7 @@ from django import forms
 from django.contrib import messages
 from permissions.templatetags.get_permissions import process_instruction, allocate_instruction
 from .models import AmendmentsForRecord
+from permissions.models import InstructionPermission
 from accounts.models import User, GeneralPracticeUser
 from accounts import models
 
@@ -66,7 +67,14 @@ class AllocateInstructionForm(forms.Form):
         super().__init__(*args, **kwargs)
         if user and user.type == models.GENERAL_PRACTICE_USER:
             organisation = user.userprofilebase.generalpracticeuser.organisation
-            queryset = User.objects.filter(userprofilebase__generalpracticeuser__organisation=organisation)
+            instruction_pemission = InstructionPermission.objects.filter(process_amra=True)
+            role = []
+            for permission in instruction_pemission:
+                role.append(permission.role)
+            queryset = User.objects.filter(
+                userprofilebase__generalpracticeuser__organisation=organisation,
+                userprofilebase__generalpracticeuser__role__in=role,
+            )
             queryset = queryset.exclude(userprofilebase__generalpracticeuser__role=GeneralPracticeUser.PRACTICE_MANAGER)
             self.fields['gp_practitioner'] = forms.ModelChoiceField(queryset,
                                                                     required=False)
