@@ -208,12 +208,13 @@ class GeneralPracticeUser(UserProfileBase):
 
 
 class Patient(UserProfileBase):
-    organisation_gp = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE)
+    organisation_gp = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE, null=True)
     nhs_number = models.CharField(max_length=10, blank=True)
-    emis_number = models.CharField(max_length=255)
-    vision_number = models.CharField(max_length=255)
-    systmone_number = models.CharField(max_length=255)
-    microtest_number = models.CharField(max_length=255)
+    emis_number = models.CharField(max_length=255, blank=True)
+    vision_number = models.CharField(max_length=255, blank=True)
+    systmone_number = models.CharField(max_length=255, blank=True)
+    microtest_number = models.CharField(max_length=255, blank=True)
+    patient_input_email = models.EmailField(max_length=255, blank=True)
 
     class Meta:
         verbose_name = 'Patient User'

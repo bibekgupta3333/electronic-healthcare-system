@@ -175,17 +175,17 @@ def view_report(request, instruction_id):
 def final_report(request, instruction_id):
     header_title = "Final Report"
     instruction = get_object_or_404(Instruction, id=instruction_id)
-
+    patient_emis_number = instruction.patient.emis_number
     try:
         redaction = AmendmentsForRecord.objects.get(instruction=instruction_id)
         # todo: this check needs to go. There is no reason why a redaction shouldn't
         # have a patient emis number
-        if not redaction.patient_emis_number:
+        if not patient_emis_number:
             raise AmendmentsForRecord.DoesNotExist
     except AmendmentsForRecord.DoesNotExist:
         return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
 
-    raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
+    raw_xml = services.GetMedicalRecord(patient_emis_number).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     attachments = medical_record_decorator.attachments
 

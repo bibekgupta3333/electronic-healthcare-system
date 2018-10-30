@@ -45,7 +45,7 @@ class InstructionTable(tables.Table):
             'Complete': 'badge-success',
             'Reject': 'badge-danger'
         }
-        url = 'medicalreport:edit_report'
+        url = 'instructions:review_instruction'
         view_report = view_complete_report(self.user.id, record.pk)
         if value == 'Complete' and self.user.type != models.GENERAL_PRACTICE_USER:
             url = 'medicalreport:final_report'
@@ -56,10 +56,8 @@ class InstructionTable(tables.Table):
                 return format_html('<a><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
         elif value == 'Reject':
             url = 'instructions:view_reject'
-        elif self.user and self.user.type != models.GENERAL_PRACTICE_USER:
-            return format_html('<a><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
-        elif value == 'New':
-            url = 'instructions:allocate_instruction'
+        elif value == 'In Progress' and self.user.type == models.GENERAL_PRACTICE_USER:
+            url = 'medicalreport:edit_report'
         return format_html('<a href='+reverse(url, args=[record.pk])+'><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
 
 

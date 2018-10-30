@@ -1,10 +1,10 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.utils.dateparse import parse_datetime
-from django.forms import ValidationError
+from django.utils.timezone import now
 from django.http import HttpRequest
 from django_tables2 import RequestConfig
 from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest, Setting
@@ -18,8 +18,7 @@ from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice, NHSgpPractice
 from organisations.views import get_nhs_data
 from template.forms import TemplateInstructionForm
-from common.functions import multi_getattr, get_env_variable
-from medicalreport.dummy_models import DummyInstruction
+from common.functions import multi_getattr
 from snomedct.models import SnomedConcept
 
 import pytz
@@ -129,28 +128,26 @@ def create_snomed_relations(instruction, condition_of_interests):
             InstructionConditionsOfInterest.objects.create(instruction=instruction, snomedct=snomedct)
 
 
-def create_patient_user(request, patient_form, patient_email) -> Patient:
-    # find existing user if no create patient user
-    user = User.objects.filter(
-        Q(username="{}.{}".format(patient_form.cleaned_data['first_name'], patient_form.cleaned_data['last_name'][0])) |
-        Q(email=patient_email), type=PATIENT_USER
-    ).first()
+def create_patient_user(request, patient_form) -> Patient:
+    password = User.objects.make_random_password()
+    unique_code = now().strftime('%m%d%Y%S%f')
+    user = User.objects.create(
+        email='{unique_code}@medidata.co'.format(unique_code=unique_code),
+        username=unique_code,
+        password=password,
+        first_name=patient_form.cleaned_data['first_name'],
+        last_name=patient_form.cleaned_data['last_name'],
+        type=PATIENT_USER,
+    )
 
-    if not user:
-        user = User.objects.create(
-            username="{}.{}".format(patient_form.cleaned_data['first_name'], patient_form.cleaned_data['last_name'][0]),
-            password="{}.medi2018".format(patient_form.cleaned_data['first_name']),
-            email=patient_email,
-            type=PATIENT_USER,
-            first_name=patient_form.cleaned_data['first_name'],
-            last_name=patient_form.cleaned_data['last_name']
-        )
-        patient = patient_form.save(commit=False)
-        patient.organisation_gp = OrganisationGeneralPractice.objects.first()
-        patient.user = user
-        patient.save()
-    else:
-        patient = Patient.objects.get(user=user)
+    patient = Patient.objects.create(
+        user=user,
+        title=patient_form.cleaned_data['title'],
+        date_of_birth=patient_form.cleaned_data['date_of_birth'],
+        nhs_number=patient_form.cleaned_data['nhs_number'],
+        address_name_number=patient_form.cleaned_data['address_name_number'],
+        patient_input_email=patient_form.cleaned_data['patient_input_email']
+    )
 
     return patient
 
@@ -230,7 +227,7 @@ def new_instruction(request):
         common_condition_list = list(chain.from_iterable([ast.literal_eval(item) for item in raw_common_condition]))
         addition_condition_list = request.POST.getlist('addition_condition')
         condition_of_interests = list(set().union(common_condition_list, addition_condition_list))
-        scope_form = ScopeInstructionForm(request.user, request.POST.get('email'), request.POST, request.FILES)
+        scope_form = ScopeInstructionForm(request.user, request.POST.get('patient_input_email'), request.POST, request.FILES)
 
         # Is from NHS or gpOrganisation
         gp_practice_code = request.POST.get('gp_practice', None)
@@ -242,13 +239,8 @@ def new_instruction(request):
             gp_practice = NHSgpPractice.objects.filter(code=gp_practice_code).first()
 
         if (patient_form.is_valid() and scope_form.is_valid() and gp_practice) or request.user.type == GENERAL_PRACTICE_USER:
-
-            patient_email = patient_form.cleaned_data['email'] if patient_form.cleaned_data['email'] else "{}.{}@medidata.com".format(
-                patient_form.cleaned_data['first_name'], patient_form.cleaned_data['last_name'][0]
-            )
-
             # create patient user
-            patient = create_patient_user(request, patient_form, patient_email)
+            patient = create_patient_user(request, patient_form)
             # create instruction
             instruction = create_instruction(request=request, patient=patient, scope_form=scope_form, gp_practice=gp_practice)
             if request.user.type == CLIENT_USER:
@@ -261,7 +253,7 @@ def new_instruction(request):
                     'Patient Notification',
                     'Your instruction has been created',
                     'MediData',
-                    [patient_email],
+                    [patient_form.cleaned_data['patient_input_email']],
                     fail_silently=False,
                 )
 
@@ -273,7 +265,7 @@ def new_instruction(request):
                     'Request consent',
                     message,
                     'MediData',
-                    [patient_email],
+                    [patient_form.cleaned_data['patient_input_email']],
                     fail_silently=False,
                 )
 
@@ -349,8 +341,8 @@ def upload_consent(request, instruction_id):
 
 
 @login_required(login_url='/accounts/login')
-def allocate_instruction(request, instruction_id):
-    header_title = "GP Allocation"
+def review_instruction(request, instruction_id):
+    header_title = "Instruction Reviewing"
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     patient = instruction.patient
     # Initial Patient Form
@@ -401,7 +393,7 @@ def allocate_instruction(request, instruction_id):
     condition_of_interest = [snomed.fsn_description for snomed in instruction.selected_snomed_concepts()]
     addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.filter(instruction=instruction))
 
-    return render(request, 'instructions/allocate_instruction.html', {
+    return render(request, 'instructions/review_instruction.html', {
         'header_title': header_title,
         'patient_form': patient_form,
         'nhs_form': nhs_form,
