@@ -135,7 +135,7 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <button id="BtnSubmit" class="btn btn-primary" type="submit" disabled>Submit</button>
+                        <button id="BtnSubmit" class="btn btn-primary" type="submit">Submit</button>
                     </div>
                 </div>
             </div>
@@ -173,11 +173,12 @@
             $('#id_gp_practice').select2();
             $('#acceptPolicy').click(function() {
               $('#accept-policy').attr("checked", true);
-              $('#BtnSubmit').attr("disabled", false);
             });
             $('#goBack').click(function() {
               $('#accept-policy').attr("checked", false);
-              $('#BtnSubmit').attr("disabled", true);
+            });
+            $('#BtnSubmit').click(function() {
+              $('#accept-policy').removeAttr("disabled");
             });
         });
     </script>
