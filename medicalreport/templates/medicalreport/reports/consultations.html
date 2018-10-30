@@ -12,10 +12,14 @@
                     <tr>
                         <td>{{header}}</td>
                     </tr>
-                    {% for key, value in dict_data.items %}
-                        <tr>
-                            <td>{{key}}: {{value}}</td>
-                        </tr>
+                    {% for item in dict_data %}
+                        {% for key, value in item.items %}
+                            {% if key != 'xpath' %}
+                                <tr>
+                                    <td><label style="font-weight:bold;">{{key}}</label>: {{value}}</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
                     {% endfor %}
                 {% endif %}
             {% endwith %}
