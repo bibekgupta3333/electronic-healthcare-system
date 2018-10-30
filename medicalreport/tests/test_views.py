@@ -8,6 +8,7 @@ from model_mommy import mommy
 from instructions.models import (
     Instruction, INSTRUCTION_STATUS_PROGRESS, INSTRUCTION_STATUS_NEW
 )
+from instructions.model_choices import INSTRUCTION_STATUS_REJECT
 from accounts.models import ClientUser, User, GeneralPracticeUser, Patient, GENERAL_PRACTICE_USER, CLIENT_USER
 from services.models import EmisAPIConfig
 from medicalreport.models import AmendmentsForRecord
@@ -73,7 +74,7 @@ class RejectRequestTest(EmisAPITestCase):
 
     def test_view_redirects_to_correct_url(self):
         response = self.client.post('/medicalreport/2/reject-request/')
-        self.assertRedirects(response, '/instruction/view_pipeline/')
+        self.assertRedirects(response, '/instruction/view_pipeline/?status=%s&type=allType'%INSTRUCTION_STATUS_REJECT)
 
 
 class SelectPatientTest(EmisAPITestCase):

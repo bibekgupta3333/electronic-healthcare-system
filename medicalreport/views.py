@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.mail import send_mail
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
+from django.urls import reverse
 from services.emisapiservices import services
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.xml.patient_list import PatientList
@@ -10,7 +11,7 @@ from .dummy_models import (DummyInstruction, DummyClient, DummyPatient)
 from medicalreport.forms import MedicalReportFinaliseSubmitForm
 from .models import AmendmentsForRecord
 from instructions.models import Instruction
-from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE
+from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT
 from .functions import create_or_update_redaction_record
 from medicalreport.reports import MedicalReport
 from accounts.models import GeneralPracticeUser, Patient
@@ -42,7 +43,7 @@ def get_patient_record(patient_number):
 def reject_request(request, instruction_id):
     instruction = Instruction.objects.get(id=instruction_id)
     instruction.reject(request, request.POST)
-    return redirect('instructions:view_pipeline')
+    return HttpResponseRedirect("%s?%s"%(reverse('instructions:view_pipeline'),"status=%s&type=allType"%INSTRUCTION_STATUS_REJECT))
 
 
 def select_patient(request, instruction_id, patient_emis_number):
