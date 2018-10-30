@@ -25,6 +25,7 @@ def form_referrals(context):
 def form_attachments(context):
     return {
         'attachments': context['medical_record'].attachments,
+        'instruction': context['instruction'],
         'redaction': context['redaction']
     }
 

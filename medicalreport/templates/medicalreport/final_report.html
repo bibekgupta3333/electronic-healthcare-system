@@ -37,7 +37,7 @@
                                 {% with header=attachment.parsed_date|format_date_filter|add:" - "|add:attachment.description %}
                                     {% with attachment|get_redaction:redaction as redacted %}
                                         {% if not redacted %}
-                                            <embed id="attachment-{{forloop.counter}}" class="attachments" src="/medicalreport/attachments/{{ attachment.dds_identifier }}" width="100%" height="100%" alt="pdf" style="display:none">
+                                            <embed id="attachment-{{forloop.counter}}" class="attachments" src="/medicalreport/{{ instruction.id }}/attachment/{{ attachment.dds_identifier }}" width="100%" height="100%" alt="pdf" style="display:none">
                                         {% endif %}
                                     {% endwith %}
                                 {% endwith %}
