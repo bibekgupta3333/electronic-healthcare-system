@@ -50,8 +50,10 @@
                         <div class="row">
                             <div class="col-md-2 rowTitle">NHS #:</div>
                             {% bootstrap_field patient_form.nhs_number size='small' form_group_class='form-group col-md-4 p-0 mt-1' show_label=False placeholder='' %}
-                            <div class="col-md-2 pl-4 rowTitle">Email:</div>
-                            {% bootstrap_field patient_form.patient_input_email size='small' form_group_class='form-group input-group col-md-4 px-1' show_label=False placeholder='' %}
+                            {% if request.user.type == 'CLT' %}
+                                <div class="col-md-2 pl-4 rowTitle">Email:</div>
+                                {% bootstrap_field patient_form.patient_input_email size='small' form_group_class='form-group input-group col-md-4 px-1' show_label=False placeholder='' %}
+                            {% endif %}
                         </div>
                     </div>
                 </div>
