@@ -59,7 +59,7 @@ class TemplateCreate(LoginRequiredMixin, AjaxableResponseMixin, CreateView):
     def get_form_kwargs(self):
         """Return the keyword arguments for instantiating the form."""
         template_instruction_data = {
-            'title': self.request.POST.get('title'),
+            'template_title': self.request.POST.get('template_title'),
             'description': self.request.POST.get('description'),
             'created_by': self.request.user.pk,
             'client_organisation': multi_getattr(self.request.user, 'userprofilebase.clientuser.organisation', default=None)

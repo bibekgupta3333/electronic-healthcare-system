@@ -16,9 +16,9 @@ class TemplateQuestionsInline(admin.TabularInline):
 
 
 class TemplateInstructionAdmin(admin.ModelAdmin):
-    search_fields = ['title', 'description', 'client_organisation']
-    list_display = ('title', 'description', 'client_organisation')
-    fields = ['title', 'description', 'client_organisation']
+    search_fields = ['template_title', 'description', 'client_organisation']
+    list_display = ('template_title', 'description', 'client_organisation')
+    fields = ['template_title', 'description', 'client_organisation']
     inlines = [
         TemplateConditionsInline,
         TemplateQuestionsInline

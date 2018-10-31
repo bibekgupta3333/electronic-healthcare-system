@@ -98,7 +98,7 @@ def create_instruction(request, patient, scope_form=None, gp_practice=None) -> I
         instruction.type = scope_form.cleaned_data['type']
         instruction.gp_practice = gp_practice
         instruction.consent_form = scope_form.cleaned_data['consent_form']
-        instruction.gp_title_from_client = request.POST.get('title')
+        instruction.gp_title_from_client = request.POST.get('gp_title')
         instruction.gp_initial_from_client = request.POST.get('initial')
         instruction.gp_last_name_from_client = request.POST.get('gp_last_name')
     else:

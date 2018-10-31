@@ -10,7 +10,7 @@ from template.models import (
 class TemplateInstructionTest(TestCase):
     def test_string_representation(self):
         template_instruction = mommy.make(
-            TemplateInstruction, title='template_instruction'
+            TemplateInstruction, template_title='template_instruction'
         )
         self.assertEqual(str(template_instruction), 'template_instruction')
 

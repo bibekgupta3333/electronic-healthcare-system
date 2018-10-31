@@ -126,11 +126,11 @@ class User(AbstractUser):
 
 class UserProfileBase(TimeStampedModel, models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=3, choices=TITLE_CHOICE, blank=True)
+    title = models.CharField(max_length=3, choices=TITLE_CHOICE)
     middle_name = models.CharField(max_length=255, blank=True)
     maiden_name = models.CharField(max_length=255, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
-    address_name_number = models.CharField(max_length=255, blank=True)
+    address_name_number = models.CharField(max_length=255)
     address_line2 = models.CharField(max_length=255, blank=True)
     address_line3 = models.CharField(max_length=255, blank=True)
     address_line4 = models.CharField(max_length=255, blank=True)
