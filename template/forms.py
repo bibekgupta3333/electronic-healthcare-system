@@ -8,9 +8,9 @@ from .models import (
 class TemplateInstructionForm(forms.ModelForm):
     class Meta:
         model = TemplateInstruction
-        fields = ('title', 'description', 'client_organisation', 'created_by')
+        fields = ('template_title', 'description', 'client_organisation', 'created_by')
         widgets = {
-            'title': forms.TextInput(attrs={'id': 'template_title'}, ),
+            'template_title': forms.TextInput(attrs={'id': 'template_title'}, ),
             'description': forms.Textarea(attrs={'id': 'template_description'}, ),
         }
 

@@ -27,21 +27,19 @@ class SocialConsultationElement(XMLModelBase):
     def __alcohol_concept(self) -> SnomedConcept:
         return SnomedConcept.objects.get(external_id='228273003')
 
-    # JT This should really be a model method on SnomedConcept.
     def __code_descendent_of(self, snomed_model: SnomedConcept) -> bool:
-        if self.readcodes():
-            model_readcodes = map(
+        readcodes = self.readcodes()
+        if readcodes:
+            descendant_readcodes = map(
                 lambda rc: rc.ext_read_code,
-                snomed_model.combined_readcodes()
+                snomed_model.descendant_readcodes()
             )
-            for rc in self.readcodes():
-                if rc in model_readcodes:
-                    return True
-            return False
-        if str(snomed_model.external_id) in self.snomed_concepts():
-            return True
-        snomed_descendants = snomed_model.snomed_descendants().values('external_id')
-        for sc in self.snomed_concepts():
-            if int(sc) in snomed_descendants:
-                return True
-        return False
+            return not set(readcodes).isdisjoint(descendant_readcodes)
+        else:
+            descendant_concepts = map(
+                lambda sc: sc.external_id,
+                snomed_model.descendants()
+            )
+            return not set(
+                map(int, self.snomed_concepts())
+            ).isdisjoint(descendant_concepts)

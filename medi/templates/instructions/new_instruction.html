@@ -50,8 +50,10 @@
                         <div class="row">
                             <div class="col-md-2 rowTitle">NHS #:</div>
                             {% bootstrap_field patient_form.nhs_number size='small' form_group_class='form-group col-md-4 p-0 mt-1' show_label=False placeholder='' %}
-                            <div class="col-md-2 pl-4 rowTitle">Email:</div>
-                            {% bootstrap_field patient_form.patient_input_email size='small' form_group_class='form-group input-group col-md-4 px-1' show_label=False placeholder='' %}
+                            {% if request.user.type == 'CLT' %}
+                                <div class="col-md-2 pl-4 rowTitle">Email:</div>
+                                {% bootstrap_field patient_form.patient_input_email size='small' form_group_class='form-group input-group col-md-4 px-1' show_label=False placeholder='' %}
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -71,7 +73,7 @@
                             </div>
                             <div class="row ">
                                 <div class="col-md-3 rowTitle">Named GP:</div>
-                                {% bootstrap_field gp_form.title size='small' form_group_class='form-group col-md-2 p-0' %}
+                                {% bootstrap_field gp_form.gp_title size='small' form_group_class='form-group col-md-2 p-0' %}
                                 {% bootstrap_field gp_form.initial size='small' form_group_class='form-group col-md-3 px-2' %}
                                 {% bootstrap_field gp_form.last_name size='small' form_group_class='form-group col-md-4 px-2' %}
                             </div>
@@ -177,7 +179,7 @@
           <div class="modal-body">
                <div class="form-group">
                    <label class="sr-only" for="template_title">Title</label>
-                   <input type="text" name="title" id="template_title" maxlength="255" class="form-control form-control-sm" placeholder="Title">
+                   <input type="text" name="template_title" id="template_title" maxlength="255" class="form-control form-control-sm" placeholder="Title">
                </div>
               <div class="form-group">
                   <div class="form-group">
@@ -282,7 +284,7 @@
                     url: "{% url 'template:search' %}",
                     data: function (params) {
                         let query = {
-                            title: params.term,
+                            template_title: params.term,
                         };
                         return query;
                     },
@@ -486,7 +488,7 @@
                 });
 
                 let data = {
-                    'title': $('#template_title').val(),
+                    'template_title': $('#template_title').val(),
                     'description': $('#template_description').val(),
                     'questions': questions,
                     'common_conditions': common_conditions,

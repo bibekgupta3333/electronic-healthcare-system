@@ -15,7 +15,7 @@
             {% for model in attachments %}
             {% with header=model.parsed_date|format_date_filter|add:" - "|add:model.description %}
             <a class="attachment-preview-link" target="_blank" title="Preview" 
-               href="/medicalreport/attachments/{{ model.dds_identifier }}">
+               href="/medicalreport/{{ instruction.id }}/attachment/{{ model.dds_identifier }}">
                <i class="fas fa-paperclip"></i>
             </a>
                 {% redaction_checkbox_with_body model redaction header %}

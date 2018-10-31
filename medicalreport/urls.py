@@ -11,4 +11,5 @@ urlpatterns = [
     path('<int:instruction_id>/final-report/', views.final_report, name='final_report'),
     path('<int:instruction_id>/view-report/', views.view_report, name='view_report'),
     path('<int:instruction_id>/update/', views.update_report, name='update_report'),
+    path('<int:instruction_id>/attachment/<str:path_file>', views.view_attachment, name='view_attachment'),
 ]

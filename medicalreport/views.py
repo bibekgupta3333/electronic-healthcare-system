@@ -1,12 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.mail import send_mail
 from django.contrib import messages
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from services.emisapiservices import services
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.xml.patient_list import PatientList
 from services.xml.registration import Registration
+from services.xml.base64_attachment import Base64Attachment
 from .dummy_models import (DummyInstruction, DummyClient, DummyPatient)
 from medicalreport.forms import MedicalReportFinaliseSubmitForm
 from .models import AmendmentsForRecord
@@ -14,10 +15,23 @@ from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT
 from .functions import create_or_update_redaction_record
 from medicalreport.reports import MedicalReport
-from accounts.models import GeneralPracticeUser, Patient
+from accounts.models import GeneralPracticeUser, Patient, User
 from .forms import AllocateInstructionForm
-
+import io as BytesIO
 from typing import List
+
+
+def view_attachment(request, instruction_id, path_file):
+    instruction = get_object_or_404(Instruction, pk=instruction_id)
+    raw_xml = services.GetAttachment(instruction.patient.emis_number,path_file).call()
+    attachment = Base64Attachment(raw_xml).data()
+    buffer = BytesIO.BytesIO()
+    buffer.write(attachment)
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type="application/pdf",
+    )
+    return response
 
 
 def get_matched_patient(patient: Patient) -> List[Registration]:
@@ -109,12 +123,15 @@ def edit_report(request, instruction_id):
         },
         user=request.user)
 
+    inst_gp_user = User.objects.get(username=instruction.gp_user.user.username)
+    cur_user = User.objects.get(username=request.user.username)
     return render(request, 'medicalreport/medicalreport_edit.html', {
         'medical_record': medical_record_decorator,
         'redaction': redaction,
         'instruction': dummy_instruction,
         'finalise_submit_form': finalise_submit_form,
         'questions': questions,
+        'show_alert': True if inst_gp_user == cur_user else False
     })
 
 

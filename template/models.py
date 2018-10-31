@@ -9,7 +9,7 @@ from common.models import TimeStampedModel
 
 class TemplateInstruction(TimeStampedModel, models.Model):
     client_organisation = models.ForeignKey(OrganisationClient, null=True, on_delete=models.CASCADE, blank=True)
-    title = models.CharField(max_length=255, unique=True)
+    template_title = models.CharField(max_length=255, unique=True)
     description = models.TextField()
     type = models.CharField(max_length=4, choices=INSTRUCTION_TYPE_CHOICES)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -18,7 +18,7 @@ class TemplateInstruction(TimeStampedModel, models.Model):
         verbose_name = 'Template of Instruction'
 
     def __str__(self):
-        return self.title
+        return self.template_title
 
 
 class TemplateInstructionAdditionalQuestion(models.Model):
