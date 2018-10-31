@@ -8,6 +8,7 @@ from django.forms import formset_factory
 from django.contrib import messages
 from .functions import *
 from .forms import *
+from accounts.forms import PMForm
 
 
 def emr_setup(request):
@@ -27,6 +28,16 @@ def emr_setup(request):
         'emr_form': emr_form,
         'created': created,
         'setting': setting
+    })
+
+
+def sign_up(request):
+    surgery_form = SurgeryForm()
+    pm_form = PMForm()
+
+    return render(request, 'onboarding/sign_up.html', {
+        'surgery_form': surgery_form,
+        'pm_form': pm_form
     })
 
 

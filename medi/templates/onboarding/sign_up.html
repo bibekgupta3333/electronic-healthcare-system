@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% load static %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% bootstrap_messages %}
+
+
+{% block ExtraHead %}
+    <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/onboarding/sign_up.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block Content %}
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="sign-up">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>eMR Set Up</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row subheader">
+                        To be completed by an authorised member of the practice
+                    </div>
+                    <div class="row form-group">
+                        <h5>Surgery details</h5>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">Surgery Name</div>
+                                {% bootstrap_field surgery_form.surgery_name show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">Practice Code</div>
+                                {% bootstrap_field surgery_form.practice_code show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">Postcode</div>
+                                {% bootstrap_field surgery_form.postcode show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">Find Address</div>
+                                {% bootstrap_field surgery_form.address show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">Address Line 1</div>
+                                {% bootstrap_field surgery_form.address_line1 show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">Address Line 2</div>
+                                {% bootstrap_field surgery_form.address_line2 show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">Address Line 3</div>
+                                {% bootstrap_field surgery_form.address_line3 show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">City</div>
+                                {% bootstrap_field surgery_form.city show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">Country</div>
+                                {% bootstrap_field surgery_form.country show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">Contact Number</div>
+                                {% bootstrap_field surgery_form.contact_num show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">EMIS Organisation Code</div>
+                                {% bootstrap_field surgery_form.emis_org_code show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Create Account</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row form-group">
+                        <h6>Please create your account to continue your Surgery Registration</h6>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">First Name</div>
+                                {% bootstrap_field pm_form.first_name show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">Surname</div>
+                                {% bootstrap_field pm_form.surname show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">Email address</div>
+                                {% bootstrap_field pm_form.email1 show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">Confirm email</div>
+                                {% bootstrap_field pm_form.email2 show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">Choose password</div>
+                                {% bootstrap_field pm_form.password1 show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <span>Your password must be at least 8 characters long and contain letters and numbers</span>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">Confirm password</div>
+                                {% bootstrap_field pm_form.password2 show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-7">
+                            <div class="row form-group">
+                                <div class="col-md-12">
+                                    <input type="checkbox" class="accept-policy" name="accept_policy" id="accept-policy" disabled>I accept all T&Cs, End User Licence and data policy. View all documents </input>
+                                    <a href="#" class="active-a" data-toggle="modal" data-target="#acceptTCs">here</a>
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                <div class="col-md-12">
+                                    <input type="checkbox" class="consent" name="consented">I consent to MediData Exchange contacting the surgery regarding eMR.</input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="offset-md-1 col-md-3">
+                            <div class="row">
+                                <button id="BtnSignUp" class="btn btn-primary btn-lg" type="submit">Sign Up</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="modal fade pdf-modal" id="acceptTCs" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+        <div class="modal-dialog policy-modal" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title">T&Cs</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+            {% if setting and setting.policy_form %}
+                <div class="iframe" id="iframe">
+                <iframe id="policyForm" src="/{{ setting.policy_form.url }}#zoom=100" height="400px" width="100%"></iframe>
+                </div>
+            {% endif %}
+            </div>
+            <div class="modal-footer">
+            <button id="goBack" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Go back
+            <button id="acceptPolicy" type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Accept
+            </div>
+        </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block Script %}
+    <script src="{% static 'js/select2.min.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            $('#acceptPolicy').click(function() {
+              $('#accept-policy').attr("checked", true);
+            });
+            $('#goBack').click(function() {
+              $('#accept-policy').attr("checked", false);
+            });
+            $('#BtnSignUp').click(function() {
+              $('#accept-policy').removeAttr("disabled");
+            });
+        });
+    </script>
+{% endblock %}

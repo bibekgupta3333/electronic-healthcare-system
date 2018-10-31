@@ -66,6 +66,22 @@ class GPForm(forms.Form):
             self.fields['title'] = forms.CharField(max_length=255)
 
 
+class PMForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=255, required=True, label='')
+    surname = forms.CharField(max_length=255, required=True, label='')
+    email1 = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), label='', required=True)
+    email2 = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), label='', required=True)
+    password1 = forms.CharField(required=True, widget=forms.PasswordInput())
+    password2 = forms.CharField(required=True, widget=forms.PasswordInput())
+
+    class Meta:
+        model = GeneralPracticeUser
+        fields = ('first_name', 'surname', 'email1', 'email2', 'password1', 'password2')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # initial_data = kwargs.get('initial')
+
 class NewGPForm(forms.ModelForm):
     
     first_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
