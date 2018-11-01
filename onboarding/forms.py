@@ -9,6 +9,24 @@ class EMRSetupForm(forms.ModelForm):
         fields = ('__all__')
 
 
+class SurgeryForm(forms.Form):
+    surgery_name = forms.CharField(max_length=255, label='', widget=forms.TextInput())
+    practice_code = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+    postcode = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+    address = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+    address_line1 = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+    address_line2 = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+    address_line3 = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+    city = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+    country = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+    contact_num = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+    emis_org_code = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # initial_data = kwargs.get('initial')
+
+
 class SurgeryEmrSetUpStage2Form(forms.Form):
     surgery_name = forms.CharField(max_length=255, label='', disabled=True)
     surgery_code = forms.CharField(max_length=20, label='', disabled=True)

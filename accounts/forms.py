@@ -17,7 +17,7 @@ class PatientForm(forms.ModelForm):
     first_name = forms.CharField(max_length=255, required=True, label='First name*', widget=forms.TextInput(attrs={'placeholder': ''}))
     last_name = forms.CharField(max_length=255, required=True, label='Last name*', widget=forms.TextInput(attrs={'placeholder': ''}))
     date_of_birth = forms.DateField(input_formats=DATE_INPUT_FORMATS, required=True, widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': ''}))
-    address_postcode = MyChoiceField(required=True, )
+    address_postcode = MyChoiceField(required=True)
     address_name_number = MyChoiceField(required=False)
 
     class Meta:
@@ -25,9 +25,9 @@ class PatientForm(forms.ModelForm):
         fields = ('title', 'first_name', 'last_name', 'date_of_birth', 'address_postcode', 'address_name_number',
                   'nhs_number', 'patient_input_email')
         widgets = {
-            'address_postcode': forms.TextInput(attrs={'placeholder': '', }, ),
-            'date_of_birth': forms.DateTimeInput(attrs={'placeholder': '', 'autocomplete': 'off'}, ),
-            'address_name_number': forms.TextInput(attrs={'placeholder': '', },)
+            'address_postcode': forms.TextInput(attrs={'placeholder': '', }),
+            'date_of_birth': forms.DateTimeInput(attrs={'placeholder': '', 'autocomplete': 'off'}),
+            'address_name_number': forms.TextInput(attrs={'placeholder': '', })
         }
 
         labels = {
@@ -65,6 +65,22 @@ class GPForm(forms.Form):
         if initial_data:
             self.fields['title'] = forms.CharField(max_length=255)
 
+
+class PMForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=255, required=True, label='')
+    surname = forms.CharField(max_length=255, required=True, label='')
+    email1 = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), label='', required=True)
+    email2 = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), label='', required=True)
+    password1 = forms.CharField(required=True, widget=forms.PasswordInput())
+    password2 = forms.CharField(required=True, widget=forms.PasswordInput())
+
+    class Meta:
+        model = GeneralPracticeUser
+        fields = ('first_name', 'surname', 'email1', 'email2', 'password1', 'password2')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # initial_data = kwargs.get('initial')
 
 class NewGPForm(forms.ModelForm):
     
