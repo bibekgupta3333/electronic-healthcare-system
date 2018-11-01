@@ -101,21 +101,23 @@
             <table class="table table-striped table-bordered table-hover dataTable no-footer">
                 {{ permission_formset.management_form }}
                 <thead>
-                    {% for form in permission_formset.forms %}
-                        {% if forloop.first %}
-                            {% for field in form %}
-                                {% if field.label != 'Id' %}
-                                    <th>{{field.label}}</th>
-                                {% else %}
-                                    <th style="display: none">{{field.label}}</th>
-                                {% endif %}
-                            {% endfor %}
-                        {% endif %}
-                    {% endfor %}
+                    <tr class="text-center">
+                        {% for form in permission_formset.forms %}
+                            {% if forloop.first %}
+                                {% for field in form %}
+                                    {% if field.label != 'Id' %}
+                                        <th>{{field.label}}</th>
+                                    {% else %}
+                                        <th style="display: none">{{field.label}}</th>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
                 </thead>
                 <tbody>
                     {% for form in permission_formset.forms %}
-                        <tr>
+                        <tr class="text-center">
                             {% for field in form %}
                                 {% if field.label != 'Id' %}
                                     <td>{{field}}</td>
