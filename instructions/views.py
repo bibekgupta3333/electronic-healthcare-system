@@ -293,7 +293,7 @@ def new_instruction(request):
                 fail_silently=False,
             )
             messages.success(request, 'Form submission successful')
-            if instruction.type == SARS_TYPE:
+            if instruction.type == SARS_TYPE and request.user.type == GENERAL_PRACTICE_USER:
                 return redirect('medicalreport:edit_report', instruction_id=instruction.id)
             else:
                 return redirect('instructions:view_pipeline')
