@@ -1,7 +1,11 @@
+{% load static %}
+
 <aside class="left-panel" id="aside-panel">
     <nav class="navigation navbar-dark">
         <div class="sidebar-header">
-            <h1 class="logo">MD-X</h1>
+            <div class="logo">
+                <img src="{% static "images/logo/eMR_med.png" %}">
+            </div>
             <div class="profile">
                 <h3>{{ user.first_name }}  {{ user.last_name }}</h3>
                 <p>{{ user.get_my_role }}</p>

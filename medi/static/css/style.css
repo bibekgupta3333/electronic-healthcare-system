@@ -194,6 +194,13 @@ aside.left-panel.lg + .content {
   padding: 15px 15px;
 }
 
+.logo img {
+  width: 100%;
+  margin: 0 auto;
+  max-width: 100%;
+}
+
+
 .logo-expanded {
   font-size: 20px;
   letter-spacing: .05em;
