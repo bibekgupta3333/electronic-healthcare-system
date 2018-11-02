@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 
-from organisations.models import NHSgpPractice, OrganisationGeneralPractice
+from organisations.models import NHSGeneralPractice, OrganisationGeneralPractice
 
 
 def create_organisation(request):
@@ -18,7 +18,7 @@ def get_nhs_data(request, **kwargs):
         'address': '',
     }
     if code:
-        nhs_gp = NHSgpPractice.objects.filter(code=code).first()
+        nhs_gp = NHSGeneralPractice.objects.filter(code=code).first()
         if nhs_gp:
             data = {
                 'name': nhs_gp.name,
@@ -61,10 +61,10 @@ def get_nhs_autocomplete(request):
     search = request.GET.get('search', '')
     if search:
         organisation_gps = OrganisationGeneralPractice.objects.filter(accept_policy=True).filter(trading_name__icontains=search)
-        nhs_gps = NHSgpPractice.objects.filter(name__icontains=search)
+        nhs_gps = NHSGeneralPractice.objects.filter(name__icontains=search)
     else:
         organisation_gps = OrganisationGeneralPractice.objects.filter(accept_policy=True).all()[:10]
-        nhs_gps = NHSgpPractice.objects.all()[:10]
+        nhs_gps = NHSGeneralPractice.objects.all()[:10]
 
     if organisation_gps.exists():
         for organisation_gp in organisation_gps:
