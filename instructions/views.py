@@ -258,7 +258,7 @@ def new_instruction(request):
             setting = Setting.objects.all().first()
             if instruction.type == AMRA_TYPE and not instruction.consent_form and setting:
                 message = 'Your instruction has request consent form. Please upload or accept consent form in this link {}'\
-                    .format(setting.site + '/instruction/upload_consent/' + str(instruction.id) + '/')
+                    .format(setting.site + '/instruction/upload-consent/' + str(instruction.id) + '/')
                 send_mail(
                     'Request consent',
                     message,

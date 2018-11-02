@@ -47,31 +47,31 @@ function getObjectKeyByValue(obj, val){
 }
 
 function instructionStatusFilter(selected_status){
-    window.location = '/instruction/view_pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
+    window.location = '/instruction/view-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
 }
 
 function gpuserStatusFilter(selected_status){
-    window.location = '/accounts/view_users/?status=' + gpuser_roleDict[selected_status] + '&type=' + $('#filterUserType').val() + '&user_type=GP';
+    window.location = '/accounts/view-users/?status=' + gpuser_roleDict[selected_status] + '&type=' + $('#filterUserType').val() + '&user_type=GP';
 }
 
 function mediuserStatusFilter(selected_status){
-    window.location = '/accounts/view_users/?status=' + medidatauser_roleDict[selected_status] + '&type=' + $('#filterUserType').val() + '&user_type=MEDI';
+    window.location = '/accounts/view-users/?status=' + medidatauser_roleDict[selected_status] + '&type=' + $('#filterUserType').val() + '&user_type=MEDI';
 }
 
 function clientuserStatusFilter(selected_status){
-    window.location = '/accounts/view_users/?status=' + clientuser_roleDict[selected_status] + '&type=' + $('#filterUserType').val() + '&user_type=CLT';
+    window.location = '/accounts/view-users/?status=' + clientuser_roleDict[selected_status] + '&type=' + $('#filterUserType').val() + '&user_type=CLT';
 }
 
 function typeFilter(){
     if(getUrlParameter('status')){
         status = getUrlParameter('status');
     }
-    window.location = '/instruction/view_pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val();
+    window.location = '/instruction/view-pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val();
 }
 
 function userTypeFilter() {
     if(getUrlParameter('status')){
         status = getUrlParameter('status');
     }
-    window.location = '/accounts/view_users/?status=' + status + '&type=' + $('#filterUserType').val();
+    window.location = '/accounts/view-users/?status=' + status + '&type=' + $('#filterUserType').val();
 }

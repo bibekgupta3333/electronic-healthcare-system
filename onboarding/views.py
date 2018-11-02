@@ -47,7 +47,7 @@ def send_email_emr(request, emr):
         from_email = settings.DEFAULT_FROM
         to_list = [emr.pm_email]
         html_message = loader.render_to_string('onboarding/emr_email.html',{
-            'link': '{}/onboarding/emr_setup_stage_2/{}'.format(setting.site, emr.id)
+            'link': '{}/onboarding/emr-setup-stage-2/{}'.format(setting.site, emr.id)
         })
         send_mail('Completely eMR','',from_email,to_list,fail_silently=True,html_message=html_message)
 
