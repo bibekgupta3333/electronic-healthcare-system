@@ -77,9 +77,9 @@ class OrganisationGeneralPractice(OrganisationBase):
     operating_system_auth_token = models.CharField(max_length=255, blank=True)
     practice_code = models.CharField(max_length=255)
     payment_timing = models.CharField(max_length=2, choices=PAYMENT_TIMING_CHOICES, blank=True)
-    payment_bank_holder_name = models.CharField(max_length=255)
-    payment_bank_sort_code = models.CharField(max_length=255)
-    payment_bank_account_number = models.CharField(max_length=255)
+    payment_bank_holder_name = models.CharField(max_length=255, blank=True)
+    payment_bank_sort_code = models.CharField(max_length=255, blank=True)
+    payment_bank_account_number = models.CharField(max_length=255, blank=True)
     payment_preference = models.CharField(max_length=255, blank=True)
     accept_policy = models.BooleanField(default=True)
 

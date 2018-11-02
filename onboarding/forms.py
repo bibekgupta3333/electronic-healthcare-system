@@ -1,12 +1,24 @@
 from django import forms
-from onboarding.models import EMRSetup
+
 from accounts import models as accounts_models
+from organisations.models import OrganisationGeneralPractice
+from .models import EMRSetup
 
 
 class EMRSetupForm(forms.ModelForm):
     class Meta:
         model = EMRSetup
         fields = ('__all__')
+
+    def clean(self):
+        cleaned_data = super().clean()
+        surgery_code = cleaned_data.get('surgery_code')
+        surgery_name = cleaned_data.get('surgery_name')
+
+        if EMRSetup.objects.filter(surgery_code=surgery_code, surgery_name=surgery_name).exists():
+            raise forms.ValidationError('This GP Surgery has already been created.'
+                                        ' Please contact MediData for more information')
+        return cleaned_data
 
 
 class SurgeryForm(forms.Form):
@@ -25,6 +37,43 @@ class SurgeryForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # initial_data = kwargs.get('initial')
+
+    def clean_practice_code(self):
+        practice_code = self.cleaned_data.get('practice_code')
+
+        if OrganisationGeneralPractice.objects.filter(practice_code=practice_code).exists():
+            raise forms.ValidationError('This GP Surgery with this practice code already exists ')
+        return practice_code
+
+    def clean_surgery_name(self):
+        surgery_name = self.cleaned_data.get('surgery_name')
+        if OrganisationGeneralPractice.objects.filter(trading_name=surgery_name).exists():
+            raise forms.ValidationError('This GP Surgery with this name already exists ')
+        return surgery_name
+
+    def clean_address_line1(self):
+        address_line1 = self.cleaned_data.get('address_line1')
+        if OrganisationGeneralPractice.objects.filter(address__startswith=address_line1).exists():
+            raise forms.ValidationError('This GP Surgery with this address already exists ')
+        return address_line1
+
+    def save(self, commit=True):
+        gp_address = ' '.join([
+            self.cleaned_data.get('address_line1'),
+            self.cleaned_data.get('address_line2') if self.cleaned_data.get('address_line2') else '',
+            self.cleaned_data.get('city'),
+            self.cleaned_data.get('postcode')
+        ])
+        accept_policy = True if self.data.get('accept_policy') == 'on' else False
+        gp_organisation = OrganisationGeneralPractice.objects.create(
+            trading_name=self.cleaned_data.get('surgery_name'),
+            accept_policy=accept_policy,
+            legal_name=self.cleaned_data.get('surgery_name'),
+            address=gp_address,
+            contact_telephone=self.cleaned_data.get('contact_num'),
+            practice_code=self.cleaned_data.get('practice_code'),
+        )
+        return gp_organisation
 
 
 class SurgeryEmrSetUpStage2Form(forms.Form):
