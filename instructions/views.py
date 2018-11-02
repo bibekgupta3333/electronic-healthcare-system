@@ -41,10 +41,7 @@ def count_instructions(user, gp_practice_id, client_organisation):
         else:
             query_condition = Q(gp_practice_id=gp_practice_id) & (Q(gp_user=user.userprofilebase.generalpracticeuser) | Q(gp_user__isnull=True))
     elif user.type == CLIENT_USER:
-        if user.is_staff:
-            query_condition = Q(client_user__organisation=client_organisation)
-        else:
-            query_condition = Q(client_user=user.userprofilebase.clientuser)
+        query_condition = Q(client_user__organisation=client_organisation)
 
     all_count = Instruction.objects.filter(query_condition).count()
     new_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_NEW).count()
@@ -293,7 +290,7 @@ def new_instruction(request):
                 fail_silently=False,
             )
             messages.success(request, 'Form submission successful')
-            if instruction.type == SARS_TYPE:
+            if instruction.type == SARS_TYPE and request.user.type == GENERAL_PRACTICE_USER:
                 return redirect('medicalreport:edit_report', instruction_id=instruction.id)
             else:
                 return redirect('instructions:view_pipeline')
