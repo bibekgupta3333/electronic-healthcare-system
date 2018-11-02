@@ -150,7 +150,7 @@ USE_TZ = True
 STATIC_ROOT = 'static'
 STATIC_URL = '/static/'
 
-EMIS_API_HOST = 'http://medi.mohub.co:3001/emis'
+EMIS_API_HOST = 'http://medi2data.net:9443'
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static/'),
@@ -177,7 +177,7 @@ DEFAULT_FROM = 'MediData'
 
 
 LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/instruction/view_pipeline'
+LOGIN_REDIRECT_URL = '/instruction/view-pipeline'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 MESSAGE_TAGS = {
@@ -197,8 +197,8 @@ CRONJOBS = [
     ('0 0 * * *', 'instructions.cron.notification_mail.instruction_notification_email_job')
 ]
 
-PIPELINE_INSTRUCTION_LINK = 'http://medi.mohub.co/instruction/view_pipeline/'
-ACCOUNT_LINK = 'http://medi.mohub.co/accounts/view_account/'
+PIPELINE_INSTRUCTION_LINK = 'http://medi.mohub.co/instruction/view-pipeline/'
+ACCOUNT_LINK = 'http://medi.mohub.co/accounts/view-account/'
 
 DUMMY_EMAIL_LIST = ['ben.blomerley@gmail.com', 'lontharn@gmail.com', 'mooauii.lazy@gmail.com']
 

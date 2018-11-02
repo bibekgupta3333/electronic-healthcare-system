@@ -1,5 +1,4 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
 from django.template import loader
 from django.core.mail import send_mail
 from instructions.models import Setting
@@ -35,6 +34,13 @@ def sign_up(request):
     surgery_form = SurgeryForm()
     pm_form = PMForm()
 
+    if request.method == "POST":
+        surgery_form = SurgeryForm(request.POST)
+        pm_form = PMForm(request.POST)
+
+        if surgery_form.is_valid() and pm_form.is_valid():
+            gp_organisation = surgery_form.save()
+            pm_form.save__with_gp(gp_organisation=gp_organisation)
     return render(request, 'onboarding/sign_up.html', {
         'surgery_form': surgery_form,
         'pm_form': pm_form
@@ -47,7 +53,7 @@ def send_email_emr(request, emr):
         from_email = settings.DEFAULT_FROM
         to_list = [emr.pm_email]
         html_message = loader.render_to_string('onboarding/emr_email.html',{
-            'link': '{}/onboarding/emr_setup_stage_2/{}'.format(setting.site, emr.id)
+            'link': '{}/onboarding/emr-setup-stage-2/{}'.format(setting.site, emr.id)
         })
         send_mail('Completely eMR','',from_email,to_list,fail_silently=True,html_message=html_message)
 

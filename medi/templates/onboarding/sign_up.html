@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block Content %}
-    <form method="POST" enctype="multipart/form-data">
+    <form id="signup_form" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="sign-up">
             <div class="card">
@@ -181,7 +181,7 @@
                             </div>
                             <div class="row form-group">
                                 <div class="col-md-12">
-                                    <input type="checkbox" class="consent" name="consented">I consent to MediData Exchange contacting the surgery regarding eMR.</input>
+                                    <input type="checkbox" id="consent" class="consent" name="consented">I consent to MediData Exchange contacting the surgery regarding eMR.</input>
                                 </div>
                             </div>
                         </div>
@@ -212,8 +212,30 @@
             {% endif %}
             </div>
             <div class="modal-footer">
-            <button id="goBack" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Go back
-            <button id="acceptPolicy" type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Accept
+                <button id="goBack" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Go back</button>
+                <button id="acceptPolicy" type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Accept</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <div class="modal fade confirm-modal" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <p class="modal-body">
+                The terms and conditions are not accepted. You can proceed but you will not be able to receive or initiate instructions until reviewed and accepted
+            </p>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+
+            </div>
+            <div class="modal-footer">
+                <button id="closeConfirm" type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Go back and review</button>
+                <button id="proceed" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Proceed</button>
             </div>
         </div>
         </div>
@@ -230,8 +252,16 @@
             $('#goBack').click(function() {
               $('#accept-policy').attr("checked", false);
             });
-            $('#BtnSignUp').click(function() {
+            $('#signup_form').submit(function(event) {
+                var $form = this;
               $('#accept-policy').removeAttr("disabled");
+               if(!$('#accept-policy:checked').length) {
+                   event.preventDefault();
+                 $('#confirmModal').modal();
+                 $('#proceed').click(function() {
+                     $form.submit();
+                 });
+               }
             });
         });
     </script>

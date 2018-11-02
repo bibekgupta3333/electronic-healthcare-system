@@ -74,7 +74,7 @@ class RejectRequestTest(EmisAPITestCase):
 
     def test_view_redirects_to_correct_url(self):
         response = self.client.post('/medicalreport/2/reject-request/')
-        self.assertRedirects(response, '/instruction/view_pipeline/?status=%s&type=allType'%INSTRUCTION_STATUS_REJECT)
+        self.assertRedirects(response, '/instruction/view-pipeline/?status=%s&type=allType'%INSTRUCTION_STATUS_REJECT)
 
 
 class SelectPatientTest(EmisAPITestCase):
@@ -208,7 +208,7 @@ class UpdateReportTest(EmisAPITestCase):
             'prepared_and_signed': 'PREPARED_AND_REVIEWED',
             'prepared_by': 'test_reviewer'
         })
-        self.assertRedirects(response, '/instruction/view_pipeline/')
+        self.assertRedirects(response, '/instruction/view-pipeline/')
 
     def test_view_adds_error_message_and_redirects_to_correct_url_if_no_consent_form(self):
         os.remove(self.instruction.consent_form.path)

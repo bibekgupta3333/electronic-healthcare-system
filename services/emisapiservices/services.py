@@ -55,8 +55,8 @@ class GetPatientList(EmisAPIServiceBase):
             self.patient.user.first_name,
             self.patient.user.last_name,
         ]
-        # if self.patient.date_of_birth is not None:
-        #     terms.append(self.patient.date_of_birth.strftime("%d/%m/%Y"))
+        if self.patient.date_of_birth is not None:
+            terms.append(self.patient.date_of_birth.strftime("%d/%m/%Y"))
         terms = " ".join([term for term in terms if term])
         return urllib.parse.quote(terms, safe='')
 
