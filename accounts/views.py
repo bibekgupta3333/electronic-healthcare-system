@@ -82,6 +82,7 @@ def view_users(request):
     profiles = UserProfileBase.all_objects.all()
     user = request.user
     user = User.objects.get(username=user.username)
+    user_profile = UserProfileBase.objects.filter(user_id=user.pk).first()
 
     if 'status' in request.GET:
         filter_type = request.GET.get('type', 'active')
@@ -99,10 +100,11 @@ def view_users(request):
         filter_user_type = request.COOKIES.get('user_type', None)
 
     if request.method == 'POST':
-        permission_set = modelformset_factory(InstructionPermission, form=InstructionPermissionForm, extra=0)
-        permission_formset = permission_set(request.POST, form_kwargs={'empty_permitted': False})
-        if permission_formset.is_valid():
-            permission_formset.save()
+        if user_profile and hasattr(user_profile, 'generalpracticeuser'):
+            permission_set = modelformset_factory(InstructionPermission, form=InstructionPermissionForm, extra=0)
+            permission_formset = permission_set(request.POST, form_kwargs={'empty_permitted': False})
+            if permission_formset.is_valid():
+                permission_formset.save()
 
     if filter_type == '':
         filter_type = "active"
@@ -126,9 +128,14 @@ def view_users(request):
     table_data = get_table_data(user, query_set, filter_query)
     RequestConfig(request, paginate={'per_page': 5}).configure(table_data['table'])
     table_data['table'].order_by = request.GET.get('sort', '-created')
-    permissions = InstructionPermission.objects.all()
-    permission_set = modelformset_factory(InstructionPermission, form=InstructionPermissionForm, extra=(3-permissions.count()))
-    permission_formset = permission_set(queryset=permissions)
+    if user_profile and hasattr(user_profile, 'generalpracticeuser'):
+        organisation = user_profile.generalpracticeuser.organisation
+        permissions = InstructionPermission.objects.filter(organisation_id=organisation.id)
+        permission_set = modelformset_factory(InstructionPermission, form=InstructionPermissionForm, extra=(3-permissions.count()))
+        initial_data = []
+        for i in range (0,3-permissions.count()):
+            initial_data.append({'organisation': organisation.id})
+        permission_formset = permission_set(queryset=permissions, initial=initial_data)
 
     response = render(request, 'user_management/user_management.html', {
         'user': user,

@@ -1,10 +1,12 @@
 from django.db import models
 from accounts.models import GeneralPracticeUser
 from common.models import TimeStampedModel
+from organisations.models import OrganisationGeneralPractice
 
 
-class InstructionPermission(TimeStampedModel, models.Model):
+class InstructionPermission(models.Model):
     role = models.IntegerField(choices=GeneralPracticeUser.ROLE_CHOICES, verbose_name='Role')
+    organisation = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE, null=True)
     create_sars = models.BooleanField(default=False, verbose_name="Create SARS")
     reject_amra = models.BooleanField(default=False, verbose_name="Reject AMRA")
     reject_sars = models.BooleanField(default=False, verbose_name="Reject SARS")
@@ -17,7 +19,7 @@ class InstructionPermission(TimeStampedModel, models.Model):
     view_completed_sars = models.BooleanField(default=False, verbose_name="View completed SARS")
 
     class Meta:
-        unique_together = ["role"]
+        unique_together = ["role", "organisation"]
 
     def __str__(self):
-        return self.get_role_display()
+        return '%s : %s'%(self.get_role_display(),self.organisation.__str__())
