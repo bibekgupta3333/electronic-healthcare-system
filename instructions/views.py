@@ -15,7 +15,7 @@ from accounts.models import User, Patient, GeneralPracticeUser
 from accounts.models import PATIENT_USER, GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from accounts.forms import PatientForm, GPForm
 from organisations.forms import GeneralPracticeForm
-from organisations.models import OrganisationGeneralPractice, NHSgpPractice
+from organisations.models import OrganisationGeneralPractice, NHSGeneralPractice
 from organisations.views import get_nhs_data
 from template.forms import TemplateInstructionForm
 from common.functions import multi_getattr
@@ -234,7 +234,7 @@ def new_instruction(request):
         gp_practice_request.GET['code'] = gp_practice_code
         nhs_address = get_nhs_data(gp_practice_request, need_dict=True)['address']
         if not gp_practice:
-            gp_practice = NHSgpPractice.objects.filter(code=gp_practice_code).first()
+            gp_practice = NHSGeneralPractice.objects.filter(code=gp_practice_code).first()
 
         if (patient_form.is_valid() and scope_form.is_valid() and gp_practice) or request.user.type == GENERAL_PRACTICE_USER:
             # create patient user
@@ -270,7 +270,7 @@ def new_instruction(request):
             medidata_emails_list = [user.email for user in User.objects.filter(type=MEDIDATA_USER)]
             gp_emails_list = []
             # Notification: client selected NHS GP
-            if isinstance(gp_practice, NHSgpPractice):
+            if isinstance(gp_practice, NHSGeneralPractice):
                 send_mail(
                     'NHS GP is selected',
                     'Your client had selected NHS GP: {}'.format(gp_practice.name),

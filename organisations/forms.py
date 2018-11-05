@@ -1,8 +1,8 @@
 from django import forms
-from .models import NHSgpPractice, OrganisationGeneralPractice
+from .models import NHSGeneralPractice, OrganisationGeneralPractice
 
 # JT - what is going on here?
-nhs_query = NHSgpPractice.objects.none()
+nhs_query = NHSGeneralPractice.objects.none()
 gp_organisation = OrganisationGeneralPractice.objects.none()
 
 
@@ -10,7 +10,7 @@ class GeneralPracticeForm(forms.Form):
     gp_practice = forms.ModelChoiceField(queryset=nhs_query.union(gp_organisation))
 
     class Meta:
-        model = NHSgpPractice
+        model = NHSGeneralPractice
         fields = ('nhs')
 
     def __init__(self, *args, **kwargs):

@@ -78,6 +78,7 @@ def select_patient(request, instruction_id, patient_emis_number):
                 instruction.save()
                 gp_name = ' '.join([instruction.gp_user.user.first_name, instruction.gp_user.user.last_name])
                 messages.success(request, 'Allocated to {gp_name} successful'.format(gp_name=gp_name))
+                return redirect('instructions:view_pipeline')
             elif allocate_option == AllocateInstructionForm.RETURN_TO_PIPELINE:
                 return redirect('instructions:view_pipeline')
     if not AmendmentsForRecord.objects.filter(instruction=instruction).exists():
