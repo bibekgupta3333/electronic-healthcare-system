@@ -138,7 +138,7 @@
                     </div>
                     <div class="row form-group">
                         <div class="col-md-6">
-                            <div class="row">
+                            <div class="row" id="email_form">
                                 <div class="col-md-3 title-pos">Email address</div>
                                 {% bootstrap_field pm_form.email1 show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
@@ -246,6 +246,7 @@
     <script src="{% static 'js/select2.min.js' %}"></script>
     <script>
         $(document).ready(function () {
+            var csrf_token = '{{ csrf_token }}';
             $('#acceptPolicy').click(function() {
               $('#accept-policy').attr("checked", true);
             });
@@ -253,7 +254,7 @@
               $('#accept-policy').attr("checked", false);
             });
             $('#signup_form').submit(function(event) {
-                var $form = this;
+              var $form = this;
               $('#accept-policy').removeAttr("disabled");
                if(!$('#accept-policy:checked').length) {
                    event.preventDefault();
@@ -263,6 +264,25 @@
                  });
                }
             });
+            $('#id_email1').change(function() {
+              $.ajax({
+                  url: "{% url 'accounts:check_email' %}",
+                  type: "POST",
+                  dataType: "json",
+                  data:{
+                      "email": $(this).val() ,
+                      "csrfmiddlewaretoken": csrf_token
+                  },
+                  success:function(data) {
+                    $('#id_email1').removeClass("is-invalid");
+                    $('#email_form').find('.invalid-feedback').remove();
+                    if (data.exists){
+                      $('#id_email1').addClass("is-invalid");
+                      $('#id_email1').after('<div class="invalid-feedback">This email address has already been used to register.</div>');
+                    }
+                  }
+              });
+    });
         });
     </script>
 {% endblock %}

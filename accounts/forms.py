@@ -86,7 +86,7 @@ class PMForm(forms.ModelForm):
     def clean_email1(self):
         email = self.cleaned_data.get('email1')
         if User.objects.filter(email=email).exists():
-            raise forms.ValidationError('This GP Surgery with this email already exists ')
+            raise forms.ValidationError('This email address has already been used to register.')
         return email
 
     def clean_first_name(self):

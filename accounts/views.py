@@ -212,3 +212,9 @@ def create_user(request):
     })
 
     return response
+
+
+def check_email(request):
+    email = request.POST.get('email')
+    exists = User.objects.filter(email=email).exists()
+    return JsonResponse({'exists': exists})
