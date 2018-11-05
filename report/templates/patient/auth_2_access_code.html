@@ -1,0 +1,45 @@
+{% load static %}
+{% load medi_report_tags %}
+{% load bootstrap4 %}
+{% load get_permissions %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+
+<div class="container">
+    <div class="row">
+       <div class="col-sm-2 mt-3">
+            <img src="{% static "images/eMR_logo.png" %}" width="100%">
+        </div>
+
+        <div class="col-sm-12 mt-3">
+
+            <p>Hi {{ name }}, thank you for using eMR from MediData Exchange to obtain your report.</p>
+            <p>In order to access the report, we require to confirm your identity.</p>
+            <p>We just sent a 6 digit access code by text to: {{ number }}</p>
+            <p>It may take a few minutes to arrive.</p>
+            {#todo set input field reuired #JS#}
+            <form id="access_code_form" method="post">
+                {% csrf_token %}
+                <div class="input-group mb-3">
+                    {{ form.as_p }}
+                </div>
+                <input type="submit" name='button' value="Access Report" class="btn btn-outline-primary">
+                <input type="submit" name='button' value="Request New Code" class="btn btn-primary">
+            </form>
+
+            <h4>{% if message %} {{ message }} {% endif %}</h4>
+
+        </div>
+    </div>
+</div>
+{% block Script %}
+    <script>
+
+    $('#access_code_form').on('submit', function(e) {
+        if($('#id_access_code').val().length == 0) {
+            e.preventDefault();
+        }
+    });
+
+</script>
+{% endblock %}

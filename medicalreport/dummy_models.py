@@ -15,9 +15,6 @@ class DummySnomedConcept(object):
         self.id = id
         self.fsn_description = desc
 
-    def fsn_description(self):
-        return self.fsn_description
-
 
 class DummyInstruction(object):
     def __init__(self, instruction):
