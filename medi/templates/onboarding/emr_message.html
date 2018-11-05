@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% load static %}
+{% bootstrap_messages %}
+
+
+{% block ExtraHead %}
+    <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/onboarding/sign_up.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+
+{% block Content %}
+
+    <p>Thank you for completing part one of the eMR registration process. It’s great to have you on board. We will be in touch with you shortly to complete the set up process so that you can process SARs in seconds.</p>
+
+    <p>We look forward to working with you in the very near future.
+
+    eMR Support Team</p>
+
+{% endblock %}

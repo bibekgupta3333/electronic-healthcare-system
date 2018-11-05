@@ -44,6 +44,8 @@ def sign_up(request):
         if surgery_form.is_valid() and pm_form.is_valid():
             gp_organisation = surgery_form.save()
             pm_form.save__with_gp(gp_organisation=gp_organisation)
+            if not surgery_form.cleaned_data.get('operating_system') == 'EW':
+                return render(request, 'onboarding/emr_message.html')
     return render(request, 'onboarding/sign_up.html', {
         'surgery_form': surgery_form,
         'pm_form': pm_form,

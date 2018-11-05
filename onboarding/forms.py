@@ -40,6 +40,16 @@ class EMRSetupForm(forms.ModelForm):
                                         ' Please contact MediData for more information')
         return cleaned_data
 
+    def clean(self):
+        cleaned_data = super().clean()
+        surgery_code = cleaned_data.get('surgery_code')
+        surgery_name = cleaned_data.get('surgery_name')
+
+        if EMRSetup.objects.filter(surgery_code=surgery_code, surgery_name=surgery_name).exists():
+            raise forms.ValidationError('This GP Surgery has already been created.'
+                                        ' Please contact MediData for more information')
+        return cleaned_data
+
 
 class SurgeryForm(forms.Form):
     surgery_name = forms.CharField(max_length=255, label='', widget=forms.TextInput())
@@ -53,9 +63,11 @@ class SurgeryForm(forms.Form):
     country = forms.CharField(max_length=20, label='', widget=forms.TextInput())
     contact_num = forms.CharField(max_length=20, label='', widget=forms.TextInput())
     emis_org_code = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+    operating_system = forms.ChoiceField(choices=OrganisationGeneralPractice.GP_OP_SYS_CHOICES, label='')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.initial['operating_system'] = 'EW'
         # initial_data = kwargs.get('initial')
 
     def clean_practice_code(self):
@@ -76,6 +88,12 @@ class SurgeryForm(forms.Form):
         if OrganisationGeneralPractice.objects.filter(address__startswith=address_line1).exists():
             raise forms.ValidationError('This GP Surgery with this address already exists ')
         return address_line1
+
+    def validate_operating_system(self):
+        operating_system = self.cleaned_data.get('operating_system')
+        if not operating_system == 'EW':
+            self.cleaned_data['accept_policy'] = False
+        return operating_system
 
     def save(self, commit=True):
         gp_address = ' '.join([

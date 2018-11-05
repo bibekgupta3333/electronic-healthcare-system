@@ -1,6 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.conf import settings
+
 from common.functions import verify_password
 from .models import Patient, GeneralPracticeUser, ClientUser, TITLE_CHOICE, GENERAL_PRACTICE_USER, User
 
@@ -83,6 +84,10 @@ class PMForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # initial_data = kwargs.get('initial')
 
+    def clean_email1(self):
+        email = self.cleaned_data.get('email1')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('This GP Surgery with this email already exists ')
     def clean_password1(self):
         password = self.cleaned_data.get('password1')
         first_name = self.cleaned_data.get('first_name')
