@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('organisations', '0003_organisationgeneralpractice_accept_policy'),
+        ('organisations', '0004_auto_20181102_0549'),
     ]
 
     operations = [
@@ -24,5 +24,6 @@ class Migration(migrations.Migration):
             model_name='organisationgeneralpractice',
             name='payment_bank_sort_code',
             field=models.CharField(blank=True, max_length=255),
-        ),
+        )
+
     ]
