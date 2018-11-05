@@ -9,8 +9,8 @@ from .models import EMRSetup
 
 
 class EMRSetupForm(forms.ModelForm):
-    surgery_code = forms.CharField(widget=forms.Select(choices=GpPractices.objects.all().values_list('id', 'sitenumber_c')))
-    surgery_name = forms.CharField(widget=forms.Select(choices=GpPractices.objects.all().values_list('id', 'name')))
+    surgery_code = forms.CharField()
+    surgery_name = forms.CharField()
 
     class Meta:
         model = EMRSetup
@@ -18,6 +18,9 @@ class EMRSetupForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['surgery_code'] = forms.CharField(widget=forms.Select(choices=GpPractices.objects.all().values_list('id', 'sitenumber_c')))
+        self.fields['surgery_name'] = forms.CharField(widget=forms.Select(choices=GpPractices.objects.all().values_list('id', 'name')))
+
         initial_data = kwargs.get('initial')
         if initial_data:
             surgery_code = initial_data.get('surgery_code')
