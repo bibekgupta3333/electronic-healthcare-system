@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.conf import settings
-
+from common.functions import verify_password
 from .models import Patient, GeneralPracticeUser, ClientUser, TITLE_CHOICE, GENERAL_PRACTICE_USER, User
 
 DATE_INPUT_FORMATS = settings.DATE_INPUT_FORMATS
@@ -83,6 +83,16 @@ class PMForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # initial_data = kwargs.get('initial')
 
+    def clean_password1(self):
+        password = self.cleaned_data.get('password1')
+        first_name = self.cleaned_data.get('first_name')
+        surname = self.cleaned_data.get('surname')
+        email = self.cleaned_data.get('email1')
+        password_auth = verify_password(password, first_name, surname, email)
+        if not password_auth.get('verified'):
+            raise forms.ValidationError(password_auth.get('warning'))
+        return password
+
     def clean_email1(self):
         email = self.cleaned_data.get('email1')
         if User.objects.filter(email=email).exists():
@@ -116,7 +126,7 @@ class PMForm(forms.ModelForm):
 
 
 class NewGPForm(forms.ModelForm):
-    
+
     first_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
     last_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
     email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), label='', required=True)
@@ -139,7 +149,7 @@ class NewGPForm(forms.ModelForm):
 
 
 class NewClientForm(forms.ModelForm):
-    
+
     first_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
     last_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
     email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), label='', required=True)

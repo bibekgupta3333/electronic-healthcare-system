@@ -35,6 +35,7 @@ def emr_setup(request):
 def sign_up(request):
     surgery_form = SurgeryForm()
     pm_form = PMForm()
+    setting = Setting.objects.all().first()
 
     if request.method == "POST":
         surgery_form = SurgeryForm(request.POST)
@@ -45,7 +46,8 @@ def sign_up(request):
             pm_form.save__with_gp(gp_organisation=gp_organisation)
     return render(request, 'onboarding/sign_up.html', {
         'surgery_form': surgery_form,
-        'pm_form': pm_form
+        'pm_form': pm_form,
+        'setting': setting
     })
 
 

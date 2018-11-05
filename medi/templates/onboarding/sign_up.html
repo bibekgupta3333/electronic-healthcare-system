@@ -154,7 +154,7 @@
                     </div>
                     <div class="row form-group">
                         <div class="col-md-6">
-                            <div class="row">
+                            <div class="row" id="password_form">
                                 <div class="col-md-3 title-pos">Choose password</div>
                                 {% bootstrap_field pm_form.password1 show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
@@ -264,6 +264,30 @@
                  });
                }
             });
+            $('#id_password1').change(function() {
+              $.ajax({
+                  url: "{% url 'accounts:verify_password' %}",
+                  type: "POST",
+                  dataType: "json",
+                  data:{
+                      "password": $(this).val(),
+                      "first_name": $('#id_first_name').val(),
+                      "surname": $('#id_surname').val(),
+                      "email": $('#id_email1').val(),
+                      "csrfmiddlewaretoken": csrf_token
+                  },
+                  success:function(data) {
+                    $('#password_form').find('.invalid-feedback').remove();
+                    $('#id_password1').removeClass("is-invalid");
+                    if (!data.results.verified){
+                      $('#id_password1').addClass("is-invalid");
+                      data.results.warning.map(function(item){
+                        $('#id_password1').after('<div class="invalid-feedback">' + item + '</div>');
+                      });
+                    }
+                  }
+              });
+            });
             $('#id_email1').change(function() {
               $.ajax({
                   url: "{% url 'accounts:check_email' %}",
@@ -282,7 +306,7 @@
                     }
                   }
               });
-    });
+            });
         });
     </script>
 {% endblock %}

@@ -10,7 +10,7 @@ from django.forms import modelformset_factory
 
 from permissions.forms import InstructionPermissionForm
 from permissions.models import InstructionPermission
-from common.functions import multi_getattr, get_env_variable
+from common.functions import multi_getattr, get_env_variable, verify_password as verify_pass
 from payment.models import OrganisationFee
 from django_tables2 import RequestConfig
 
@@ -212,6 +212,15 @@ def create_user(request):
     })
 
     return response
+
+
+def verify_password(request):
+    password = request.POST.get('password')
+    first_name = request.POST.get('first_name')
+    surname = request.POST.get('surname')
+    email = request.POST.get('email')
+    results = verify_pass(password, first_name, surname, email)
+    return JsonResponse({'results': results})
 
 
 def check_email(request):
