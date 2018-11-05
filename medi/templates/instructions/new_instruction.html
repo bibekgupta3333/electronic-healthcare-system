@@ -442,7 +442,7 @@
 
              $('#id_address_postcode').on('change', function () {
                      var form_data = new FormData();
-                     form_data.append('ApiKey', {{ GET_ADDRESS_API_KEY }});
+                     form_data.append('ApiKey', '{{ GET_ADDRESS_API_KEY }}');
                      form_data.append('Postcode',$(this).val());
                      $.ajax({
                         data: form_data,
