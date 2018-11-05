@@ -24,6 +24,7 @@ from snomedct.models import SnomedConcept
 import pytz
 from itertools import chain
 import ast
+import json
 
 from django.conf import settings
 PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
@@ -226,6 +227,15 @@ def new_instruction(request):
         addition_condition_list = request.POST.getlist('addition_condition')
         condition_of_interests = list(set().union(common_condition_list, addition_condition_list))
         scope_form = ScopeInstructionForm(request.user, request.POST.get('patient_input_email'), request.POST, request.FILES)
+        selected_gp_code = request.POST.get('gp_practice', None)
+        selected_gp_name = request.POST.get('gp_practice_name', None)
+        selected_add_cond = request.POST.getlist('addition_condition', None)
+        selected_add_cond_title = request.POST.get('addition_condition_title', None)
+        selected_add_cond_title = selected_add_cond_title.split(',')
+        i = 0
+        while i < len(selected_add_cond):
+            selected_add_cond[i] = int(selected_add_cond[i])
+            i += 1
 
         # Is from NHS or gpOrganisation
         gp_practice_code = request.POST.get('gp_practice', None)
@@ -301,10 +311,13 @@ def new_instruction(request):
                 'patient_form': patient_form,
                 'nhs_form': nhs_form,
                 'gp_form': gp_form,
-                'nhs_address': nhs_address,
                 'scope_form': scope_form,
                 'addition_question_formset': addition_question_formset,
                 'template_form': template_form,
+                'selected_gp_code': selected_gp_code,
+                'selected_gp_name': selected_gp_name,
+                'selected_add_cond': selected_add_cond,
+                'selected_add_cond_title': json.dumps(selected_add_cond_title)
             })
     patient_form = PatientForm()
     addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.none())

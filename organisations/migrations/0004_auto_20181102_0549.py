@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('organisations', '0003_organisationgeneralpractice_accept_policy'),
+        ('organisations', '0004_auto_20181101_0948'),
     ]
 
     operations = [
