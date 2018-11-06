@@ -33,7 +33,7 @@ def instruction_notification_email_job():
                     ' You have a pending or not started instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
                     'MediData',
                     [gp['email'] for gp in gp_managers],
-                    fail_silently=False,
+                    fail_silently=True,
                     auth_user=get_env_variable('SENDGRID_USER'),
                     auth_password=get_env_variable('SENDGRID_PASS'),
                 )

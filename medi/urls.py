@@ -37,7 +37,9 @@ urlpatterns = [
     path('onboarding/', include('onboarding.urls', namespace='onboarding')),
     path('organisation/', include('organisations.urls', namespace='organisations')),
     path('template/', include('template.urls', namespace='template')),
+    path('report/', include('report.urls', namespace='report')),
     path('select2/', include('django_select2.urls')),
+
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += staticfiles_urlpatterns()

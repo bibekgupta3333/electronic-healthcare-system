@@ -59,7 +59,7 @@ class OrganisationGeneralPracticeAdmin(admin.ModelAdmin):
     form = OrganisationGeneralPracticeForm
     fieldsets = (
         ('Organisation Information', {'fields': ('trading_name', 'legal_name', 'address', 'companies_house_number', 'vat_number',
-                                    'practice_code')}),
+                                    'practice_code', 'accept_policy')}),
         ('Operating Information', {'fields': ('operating_system', 'operating_system_socket_endpoint', 'operating_system_auth_token')}),
         ('Contact Information', {'fields': ('contact_name', 'contact_telephone', 'contact_email',
                                 'generic_telephone', 'generic_email', 'fax_number')}),

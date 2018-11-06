@@ -1,9 +1,17 @@
-from .models import AdditionalMedicationRecords, AdditionalAllergies, AmendmentsForRecord
-from snomedct.models import SnomedConcept
+import uuid
 from datetime import datetime
-from .forms import MedicalReportFinaliseSubmitForm
+
 from django.contrib import messages
+from django.conf import settings
+from django.core.mail import send_mail
+from django.template import loader
+
+from snomedct.models import SnomedConcept
+
 from instructions import models
+from .forms import MedicalReportFinaliseSubmitForm
+from .models import AdditionalMedicationRecords, AdditionalAllergies, AmendmentsForRecord
+from report.models import PatientReportAuth
 
 UI_DATE_FORMAT = '%m/%d/%Y'
 
@@ -36,7 +44,6 @@ def create_or_update_redaction_record(request, instruction):
 
     if request.method == "POST":
         submit_form = MedicalReportFinaliseSubmitForm(request.user, request.POST)
-
         if status == 'draft':
             amendments_for_record.status = AmendmentsForRecord.REDACTION_STATUS_DRAFT
         elif status == 'submit':
@@ -52,6 +59,7 @@ def create_or_update_redaction_record(request, instruction):
 
             if status == 'submit':
                 instruction.status = models.INSTRUCTION_STATUS_COMPLETE
+                create_patient_report(instruction)
                 messages.success(request, 'Completed Medical Report')
             else:
                 messages.success(request, 'Updated Report Successful')
@@ -161,3 +169,26 @@ def delete_additional_allergies_records(request):
     additional_allergies_records_delete = request.POST.getlist('additional_allergies_records_delete')
     if additional_allergies_records_delete:
         AdditionalAllergies.objects.filter(id__in=additional_allergies_records_delete).delete()
+
+
+def send_patient_mail(patient, gp_user, instruction,  unique_url):
+    link = ''.join(settings.SITE_NAME) + '/report/' + str(instruction.pk) + '/' + unique_url
+    send_mail(
+        'Completely eMR',
+        'Your instruction has been submitted',
+        'MediData',
+        [patient.user.email],
+        fail_silently=True,
+        html_message=loader.render_to_string('medicalreport/patient_email.html',
+                                             {
+                                                 'name': patient.user.first_name,
+                                                 'gp': gp_user.user.first_name,
+                                                 'link': link
+                                             }
+                                             ))
+
+
+def create_patient_report(instruction):
+    unique_url = uuid.uuid4().hex
+    PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
+    send_patient_mail(instruction.patient, instruction.gp_user, instruction, unique_url)

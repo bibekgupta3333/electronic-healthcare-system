@@ -22,7 +22,7 @@ def reset_password(request):
         #     'Your account password has been changed by your manager. Password: {}'.format(PASSWORD),
         #     DEFAULT_FROM,
         #     [user.email],
-        #     fail_silently=False,
+        #     fail_silently=True,
         #     auth_user=get_env_variable('SENDGRID_USER'),
         #     auth_password=get_env_variable('SENDGRID_PASS'),
         # )

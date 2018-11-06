@@ -66,10 +66,11 @@
                             <div class="row">
                                 <div class="col-md-3 rowTitle">Search GP Practice:</div>
                                 {% bootstrap_field nhs_form.gp_practice size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
+                                {{ nhs_form.gp_practice_name }}
                             </div>
                             <div class="row " style="height: 130px">
                                 <div class="col-md-3 d-flex">GP Practice*:</div>
-                                <div class="col-md-6 p-0"><p id="nhsData">{{ nhs_address }}</p></div>
+                                <div class="col-md-6 p-0"><p id="nhsData"></p></div>
                             </div>
                             <div class="row ">
                                 <div class="col-md-3 rowTitle">Named GP:</div>
@@ -104,6 +105,7 @@
                                 <div class="row">
                                     <div class="col-md-2 rowTitle">Addition Conditions of Interest*:</div>
                                     {% bootstrap_field scope_form.addition_condition size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
+                                    {{scope_form.addition_condition_title}}
                                 </div>
                             </div>
                         </div>
@@ -218,6 +220,15 @@
                 'addText': '+ Add Another',
                 'addCssClass': 'btn btn-primary',
                 'deleteCssClass': 'btn btn-danger'
+            });
+
+            $('#newInstructionForm').submit(function(){
+                let sel_add_conds = $('#id_addition_condition').val();
+                let titles = [];
+                for (let i = 0; i < sel_add_conds.length; i++) {
+                    titles.push($('#id_addition_condition option[value='+sel_add_conds[i]+']').text());
+                }
+                $('#id_addition_condition_title').val(titles);
             });
 
             // hide same label choice
@@ -365,6 +376,18 @@
                 }
             });
 
+            if ("{{ selected_add_cond }}" != "") {
+                let add_cond = "{{ selected_add_cond|safe }}";
+                add_cond = JSON.parse(add_cond)
+                let add_cond_title = '{{ selected_add_cond_title|safe }}';
+                add_cond_title = JSON.parse(add_cond_title)
+                for (let i = 0; i < add_cond.length; i++) {
+                    let option = new Option(add_cond_title[i], add_cond[i], true, true);
+                    $('#id_addition_condition').append(option).trigger('change');    
+                }
+            }
+
+            
             $('#id_address_postcode').select2({
                 ajax: {
                     url: function (params) {
@@ -407,13 +430,19 @@
                         $('#nhsData').text(
                             data.address
                         );
+                        $('#id_gp_practice_name').val(data.name);
                     }
                 })
             });
 
+            if ("{{selected_gp_code}}" != "") {
+                var option = new Option('{{selected_gp_name}}', '{{selected_gp_code}}', true, true);
+                $('#id_gp_practice').append(option).trigger('change');
+            }
+
              $('#id_address_postcode').on('change', function () {
                      var form_data = new FormData();
-                     form_data.append('ApiKey', {{ GET_ADDRESS_API_KEY }});
+                     form_data.append('ApiKey', '{{ GET_ADDRESS_API_KEY }}');
                      form_data.append('Postcode',$(this).val());
                      $.ajax({
                         data: form_data,
@@ -441,6 +470,12 @@
                 })
             });
 
+            $('#id_address_postcode').prop('required', true);
+            if ('{{patient_form.address_postcode.value}}' != 'None') {
+                var option = new Option("{{patient_form.address_postcode.value}}", "{{patient_form.address_postcode.value}}", true, true);
+                $('#id_address_postcode').append(option);
+            }
+
             $('.instructionType').on('change', function () {
                if($(this).is(':checked') && $(this).val() == 'AMRA'){
                    $('#template_modal_btn').attr('disabled', false);
@@ -450,6 +485,10 @@
                    $('.conditions').addClass('d-none');
                }
             });
+
+            if('{{scope_form.type.value}}' != 'None') {
+                $('.instructionType').trigger('change').trigger('change');
+            }
 
             $("#template_modal_btn").click(function(){
                 $("#create_template_modal").modal();

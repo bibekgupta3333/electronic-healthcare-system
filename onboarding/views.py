@@ -4,9 +4,11 @@ from django.core.mail import send_mail
 from instructions.models import Setting
 from django.conf import settings
 from django.forms import formset_factory
+from django.http import JsonResponse
 from django.contrib import messages
 from .functions import *
 from .forms import *
+from accounts.models import GpPractices
 from accounts.forms import PMForm
 
 
@@ -33,6 +35,7 @@ def emr_setup(request):
 def sign_up(request):
     surgery_form = SurgeryForm()
     pm_form = PMForm()
+    setting = Setting.objects.all().first()
 
     if request.method == "POST":
         surgery_form = SurgeryForm(request.POST)
@@ -41,9 +44,12 @@ def sign_up(request):
         if surgery_form.is_valid() and pm_form.is_valid():
             gp_organisation = surgery_form.save()
             pm_form.save__with_gp(gp_organisation=gp_organisation)
+            if not surgery_form.cleaned_data.get('operating_system') == 'EW':
+                return render(request, 'onboarding/emr_message.html')
     return render(request, 'onboarding/sign_up.html', {
         'surgery_form': surgery_form,
-        'pm_form': pm_form
+        'pm_form': pm_form,
+        'setting': setting
     })
 
 
@@ -122,3 +128,32 @@ def emr_setup_stage_2(request, emrsetup_id=None):
         'user_formset': user_formset,
         'bank_details_form': bank_details_form,
     })
+
+
+def get_code_autocomplete(request):
+    data = list()
+    search = request.GET.get('search', '')
+    if search:
+        code_gps = GpPractices.objects.filter(sitenumber_c__startswith=search)
+    else:
+        code_gps = GpPractices.objects.all()[:10]
+
+    if code_gps.exists():
+        for code_gp in code_gps:
+            data.append(code_gp.sitenumber_c)
+    return JsonResponse(data, safe=False)
+
+
+def get_name_autocomplete(request):
+    data = list()
+    search = request.GET.get('search', '')
+    if search:
+        name_gps = GpPractices.objects.filter(name__startswith=search)
+    else:
+        name_gps = GpPractices.objects.all()[:10]
+
+    if name_gps.exists():
+        for name_gp in name_gps:
+            data.append(name_gp.name)
+
+    return JsonResponse(data, safe=False)

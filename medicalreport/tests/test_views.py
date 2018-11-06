@@ -8,11 +8,12 @@ from model_mommy import mommy
 from instructions.models import (
     Instruction, INSTRUCTION_STATUS_PROGRESS, INSTRUCTION_STATUS_NEW
 )
-from instructions.model_choices import INSTRUCTION_STATUS_REJECT
+from instructions.model_choices import INSTRUCTION_STATUS_REJECT, INSTRUCTION_STATUS_PROGRESS, INSTRUCTION_STATUS_COMPLETE
 from accounts.models import ClientUser, User, GeneralPracticeUser, Patient, GENERAL_PRACTICE_USER, CLIENT_USER
 from services.models import EmisAPIConfig
 from medicalreport.models import AmendmentsForRecord
 from medicalreport.views import get_matched_patient, get_patient_record
+from organisations.models import OrganisationGeneralPractice
 
 import os
 from contextlib import suppress
@@ -30,11 +31,19 @@ class EmisAPITestCase(TestCase):
         self.patient = mommy.make(
             Patient, user=patient_user, emis_number='2985', date_of_birth=None)
         user = mommy.make(User, type=GENERAL_PRACTICE_USER)
-        self.gp_user = mommy.make(GeneralPracticeUser, user=user)
+        gp_practice = mommy.make(
+            OrganisationGeneralPractice, pk=1,
+            trading_name='GP Organisation', legal_name='GP',
+            address='99/99 Bangkok 2510', operating_system='OT',
+            practice_code='99999'
+        )
+        self.gp_user = mommy.make(GeneralPracticeUser, user=user, organisation=gp_practice)
+        self.gp_practice = gp_practice
         consent_form = SimpleUploadedFile('test_consent_form.txt', b'consent')
         self.instruction = mommy.make(
             Instruction, pk=1, consent_form=consent_form,
-            patient=self.patient, gp_user=self.gp_user
+            patient=self.patient, gp_user=self.gp_user,
+            gp_practice=gp_practice
         )
         self.redaction = mommy.make(
             AmendmentsForRecord, instruction=self.instruction, pk=1
@@ -57,23 +66,29 @@ class GetMatchedPatientTest(EmisAPITestCase):
 
 class RejectRequestTest(EmisAPITestCase):
     def setUp(self):
-        user = mommy.make(User, type=CLIENT_USER)
-        client_user = mommy.make(ClientUser, user=user)
-        mommy.make(Instruction, pk=2, client_user=client_user)
-        self.client.force_login(user)
+        super().setUp()
+        consent_form = SimpleUploadedFile('test_consent_form.txt', b'consent')
+        self.instruction = mommy.make(
+            Instruction, pk=4, consent_form=consent_form,
+            patient=self.patient, gp_user=self.gp_user,
+            gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_REJECT
+        )
+        self.redaction = mommy.make(
+            AmendmentsForRecord, instruction=self.instruction, pk=4
+        )
 
     def test_view_url(self):
-        response = self.client.post('/medicalreport/2/reject-request/')
+        response = self.client.post('/medicalreport/4/reject-request/')
         self.assertEqual(302, response.status_code)
 
     def test_view_url_by_name(self):
         response = self.client.post(
-            reverse('medicalreport:reject_request', args=(2,))
+            reverse('medicalreport:reject_request', args=(4,))
         )
         self.assertEqual(302, response.status_code)
 
     def test_view_redirects_to_correct_url(self):
-        response = self.client.post('/medicalreport/2/reject-request/')
+        response = self.client.post('/medicalreport/4/reject-request/')
         self.assertRedirects(response, '/instruction/view-pipeline/?status=%s&type=allType'%INSTRUCTION_STATUS_REJECT)
 
 
@@ -122,10 +137,10 @@ class SelectPatientTest(EmisAPITestCase):
         redaction = AmendmentsForRecord.objects.get()
         self.assertEqual('2985', redaction.patient_emis_number)
 
-    def test_view_returns_404_if_gp_user_not_found(self):
+    def test_view_returns_302_if_gp_user_not_found(self):
         self.client.logout()
         response = self.client.get('/medicalreport/1/select-patient/2985/')
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(302, response.status_code)
 
 
 class SetPatientEmisNumberTest(EmisAPITestCase):
@@ -146,28 +161,40 @@ class SetPatientEmisNumberTest(EmisAPITestCase):
 
 
 class EditReportTest(EmisAPITestCase):
+    def setUp(self):
+        super().setUp()
+        consent_form = SimpleUploadedFile('test_consent_form.txt', b'consent')
+        self.instruction = mommy.make(
+            Instruction, pk=2, consent_form=consent_form,
+            patient=self.patient, gp_user=self.gp_user,
+            gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_PROGRESS
+        )
+        self.redaction = mommy.make(
+            AmendmentsForRecord, instruction=self.instruction, pk=2
+        )
+
     def test_view_url(self):
-        response = self.client.get('/medicalreport/1/edit/')
+        response = self.client.get('/medicalreport/2/edit/')
         self.assertEqual(200, response.status_code)
 
     def test_view_url_by_name(self):
         response = self.client.get(
-            reverse('medicalreport:edit_report', args=(1,))
+            reverse('medicalreport:edit_report', args=(2,))
         )
         self.assertEqual(200, response.status_code)
 
     def test_view_uses_correct_template(self):
-        response = self.client.get('/medicalreport/1/edit/')
+        response = self.client.get('/medicalreport/2/edit/')
         self.assertTemplateUsed(
             response, 'medicalreport/medicalreport_edit.html')
 
     def test_view_returns_404_if_instruction_does_not_exist(self):
-        response = self.client.get('/medicalreport/2/edit/')
+        response = self.client.get('/medicalreport/5/edit/')
         self.assertEqual(404, response.status_code)
 
     def test_view_redirects_if_redaction_does_not_exist(self):
         self.redaction.delete()
-        response = self.client.get('/medicalreport/1/edit/')
+        response = self.client.get('/medicalreport/2/edit/')
         self.assertEqual(302, response.status_code)
 
 
@@ -195,11 +222,11 @@ class UpdateReportTest(EmisAPITestCase):
 
     def test_view_redirects_to_correct_url_if_not_valid(self):
         response = self.client.get('/medicalreport/1/update/')
-        self.assertRedirects(response, '/medicalreport/1/edit/')
+        self.assertEqual(response.url, '/medicalreport/1/edit/')
 
     def test_view_redirects_to_correct_url_if_event_flag_is_not_submit(self):
         response = self.client.get('/medicalreport/1/update/')
-        self.assertRedirects(response, '/medicalreport/1/edit/')
+        self.assertEqual(response.url, '/medicalreport/1/edit/')
 
     def test_view_redirects_to_correct_url_if_event_flag_is_submit_and_is_valid(self):
         response = self.client.post('/medicalreport/1/update/', {
@@ -208,7 +235,7 @@ class UpdateReportTest(EmisAPITestCase):
             'prepared_and_signed': 'PREPARED_AND_REVIEWED',
             'prepared_by': 'test_reviewer'
         })
-        self.assertRedirects(response, '/instruction/view-pipeline/')
+        self.assertEqual(response.url, '/instruction/view-pipeline/')
 
     def test_view_adds_error_message_and_redirects_to_correct_url_if_no_consent_form(self):
         os.remove(self.instruction.consent_form.path)
@@ -242,20 +269,32 @@ class ViewReportTest(EmisAPITestCase):
 
 
 class FinalReportTest(EmisAPITestCase):
+    def setUp(self):
+        super().setUp()
+        consent_form = SimpleUploadedFile('test_consent_form.txt', b'consent')
+        self.instruction = mommy.make(
+            Instruction, pk=3, consent_form=consent_form,
+            patient=self.patient, gp_user=self.gp_user,
+            gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_COMPLETE
+        )
+        self.redaction = mommy.make(
+            AmendmentsForRecord, instruction=self.instruction, pk=3
+        )
+
     def test_view_url(self):
-        response = self.client.get('/medicalreport/1/final-report/')
+        response = self.client.get('/medicalreport/3/final-report/')
         self.assertEqual(200, response.status_code)
 
     def test_view_url_by_name(self):
         response = self.client.get(
-            reverse('medicalreport:final_report', args=(1,))
+            reverse('medicalreport:final_report', args=(3,))
         )
         self.assertEqual(200, response.status_code)
 
     def test_view_uses_correct_template(self):
-        response = self.client.get('/medicalreport/1/final-report/')
+        response = self.client.get('/medicalreport/3/final-report/')
         self.assertTemplateUsed(response, 'medicalreport/final_report.html')
 
     def test_view_returns_404_if_instruction_does_not_exist(self):
-        response = self.client.get('/medicalreport/2/final-report/')
+        response = self.client.get('/medicalreport/5/final-report/')
         self.assertEqual(404, response.status_code)

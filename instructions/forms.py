@@ -22,6 +22,7 @@ class ScopeInstructionForm(forms.Form):
     template = forms.ModelChoiceField(queryset=TemplateInstruction.objects.none(), required=False)
     common_condition = forms.MultipleChoiceField(choices=[], widget=forms.CheckboxSelectMultiple(), required=False)
     addition_condition = MyMultipleChoiceField(required=False)
+    addition_condition_title = forms.CharField(required=False, widget=forms.HiddenInput())
     consent_form = forms.FileField(required=False)
     send_to_patient = forms.BooleanField(widget=forms.CheckboxInput(), label='Send copy of medical report to patient?', required=False)
 

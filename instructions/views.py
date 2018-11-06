@@ -20,10 +20,12 @@ from organisations.views import get_nhs_data
 from template.forms import TemplateInstructionForm
 from common.functions import multi_getattr
 from snomedct.models import SnomedConcept
+from permissions.functions import check_permission
 
 import pytz
 from itertools import chain
 import ast
+import json
 
 from django.conf import settings
 PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
@@ -54,7 +56,7 @@ def count_instructions(user, gp_practice_id, client_organisation):
         'New': new_count,
         'In Progress': progress_count,
         'Overdue': overdue_count,
-        'Complete': complete_count,
+        'Completed': complete_count,
         'Rejected': rejected_count
     }
     return overall_instructions_number
@@ -88,6 +90,7 @@ def calculate_next_prev(page=None, **kwargs):
         }
 
 
+@login_required(login_url='/accounts/login')
 def create_instruction(request, patient, scope_form=None, gp_practice=None) -> Instruction:
     instruction = Instruction()
     if request.user.type == CLIENT_USER:
@@ -125,6 +128,7 @@ def create_snomed_relations(instruction, condition_of_interests):
             InstructionConditionsOfInterest.objects.create(instruction=instruction, snomedct=snomedct)
 
 
+@login_required(login_url='/accounts/login')
 def create_patient_user(request, patient_form) -> Patient:
     password = User.objects.make_random_password()
     unique_code = now().strftime('%m%d%Y%S%f')
@@ -183,7 +187,7 @@ def instruction_pipeline_view(request):
     if request.user.type == CLIENT_USER:
         overall_instructions_number = count_instructions(request.user, gp_practice_id, client_organisation)
         instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
-        
+
     if request.user.type == GENERAL_PRACTICE_USER:
         gp_role = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.role')
         if gp_role == GeneralPracticeUser.PRACTICE_MANAGER:
@@ -226,6 +230,15 @@ def new_instruction(request):
         addition_condition_list = request.POST.getlist('addition_condition')
         condition_of_interests = list(set().union(common_condition_list, addition_condition_list))
         scope_form = ScopeInstructionForm(request.user, request.POST.get('patient_input_email'), request.POST, request.FILES)
+        selected_gp_code = request.POST.get('gp_practice', '')
+        selected_gp_name = request.POST.get('gp_practice_name', '')
+        selected_add_cond = request.POST.getlist('addition_condition', [])
+        selected_add_cond_title = request.POST.get('addition_condition_title', '')
+        selected_add_cond_title = selected_add_cond_title.split(',')
+        i = 0
+        while i < len(selected_add_cond):
+            selected_add_cond[i] = int(selected_add_cond[i])
+            i += 1
 
         # Is from NHS or gpOrganisation
         gp_practice_code = request.POST.get('gp_practice', None)
@@ -252,7 +265,7 @@ def new_instruction(request):
                     'Your instruction has been created',
                     'MediData',
                     [patient_form.cleaned_data['patient_input_email']],
-                    fail_silently=False,
+                    fail_silently=True,
                 )
 
             setting = Setting.objects.all().first()
@@ -264,7 +277,7 @@ def new_instruction(request):
                     message,
                     'MediData',
                     [patient_form.cleaned_data['patient_input_email']],
-                    fail_silently=False,
+                    fail_silently=True,
                 )
 
             medidata_emails_list = [user.email for user in User.objects.filter(type=MEDIDATA_USER)]
@@ -276,7 +289,7 @@ def new_instruction(request):
                     'Your client had selected NHS GP: {}'.format(gp_practice.name),
                     'MediData',
                     medidata_emails_list,
-                    fail_silently=False,
+                    fail_silently=True,
                 )
             else:
                 gp_emails_list = [gp.user.email for gp in GeneralPracticeUser.objects.filter(organisation=gp_practice)]
@@ -287,7 +300,7 @@ def new_instruction(request):
                 'You have a new instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
                 'MediData',
                 medidata_emails_list + gp_emails_list,
-                fail_silently=False,
+                fail_silently=True,
             )
             messages.success(request, 'Form submission successful')
             if instruction.type == SARS_TYPE and request.user.type == GENERAL_PRACTICE_USER:
@@ -301,10 +314,13 @@ def new_instruction(request):
                 'patient_form': patient_form,
                 'nhs_form': nhs_form,
                 'gp_form': gp_form,
-                'nhs_address': nhs_address,
                 'scope_form': scope_form,
                 'addition_question_formset': addition_question_formset,
                 'template_form': template_form,
+                'selected_gp_code': selected_gp_code,
+                'selected_gp_name': selected_gp_name,
+                'selected_add_cond': selected_add_cond,
+                'selected_add_cond_title': json.dumps(selected_add_cond_title)
             })
     patient_form = PatientForm()
     addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.none())
@@ -322,6 +338,7 @@ def new_instruction(request):
     })
 
 
+@login_required(login_url='/accounts/login')
 def upload_consent(request, instruction_id):
     setting = Setting.objects.all().first()
     instruction = get_object_or_404(Instruction, pk=instruction_id)
@@ -343,6 +360,7 @@ def upload_consent(request, instruction_id):
 
 
 @login_required(login_url='/accounts/login')
+@check_permission
 def review_instruction(request, instruction_id):
     header_title = "Instruction Reviewing"
     instruction = get_object_or_404(Instruction, pk=instruction_id)
@@ -410,6 +428,7 @@ def review_instruction(request, instruction_id):
 
 
 @login_required(login_url='/accounts/login')
+@check_permission
 def view_reject(request, instruction_id):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     patient = instruction.patient

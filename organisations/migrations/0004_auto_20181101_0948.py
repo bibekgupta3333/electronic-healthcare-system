@@ -24,5 +24,6 @@ class Migration(migrations.Migration):
             model_name='organisationgeneralpractice',
             name='payment_bank_sort_code',
             field=models.CharField(blank=True, max_length=255),
-        ),
+        )
+
     ]

@@ -1,0 +1,30 @@
+{% load static %}
+{% load medi_report_tags %}
+{% load bootstrap4 %}
+{% load get_permissions %}
+{% bootstrap_css %}
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-2 mt-3">
+            <img src="{% static "images/eMR_logo.png" %}" width="100%">
+        </div>
+
+        <div class="col-sm-12 mt-3">
+            <p>Hi {{ name }}, thank you for using eMR from MediData Exchange to obtain your report.</p>
+            <p>You can now download, print or view report.</p>
+            <p>If you navigate away from this page, you will need to authorise the page again.</p>
+
+            <form target="_blank" method="post">
+                {% csrf_token %}
+                <input type="submit" name='button' value="Print Report" class="btn btn-outline-primary">
+                <input type="submit" name='button' value="View Report" class="btn btn-primary">
+                <input type="submit" name='button' value="Download Report" class="btn btn-warning">
+            </form>
+
+            <p>Once you have saved your report, we recommend closing the browser.</p>
+            <p>For any questions, please contact your GP Surgery</p>
+        </div>
+    </div>
+</div>

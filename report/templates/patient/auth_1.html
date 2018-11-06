@@ -1,0 +1,31 @@
+{% load static %}
+{% load medi_report_tags %}
+{% load bootstrap4 %}
+{% load get_permissions %}
+{% bootstrap_css %}
+
+
+<div class="container">
+    <div class="row">
+
+        <div class="col-sm-2 mt-3">
+            <img src="{% static "images/eMR_logo.png" %}" width="100%">
+        </div>
+
+        <div class="col-sm-12 mt-3">
+
+            <p>Hi {{ name }}, thank you for using eMR form MediaData Exchange to obtain your report.</p>
+            <p>In order to access the report, we require to confirm your identity</p>
+
+            <form  method="post" class="mt-5">
+                {% csrf_token %}
+                <input type="submit" value="Request Code" class="btn btn-primary">
+            </form>
+            
+             <p>In case of any issues, please contact your GP Surgery.</p>
+
+            <h4>{% if message %} {{ message }} {% endif %}</h4>
+
+        </div>
+    </div>
+</div>

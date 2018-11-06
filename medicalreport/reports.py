@@ -37,3 +37,16 @@ class MedicalReport:
             return HttpResponse(response.getvalue(), content_type='application/pdf')
         else:
             return HttpResponse("Error Rendering PDF", status=400)
+
+    @staticmethod
+    def download(params: dict):
+        template = get_template(REPORT_DIR)
+        html = template.render(params)
+        file = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), file, link_callback=link_callback)
+
+        if not pdf.err:
+            response = HttpResponse(content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename="report.pdf"'
+            response.write(file.getvalue())
+            return response

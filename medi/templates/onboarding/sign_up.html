@@ -107,6 +107,12 @@
                                 {% bootstrap_field surgery_form.emis_org_code show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
+                         <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-3 title-pos">Primary Care record system</div>
+                                {% bootstrap_field surgery_form.operating_system show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -138,10 +144,11 @@
                     </div>
                     <div class="row form-group">
                         <div class="col-md-6">
-                            <div class="row">
+                            <div class="row" id="email_form">
                                 <div class="col-md-3 title-pos">Email address</div>
                                 {% bootstrap_field pm_form.email1 show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
+                            <div id="email_error" class="offset-md-3"></div>
                         </div>
                     </div>
                     <div class="row form-group">
@@ -154,10 +161,11 @@
                     </div>
                     <div class="row form-group">
                         <div class="col-md-6">
-                            <div class="row">
+                            <div class="row" id="password_form">
                                 <div class="col-md-3 title-pos">Choose password</div>
                                 {% bootstrap_field pm_form.password1 show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
+                            <div id="password_error" class="offset-md-3"></div>
                         </div>
                     </div>
                     <div class="row form-group">
@@ -246,6 +254,7 @@
     <script src="{% static 'js/select2.min.js' %}"></script>
     <script>
         $(document).ready(function () {
+            var csrf_token = '{{ csrf_token }}';
             $('#acceptPolicy').click(function() {
               $('#accept-policy').attr("checked", true);
             });
@@ -254,14 +263,74 @@
             });
             $('#signup_form').submit(function(event) {
                 var $form = this;
-              $('#accept-policy').removeAttr("disabled");
-               if(!$('#accept-policy:checked').length) {
-                   event.preventDefault();
-                 $('#confirmModal').modal();
-                 $('#proceed').click(function() {
-                     $form.submit();
-                 });
-               }
+                var match_error = false;
+                if($('#id_email1').val() != $('#id_email2').val()) {
+                    $('#email_error').text("Email doesn't match");
+                    match_error = true;
+                } else {
+                    $('#email_error').text("");
+                }
+                if($('#id_password1').val() != $('#id_password2').val()) {
+                    $('#password_error').text("Password doesn't match");
+                    match_error = true;
+                } else {
+                    $('#password_error').text("");
+                }
+                if(!match_error) {
+                    $('#accept-policy').removeAttr("disabled");
+                    if(!$('#accept-policy:checked').length) {
+                        event.preventDefault();
+                        $('#confirmModal').modal();
+                        $('#proceed').click(function() {
+                            $form.submit();
+                        });
+                    }
+                } else {
+                    event.preventDefault();
+                }
+            });
+            $('#id_password1').change(function() {
+              $.ajax({
+                  url: "{% url 'accounts:verify_password' %}",
+                  type: "POST",
+                  dataType: "json",
+                  data:{
+                      "password": $(this).val(),
+                      "first_name": $('#id_first_name').val(),
+                      "surname": $('#id_surname').val(),
+                      "email": $('#id_email1').val(),
+                      "csrfmiddlewaretoken": csrf_token
+                  },
+                  success:function(data) {
+                    $('#password_form').find('.invalid-feedback').remove();
+                    $('#id_password1').removeClass("is-invalid");
+                    if (!data.results.verified){
+                      $('#id_password1').addClass("is-invalid");
+                      data.results.warning.map(function(item){
+                        $('#id_password1').after('<div class="invalid-feedback">' + item + '</div>');
+                      });
+                    }
+                  }
+              });
+            });
+            $('#id_email1').change(function() {
+              $.ajax({
+                  url: "{% url 'accounts:check_email' %}",
+                  type: "POST",
+                  dataType: "json",
+                  data:{
+                      "email": $(this).val() ,
+                      "csrfmiddlewaretoken": csrf_token
+                  },
+                  success:function(data) {
+                    $('#id_email1').removeClass("is-invalid");
+                    $('#email_form').find('.invalid-feedback').remove();
+                    if (data.exists){
+                      $('#id_email1').addClass("is-invalid");
+                      $('#id_email1').after('<div class="invalid-feedback">This email address has already been used to register.</div>');
+                    }
+                  }
+              });
             });
         });
     </script>
