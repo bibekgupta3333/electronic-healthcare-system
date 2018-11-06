@@ -262,7 +262,7 @@ def new_instruction(request):
                     'Your instruction has been created',
                     'MediData',
                     [patient_form.cleaned_data['patient_input_email']],
-                    fail_silently=False,
+                    fail_silently=True,
                 )
 
             setting = Setting.objects.all().first()
@@ -274,7 +274,7 @@ def new_instruction(request):
                     message,
                     'MediData',
                     [patient_form.cleaned_data['patient_input_email']],
-                    fail_silently=False,
+                    fail_silently=True,
                 )
 
             medidata_emails_list = [user.email for user in User.objects.filter(type=MEDIDATA_USER)]
@@ -286,7 +286,7 @@ def new_instruction(request):
                     'Your client had selected NHS GP: {}'.format(gp_practice.name),
                     'MediData',
                     medidata_emails_list,
-                    fail_silently=False,
+                    fail_silently=True,
                 )
             else:
                 gp_emails_list = [gp.user.email for gp in GeneralPracticeUser.objects.filter(organisation=gp_practice)]
@@ -297,7 +297,7 @@ def new_instruction(request):
                 'You have a new instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
                 'MediData',
                 medidata_emails_list + gp_emails_list,
-                fail_silently=False,
+                fail_silently=True,
             )
             messages.success(request, 'Form submission successful')
             if instruction.type == SARS_TYPE and request.user.type == GENERAL_PRACTICE_USER:

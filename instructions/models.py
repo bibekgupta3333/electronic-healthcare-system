@@ -72,7 +72,7 @@ class Instruction(TimeStampedModel, models.Model):
             'You have a rejected instruction. Click here {link}?status=4&type=allType to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
             'MediData',
             to_email,
-            fail_silently=False,
+            fail_silently=True,
             auth_user=settings.EMAIL_HOST_USER,
             auth_password=settings.EMAIL_HOST_PASSWORD,
         )

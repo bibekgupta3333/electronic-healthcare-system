@@ -153,7 +153,7 @@ def update_report(request, instruction_id):
                     'Your instruction has been completed',
                     'MediData',
                     [instruction.patient.user.email],
-                    fail_silently=False,
+                    fail_silently=True,
                 )
                 return redirect('instructions:view_pipeline')
 
