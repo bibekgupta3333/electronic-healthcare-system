@@ -42,19 +42,19 @@ class InstructionTable(tables.Table):
             'New': 'badge-primary',
             'In Progress': 'badge-warning',
             'Overdue': 'badge-info',
-            'Complete': 'badge-success',
-            'Reject': 'badge-danger'
+            'Completed': 'badge-success',
+            'Rejected': 'badge-danger'
         }
         url = 'instructions:review_instruction'
         view_report = view_complete_report(self.user.id, record.pk)
-        if value == 'Complete':
+        if value == 'Completed':
             if self.user.type != models.GENERAL_PRACTICE_USER:
                 url = 'medicalreport:final_report'
             elif view_report:
                 url = 'medicalreport:final_report'
             else:
                 return format_html('<a><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
-        elif value == 'Reject':
+        elif value == 'Rejected':
             url = 'instructions:view_reject'
         elif value == 'In Progress' and self.user.type == models.GENERAL_PRACTICE_USER:
             url = 'medicalreport:edit_report'

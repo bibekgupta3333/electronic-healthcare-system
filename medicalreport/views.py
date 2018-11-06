@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
@@ -12,15 +13,18 @@ from .dummy_models import (DummyInstruction, DummyClient, DummyPatient)
 from medicalreport.forms import MedicalReportFinaliseSubmitForm
 from .models import AmendmentsForRecord
 from instructions.models import Instruction
-from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT
+from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT,\
+        INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_PROGRESS
 from .functions import create_or_update_redaction_record
 from medicalreport.reports import MedicalReport
 from accounts.models import GeneralPracticeUser, Patient, User
 from .forms import AllocateInstructionForm
 import io as BytesIO
+from permissions.functions import check_permission
 from typing import List
 
 
+@login_required(login_url='/accounts/login')
 def view_attachment(request, instruction_id, path_file):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     raw_xml = services.GetAttachment(instruction.patient.emis_number,path_file).call()
@@ -54,12 +58,14 @@ def get_patient_record(patient_number):
     return raw_xml
 
 
+@login_required(login_url='/accounts/login')
 def reject_request(request, instruction_id):
     instruction = Instruction.objects.get(id=instruction_id)
     instruction.reject(request, request.POST)
     return HttpResponseRedirect("%s?%s"%(reverse('instructions:view_pipeline'),"status=%s&type=allType"%INSTRUCTION_STATUS_REJECT))
 
 
+@login_required(login_url='/accounts/login')
 def select_patient(request, instruction_id, patient_emis_number):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     patient = instruction.patient
@@ -88,6 +94,8 @@ def select_patient(request, instruction_id, patient_emis_number):
     return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
+@login_required(login_url='/accounts/login')
+@check_permission
 def set_patient_emis_number(request, instruction_id):
     instruction = Instruction.objects.get(id=instruction_id)
     dummy_instruction = DummyInstruction(instruction)
@@ -104,6 +112,8 @@ def set_patient_emis_number(request, instruction_id):
     })
 
 
+@login_required(login_url='/accounts/login')
+@check_permission
 def edit_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
     try:
@@ -136,6 +146,7 @@ def edit_report(request, instruction_id):
     })
 
 
+@login_required(login_url='/accounts/login')
 def update_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
 
@@ -160,6 +171,7 @@ def update_report(request, instruction_id):
         return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
+@login_required(login_url='/accounts/login')
 def view_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
@@ -180,6 +192,8 @@ def view_report(request, instruction_id):
     return MedicalReport.render(params)
 
 
+@login_required(login_url='/accounts/login')
+@check_permission
 def final_report(request, instruction_id):
     header_title = "Final Report"
     instruction = get_object_or_404(Instruction, id=instruction_id)

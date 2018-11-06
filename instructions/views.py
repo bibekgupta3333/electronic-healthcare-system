@@ -20,6 +20,7 @@ from organisations.views import get_nhs_data
 from template.forms import TemplateInstructionForm
 from common.functions import multi_getattr
 from snomedct.models import SnomedConcept
+from permissions.functions import check_permission
 
 import pytz
 from itertools import chain
@@ -55,7 +56,7 @@ def count_instructions(user, gp_practice_id, client_organisation):
         'New': new_count,
         'In Progress': progress_count,
         'Overdue': overdue_count,
-        'Complete': complete_count,
+        'Completed': complete_count,
         'Rejected': rejected_count
     }
     return overall_instructions_number
@@ -89,6 +90,7 @@ def calculate_next_prev(page=None, **kwargs):
         }
 
 
+@login_required(login_url='/accounts/login')
 def create_instruction(request, patient, scope_form=None, gp_practice=None) -> Instruction:
     instruction = Instruction()
     if request.user.type == CLIENT_USER:
@@ -126,6 +128,7 @@ def create_snomed_relations(instruction, condition_of_interests):
             InstructionConditionsOfInterest.objects.create(instruction=instruction, snomedct=snomedct)
 
 
+@login_required(login_url='/accounts/login')
 def create_patient_user(request, patient_form) -> Patient:
     password = User.objects.make_random_password()
     unique_code = now().strftime('%m%d%Y%S%f')
@@ -184,7 +187,7 @@ def instruction_pipeline_view(request):
     if request.user.type == CLIENT_USER:
         overall_instructions_number = count_instructions(request.user, gp_practice_id, client_organisation)
         instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
-        
+
     if request.user.type == GENERAL_PRACTICE_USER:
         gp_role = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.role')
         if gp_role == GeneralPracticeUser.PRACTICE_MANAGER:
@@ -335,6 +338,7 @@ def new_instruction(request):
     })
 
 
+@login_required(login_url='/accounts/login')
 def upload_consent(request, instruction_id):
     setting = Setting.objects.all().first()
     instruction = get_object_or_404(Instruction, pk=instruction_id)
@@ -356,6 +360,7 @@ def upload_consent(request, instruction_id):
 
 
 @login_required(login_url='/accounts/login')
+@check_permission
 def review_instruction(request, instruction_id):
     header_title = "Instruction Reviewing"
     instruction = get_object_or_404(Instruction, pk=instruction_id)
@@ -423,6 +428,7 @@ def review_instruction(request, instruction_id):
 
 
 @login_required(login_url='/accounts/login')
+@check_permission
 def view_reject(request, instruction_id):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     patient = instruction.patient
@@ -486,4 +492,3 @@ def view_reject(request, instruction_id):
         'instruction': instruction,
         'instruction_id': instruction_id,
     })
-
