@@ -492,3 +492,4 @@ def view_reject(request, instruction_id):
         'instruction': instruction,
         'instruction_id': instruction_id,
     })
+
