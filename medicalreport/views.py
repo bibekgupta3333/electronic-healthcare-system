@@ -114,7 +114,6 @@ def edit_report(request, instruction_id):
     raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     questions = instruction.addition_questions.all()
-    dummy_instruction = DummyInstruction(instruction)
     finalise_submit_form = MedicalReportFinaliseSubmitForm(
         initial={
             'gp_practitioner': redaction.review_by if redaction.review_by else request.user,
@@ -129,7 +128,7 @@ def edit_report(request, instruction_id):
     return render(request, 'medicalreport/medicalreport_edit.html', {
         'medical_record': medical_record_decorator,
         'redaction': redaction,
-        'instruction': dummy_instruction,
+        'instruction': instruction,
         'finalise_submit_form': finalise_submit_form,
         'questions': questions,
         'show_alert': True if inst_gp_user == cur_user else False
