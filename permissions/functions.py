@@ -1,5 +1,5 @@
 from django.shortcuts import redirect
-from accounts.models import User, GeneralPracticeUser
+from accounts.models import User, GeneralPracticeUser, MEDIDATA_USER, GENERAL_PRACTICE_USER
 from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_REJECT, INSTRUCTION_STATUS_COMPLETE,\
         INSTRUCTION_STATUS_PROGRESS, INSTRUCTION_STATUS_NEW
@@ -44,6 +44,21 @@ def check_permission(func):
         if is_valid:
             is_valid = check_status_with_url(is_valid, request.path, instruction.status)
 
+        if not is_valid:
+            return redirect('instructions:view_pipeline')
+        return func(request, *args, **kwargs)
+    return check_and_call
+
+def access_user_management(func):
+    def check_and_call(request, *args, **kwargs):
+        user = User.objects.get(pk=request.user.pk)
+        is_valid = True
+        if user.type not in (MEDIDATA_USER, GENERAL_PRACTICE_USER):
+            is_valid = False
+        elif user.type == GENERAL_PRACTICE_USER and\
+            hasattr(user.userprofilebase, "generalpracticeuser") and\
+            user.userprofilebase.generalpracticeuser.role != GeneralPracticeUser.PRACTICE_MANAGER:
+            is_valid = False
         if not is_valid:
             return redirect('instructions:view_pipeline')
         return func(request, *args, **kwargs)

@@ -12,8 +12,7 @@ from .dummy_models import (DummyInstruction, DummyClient, DummyPatient)
 from medicalreport.forms import MedicalReportFinaliseSubmitForm
 from .models import AmendmentsForRecord
 from instructions.models import Instruction
-from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT,\
-        INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_PROGRESS
+from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT
 from .functions import create_or_update_redaction_record
 from medicalreport.reports import MedicalReport, AttachmentReport
 from accounts.models import GeneralPracticeUser, Patient, User
