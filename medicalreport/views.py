@@ -2,13 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.contrib import messages
-from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.urls import reverse
 from services.emisapiservices import services
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.xml.patient_list import PatientList
 from services.xml.registration import Registration
-from services.xml.base64_attachment import Base64Attachment
 from .dummy_models import (DummyInstruction, DummyClient, DummyPatient)
 from medicalreport.forms import MedicalReportFinaliseSubmitForm
 from .models import AmendmentsForRecord
@@ -16,10 +15,9 @@ from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT,\
         INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_PROGRESS
 from .functions import create_or_update_redaction_record
-from medicalreport.reports import MedicalReport
+from medicalreport.reports import MedicalReport, AttachmentReport
 from accounts.models import GeneralPracticeUser, Patient, User
 from .forms import AllocateInstructionForm
-import io as BytesIO
 from permissions.functions import check_permission
 from typing import List
 
@@ -27,15 +25,8 @@ from typing import List
 @login_required(login_url='/accounts/login')
 def view_attachment(request, instruction_id, path_file):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
-    raw_xml = services.GetAttachment(instruction.patient.emis_number,path_file).call()
-    attachment = Base64Attachment(raw_xml).data()
-    buffer = BytesIO.BytesIO()
-    buffer.write(attachment)
-    response = HttpResponse(
-        buffer.getvalue(),
-        content_type="application/pdf",
-    )
-    return response
+    attachment_report = AttachmentReport(instruction, path_file)
+    return attachment_report.render()
 
 
 def get_matched_patient(patient: Patient) -> List[Registration]:
