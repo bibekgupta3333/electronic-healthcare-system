@@ -7,7 +7,7 @@ SITE_NAME = settings.SITE_NAME
 
 
 class OrganisationFeeForm(forms.ModelForm):
-    max_day_lvl_4 = forms.IntegerField(required=False,label='Min day lvl 3', widget=forms.NumberInput(attrs={'class': 'vIntegerField'}))
+    max_day_lvl_4 = forms.IntegerField(required=False,label='Lowest payment band after day:', widget=forms.NumberInput(attrs={'class': 'vIntegerField'}))
 
     class Meta:
         model = OrganisationFee
