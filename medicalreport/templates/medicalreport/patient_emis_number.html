@@ -194,10 +194,14 @@
                 let instruction_id = $(this).data('instruction_id');
                 let patient_ref_id = $(this).data('patient_ref_id');
                 let action_url = '/medicalreport/'+ instruction_id+'/select-patient/' + patient_ref_id + '/';
-                $('#allocateInstructionForm').attr('action',
-                    action_url
-                );
-                $('#selectPatientModal').modal('show');
+                {% if request.user.type == "GP" and instruction.type == "SARS" %}
+                    window.location.href = '/instruction/consent-contact/'+instruction_id;
+                {% else %}
+                    $('#allocateInstructionForm').attr('action',
+                        action_url
+                    );
+                    $('#selectPatientModal').modal('show');
+                {% endif %}
             });
 
             $('.allocate-gp').insertAfter('label[for="id_allocate_options_1"]');
