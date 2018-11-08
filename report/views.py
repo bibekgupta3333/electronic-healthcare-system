@@ -23,8 +23,8 @@ def sar_request_code(request, instruction_id, url):
     """
     error_message = None
     get_object_or_404(Instruction, pk=instruction_id)
+    patient_auth = get_object_or_404(PatientReportAuth, url=url)
     if request.method == 'POST':
-        patient_auth = get_object_or_404(PatientReportAuth, url=url)
         patient_auth.count = 0
         patient_auth.save()
         response = requests.post(
@@ -58,7 +58,7 @@ def sar_access_code(request,  **kawrgs,):
     number = ["*"] * (len('+66972988662') - 2)
     number.append('+66972988662'[:2])
     number = " ".join(map(str, number))
-
+    patient_auth = PatientReportAuth.objects.last()
     if request.method == 'POST':
         if request.POST.get('button') == 'Request New Code':
             response = requests.post(
@@ -71,7 +71,6 @@ def sar_access_code(request,  **kawrgs,):
                 }
             )
         else:
-            patient_auth = PatientReportAuth.objects.last()
             patient_auth.count = patient_auth.count + 1
             patient_auth.save()
             if patient_auth.count >= 3:
