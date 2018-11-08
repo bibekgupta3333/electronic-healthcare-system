@@ -39,6 +39,8 @@ class Instruction(TimeStampedModel, models.Model):
     gp_practice_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     gp_practice_id = models.CharField(max_length=255)
     gp_practice = GenericForeignKey('gp_practice_type', 'gp_practice_id')
+    sars_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
+    mdx_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
 
     class Meta:
         verbose_name = "Instruction"

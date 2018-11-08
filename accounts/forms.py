@@ -21,11 +21,12 @@ class PatientForm(forms.ModelForm):
     date_of_birth = forms.DateField(input_formats=DATE_INPUT_FORMATS, required=True, widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': ''}))
     address_postcode = MyChoiceField(required=True)
     address_name_number = MyChoiceField(required=False)
+    alternate_phone = forms.CharField(max_length=255, required=False, widget=forms.TextInput())
 
     class Meta:
         model = Patient
         fields = ('title', 'first_name', 'last_name', 'date_of_birth', 'address_postcode', 'address_name_number',
-                  'nhs_number', 'patient_input_email')
+                  'nhs_number', 'patient_input_email', 'telephone_mobile', 'alternate_phone')
         widgets = {
             'address_postcode': forms.TextInput(attrs={'placeholder': '', }),
             'date_of_birth': forms.DateTimeInput(attrs={'placeholder': '', 'autocomplete': 'off'}),
