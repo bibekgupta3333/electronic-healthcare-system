@@ -45,7 +45,7 @@ def sar_request_code(request, instruction_id, url):
         else:
             error_message = "Something went wrong"
     return render(request, 'patient/auth_1.html', {
-        'name': request.user.first_name,
+        'name': patient_auth.patient.user.first_name,
         'link': '',
         'message': error_message
     })
@@ -98,7 +98,7 @@ def sar_access_code(request,  **kawrgs,):
     return render(request, 'patient/auth_2_access_code.html', {
         'form': access_code_form,
         'message': error_message,
-        'name': request.user.first_name,
+        'name': patient_auth.patient.user.first_name,
         'number': str(number)
     })
 
