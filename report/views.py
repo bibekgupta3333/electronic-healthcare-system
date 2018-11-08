@@ -1,5 +1,6 @@
 import requests
 import secrets
+import json
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -14,7 +15,6 @@ from .models import PatientReportAuth
 from .forms import AccessCodeForm
 
 
-@login_required(login_url='/accounts/login')
 def sar_request_code(request, instruction_id, url):
     """
     send sms to patient
@@ -23,27 +23,24 @@ def sar_request_code(request, instruction_id, url):
     """
     error_message = None
     get_object_or_404(Instruction, pk=instruction_id)
-    import json
     if request.method == 'POST':
-        token = secrets.token_urlsafe(4)
-        PatientReportAuth.objects.filter(patient=Patient.objects.get(user=request.user)).delete()
         patient_auth = get_object_or_404(PatientReportAuth, url=url)
-        patient_auth.token = token
         patient_auth.count = 0
         patient_auth.save()
-        response = requests.post("https://api.checkmobi.com/v1/sms/send", data=json.dumps({
-                                                                                "to": "+37496223340",
-                                                                                "text": "hello world",
-                                                                                "platform": "web",
-                                                                                }),
-                                 headers={
-                                         "Authorization": "A86AE899-E241-430A-85D7-131D861738EF",
-                                         "Content-Type": "application/json",
-                                         "Accept": "application/json"
-                                         }
-                                 )
+        response = requests.post(
+            "https://api.checkmobi.com/v1/validation/request",
+            data=json.dumps({"number": "+66972988662", "type": "sms", "platform": "web"}),
+            headers={
+                "Authorization": "C2F45334-A46E-44E1-9294-16F5A7F777A9",
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        )
 
         if response.status_code == 200:
+            response_results_dict = json.loads(response.text)
+            patient_auth.mobi_request_id = response_results_dict['id']
+            patient_auth.save()
             return redirect('report:access-code')
         else:
             error_message = "Something went wrong"
@@ -54,32 +51,50 @@ def sar_request_code(request, instruction_id, url):
     })
 
 
-@login_required(login_url='/accounts/login')
 def sar_access_code(request,  **kawrgs,):
     access_code_form = AccessCodeForm
     error_message = (kawrgs.get('messages') if kawrgs.get('messages') else None)
 
-    number = ["*"] * (len(request.user.userprofilebase.telephone_mobile) - 2)
-    number.append(request.user.userprofilebase.telephone_mobile[:2])
+    number = ["*"] * (len('+66972988662') - 2)
+    number.append('+66972988662'[:2])
     number = " ".join(map(str, number))
 
     if request.method == 'POST':
         if request.POST.get('button') == 'Request New Code':
-            token = secrets.token_urlsafe(4)
+            response = requests.post(
+                "https://api.checkmobi.com/v1/validation/request",
+                data=json.dumps({"number": "+66972988662", "type": "sms", "platform": "web"}),
+                headers={
+                    "Authorization": "C2F45334-A46E-44E1-9294-16F5A7F777A9",
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                }
+            )
+        else:
             patient_auth = PatientReportAuth.objects.last()
-            patient_auth.token = token
             patient_auth.count = patient_auth.count + 1
             patient_auth.save()
             if patient_auth.count >= 3:
                 error_message = 'You exceeded the limit'
                 return render(request, 'patient/auth_3_exceed_limit.html', {'message': error_message})
-
-        else:
-            try:
-                report_auth = PatientReportAuth.objects.get(token=request.POST.get('access_code'))
-                return redirect('report:select-report',  report_auth.token)
-            except PatientReportAuth.DoesNotExist:
-                error_message = "Wrong access code"
+            report_auth = request.POST.get('access_code')
+            response = requests.post(
+                "https://api.checkmobi.com/v1/validation/verify",
+                data=json.dumps({"id": patient_auth.mobi_request_id, "pin": report_auth}),
+                headers={
+                    "Authorization": "C2F45334-A46E-44E1-9294-16F5A7F777A9",
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                }
+            )
+            if response.status_code == 200:
+                response_results_dict = json.loads(response.text)
+                if response_results_dict['validated']:
+                    patient_auth.verify_pin = report_auth
+                    patient_auth.save()
+                    return redirect('report:select-report',  report_auth)
+                else:
+                    error_message = "Sorry, that code has not been recognised. Please try again."
     return render(request, 'patient/auth_2_access_code.html', {
         'form': access_code_form,
         'message': error_message,
@@ -90,12 +105,12 @@ def sar_access_code(request,  **kawrgs,):
 
 @login_required(login_url='/accounts/login')
 def get_report(request, **kwargs):
-    if 'token' not in kwargs:
+    if 'verified_pin' not in kwargs:
         error_message = "try again"
         return redirect('report:access-code', error_message)
     if request.method == 'POST':
         try:
-            report_auth = PatientReportAuth.objects.get(token=kwargs.get('token'))
+            report_auth = PatientReportAuth.objects.get(verify_pin=kwargs['verified_pin'])
             instruction = get_object_or_404(Instruction, id=report_auth.instruction_id)
             redaction = get_object_or_404(AmendmentsForRecord, instruction=report_auth.instruction_id)
 
