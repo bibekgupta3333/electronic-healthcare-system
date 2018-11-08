@@ -441,14 +441,11 @@
             }
 
              $('#id_address_postcode').on('change', function () {
-                     var form_data = new FormData();
-                     form_data.append('ApiKey', '{{ GET_ADDRESS_API_KEY }}');
-                     form_data.append('Postcode',$(this).val());
+                     var url = "https://api.getAddress.io/find/"+$(this).val()+'?api-key='+'{{ GET_ADDRESS_API_KEY }}';
                      $.ajax({
-                        data: form_data,
-                        type: "POST",
+                        type: "GET",
                         processData: false,
-                        url: "https://api.getAddress.io/find/",
+                        url: url,
                         success: function (data) {
                             data.addresses = data.addresses.map(function(item){
                                 return item.split(',').filter(function(s){ return s != ' ' }).join(',')
@@ -458,7 +455,6 @@
                              });
                             $('#id_address_name_number').on('select2:select', function (e) {
                                 var data = e.params.data;
-                                console.log(data.text)
                             });
                             $('#id_address_name_number').trigger({
                                 type: 'select2:select',

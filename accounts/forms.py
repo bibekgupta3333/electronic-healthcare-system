@@ -18,6 +18,10 @@ class MyChoiceField(forms.ChoiceField):
 class PatientForm(forms.ModelForm):
     first_name = forms.CharField(max_length=255, required=True, label='First name*', widget=forms.TextInput(attrs={'placeholder': ''}))
     last_name = forms.CharField(max_length=255, required=True, label='Last name*', widget=forms.TextInput(attrs={'placeholder': ''}))
+
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), required=False)
+    date_of_birth = forms.DateField(input_formats=DATE_INPUT_FORMATS, widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': ''}))
+    address_postcode = MyChoiceField(required=False)
     date_of_birth = forms.DateField(input_formats=DATE_INPUT_FORMATS, required=True, widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': ''}))
     address_postcode = MyChoiceField(required=True)
     address_name_number = MyChoiceField(required=False)
