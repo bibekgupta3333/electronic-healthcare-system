@@ -5,10 +5,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from model_mommy import mommy
 
-from instructions.models import (
-    Instruction, INSTRUCTION_STATUS_PROGRESS, INSTRUCTION_STATUS_NEW
-)
-from instructions.model_choices import INSTRUCTION_STATUS_REJECT, INSTRUCTION_STATUS_PROGRESS, INSTRUCTION_STATUS_COMPLETE
+from instructions.models import Instruction
+from instructions.model_choices import INSTRUCTION_STATUS_REJECT, INSTRUCTION_STATUS_PROGRESS,\
+    INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_NEW
 from accounts.models import ClientUser, User, GeneralPracticeUser, Patient, GENERAL_PRACTICE_USER, CLIENT_USER
 from services.models import EmisAPIConfig
 from medicalreport.models import AmendmentsForRecord

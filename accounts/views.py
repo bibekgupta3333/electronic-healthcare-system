@@ -17,6 +17,7 @@ from django_tables2 import RequestConfig
 from .models import User, UserProfileBase
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from .forms import NewGPForm, NewClientForm
+from permissions.functions import access_user_management
 
 from django.conf import settings
 DEFAULT_FROM = settings.DEFAULT_FROM
@@ -77,6 +78,7 @@ def manage_user(request):
 
 
 @login_required(login_url='/accounts/login')
+@access_user_management
 def view_users(request):
     header_title = "User Management"
     profiles = UserProfileBase.all_objects.all()
@@ -150,6 +152,7 @@ def view_users(request):
 
 
 @login_required(login_url='/accounts/login')
+@access_user_management
 def create_user(request):
     header_title = "Add New User"
 

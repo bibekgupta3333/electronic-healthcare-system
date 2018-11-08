@@ -8,5 +8,6 @@ class PatientReportAuth(TimeStampedModel):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     instruction = models.ForeignKey('instructions.Instruction', on_delete=models.CASCADE)
     count = models.IntegerField(default=0)
-    token = models.CharField(max_length=6, null=True)
+    mobi_request_id = models.CharField(max_length=255, blank=True)
+    verify_pin = models.CharField(max_length=6, blank=True)
     url = models.CharField(max_length=256)

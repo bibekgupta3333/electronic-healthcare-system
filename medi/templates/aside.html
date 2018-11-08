@@ -23,7 +23,7 @@
                 </li>
             {% endif %}
             {% if user.userprofilebase.clientuser.role == 0 or user.userprofilebase.generalpracticeuser.role == 0 or user.type == 'MEDI' %}
-                <li class="{% if request.resolver_match.namespace == 'organisations' %}active{% endif %}">
+                <li class="{% if request.resolver_match.url_name == 'view_users' %}active{% endif %}">
                     <a href="{% url 'accounts:view_users' %}">User Management</a>
                 </li>
             {% endif %}
@@ -33,7 +33,7 @@
                 </li>
             {% endif %}
             {% if user.userprofilebase.generalpracticeuser.role == 0 %}
-                <li class="{% if request.resolver_match.namespace == 'view_account' %}active{% endif %}">
+                <li class="{% if request.resolver_match.url_name == 'view_account' %}active{% endif %}">
                     <a href="{% url 'accounts:view_account' %}" >Account</a>
                 </li>
             {% endif %}
