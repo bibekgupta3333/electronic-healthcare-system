@@ -124,7 +124,13 @@
                   </div>
                   <div class="card-footer">
                       <label class="text-footer">Reject this request if there are no suitable matching patients:</label>
-                      <div class="btn-group reject-btn">
+                      <div class="row reject-btn">
+                          {% if instruction.type == 'SARS' and request.user.type == 'GP'%}
+                          <form action="{% url 'instructions:new_instruction' %}" method="GET" class="edit-btn">
+                              <input type="hidden" id="instruction_id" name="instruction_id" value="{{ instruction.id }}" />
+                              <button class="btn btn-primary" id="editPatientBtn">Edit Patient Details</button>
+                          </form>
+                          {% endif %}
                           {% if user.id|reject_instruction:instruction.id %}
                               <button class="btn btn-danger dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 Reject Request
@@ -195,7 +201,7 @@
                 let patient_ref_id = $(this).data('patient_ref_id');
                 let action_url = '/medicalreport/'+ instruction_id+'/select-patient/' + patient_ref_id + '/';
                 {% if request.user.type == "GP" and instruction.type == "SARS" %}
-                    window.location.href = '/instruction/consent-contact/'+instruction_id;
+                    window.location.href = '/instruction/consent-contact/'+instruction_id+'/select-patient/'+patient_ref_id;
                 {% else %}
                     $('#allocateInstructionForm').attr('action',
                         action_url

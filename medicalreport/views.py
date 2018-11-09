@@ -81,6 +81,8 @@ def select_patient(request, instruction_id, patient_emis_number):
         AmendmentsForRecord.objects.create(instruction=instruction)
     gp_user = get_object_or_404(GeneralPracticeUser, user_id=request.user.id)
     instruction.in_progress(context={'gp_user': gp_user})
+    instruction.saved = False
+    instruction.save()
     return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
@@ -112,6 +114,7 @@ def edit_report(request, instruction_id):
         return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
 
     raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
+    # print('\n', raw_xml, '\n')
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     questions = instruction.addition_questions.all()
     finalise_submit_form = MedicalReportFinaliseSubmitForm(

@@ -3,7 +3,7 @@ from django.forms.models import modelformset_factory
 from django.core.exceptions import ValidationError
 
 from instructions.model_choices import AMRA_TYPE, SARS_TYPE
-from .models import InstructionAdditionQuestion
+from .models import InstructionAdditionQuestion, Instruction
 from template.models import TemplateInstruction
 from common.functions import multi_getattr
 from snomedct.models import CommonSnomedConcepts
@@ -90,3 +90,21 @@ AdditionQuestionFormset = modelformset_factory(
         'question': forms.TextInput(attrs={'class': 'form-control questions_inputs'}, ),
     },
 )
+
+
+class SarsConsentForm(forms.ModelForm):
+    class Meta:
+        model = Instruction
+        fields = ('sars_consent', )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class MdxConsentForm(forms.ModelForm):
+    class Meta:
+        model = Instruction
+        fields = ('mdx_consent', )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)

@@ -215,6 +215,7 @@ class Patient(UserProfileBase):
     systmone_number = models.CharField(max_length=255, blank=True)
     microtest_number = models.CharField(max_length=255, blank=True)
     patient_input_email = models.EmailField(max_length=255, blank=True)
+    alternate_phone = models.CharField(max_length=255, blank=True)
 
     class Meta:
         verbose_name = 'Patient User'

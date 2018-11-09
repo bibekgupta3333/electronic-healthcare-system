@@ -167,8 +167,13 @@ def consultation_element_list(consultation):
         else:
             obj[header] = element.content().description()
         obj['xpath'] = element.xpaths()
+        obj['map_code'] = element.map_code()
         data.append(obj)
     return data
+
+@register.filter
+def map_code(consultation):
+    return consultation.map_code()
 
 
 @register.filter

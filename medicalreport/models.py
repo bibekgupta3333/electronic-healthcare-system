@@ -34,6 +34,7 @@ class AmendmentsForRecord(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     redacted_xpaths = JSONField(null=True)
+    re_redacted_codes = JSONField(null=True)
     submit_choice = models.CharField(max_length=255, choices=SUBMIT_OPTION_CHOICES, blank=True)
     review_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     prepared_by = models.CharField(max_length=255, blank=True)
@@ -91,3 +92,8 @@ class AdditionalAllergies(models.Model):
     amendments_for_record = models.ForeignKey(AmendmentsForRecord, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class NhsSensitiveConditions(models.Model):
+    group = models.CharField(max_length=128)
+    snome_code = models.CharField(max_length=128)
