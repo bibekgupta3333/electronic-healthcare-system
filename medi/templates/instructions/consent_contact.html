@@ -19,138 +19,192 @@
 {% endblock %}
 
 {% block Content %}
-    <div class="card-deck instruction">
-        <div class="col-md-12">
-            <div class="card patientForm">
-                <div class="card-header">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h5>Patient</h5>
+    <div class="card-deck instruction">        
+        <form method="POST" id="consentContactForm" enctype="multipart/form-data" class="col-md-12 px-0">
+            {% csrf_token %}
+            <div class="col-md-12">
+                <div class="card patientForm">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Patient</h5>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="row col-md-5">
-                            <div class="col-md-2 rowTitle">Name*:</div>
-                            {% bootstrap_field patient_form.title size='small' form_group_class='form-group col-md-2 p-0'%}
-                            {% bootstrap_field patient_form.first_name size='small' form_group_class='form-group-plaintext  col-md-4 px-2' %}
-                            {% bootstrap_field patient_form.last_name size='small' form_group_class='form-group col-md-4 px-1' %}
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="row col-md-5">
+                                <div class="col-md-2 rowTitle">Name*:</div>
+                                {% bootstrap_field patient_form.title size='small' form_group_class='form-group col-md-2 p-0'%}
+                                {% bootstrap_field patient_form.first_name size='small' form_group_class='form-group-plaintext  col-md-4 px-2' %}
+                                {% bootstrap_field patient_form.last_name size='small' form_group_class='form-group col-md-4 px-1' %}
+                            </div>
+                            <div class="row offset-md-1 col-md-6">
+                                <div class="col-md-2 rowTitle">Date of Birth*:</div>
+                                {% bootstrap_field patient_form.date_of_birth size='small' form_group_class='form-group col-md-10 pt-4 mt-1 dob' show_label=False %}
+                            </div>
                         </div>
-                        <div class="row offset-md-1 col-md-6">
-                            <div class="col-md-2 rowTitle">Date of Birth*:</div>
-                            {% bootstrap_field patient_form.date_of_birth size='small' form_group_class='form-group col-md-10 pt-4 mt-1 dob' show_label=False %}
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="row col-md-5">
-                            <div class="col-md-2 rowTitle">Address*:</div>
-                            {% bootstrap_field patient_form.address_postcode size='small' form_group_class='form-group col-md-4 p-0 ' %}
-                            {% bootstrap_field patient_form.address_name_number size='small' form_group_class='form-group col-md-6 px-1' %}
-                        </div>
-                        <div class="row offset-md-1 col-md-6">
-                            <div class="col-md-2 rowTitle">NHS #:</div>
-                            {% bootstrap_field patient_form.nhs_number size='small' form_group_class='form-group col-md-10 pt-4 mt-1' show_label=False placeholder='' %}
+                        <div class="row">
+                            <div class="row col-md-5">
+                                <div class="col-md-2 rowTitle">Address*:</div>
+                                {% bootstrap_field patient_form.address_postcode size='small' form_group_class='form-group col-md-4 p-0 ' %}
+                                {% bootstrap_field patient_form.address_name_number size='small' form_group_class='form-group col-md-6 px-1' placeholder='' %}
+                            </div>
+                            <div class="row offset-md-1 col-md-6">
+                                <div class="col-md-2 rowTitle">NHS #:</div>
+                                {% bootstrap_field patient_form.nhs_number size='small' form_group_class='form-group col-md-10 pt-4 mt-1' show_label=False placeholder='' %}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-12 mt-4">
-            <div class="card">
-                <div class="card-header"><h5>Consent and contact information</h5></div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="row offset-md-1 col-md-10">
-                                <h6>SARS Request</h6>
-                            </div>
-                            <div class="row offset-md-1 col-md-10 mt-4">
-                                <h6>Required if initiated via third party</h6>
-                            </div>
-                            <div class="row mt-2">
-                               <div class="offset-md-1 col-md-10 mt-4">
-                                    <div class="form-group">
-                                        <div class="file-loading">
-                                            <input type="file" id="id_sars_consent" name="sars_consent" />
+            <div class="col-md-12 mt-4">
+                <input type="hidden" name="next_step" id="id_next_step" value="" />
+                <div class="card">
+                    <div class="card-header"><h5>Consent and contact information</h5></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="row offset-md-1 col-md-10">
+                                    <h6>SARS Request</h6>
+                                </div>
+                                <div class="row offset-md-1 col-md-10 mt-4">
+                                    <h6>Required if initiated via third party</h6>
+                                </div>
+                                <div class="row mt-2">
+                                <div class="offset-md-1 col-md-10 mt-4">
+                                        <div class="form-group">
+                                            <div class="file-loading">
+                                                <input type="hidden" name="sars_consent_cnt" id="id_sars_consent_cnt" />
+                                                {% bootstrap_field sars_consent_form.sars_consent show_label=false %}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="row offset-md-1 col-md-10">
-                                <h6>MDX Dual Consent</h6>
-                            </div>
-                            <div class="row offset-md-1 col-md-10 mt-1">
-                                <button class="btn btn-primary btn-lg w-100" type="" id="downloadBtn">
-                                    Download Pre-Populated Consent Form
-                                </button>
-                            </div>
-                            <div class="row mt-4">
-                                <div class="offset-md-1 col-md-10 mt-1">
-                                    <div class="form-group">
-                                        <div class="file-loading">
-                                            <input type="file" id="id_mdx_dual_consent" name="mdx_dual_consent" />
+                            <div class="col-md-4">
+                                <div class="row offset-md-1 col-md-10">
+                                    <h6>MDX Dual Consent</h6>
+                                </div>
+                                <div class="row offset-md-1 col-md-10 mt-1">
+                                    <button class="btn btn-primary btn-lg w-100" type="" id="downloadBtn">
+                                        Download Pre-Populated Consent Form
+                                    </button>
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="offset-md-1 col-md-10 mt-1">
+                                        <div class="form-group">
+                                            <div class="file-loading">
+                                                <input type="hidden" name="mdx_consent_cnt" id="id_mdx_consent_cnt" />
+                                                {% bootstrap_field mdx_consent_form.mdx_consent show_label=false %}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                       </div>
-                        <div class="col-md-4">
-                            <div class="row offset-md-1 col-md-10">
-                                <h6>Contact information</h6>
+                            <div class="col-md-4">
+                                <div class="row offset-md-1 col-md-10">
+                                    <h6>Contact information</h6>
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="col-md-3 rowTitle">Email</div>
+                                    {% bootstrap_field patient_form.patient_input_email size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="col-md-3 rowTitle">Confirm Email</div>
+                                    <div class="col-md-8"><input type="email" id="confirm_email" class="form-control form-control-sm" /></div>
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="col-md-3 rowTitle">Mobile Phone</div>
+                                    {% bootstrap_field patient_form.telephone_mobile size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="col-md-3 rowTitle">Alternate Phone(optional)</div>
+                                    {% bootstrap_field patient_form.alternate_phone size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
+                                </div>
                             </div>
-                            <div class="row mt-4">
-                                <div class="col-md-3 rowTitle">Email</div>
-                                {% bootstrap_field patient_form.patient_input_email size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
-                            </div>
-                            <div class="row mt-4">
-                                <div class="col-md-3 rowTitle">Confirm Email</div>
-                                <div class="col-md-8"><input type="email" id="confirm_email" class="form-control form-control-sm" /></div>
-                            </div>
-                            <div class="row mt-4">
-                                <div class="col-md-3 rowTitle">Mobile Phone</div>
-                               {% bootstrap_field patient_form.telephone_mobile size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
-                            </div>
-                            <div class="row mt-4">
-                                <div class="col-md-3 rowTitle">Alternate Phone(optional)</div>
-                                {% bootstrap_field patient_form.alternate_phone size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
-                            </div>
-                       </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </form>
    </div>
    <div id="emailDialog1" class="emailModal well">
+       <h5><i class="fas fa-exclamation-triangle"></i>Warning</h5>
        <p>That doesn't look like a valid email address</p>
        <button class="emailDialog1_close rightBtn btn btn-sm btn-default">Close</button>
    </div>
    <div id="emailDialog2" class="emailModal well">
+        <h5><i class="fas fa-exclamation-triangle"></i>Warning</h5>
         <p>Those email addresses don't match</p>
         <button class="emailDialog2_close rightBtn btn btn-sm btn-default">Close</button>
     </div>
-    {% if request.user.type == 'GP' %}
-        <div class="row ml-1 mt-4 ">
-            <div class="col-md-12">
-                <a href="{% url 'medicalreport:set_patient_emis_number' instruction_id=instruction.id %}" class="btn btn-primary btn-lg" id="backButton"><i class="fas fa-chevron-left"></i > Go back</a>
-                <a href="{% url 'medicalreport:set_patient_emis_number' instruction_id=instruction.id %}"
-                   class="btn btn-primary btn-lg" id="reportBtn">Proceed to Report <i class="fas fa-chevron-right"></i>
-                </a>
-                <a href="{% url 'instructions:view_pipeline' %}" class="btn btn-primary btn-lg rightBtn mr-4" id="saveBtn">Save and Return to Pipeline</a>
-                <a href="#" class="btn btn-danger btn-lg rightBtn mr-1" id="rejectBtn">Reject Instruction</a>
+    <div class="row ml-1 mt-4 ">
+        <div class="col-md-12">
+            <button class="btn btn-primary btn-lg" id="backButton"><i class="fas fa-chevron-left"></i > Go back</button>
+            <button class="btn btn-primary btn-lg" id="proceedBtn">Proceed to Report <i class="fas fa-chevron-right"></i>
+            </button>
+            <button class="btn btn-primary btn-lg rightBtn mr-4" id="saveBtn">Save and Return to Pipeline</button>
+            <button class="btn btn-danger btn-lg dropdown-toggle mr-1 rightBtn" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Reject Instruction
+                </button>
+            <div class="dropdown-menu dropdown-menu-right reject" aria-labelledby="dropdownMenuButton">
+                {% for reject_type in reject_types %}
+                    {% if instruction.type != 'SARS' or reject_type.1 != 'The consent form is invalid' %}
+                        <div id="rejected_reason-{{reject_type.0}}" data-toggle="modal" data-target="#modal-reject" class="dropdown-item" onclick="updateRejectType(this);">
+                            {{reject_type.1}}
+                        </div>
+                    {% endif %}
+                {% endfor %}
             </div>
         </div>
-    {% endif %}
+    </div>
+    <div class="modal-reject" id="modal-reject">
+        <div class="modal-dialog modal-lg">
+            <form action="{% url 'medicalreport:reject_request' instruction.id %}" method="POST"  enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Reject note</h3>
+                    </div>
+                    <div class="modal-body">
+                        <textarea name="rejected_note"></textarea>
+                        <input name="rejected_reason" id="rejected_reason" type="hidden"/>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger reject-btn">Reject Request</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="noSarsConsent" class="well">
+        <h4><i class="fas fa-exclamation-triangle"></i>Warning</h4>
+        <p>No SARS Request Consent was attached. Has the patient requested the SARS report directly? If not, this consent is required</p>
+        <button class="fullProceedBtn rightBtn btn btn-primary mr-1">Proceed</button>
+        <button class="noSarsConsent_close rightBtn btn btn-default mr-1">Go back</button>
+    </div>
+    <div id="noMdxConsent" class="well">
+        <h4><i class="fas fa-exclamation-triangle"></i>Warning</h4>
+        <p>MDX Dual Consent is mandatory. You must obtain consent before you are able to process the instruction</p>
+        <button class="noMdxConsent_close rightBtn btn btn-primary mr-1">Okay</button>
+    </div>
+    <div id="noEmailAddress" class="well">
+        <h4><i class="fas fa-exclamation-triangle"></i>Warning</h4>
+        <p>No email address has been provided for the patient. If no email address is provided, MDX will not be able to provide the patient with the report, and the GP Surgery will need to provide directly</p>
+        <button class="fullProceedBtn rightBtn btn btn-primary mr-1">Proceed</button>
+        <button class="noEmailAddress_close rightBtn btn btn-default mr-1 enterEmailBtn">Enter Email</button>
+    </div>
 {% endblock %}
 
 {% block Script %}
     <!-- Include jQuery Popup Overlay -->
     <script src="{% static 'js/jquery.popupoverlay.js' %}"></script>
+    <script src="{% static 'js/instructions/consent_form.js' %}"></script>
     <script>
     $(document).ready(function () {
         var isPopup = false;
+        var isErrorPopup = false;
         var validations ={
             email: [/^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/, 'Please enter a valid email address']
         };
@@ -161,14 +215,53 @@
                 isPopup = false;
             }
         });
+        $("#noSarsConsent").popup({
+            transition: 'all 0.3s',
+            scrolllock: true,
+            onclose: function() {
+                isErrorPopup = false;
+            }
+        });
+        $("#noMdxConsent").popup({
+            transition: 'all 0.3s',
+            scrolllock: true,
+            onclose: function() {
+                isErrorPopup = false;
+            }
+        });
+        $("#noEmailAddress").popup({
+            transition: 'all 0.3s',
+            scrolllock: true,
+            onclose: function() {
+                isErrorPopup = false;
+            }
+        });
         $('.patientForm input').attr('readonly', true);
         $("#id_sars_consent").fileinput({
             theme: 'fas',
             showUpload: false,
+            {% if sars_consent_form_data.path %}
+                initialPreview: [
+                    window.location.origin+'/{{ sars_consent_form_data.path }}'
+                ],
+                initialPreviewAsData: true,
+                initialPreviewConfig: [
+                    {type: "{{ sars_consent_form_data.type }}", url: "{% static sars_consent_form_data.path %}" }
+                ]
+            {% endif %}
         });
-        $("#id_mdx_dual_consent").fileinput({
+        $("#id_mdx_consent").fileinput({
             theme: 'fas',
             showUpload: false,
+            {% if mdx_consent_form_data.path %}
+                initialPreview: [
+                    window.location.origin+'/{{ mdx_consent_form_data.path }}'
+                ],
+                initialPreviewAsData: true,
+                initialPreviewConfig: [
+                    {type: "{{ mdx_consent_form_data.type }}", url: "{% static mdx_consent_form_data.path %}" }
+                ]
+            {% endif %}
         });
         $('#id_patient_input_email').blur(function(){
             validation = new RegExp(validations['email'][0]);
@@ -184,6 +277,46 @@
                 // If the validation fails then we show the custom error message
                 setTimeout(function(){$("#emailDialog2").popup('show')}, 500)
             }
+        });
+        $('#backButton').click(function(){
+            window.location.href = '/medicalreport/'+'{{instruction.id}}'+'/patient-emis-number/';
+        });
+        $('#proceedBtn').click(function(){
+            var sarscnt = $("#id_sars_consent")[0].files;
+            var mdxcnt = $("#id_mdx_consent")[0].files;
+            sarscnt = sarscnt.length;
+            mdxcnt = mdxcnt.length;            
+            if(sarscnt == 0 && !isErrorPopup) {
+                $('#noSarsConsent').popup('show');
+                isErrorPopup = true;
+            }
+            else if(mdxcnt == 0 && !isErrorPopup) {
+                $('#noMdxConsent').popup('show');
+                isErrorPopup = true;
+            }
+            else if($('#id_patient_input_email').val() == '' && !isErrorPopup){
+                $('#noEmailAddress').popup('show');
+                isErrorPopup = true;
+            }
+            else {
+                $('#id_next_step').val('proceed');
+                $('#consentContactForm').submit();
+            }
+        });
+        $('#saveBtn').click(function(){
+            var sarscnt = $("#id_sars_consent")[0].files;
+            $('#id_sars_consent_cnt').val(sarscnt.length);
+            var mdxcnt = $("#id_mdx_consent")[0].files;
+            $('#id_mdx_consent_cnt').val(mdxcnt.length);
+            $('#id_next_step').val('view_pipeline'); 
+            $('#consentContactForm').submit();
+        });
+        $('.fullProceedBtn').click(function(){
+            $('#id_next_step').val('proceed');
+            $('#consentContactForm').submit();
+        });
+        $('.enterEmailBtn').click(function(){
+            $('#id_patient_input_email').focus();
         });
     });
     </script>

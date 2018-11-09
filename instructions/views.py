@@ -10,7 +10,7 @@ from django_tables2 import RequestConfig
 from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest, Setting
 from .tables import InstructionTable
 from .model_choices import *
-from .forms import ScopeInstructionForm, AdditionQuestionFormset
+from .forms import ScopeInstructionForm, AdditionQuestionFormset, SarsConsentForm, MdxConsentForm
 from accounts.models import User, Patient, GeneralPracticeUser
 from accounts.models import PATIENT_USER, GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from accounts.forms import PatientForm, GPForm
@@ -495,15 +495,39 @@ def view_reject(request, instruction_id):
 
 
 @login_required(login_url='/accounts/login')
-def consent_contact(request, instruction_id):
+def consent_contact(request, instruction_id, patient_emis_number):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
+    patient = instruction.patient
 
     if request.method == "POST":
-        instruction.sars_consent = request.POST.get("sars_consent", None)
-        instruction.mdx_dual_consent = request.POST.get("mdx_dual_consent", None)
+        sars_consent_form = SarsConsentForm(request.POST, request.FILES)
+        mdx_consent_form = MdxConsentForm(request.POST, request.FILES)
+        patient_form = PatientForm(request.POST, instance=patient)
+        if sars_consent_form.is_valid():
+            instruction.sars_consent = sars_consent_form.cleaned_data['sars_consent']
+        if mdx_consent_form.is_valid():
+            instruction.mdx_consent = mdx_consent_form.cleaned_data['mdx_consent']
+        if request.POST.get('sars_consent_cnt') == '0':
+            instruction.sars_consent = None
+        if request.POST.get('mdx_consent_cnt') == '0':
+            instruction.mdx_consent = None
         instruction.save()
+        patient.patient_input_email = request.POST.get('patient_input_email', '')
+        patient.telephone_mobile = request.POST.get('telephone_mobile', '')
+        patient.alternate_phone = request.POST.get('alternate_phone', '')   
+        patient.save()
+
+        nextStep = request.POST.get('next_step', '')
+        if nextStep == 'view_pipeline':
+            instruction.saved = True
+            gp_user = get_object_or_404(GeneralPracticeUser, user_id=request.user.id)
+            instruction.in_progress(context={'gp_user': gp_user})
+            patient.emis_number = patient_emis_number
+            patient.save()
+            return redirect('instructions:view_pipeline')
+        elif nextStep == 'proceed':
+            return redirect('medicalreport:select_patient', instruction_id=instruction_id, patient_emis_number=patient_emis_number)            
     
-    patient = instruction.patient
     # Initial Patient Form
     patient_form = PatientForm(
         instance=patient,
@@ -512,8 +536,41 @@ def consent_contact(request, instruction_id):
             'address_postcode': patient.address_postcode
         }
     )
+    sars_consent_form = SarsConsentForm()
+    mdx_consent_form = MdxConsentForm()
+
+    consent_type = 'pdf'
+    consent_extension = ''
+    consent_path = ''
+    if instruction.sars_consent:
+        consent_extension = (instruction.sars_consent.url).split('.')[1]
+        consent_path = instruction.sars_consent.url
+    if consent_extension in ['jpeg', 'png', 'gif']:
+        consent_type = 'image'
+    sars_consent_form_data = {
+        'type': consent_type,
+        'path': consent_path
+    }
+
+    consent_type = 'pdf'
+    consent_extension = ''
+    consent_path = ''
+    if instruction.mdx_consent:
+        consent_extension = (instruction.mdx_consent.url).split('.')[1]
+        consent_path = instruction.mdx_consent.url
+    if consent_extension in ['jpeg', 'png', 'gif']:
+        consent_type = 'image'
+    mdx_consent_form_data = {
+        'type': consent_type,
+        'path': consent_path
+    }
 
     return render(request, 'instructions/consent_contact.html', {
         'patient_form': patient_form,
-        'instruction': instruction
+        'instruction': instruction,
+        'sars_consent_form': sars_consent_form,
+        'mdx_consent_form': mdx_consent_form,
+        'sars_consent_form_data': sars_consent_form_data,
+        'mdx_consent_form_data': mdx_consent_form_data,
+        'reject_types': INSTRUCTION_REJECT_TYPE,
     })

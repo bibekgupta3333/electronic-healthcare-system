@@ -195,7 +195,7 @@
                 let patient_ref_id = $(this).data('patient_ref_id');
                 let action_url = '/medicalreport/'+ instruction_id+'/select-patient/' + patient_ref_id + '/';
                 {% if request.user.type == "GP" and instruction.type == "SARS" %}
-                    window.location.href = '/instruction/consent-contact/'+instruction_id;
+                    window.location.href = '/instruction/consent-contact/'+instruction_id+'/select-patient/'+patient_ref_id;
                 {% else %}
                     $('#allocateInstructionForm').attr('action',
                         action_url

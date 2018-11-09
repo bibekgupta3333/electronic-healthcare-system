@@ -81,6 +81,8 @@ def select_patient(request, instruction_id, patient_emis_number):
         AmendmentsForRecord.objects.create(instruction=instruction)
     gp_user = get_object_or_404(GeneralPracticeUser, user_id=request.user.id)
     instruction.in_progress(context={'gp_user': gp_user})
+    instruction.saved = False
+    instruction.save()
     return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
