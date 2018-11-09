@@ -493,3 +493,27 @@ def view_reject(request, instruction_id):
         'instruction_id': instruction_id,
     })
 
+
+@login_required(login_url='/accounts/login')
+def consent_contact(request, instruction_id):
+    instruction = get_object_or_404(Instruction, pk=instruction_id)
+
+    if request.method == "POST":
+        instruction.sars_consent = request.POST.get("sars_consent", None)
+        instruction.mdx_dual_consent = request.POST.get("mdx_dual_consent", None)
+        instruction.save()
+    
+    patient = instruction.patient
+    # Initial Patient Form
+    patient_form = PatientForm(
+        instance=patient,
+        initial={
+            'first_name': patient.user.first_name, 'last_name': patient.user.last_name,
+            'address_postcode': patient.address_postcode
+        }
+    )
+
+    return render(request, 'instructions/consent_contact.html', {
+        'patient_form': patient_form,
+        'instruction': instruction
+    })
