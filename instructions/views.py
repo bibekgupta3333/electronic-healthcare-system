@@ -504,9 +504,11 @@ def consent_contact(request, instruction_id, patient_emis_number):
         mdx_consent_form = MdxConsentForm(request.POST, request.FILES)
         patient_form = PatientForm(request.POST, instance=patient)
         if sars_consent_form.is_valid():
+            # ToDo have to change logic check required consent form
             instruction.sars_consent = sars_consent_form.cleaned_data['sars_consent']
         if mdx_consent_form.is_valid():
             instruction.mdx_consent = mdx_consent_form.cleaned_data['mdx_consent']
+            instruction.consent_form = mdx_consent_form.cleaned_data['mdx_consent']
         if request.POST.get('sars_consent_cnt') == '0':
             instruction.sars_consent = None
         if request.POST.get('mdx_consent_cnt') == '0':
