@@ -37,6 +37,10 @@ class XMLModelBase(XMLBase):
         codes = self.parsed_xml.findall(".//Code[Scheme='READ2']/Value")
         return [code.text for code in codes]
 
-    def snomed_concepts(self) -> List[str]:
+    def snomed_concepts(self):
         snomeds = self.parsed_xml.findall(".//Code[Scheme='SNOMED']/Value")
         return [snomed.text for snomed in snomeds]
+
+    def map_code(self) -> List[str]:
+        map_codes = self.parsed_xml.findall(".//Code/MapCode")
+        return [map_code.text for map_code in map_codes]

@@ -1,5 +1,7 @@
 from django import template
+from django.db.models import Q
 from .helper import problem_xpaths
+from medicalreport.models import NhsSensitiveConditions
 
 register = template.Library()
 
@@ -127,18 +129,24 @@ def redaction_checkbox_with_body(model, redaction, header='', body=''):
 
 
 @register.inclusion_tag('medicalreport/inclusiontags/redaction_checkbox_with_list.html')
-def redaction_checkbox_with_list(model, redaction, header='', dict_data='', label=None):
+def redaction_checkbox_with_list(model, redaction, header='', dict_data='', map_code='', label=None):
     checked = ""
+    matched_sensitive_conditions = NhsSensitiveConditions.objects.filter(snome_code__in=map_code)
+    if redaction.re_redacted_codes:
+        matched_sensitive_conditions.filter(~Q(snome_code__in=redaction.re_redacted_codes))
+    matched_sensitive_conditions = matched_sensitive_conditions.values_list('snome_code')
     xpaths = model.xpaths()
     if redaction.redacted(xpaths) is True:
         checked = "checked"
     return {
         'redaction_checks': redaction.redacted_xpaths,
+        're_redaced_codes': redaction.re_redacted_codes,
         'checked': checked,
         'xpaths': xpaths,
         'header': header,
         'dict_data': dict_data,
-        'label': label
+        'label': label,
+        'sensitive_conditions': list(matched_sensitive_conditions)
     }
 
 

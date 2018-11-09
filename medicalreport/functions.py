@@ -27,6 +27,7 @@ def create_or_update_redaction_record(request, instruction):
     get_redaction_notes(request, amendments_for_record)
     get_additional_medication(request, amendments_for_record)
     get_additional_allergies(request, amendments_for_record)
+    get_redaction_conditions(request, amendments_for_record)
 
     delete_additional_medication_records(request)
     delete_additional_allergies_records(request)
@@ -83,6 +84,13 @@ def create_or_update_redaction_record(request, instruction):
 def get_redaction_xpaths(request, amendments_for_record):
     redaction_xpaths = request.POST.getlist('redaction_xpaths')
     amendments_for_record.redacted_xpaths = redaction_xpaths
+
+
+def get_redaction_conditions(request, amendments_for_record):
+
+    redaction_conditions = set(filter(None, request.POST.getlist('map_code')))
+    if 'undefined'in redaction_conditions: redaction_conditions.remove('undefined')
+    amendments_for_record.re_redacted_codes = list(redaction_conditions)
 
 
 def get_redaction_notes(request, amendments_for_record):

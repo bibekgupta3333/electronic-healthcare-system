@@ -13,13 +13,18 @@
                 <li class="redaction-checkbox__list-item">
                 {% for key, value in item.items %}
                     <label class="redaction-checkbox">
-
-                        {% if key != 'xpath' %}
+                        {% if key != 'xpath' and key != 'map_code'%}
+                            <input name="map_code" type="hidden">
                              <input name="redaction_xpaths"  key="{{ item|hash:'xpath'|first }}"
-                                 {% if item|hash:'xpath'|first in redaction_checks %}
-                                 checked
+                                 {%  if item|hash:'map_code'|first == sensitive_conditions|first|first %}
+                                     checked
+                                 {% elif item|hash:'xpath'|first in redaction_checks  %}
+                                    checked
                                  {% endif %}
-                                 data-redaction_xpaths="{{item|hash:'xpath'|first }}" value="{{item|hash:'xpath'|first }}"
+
+                                 data-redaction_xpaths="{{item|hash:'xpath'|first }}"
+                                 data-redaction_condition="{{ item|hash:'map_code'|first }}"
+                                 value="{{item|hash:'xpath'|first }}"
                                  readonly type="checkbox" class="redaction-checkbox__input">
                             <span class="redaction-checkbox__icon float-right fas fa-check-circle"></span>
                             <span class="redaction-checkbox__text"><strong>{{ key }}: </strong>{{value}}</span>
