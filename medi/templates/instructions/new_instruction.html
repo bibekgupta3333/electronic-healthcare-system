@@ -21,6 +21,7 @@
 {% block Content %}
     <form method="POST" enctype="multipart/form-data" id="newInstructionForm">
         {% csrf_token %}
+        <input type="hidden" id="instruction_id" name="instruction_id" value="{{ instruction_id }}" />
         <div class="card-deck instruction">
             <div class="pr-0 {% if request.user.type == 'CLT' %} col-md-6 {% else %} col-md-12 {% endif %}">
                 <div class="card mr-2">

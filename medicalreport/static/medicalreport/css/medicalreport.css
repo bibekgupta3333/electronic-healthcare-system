@@ -66,6 +66,10 @@
     float: right;
 }
 
+.edit-btn {
+    margin-right: 20px;
+}    
+
 .text-footer {
     color: black;
 }

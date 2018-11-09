@@ -43,10 +43,12 @@ class PatientForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         initial_data = kwargs.get('initial')
         if initial_data:
-            post_code = initial_data.get('address_postcode')
-            if post_code:
-                self.fields['address_postcode'] = forms.CharField(max_length=255)
-            self.fields['title'] = forms.CharField(max_length=255)
+            edit_patient = initial_data.get('edit_patient')
+            if not edit_patient:
+                post_code = initial_data.get('address_postcode')
+                if post_code:
+                    self.fields['address_postcode'] = forms.CharField(max_length=255)
+                self.fields['title'] = forms.CharField(max_length=255)
 
 
 class GPForm(forms.Form):
