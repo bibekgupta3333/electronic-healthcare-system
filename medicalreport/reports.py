@@ -51,6 +51,7 @@ class MedicalReport:
 
         if not pdf.err:
             response = HttpResponse(content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename="report.pdf"'
             response.write(file.getvalue())
             return response
 
