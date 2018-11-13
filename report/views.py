@@ -71,7 +71,9 @@ def sar_access_code(request, url):
                         patient_auth.verify_pin = report_auth
                         patient_auth.count = 0
                         patient_auth.save()
-                        return redirect('report:select-report',  report_auth)
+                        response = redirect('report:select-report')
+                        response.set_cookie('verified_pin', report_auth)
+                        return response
                     else:
                         patient_auth.count = patient_auth.count + 1
                         patient_auth.save()
@@ -84,12 +86,14 @@ def sar_access_code(request, url):
     })
 
 
-def get_report(request, **kwargs):
-    if 'verified_pin' not in kwargs:
-        return redirect('report:access-code')
+def get_report(request):
+    if not request.COOKIES.get('verified_pin'):
+        return redirect('report:session-expired')
+
+    verified_pin = request.COOKIES.get('verified_pin')
 
     try:
-        report_auth = PatientReportAuth.objects.get(verify_pin=kwargs['verified_pin'])
+        report_auth = PatientReportAuth.objects.get(verify_pin=verified_pin)
         if report_auth.count >= 3:
             return redirect_auth_limit(request)
     except PatientReportAuth.DoesNotExist:
@@ -120,9 +124,15 @@ def get_report(request, **kwargs):
             elif request.POST.get('button') == 'Print Report':
                 return render(request, 'medicalreport/reports/medicalreport.html', params)
 
-    return render(request, 'patient/auth_4_select_report.html')
+    return render(request, 'patient/auth_4_select_report.html',{
+        'verified_pin': verified_pin,
+        'name': report_auth.patient.user.first_name
+    })
 
 
 def redirect_auth_limit(request):
     error_message = 'You exceeded the limit'
     return render(request, 'patient/auth_3_exceed_limit.html', {'message': error_message})
+
+def session_expired(request):
+    return render(request, 'patient/session_expired.html')
