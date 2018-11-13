@@ -35,7 +35,7 @@ class OrganisationClientTest(TestCase):
 class OrganisationGeneralPracticeTest(TestCase):
     def test_string_representation(self):
         organisation_general_practice = mommy.make(
-            OrganisationGeneralPractice, trading_name='trading_name'
+            OrganisationGeneralPractice, name='trading_name'
         )
         self.assertEqual(str(organisation_general_practice), 'trading_name')
 

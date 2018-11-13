@@ -32,9 +32,12 @@ class EmisAPITestCase(TestCase):
         user = mommy.make(User, type=GENERAL_PRACTICE_USER)
         gp_practice = mommy.make(
             OrganisationGeneralPractice, pk=1,
-            trading_name='GP Organisation', legal_name='GP',
-            address='99/99 Bangkok 2510', operating_system='OT',
-            practice_code='99999'
+            name='GP Organisation',
+            billing_address_street='99/99',
+            billing_address_city='Bangkok',
+            billing_address_postalcode='2510',
+            gp_operating_system='OT',
+            practcode='99999'
         )
         self.gp_user = mommy.make(GeneralPracticeUser, user=user, organisation=gp_practice)
         self.gp_practice = gp_practice

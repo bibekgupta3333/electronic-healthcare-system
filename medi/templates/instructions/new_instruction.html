@@ -422,7 +422,7 @@
             $('#id_gp_practice').on('change', function () {
                 $.ajax({
                     type: "GET",
-                    url: "{% url 'organisations:get_nhs_data' %}",
+                    url: "{% url 'organisations:get_gporganisation_data' %}",
                     data: {
                         'code': $(this).val()
                     },

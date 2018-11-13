@@ -2,7 +2,6 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib import messages
-from django.core.mail import send_mail
 from django.db.models import Q
 from django.shortcuts import redirect
 from django.http import JsonResponse
@@ -10,13 +9,12 @@ from django.forms import modelformset_factory
 
 from permissions.forms import InstructionPermissionForm
 from permissions.models import InstructionPermission
-from common.functions import multi_getattr, get_env_variable, verify_password as verify_pass
+from common.functions import multi_getattr, verify_password as verify_pass
 from payment.models import OrganisationFee
 from django_tables2 import RequestConfig
 
 from .models import User, UserProfileBase
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
-from .forms import NewGPForm, NewClientForm
 from permissions.functions import access_user_management
 
 from django.conf import settings
@@ -132,11 +130,11 @@ def view_users(request):
     table_data['table'].order_by = request.GET.get('sort', '-created')
     if user_profile and hasattr(user_profile, 'generalpracticeuser'):
         organisation = user_profile.generalpracticeuser.organisation
-        permissions = InstructionPermission.objects.filter(organisation_id=organisation.id)
+        permissions = InstructionPermission.objects.filter(organisation=organisation)
         permission_set = modelformset_factory(InstructionPermission, form=InstructionPermissionForm, extra=(3-permissions.count()))
         initial_data = []
         for i in range (0,3-permissions.count()):
-            initial_data.append({'organisation': organisation.id})
+            initial_data.append({'organisation': organisation.pk})
         permission_formset = permission_set(queryset=permissions, initial=initial_data)
 
     response = render(request, 'user_management/user_management.html', {

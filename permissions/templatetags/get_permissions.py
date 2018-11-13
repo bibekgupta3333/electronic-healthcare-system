@@ -13,10 +13,11 @@ def create_amra(user_id):
         return permission
     role = user.userprofilebase.generalpracticeuser.role
     organisation = user.userprofilebase.generalpracticeuser.organisation
-    instruction_permission = InstructionPermission.objects.filter(role=role, organisation_id=organisation.id).first()
+    instruction_permission = InstructionPermission.objects.filter(role=role, organisation=organisation).first()
     if instruction_permission:
         permission = instruction_permission.create_amra
     return permission
+
 
 def create_sars(user_id):
     permission = False
@@ -25,10 +26,11 @@ def create_sars(user_id):
         return permission
     role = user.userprofilebase.generalpracticeuser.role
     organisation = user.userprofilebase.generalpracticeuser.organisation
-    instruction_permission = InstructionPermission.objects.filter(role=role, organisation_id=organisation.id).first()
+    instruction_permission = InstructionPermission.objects.filter(role=role, organisation=organisation).first()
     if instruction_permission:
         permission = instruction_permission.create_sars
     return permission
+
 
 def reject_instruction(user_id, instruction_id):
     permission = False
@@ -38,13 +40,14 @@ def reject_instruction(user_id, instruction_id):
         return permission
     role = user.userprofilebase.generalpracticeuser.role
     organisation = user.userprofilebase.generalpracticeuser.organisation
-    instruction_permission = InstructionPermission.objects.filter(role=role, organisation_id=organisation.id).first()
+    instruction_permission = InstructionPermission.objects.filter(role=role, organisation=organisation).first()
     if instruction_permission and instruction:
         if instruction.type == AMRA_TYPE:
             permission = instruction_permission.reject_amra
         else:
             permission = instruction_permission.reject_sars
     return permission
+
 
 def process_instruction(user_id, instruction_id):
     permission = False
@@ -54,13 +57,14 @@ def process_instruction(user_id, instruction_id):
         return permission
     role = user.userprofilebase.generalpracticeuser.role
     organisation = user.userprofilebase.generalpracticeuser.organisation
-    instruction_permission = InstructionPermission.objects.filter(role=role, organisation_id=organisation.id).first()
+    instruction_permission = InstructionPermission.objects.filter(role=role, organisation=organisation).first()
     if instruction_permission and instruction:
         if instruction.type == AMRA_TYPE:
             permission = instruction_permission.process_amra
         else:
             permission = instruction_permission.process_sars
     return permission
+
 
 def allocate_instruction(user_id):
     permission = False
@@ -69,10 +73,11 @@ def allocate_instruction(user_id):
         return permission
     role = user.userprofilebase.generalpracticeuser.role
     organisation = user.userprofilebase.generalpracticeuser.organisation
-    instruction_permission = InstructionPermission.objects.filter(role=role, organisation_id=organisation.id).first()
+    instruction_permission = InstructionPermission.objects.filter(role=role, organisation=organisation).first()
     if instruction_permission:
         permission = instruction_permission.allocate_gp
     return permission
+
 
 def sign_off_report(user_id, instruction_id):
     permission = False
@@ -82,7 +87,7 @@ def sign_off_report(user_id, instruction_id):
         return permission
     role = user.userprofilebase.generalpracticeuser.role
     organisation = user.userprofilebase.generalpracticeuser.organisation
-    instruction_permission = InstructionPermission.objects.filter(role=role, organisation_id=organisation.id).first()
+    instruction_permission = InstructionPermission.objects.filter(role=role, organisation=organisation).first()
     if instruction_permission and instruction:
         if instruction.type == AMRA_TYPE:
             permission = instruction_permission.sign_off_amra
@@ -98,13 +103,14 @@ def view_complete_report(user_id, instruction_id):
         return permission
     role = user.userprofilebase.generalpracticeuser.role
     organisation = user.userprofilebase.generalpracticeuser.organisation
-    instruction_permission = InstructionPermission.objects.filter(role=role, organisation_id=organisation.id).first()
+    instruction_permission = InstructionPermission.objects.filter(role=role, organisation=organisation).first()
     if instruction_permission and instruction:
         if instruction.type == AMRA_TYPE:
             permission = instruction_permission.view_completed_amra
         else:
             permission = instruction_permission.view_completed_sars
     return permission
+
 
 register.filter('create_amra', create_amra)
 register.filter('create_sars', create_sars)
