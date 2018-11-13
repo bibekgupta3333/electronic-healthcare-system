@@ -18,10 +18,10 @@ class MedicalRecordTest(XMLTestCase):
     def setUp(self):
         super().setUp(MedicalRecord.XPATH)
         self.medical_record = MedicalRecord(self.parsed_xml)
-        smoking_snomed = mommy.make(SnomedConcept, external_id=365981007)
-        alcohol_snomed = mommy.make(SnomedConcept, external_id=228273003)
-        mommy.make(ReadCode, ext_read_code='SMO8', concept_id=smoking_snomed)
-        mommy.make(ReadCode, ext_read_code='ALC7', concept_id=alcohol_snomed)
+        smoking_readcode = mommy.make(ReadCode, ext_read_code='SMO8')
+        alcohol_readcode = mommy.make(ReadCode, ext_read_code='ALC7')
+        mommy.make(SnomedConcept, external_id=365981007, readcode=smoking_readcode)
+        mommy.make(SnomedConcept, external_id=228273003, readcode=alcohol_readcode)
 
     def test_consultations_gets_all_elements_in_xml(self):
         self.assertEqual(9, len(self.medical_record.consultations()))

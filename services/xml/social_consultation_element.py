@@ -30,11 +30,12 @@ class SocialConsultationElement(XMLModelBase):
     def __code_descendent_of(self, snomed_model: SnomedConcept) -> bool:
         readcodes = self.readcodes()
         if readcodes:
-            descendant_readcodes = map(
-                lambda rc: rc.ext_read_code,
-                snomed_model.descendant_readcodes()
-            )
-            return not set(readcodes).isdisjoint(descendant_readcodes)
+            readcode_models = ReadCode.objects.filter(
+                ext_read_code__in=self.readcodes())
+            for readcode in readcode_models:
+                if snomed_model in readcode.related_snomed_concepts_and_descendants():
+                    return True
+            return False
         else:
             descendant_concepts = map(
                 lambda sc: sc.external_id,
