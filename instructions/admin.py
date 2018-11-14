@@ -4,8 +4,36 @@ from django.shortcuts import get_object_or_404
 from instructions.model_choices import INSTRUCTION_STATUS_REJECT
 
 
+class InstructionConditionsInline(admin.TabularInline):
+    model = models.InstructionConditionsOfInterest
+    raw_id_fields = ('snomedct',)
+    fields = ['snomedct',]
+
+    def get_extra(self, request, obj=None, **kwargs):
+        if obj and obj.instructionconditionsofinterest_set.count():
+            return 0
+        else:
+            return 1
+
+
+class InstructionAdditionQuestionInline(admin.TabularInline):
+    model = models.InstructionAdditionQuestion
+    fields = ['question']
+
+    def get_extra(self, request, obj=None, **kwargs):
+        if obj and obj.instructionconditionsofinterest_set.count():
+            return 0
+        else:
+            return 1
+
+
 class InstructionAdmin(admin.ModelAdmin):
     change_status = False
+    list_display = ('client_user', 'gp_user', 'gp_practice', 'status', 'created')
+    inlines = [
+        InstructionConditionsInline,
+        InstructionAdditionQuestionInline
+    ]
 
     def save_model(self, request, obj, form, change):
         change_status = False
