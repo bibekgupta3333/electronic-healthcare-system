@@ -15,7 +15,7 @@ from accounts.models import User, Patient, GeneralPracticeUser
 from accounts.models import PATIENT_USER, GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from accounts.forms import PatientForm, GPForm
 from organisations.forms import GeneralPracticeForm
-from organisations.models import OrganisationGeneralPractice, NHSGeneralPractice
+from organisations.models import OrganisationGeneralPractice
 from organisations.views import get_gporganisation_data
 from template.forms import TemplateInstructionForm
 from common.functions import multi_getattr
@@ -296,7 +296,7 @@ def new_instruction(request):
             medidata_emails_list = [user.email for user in User.objects.filter(type=MEDIDATA_USER)]
             gp_emails_list = []
             # Notification: client selected NHS GP
-            if not gp_practice.live:
+            if not gp_practice.live and not gp_practice.accept_policy:
                 send_mail(
                     'NHS GP is selected',
                     'Your client had selected NHS GP: {}'.format(gp_practice.name),
@@ -358,7 +358,7 @@ def new_instruction(request):
             gp_practice_code = instruction.gp_practice.pk
         gp_practice_request = HttpRequest()
         gp_practice_request.GET['code'] = gp_practice_code
-        nhs_address = get_nhs_data(gp_practice_request, need_dict=True)['address']
+        nhs_address = get_gporganisation_data(gp_practice_request, need_dict=True)['address']
         nhs_form = GeneralPracticeForm(
             initial={
                 'gp_practice': instruction.gp_practice

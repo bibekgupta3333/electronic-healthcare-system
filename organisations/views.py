@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.db.models import Q
 
-from organisations.models import NHSGeneralPractice, OrganisationGeneralPractice
+from organisations.models import OrganisationGeneralPractice
 
 
 def create_organisation(request):
@@ -18,7 +19,7 @@ def get_gporganisation_data(request, **kwargs):
         'address': '',
     }
     if code:
-        gp_organisation = NHSGeneralPractice.objects.filter(code=code).first()
+        gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=code).first()
         if gp_organisation:
             data = {
                 'name': gp_organisation.name,
@@ -55,11 +56,11 @@ def get_nhs_autocomplete(request):
     }
     search = request.GET.get('search', '')
     if search:
-        organisation_gps = OrganisationGeneralPractice.objects.filter(live=True).filter(name__icontains=search)
-        nhs_gps = OrganisationGeneralPractice.objects.filter(live=False).filter(name__icontains=search)
+        organisation_gps = OrganisationGeneralPractice.objects.filter(live=True, accept_policy=True).filter(name__icontains=search)
+        nhs_gps = OrganisationGeneralPractice.objects.filter(Q(live=False) | Q(accept_policy=False)).filter(name__icontains=search)
     else:
-        organisation_gps = OrganisationGeneralPractice.objects.filter(live=True).all()[:10]
-        nhs_gps = OrganisationGeneralPractice.objects.filter(live=False).filter(name__icontains=search)[:10]
+        organisation_gps = OrganisationGeneralPractice.objects.filter(live=True, accept_policy=True).all()[:10]
+        nhs_gps = OrganisationGeneralPractice.objects.filter(Q(live=False) | Q(accept_policy=False)).filter(name__icontains=search)[:10]
 
     if organisation_gps.exists():
         for organisation_gp in organisation_gps:

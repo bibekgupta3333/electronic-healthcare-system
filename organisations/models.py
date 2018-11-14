@@ -55,23 +55,6 @@ class OrganisationClient(OrganisationBase):
         return self.trading_name
 
 
-class NHSGeneralPractice(models.Model):
-    code = models.CharField(max_length=6, primary_key=True)
-    reference = models.PositiveIntegerField()
-    name = models.CharField(max_length=255)
-    address_line1 = models.CharField(max_length=255)
-    address_line2 = models.CharField(max_length=255)
-    address_line3 = models.CharField(max_length=255)
-    country = models.CharField(max_length=255)
-    post_code = models.CharField(max_length=255)
-
-    class Meta:
-        verbose_name = 'NHS GP Practice'
-
-    def __str__(self):
-        return self.name
-
-
 class OrganisationGeneralPractice(models.Model):
     GP_OP_SYS_CHOICES = (
         ('EMISWeb', 'EMIS-Web'),

@@ -2,27 +2,7 @@ from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
 from import_export import resources
 from django import forms
-from .models import OrganisationMedidata, OrganisationGeneralPractice, OrganisationClient, NHSGeneralPractice
-
-
-class NHSGeneralPracticeResource(resources.ModelResource):
-    class Meta:
-        model = NHSGeneralPractice
-        import_id_fields = ('code', )
-
-    def before_import(self, dataset, using_transactions, dry_run, **kwargs):
-        NHSGeneralPractice.objects.all().delete()
-
-
-class NHSGeneralPracticeAdmin(ImportExportModelAdmin):
-    skip_admin_log = True
-    resource_class = NHSGeneralPracticeResource
-    list_display = ('name', 'code')
-
-    def get_queryset(self, request):
-        qs = super(NHSGeneralPracticeAdmin, self).get_queryset(request)
-        qs = qs.order_by('name')
-        return qs
+from .models import OrganisationMedidata, OrganisationGeneralPractice, OrganisationClient
 
 
 class OrganisationGeneralPracticeResource(resources.ModelResource):
@@ -92,4 +72,3 @@ class OrganisationMedidataAdmin(admin.ModelAdmin):
 admin.site.register(OrganisationClient, OrganisationClientAdmin)
 admin.site.register(OrganisationGeneralPractice, OrganisationGeneralPracticeAdmin)
 admin.site.register(OrganisationMedidata, OrganisationMedidataAdmin)
-admin.site.register(NHSGeneralPractice, NHSGeneralPracticeAdmin)
