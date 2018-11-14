@@ -1,12 +1,9 @@
 from django import forms
 from .models import OrganisationGeneralPractice
 
-# JT - what is going on here?
-gp_organisation = OrganisationGeneralPractice.objects.none()
-
 
 class GeneralPracticeForm(forms.Form):
-    gp_practice = forms.ModelChoiceField(queryset=gp_organisation)
+    gp_practice = forms.ModelChoiceField(queryset=OrganisationGeneralPractice.objects.none())
 
     class Meta:
         model = OrganisationGeneralPractice

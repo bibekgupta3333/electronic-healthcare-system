@@ -72,3 +72,54 @@ def get_nhs_autocomplete(request):
             data['items'][1]['children'].append({'id': nhs_gp.practcode, 'text': nhs_gp.name})
 
     return JsonResponse(data)
+
+
+def get_sign_up_autocomplete(request):
+    data = {
+        'items': []
+    }
+    name = request.GET.get('name', '')
+    code = request.GET.get('code', '')
+    filter_conditions = Q(live=False) | Q(accept_policy=False)
+    if name:
+        nhs_gps = OrganisationGeneralPractice.objects.filter(filter_conditions).filter(name__icontains=name)
+    elif code:
+        nhs_gps = OrganisationGeneralPractice.objects.filter(filter_conditions).filter(practcode__icontains=code)
+    else:
+        nhs_gps = OrganisationGeneralPractice.objects.filter(filter_conditions).all()[:10]
+
+    for nhs_gp in nhs_gps:
+        if name:
+            data['items'].append({'id': nhs_gp.practcode, 'text': nhs_gp.name})
+        elif code:
+            data['items'].append({'id': nhs_gp.practcode, 'text': nhs_gp.practcode})
+
+    return JsonResponse(data)
+
+
+def get_gp_sign_up_data(request, **kwargs):
+    code = request.GET.get('code', '')
+    data = {
+        'code': '',
+        'name': '',
+        'street': '',
+        'city': '',
+        'postcode': '',
+        'phone_office': '',
+    }
+    if code:
+        gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=code).first()
+        if gp_organisation:
+            data = {
+                'code': gp_organisation.practcode,
+                'name': gp_organisation.name,
+                'street': gp_organisation.billing_address_street,
+                'city': gp_organisation.billing_address_city,
+                'postcode': gp_organisation.billing_address_postalcode,
+                'phone_office': gp_organisation.phone_office,
+            }
+
+    if kwargs.get('need_dict'):
+        return data
+
+    return JsonResponse(data)

@@ -52,8 +52,8 @@ class EMRSetupForm(forms.ModelForm):
 
 
 class SurgeryForm(forms.Form):
-    surgery_name = forms.CharField(max_length=255, label='', widget=forms.TextInput())
-    practice_code = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+    surgery_name = forms.ChoiceField(choices=[])
+    practice_code = forms.ChoiceField(choices=[])
     postcode = forms.CharField(max_length=20, label='', widget=forms.TextInput())
     address = forms.CharField(max_length=20, label='', widget=forms.TextInput())
     address_line1 = forms.CharField(max_length=20, label='', widget=forms.TextInput())

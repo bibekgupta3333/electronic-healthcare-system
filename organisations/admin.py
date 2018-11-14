@@ -29,6 +29,40 @@ class OrganisationGeneralPracticeAdmin(ImportExportModelAdmin):
     resource_class = OrganisationGeneralPracticeResource
     form = OrganisationGeneralPracticeForm
     list_display = ('name', 'practcode')
+    fieldsets = (
+        ('Organisation Information', {
+            'fields': ('name', 'practcode',)
+        }),
+        ('Address Information', {
+            'fields': (
+                'region', 'comm_area', 'billing_address_street', 'billing_address_city', 'billing_address_state',
+                'billing_address_postalcode'
+            )
+        }),
+        ('Contact Information', {
+            'fields': ('phone_office', 'phone_alternate', 'organisation_email', 'fax', 'website')
+        }),
+        ('Systmem Information', {
+            'fields': ('gp_operating_system', 'operating_system_socket_endpoint', 'operating_system_auth_token')
+        }),
+        ('Payment Information', {
+            'fields': (
+                'payment_timing', 'payment_bank_holder_name', 'payment_bank_sort_code', 'payment_bank_account_number',
+                'payment_preference',
+            )
+        }),
+        ('Addition Information', {
+            'fields': (
+                'practicemanagername_c', 'practicemanager_job_title', 'patientlistsize_c', 'sitenumber_c', 'employees',
+                'ownership', 'ccg_health_board_c'
+            )
+        }),
+        ('Organisation Status', {
+            'fields': (
+                'accept_policy', 'live'
+            )
+        })
+    )
 
     def get_queryset(self, request):
         qs = super(OrganisationGeneralPracticeAdmin, self).get_queryset(request)
