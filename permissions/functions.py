@@ -41,6 +41,10 @@ def check_permission(func):
             user.userprofilebase.generalpracticeuser.organisation == gp_practice:
             is_valid = True
 
+        if hasattr(user.userprofilebase, "generalpracticeuser") and not gp_user and\
+            ("review-instruction" in request.path or "patient-emis-number" in request.path):
+            is_valid = True
+
         if is_valid:
             is_valid = check_status_with_url(is_valid, request.path, instruction.status)
 

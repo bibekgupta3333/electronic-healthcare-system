@@ -46,6 +46,18 @@ class Instruction(TimeStampedModel, models.Model):
     class Meta:
         verbose_name = "Instruction"
         ordering = ('-created',)
+        permissions = (
+            ('create_sars', 'Create SARS'),
+            ('reject_amra', 'Reject AMRA'),
+            ('reject_sars', 'Reject SARS'),
+            ('process_amra', 'Process AMRA'),
+            ('process_sars', 'Process SARS'),
+            ('allocate_gp', 'Allocate to other user to process'),
+            ('sign_off_amra', 'Sign off AMRA'),
+            ('sign_off_sars', 'Sign off SARS'),
+            ('view_completed_amra', 'View completed AMRA'),
+            ('view_completed_sars', 'View completed SARS')
+        )
 
     def __str__(self):
         return 'Instruction #{pk}'.format(pk=self.pk)
