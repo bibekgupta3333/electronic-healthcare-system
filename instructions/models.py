@@ -101,6 +101,9 @@ class Instruction(TimeStampedModel, models.Model):
             instructionconditionsofinterest__instruction=self.id
         )
 
+    def get_type(self):
+        return self.type
+
 
 class InstructionAdditionQuestion(models.Model):
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE, related_name='addition_questions')

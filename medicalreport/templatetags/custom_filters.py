@@ -111,13 +111,18 @@ def profile_event_value_header(key):
         "smoking": "Smoking",
         "alcohol": "Alcohol",
         "systolic_blood_pressure": "Systolic Blood Pressure",
-        "diastolic_blood_pressure": "Diastolic Blood Pressure"
+        "diastolic_blood_pressure": "Diastolic Blood Pressure",
+        "spirometry": "Spirometry (FVC, FEV1)",
+        "peak_flow": "Peak flow",
+        "cervical_smear_test": "Cervical smear test",
+        "illicit_drug_use": "Illicit drug use"
     }
     return header[key]
 
 
 @register.filter
 def event_value_body(event):
+    # print(type(event))
     if event:
         return "{}<br>{}".format(format_date(event.parsed_date()), event.description())
     else:

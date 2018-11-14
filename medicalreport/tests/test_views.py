@@ -10,6 +10,7 @@ from instructions.model_choices import INSTRUCTION_STATUS_REJECT, INSTRUCTION_ST
     INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_NEW
 from accounts.models import ClientUser, User, GeneralPracticeUser, Patient, GENERAL_PRACTICE_USER, CLIENT_USER
 from services.models import EmisAPIConfig
+from snomedct.models import SnomedConcept
 from medicalreport.models import AmendmentsForRecord
 from medicalreport.views import get_matched_patient, get_patient_record
 from organisations.models import OrganisationGeneralPractice
@@ -169,8 +170,10 @@ class EditReportTest(EmisAPITestCase):
         self.instruction = mommy.make(
             Instruction, pk=2, consent_form=consent_form,
             patient=self.patient, gp_user=self.gp_user,
-            gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_PROGRESS
+            gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_PROGRESS, type='SARS'
         )
+        self.snomed_concept = mommy.make(SnomedConcept, external_id=365981007)
+        self.snomed_concept = mommy.make(SnomedConcept, external_id=228273003)
         self.redaction = mommy.make(
             AmendmentsForRecord, instruction=self.instruction, pk=2
         )
