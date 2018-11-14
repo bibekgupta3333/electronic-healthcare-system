@@ -54,11 +54,11 @@ class PatientForm(forms.ModelForm):
 class GPForm(forms.Form):
     gp_title = forms.ChoiceField(choices=TITLE_CHOICE, required=False)
     initial = forms.CharField(max_length=255, required=False, label='Initials', widget=forms.TextInput(attrs={'placeholder': ''}))
-    last_name = forms.CharField(max_length=255, required=False, label='Last Name', widget=forms.TextInput(attrs={'id': 'gp_last_name', 'name': 'gp_last_name', 'placeholder': '',}))
+    gp_last_name = forms.CharField(max_length=255, required=False, label='Last Name', widget=forms.TextInput(attrs={'id': 'gp_last_name', 'name': 'gp_last_name', 'placeholder': '',}))
 
     class Meta:
         model = GeneralPracticeUser
-        fields = ('title', 'initial', 'last_name')
+        fields = ('title', 'initial', 'gp_last_name')
 
         labels = {
             'gp_title': 'Title'

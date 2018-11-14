@@ -245,6 +245,7 @@ def new_instruction(request):
         selected_add_cond = request.POST.getlist('addition_condition', [])
         selected_add_cond_title = request.POST.get('addition_condition_title', '')
         selected_add_cond_title = selected_add_cond_title.split(',')
+        selected_add_name_number = request.POST.get('address_name_number', '')
         i = 0
         while i < len(selected_add_cond):
             selected_add_cond[i] = int(selected_add_cond[i])
@@ -333,7 +334,9 @@ def new_instruction(request):
                 'selected_gp_code': selected_gp_code,
                 'selected_gp_name': selected_gp_name,
                 'selected_add_cond': selected_add_cond,
-                'selected_add_cond_title': json.dumps(selected_add_cond_title)
+                'selected_add_name_number': selected_add_name_number,
+                'selected_add_cond_title': json.dumps(selected_add_cond_title),
+                'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
             })
     patient_form = PatientForm()
     addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.none())

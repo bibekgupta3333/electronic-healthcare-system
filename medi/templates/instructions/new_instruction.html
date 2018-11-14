@@ -67,7 +67,7 @@
                             <div class="row">
                                 <div class="col-md-3 rowTitle">Search GP Practice:</div>
                                 {% bootstrap_field nhs_form.gp_practice size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
-                                {{ nhs_form.gp_practice_name }}
+                                <input type="hidden" name="gp_practice_name" id="id_gp_practice_name" />
                             </div>
                             <div class="row " style="height: 130px">
                                 <div class="col-md-3 d-flex">GP Practice*:</div>
@@ -77,7 +77,7 @@
                                 <div class="col-md-3 rowTitle">Named GP:</div>
                                 {% bootstrap_field gp_form.gp_title size='small' form_group_class='form-group col-md-2 p-0' %}
                                 {% bootstrap_field gp_form.initial size='small' form_group_class='form-group col-md-3 px-2' %}
-                                {% bootstrap_field gp_form.last_name size='small' form_group_class='form-group col-md-4 px-2' %}
+                                {% bootstrap_field gp_form.gp_last_name size='small' form_group_class='form-group col-md-4 px-2' %}
                             </div>
                         </div>
                     </div>
@@ -460,7 +460,7 @@
                             $('#id_address_name_number').trigger({
                                 type: 'select2:select',
                                 params: {
-                                    data: {text: data.addresses[0]}
+                                    data: {text: "{{selected_add_name_number}}" != '' ? "{{selected_add_name_number}}" : data.addresses[0]}
                                 }
                             });
                         }
@@ -470,7 +470,7 @@
             $('#id_address_postcode').prop('required', true);
             if ('{{patient_form.address_postcode.value}}' != 'None') {
                 var option = new Option("{{patient_form.address_postcode.value}}", "{{patient_form.address_postcode.value}}", true, true);
-                $('#id_address_postcode').append(option);
+                $('#id_address_postcode').append(option).trigger('change');
             }
 
             $('.instructionType').on('change', function () {
