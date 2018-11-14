@@ -1,5 +1,4 @@
 from django.db import models
-
 from common.models import TimeStampedModel
 from accounts.models import Patient
 
@@ -11,3 +10,4 @@ class PatientReportAuth(TimeStampedModel):
     mobi_request_id = models.CharField(max_length=255, blank=True)
     verify_pin = models.CharField(max_length=6, blank=True)
     url = models.CharField(max_length=256)
+    locked_report = models.BooleanField(default=False)

@@ -23,7 +23,7 @@ def sar_request_code(request, instruction_id, url):
     error_message = None
     get_object_or_404(Instruction, pk=instruction_id)
     patient_auth = get_object_or_404(PatientReportAuth, url=url)
-    if patient_auth.count >= 3:
+    if patient_auth.locked_report:
         return redirect_auth_limit(request)
     if request.method == 'POST':
         patient_auth.count = 0
@@ -47,10 +47,11 @@ def sar_request_code(request, instruction_id, url):
 def sar_access_code(request, url):
     access_code_form = AccessCodeForm
     error_message = None
+    max_input = 3
 
     if url:
         patient_auth = PatientReportAuth.objects.filter(url=url).first()
-        if patient_auth.count >= 3:
+        if patient_auth.locked_report:
             return redirect_auth_limit(request)
         number = ["*"] * (len(dummy_phone) - 2)
         number.append(dummy_phone[-2:])
@@ -76,6 +77,9 @@ def sar_access_code(request, url):
                         return response
                     else:
                         patient_auth.count = patient_auth.count + 1
+                        if patient_auth.count >= max_input:
+                            patient_auth.locked_report = True
+                            patient_auth.count = 0
                         patient_auth.save()
                         error_message = "Sorry, that code has not been recognised. Please try again."
     return render(request, 'patient/auth_2_access_code.html', {
@@ -94,7 +98,7 @@ def get_report(request):
 
     try:
         report_auth = PatientReportAuth.objects.get(verify_pin=verified_pin)
-        if report_auth.count >= 3:
+        if report_auth.locked_report:
             return redirect_auth_limit(request)
     except PatientReportAuth.DoesNotExist:
         raise Http404("Invalid token")
