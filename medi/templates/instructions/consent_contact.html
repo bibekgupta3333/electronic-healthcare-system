@@ -181,7 +181,7 @@
     <div id="noSarsConsent" class="well">
         <h4><i class="fas fa-exclamation-triangle"></i>Warning</h4>
         <p>No SARS Request Consent was attached. Has the patient requested the SARS report directly? If not, this consent is required</p>
-        <button class="fullProceedBtn rightBtn btn btn-primary mr-1">Proceed</button>
+        <button class="rightBtn btn btn-primary mr-1" id="sarsProceed">Proceed</button>
         <button class="noSarsConsent_close rightBtn btn btn-default mr-1">Go back</button>
     </div>
     <div id="noMdxConsent" class="well">
@@ -192,7 +192,7 @@
     <div id="noEmailAddress" class="well">
         <h4><i class="fas fa-exclamation-triangle"></i>Warning</h4>
         <p>No email address has been provided for the patient. If no email address is provided, MDX will not be able to provide the patient with the report, and the GP Surgery will need to provide directly</p>
-        <button class="fullProceedBtn rightBtn btn btn-primary mr-1">Proceed</button>
+        <button class="noEmailAddress_close rightBtn btn btn-primary mr-1" id="emailProceed">Proceed</button>
         <button class="noEmailAddress_close rightBtn btn btn-default mr-1 enterEmailBtn">Enter Email</button>
     </div>
 {% endblock %}
@@ -217,24 +217,15 @@
         });
         $("#noSarsConsent").popup({
             transition: 'all 0.3s',
-            scrolllock: true,
-            onclose: function() {
-                isErrorPopup = false;
-            }
+            scrolllock: true
         });
         $("#noMdxConsent").popup({
             transition: 'all 0.3s',
-            scrolllock: true,
-            onclose: function() {
-                isErrorPopup = false;
-            }
+            scrolllock: true
         });
         $("#noEmailAddress").popup({
             transition: 'all 0.3s',
-            scrolllock: true,
-            onclose: function() {
-                isErrorPopup = false;
-            }
+            scrolllock: true
         });
         $('.patientForm input').attr('readonly', true);
         $("#id_sars_consent").fileinput({
@@ -281,24 +272,37 @@
         $('#backButton').click(function(){
             window.location.href = '/medicalreport/'+'{{instruction.id}}'+'/patient-emis-number/';
         });
+        $('#sarsProceed').click(function(){
+            $('#noSarsConsent').popup('hide');
+            var mdxcnt = $("#id_mdx_consent")[0].files;
+            mdxcnt = mdxcnt.length;
+            if(mdxcnt == 0) {
+                $('#noMdxConsent').popup('show');
+            }
+            else if($('#id_patient_input_email').val() == ''){
+                $('#noEmailAddress').popup('show');
+            }
+            else{
+                $('#id_next_step').val('proceed');
+                $('#consentContactForm').submit();
+            }
+        });
         $('#proceedBtn').click(function(){
+            $('#proceedBtn').blur();
             var sarscnt = $("#id_sars_consent")[0].files;
             var mdxcnt = $("#id_mdx_consent")[0].files;
             sarscnt = sarscnt.length;
-            mdxcnt = mdxcnt.length;            
-            if(sarscnt == 0 && !isErrorPopup) {
+            mdxcnt = mdxcnt.length;
+            if(sarscnt == 0) {
                 $('#noSarsConsent').popup('show');
-                isErrorPopup = true;
             }
-            else if(mdxcnt == 0 && !isErrorPopup) {
+            else if(mdxcnt == 0) {
                 $('#noMdxConsent').popup('show');
-                isErrorPopup = true;
             }
-            else if($('#id_patient_input_email').val() == '' && !isErrorPopup){
+            else if($('#id_patient_input_email').val() == ''){
                 $('#noEmailAddress').popup('show');
-                isErrorPopup = true;
             }
-            else {
+            else{
                 $('#id_next_step').val('proceed');
                 $('#consentContactForm').submit();
             }
@@ -311,12 +315,12 @@
             $('#id_next_step').val('view_pipeline'); 
             $('#consentContactForm').submit();
         });
-        $('.fullProceedBtn').click(function(){
-            $('#id_next_step').val('proceed');
-            $('#consentContactForm').submit();
-        });
         $('.enterEmailBtn').click(function(){
             $('#id_patient_input_email').focus();
+        });
+        $('#emailProceed').click(function(){
+            $('#id_next_step').val('proceed');
+            $('#consentContactForm').submit();
         });
     });
     </script>

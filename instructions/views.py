@@ -645,5 +645,5 @@ def consent_contact(request, instruction_id, patient_emis_number):
         'mdx_consent_form': mdx_consent_form,
         'sars_consent_form_data': sars_consent_form_data,
         'mdx_consent_form_data': mdx_consent_form_data,
-        'reject_types': INSTRUCTION_REJECT_TYPE,
+        'reject_types': INSTRUCTION_REJECT_TYPE
     })
