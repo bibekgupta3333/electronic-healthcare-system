@@ -133,32 +133,44 @@ def create_snomed_relations(instruction, condition_of_interests):
 
 @login_required(login_url='/accounts/login')
 def create_or_update_patient_user(request, patient_form, prev_patient=None) -> Patient:
-    password = User.objects.make_random_password()
-    unique_code = now().strftime('%m%d%Y%S%f')
-    user_id = -1
-    patient_id = -1
     if prev_patient:
         user_id = prev_patient.user.id
         patient_id = prev_patient.id
+        
+        user = User.objects.get(pk=user_id)
+        user.first_name = patient_form.cleaned_data['first_name']
+        user.last_name = patient_form.cleaned_data['last_name']
+        user.save()
 
-    user, created = User.objects.update_or_create(pk=user_id, defaults={
-        "email": '{unique_code}@medidata.co'.format(unique_code=unique_code),
-        "username": unique_code,
-        "password": password,
-        "first_name": patient_form.cleaned_data['first_name'],
-        "last_name": patient_form.cleaned_data['last_name'],
-        "type": PATIENT_USER,
-    })
+        patient = Patient.objects.get(pk=patient_id)
+        patient.title = patient_form.cleaned_data['title']
+        patient.date_of_birth = patient_form.cleaned_data['date_of_birth']
+        patient.nhs_number = patient_form.cleaned_data['nhs_number']
+        patient.address_postcode = patient_form.cleaned_data['address_postcode']
+        patient.address_name_number = patient_form.cleaned_data['address_name_number']
+        patient.patient_input_email = patient_form.cleaned_data['patient_input_email']
+        patient.save()
+    else:    
+        password = User.objects.make_random_password()
+        unique_code = now().strftime('%m%d%Y%S%f')
+        user = User.objects.create(
+            email='{unique_code}@medidata.co'.format(unique_code=unique_code),
+            username=unique_code,
+            password=password,
+            first_name=patient_form.cleaned_data['first_name'],
+            last_name=patient_form.cleaned_data['last_name'],
+            type=PATIENT_USER,
+        )
 
-    patient, created = Patient.objects.update_or_create(pk=patient_id, defaults={
-        "user": user,
-        "title": patient_form.cleaned_data['title'],
-        "date_of_birth": patient_form.cleaned_data['date_of_birth'],
-        "nhs_number": patient_form.cleaned_data['nhs_number'],
-        "address_postcode": patient_form.cleaned_data['address_postcode'],
-        "address_name_number": patient_form.cleaned_data['address_name_number'],
-        "patient_input_email": patient_form.cleaned_data['patient_input_email']
-    })
+        patient = Patient.objects.create(
+        user=user,
+        title=patient_form.cleaned_data['title'],
+        date_of_birth=patient_form.cleaned_data['date_of_birth'],
+        nhs_number=patient_form.cleaned_data['nhs_number'],
+        address_postcode=patient_form.cleaned_data['address_postcode'],
+        address_name_number=patient_form.cleaned_data['address_name_number'],
+        patient_input_email=patient_form.cleaned_data['patient_input_email']
+    )
 
     return patient
 
@@ -322,7 +334,6 @@ def new_instruction(request):
             else:
                 return redirect('instructions:view_pipeline')
         else:
-            messages.error(request, scope_form.errors['__all__'].data[0].messages[0])
             return render(request, 'instructions/new_instruction.html', {
                 'header_title': header_title,
                 'patient_form': patient_form,
@@ -356,7 +367,7 @@ def new_instruction(request):
         )
         # Initial GP/NHS Organisation Form
         if isinstance(instruction.gp_practice, OrganisationGeneralPractice):
-            gp_practice_code = instruction.gp_practice.practice_code
+            gp_practice_code = instruction.gp_practice.practcode
         else:
             gp_practice_code = instruction.gp_practice.pk
         gp_practice_request = HttpRequest()
