@@ -27,7 +27,7 @@ CONFIG_DIR = os.path.abspath(os.path.join(BASE_DIR, '../config/'))
 SECRET_KEY = '@rdh!%o$i9!8c%m5v1!sj(kv52z-23!cqw^o+qs@cybna81r%%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'localhost',
