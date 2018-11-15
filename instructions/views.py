@@ -334,7 +334,6 @@ def new_instruction(request):
             else:
                 return redirect('instructions:view_pipeline')
         else:
-            messages.error(request, scope_form.errors['__all__'].data[0].messages[0])
             return render(request, 'instructions/new_instruction.html', {
                 'header_title': header_title,
                 'patient_form': patient_form,
