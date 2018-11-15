@@ -43,7 +43,7 @@ def create_or_update_redaction_record(request, instruction):
         else:
             models.InstructionAdditionAnswer.objects.create(question=question, answer=input_answer)
 
-    if request.method == "POST":
+    if request.method == "POST" and not request.is_ajax():
         submit_form = MedicalReportFinaliseSubmitForm(request.user, request.POST)
         if status == 'draft':
             amendments_for_record.status = AmendmentsForRecord.REDACTION_STATUS_DRAFT

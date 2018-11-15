@@ -18,12 +18,12 @@
         <div class="row" >
             <div class="col-md-3">
                 {% if request.user.type == 'GP' %}
-                    {% if user.id|create_sars %}
+                    {% if perms.instructions.create_sars %}
                         <a href="{% url 'instructions:new_instruction' %}" class="btn btn-primary" id="addInstructionButton">New SARS Instruction</a>
                     {% endif %}
                 {% else %}
                     <a href="{% url 'instructions:new_instruction' %}" class="btn btn-primary" id="addInstructionButton">New Instruction</a>
-                {% endif %}</a>
+                {% endif %}
             </div>
             <div class="col-md-4 offset-md-5">
                 <form id="topsearchform" role="search" method="post" action="" class="" autocomplete="off">

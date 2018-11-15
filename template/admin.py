@@ -7,12 +7,25 @@ from .models import (
 
 class TemplateConditionsInline(admin.TabularInline):
     model = TemplateConditionsOfInterest
+    raw_id_fields = ('snomedct',)
     fields = ['snomedct']
+
+    def get_extra(self, request, obj=None, **kwargs):
+        if obj and obj.instructionconditionsofinterest_set.count():
+            return 0
+        else:
+            return 1
 
 
 class TemplateQuestionsInline(admin.TabularInline):
     model = TemplateInstructionAdditionalQuestion
     fields = ['question']
+
+    def get_extra(self, request, obj=None, **kwargs):
+        if obj and obj.instructionconditionsofinterest_set.count():
+            return 0
+        else:
+            return 1
 
 
 class TemplateInstructionAdmin(admin.ModelAdmin):

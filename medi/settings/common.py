@@ -204,7 +204,7 @@ ACCOUNT_LINK = 'http://medi.mohub.co/accounts/view-account/'
 DUMMY_EMAIL_LIST = ['ben.blomerley@gmail.com', 'lontharn@gmail.com', 'mooauii.lazy@gmail.com']
 
 SITE_NAME = 'http://medi.mohub.co/'
-
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
 
 # getaddress.io API KEY
 GET_ADDRESS_API_KEY = 'KtAPZq77iEGQ05llKNiPCQ15846'

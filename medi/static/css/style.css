@@ -585,6 +585,9 @@ header {
   width:  300px;
   z-index: 10;
 }
+.color-grey {
+  color: #575757;
+}
 
 .agreement-checkbox {
   display: flex;
@@ -610,3 +613,42 @@ header {
   right: 0;
   left: auto;
 }
+
+/* table scrollable */
+
+.table-bg {
+  background-color: rgba(0,0,0,0.05);
+}
+
+.table-scrollable {
+  overflow-x: scroll;
+  overflow-y: auto;
+  margin-left: 180px;
+  background-color: #fff;
+}
+
+.table-scrollable table {
+  width: inherit;
+}
+
+.table-scrollable .value-event-table__header {
+  width: 180px;
+  min-height: 42px;
+  position: absolute;
+  left: 0;
+}
+
+.table-scrollable tr:nth-of-type(odd) .value-event-table__header {
+  background-color: rgb(242, 242, 242);
+}
+
+.table-scrollable tr:nth-of-type(even) .value-event-table__header {
+  background-color: #fff;
+}
+
+.table-scrollable .value-event-table__cell {
+  white-space: nowrap;
+  height: 42px;
+  padding: 0 15px;
+}
+

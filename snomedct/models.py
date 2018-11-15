@@ -15,6 +15,7 @@ class SnomedConcept(models.Model):
         through_fields=('external_id', 'descendant_external_id')
     )
     external_fsn_description_id = models.BigIntegerField()
+    readcode = models.ForeignKey('ReadCode', on_delete=models.CASCADE, null=True)
     objects = CopyManager()
 
     def __str__(self):
@@ -25,6 +26,7 @@ class SnomedConcept(models.Model):
             models.Index(fields=['fsn_description']),
             models.Index(fields=['external_id']),
         ]
+        default_related_name = 'snomed_concepts'
 
     def descendants(self, include_self=True) -> Set['SnomedConcept']:
         descendants = set()
@@ -34,14 +36,11 @@ class SnomedConcept(models.Model):
             descendants.update(child.descendants(include_self=True))
         return descendants
 
-    def descendant_readcodes(self):
+    def descendant_readcodes(self) -> Set['ReadCode']:
         """
         Return readcodes of this snomed concept and its descendants.
         """
-        return ReadCode.objects.filter(concept_id__in=self.descendants())
-
-    def readcodes(self):
-        return ReadCode.objects.filter(concept_id=self.external_id)
+        return set(map(lambda sc: sc.readcode, self.descendants()))
 
     def is_descendant_of(self, snomed_concept: 'SnomedConcept') -> bool:
         return self in snomed_concept.descendants()
@@ -52,19 +51,23 @@ class ReadCode(models.Model):
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     file_path = models.CharField(max_length=255)
-    concept_id = models.ForeignKey(SnomedConcept, to_field='external_id', on_delete=models.CASCADE, db_column="concept_id", null=True)
     objects = CopyManager()
 
     def __str__(self):
-        return "{} - {} - {}".format(self.id, self.concept_id.fsn_description, self.ext_read_code)
-
-    class Meta:
-        indexes = [
-            models.Index(fields=['concept_id']),
-        ]
+        return "{} - {}".format(self.id, self.ext_read_code)
 
     def is_descendant_of_snomed_concept(self, snomed_concept: SnomedConcept) -> bool:
         return self in snomed_concept.descendant_readcodes()
+
+    def related_snomed_concepts_and_descendants(self) -> Set[SnomedConcept]:
+        """
+        Return snomed concepts with a FK to this readcode and all of their
+        descendants.
+        """
+        snomed_concepts = set()
+        for sc in self.snomed_concepts.all():
+            snomed_concepts.update(sc.descendants())
+        return snomed_concepts
 
 
 class SnomedDescendant(models.Model):

@@ -1,16 +1,12 @@
 from django import forms
-from .models import NHSGeneralPractice, OrganisationGeneralPractice
-
-# JT - what is going on here?
-nhs_query = NHSGeneralPractice.objects.none()
-gp_organisation = OrganisationGeneralPractice.objects.none()
+from .models import OrganisationGeneralPractice
 
 
 class GeneralPracticeForm(forms.Form):
-    gp_practice = forms.ModelChoiceField(queryset=nhs_query.union(gp_organisation))
+    gp_practice = forms.ModelChoiceField(queryset=OrganisationGeneralPractice.objects.none())
 
     class Meta:
-        model = NHSGeneralPractice
+        model = OrganisationGeneralPractice
         fields = ('nhs')
 
     def __init__(self, *args, **kwargs):

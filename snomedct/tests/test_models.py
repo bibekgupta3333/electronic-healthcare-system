@@ -8,24 +8,25 @@ from snomedct.models import (
 
 class ConceptCodeTestCase(TestCase):
     def setUp(self):
-        self.snomedct_0 = mommy.make(SnomedConcept)
-        self.snomedct_11 = mommy.make(SnomedConcept)
-        self.snomedct_12 = mommy.make(SnomedConcept)
-        self.snomedct_21 = mommy.make(SnomedConcept)
-        self.snomedct_22 = mommy.make(SnomedConcept)
-        self.snomedct_23 = mommy.make(SnomedConcept)
-        self.snomedct_24 = mommy.make(SnomedConcept)
-        self.snomedct_31 = mommy.make(SnomedConcept)
-        self.snomedct_32 = mommy.make(SnomedConcept)
-        self.readcode_0 = mommy.make(ReadCode, concept_id=self.snomedct_0)
-        self.readcode_11 = mommy.make(ReadCode, concept_id=self.snomedct_11)
-        self.readcode_12 = mommy.make(ReadCode, concept_id=self.snomedct_12)
-        self.readcode_21 = mommy.make(ReadCode, concept_id=self.snomedct_21)
-        self.readcode_22 = mommy.make(ReadCode, concept_id=self.snomedct_22)
-        self.readcode_23 = mommy.make(ReadCode, concept_id=self.snomedct_23)
-        self.readcode_24 = mommy.make(ReadCode, concept_id=self.snomedct_24)
-        self.readcode_31 = mommy.make(ReadCode, concept_id=self.snomedct_31)
-        self.readcode_32 = mommy.make(ReadCode, concept_id=self.snomedct_32)
+        self.readcode_0 = mommy.make(ReadCode)
+        self.readcode_11 = mommy.make(ReadCode)
+        self.readcode_12 = mommy.make(ReadCode)
+        self.readcode_21 = mommy.make(ReadCode)
+        self.readcode_22 = mommy.make(ReadCode)
+        self.readcode_23 = mommy.make(ReadCode)
+        self.readcode_24 = mommy.make(ReadCode)
+        self.readcode_31 = mommy.make(ReadCode)
+        self.readcode_32 = mommy.make(ReadCode)
+        self.snomedct_0 = mommy.make(SnomedConcept, readcode=self.readcode_0)
+        self.snomedct_11 = mommy.make(SnomedConcept, readcode=self.readcode_11)
+        self.snomedct_12 = mommy.make(SnomedConcept, readcode=self.readcode_12)
+        self.snomedct_21 = mommy.make(SnomedConcept, readcode=self.readcode_21)
+        self.snomedct_22 = mommy.make(SnomedConcept, readcode=self.readcode_22)
+        self.snomedct_23 = mommy.make(SnomedConcept, readcode=self.readcode_23)
+        self.snomedct_24 = mommy.make(SnomedConcept, readcode=self.readcode_24)
+        self.snomedct_31 = mommy.make(SnomedConcept, readcode=self.readcode_31)
+        self.snomedct_32 = mommy.make(SnomedConcept, readcode=self.readcode_32)
+
         mommy.make(
             SnomedDescendant,
             external_id=self.snomedct_0,
@@ -79,7 +80,6 @@ class SnomedConceptTest(ConceptCodeTestCase):
             SnomedDescendant, descendant_external_id=self.snomedct
         )
         self.snomed_descendant_2 = mommy.make(SnomedDescendant)
-        self.readcode_1 = mommy.make(ReadCode, concept_id=self.snomedct)
 
     def test_string_representation(self):
         self.assertEqual(
@@ -96,11 +96,6 @@ class SnomedConceptTest(ConceptCodeTestCase):
             ],
             self.snomedct_0.descendant_readcodes()
         )
-
-    def test_readcodes(self):
-        readcodes = self.snomedct.readcodes()
-        self.assertEqual(1, readcodes.count())
-        self.assertEqual(self.readcode_1, readcodes[0])
 
     def test_children_relationship_is_modelled_correctly(self):
         self.assertCountEqual(
@@ -162,14 +157,11 @@ class SnomedConceptTest(ConceptCodeTestCase):
 class ReadCodeTest(ConceptCodeTestCase):
     def setUp(self):
         super().setUp()
-        snomedct = mommy.make(SnomedConcept, fsn_description='fsn_description')
-        self.readcode = mommy.make(
-            ReadCode, ext_read_code='12345', concept_id=snomedct
-        )
+        self.readcode = mommy.make(ReadCode, ext_read_code='12345')
 
     def test_string_representation(self):
         self.assertEqual(
-            str(self.readcode), f'{self.readcode.pk} - fsn_description - 12345'
+            str(self.readcode), f'{self.readcode.pk} - 12345'
         )
 
     def test_is_descendant_of_snomed_concept(self):
@@ -188,6 +180,18 @@ class ReadCodeTest(ConceptCodeTestCase):
             self.assertTrue(vp[0].is_descendant_of_snomed_concept(vp[1]))
         for ivp in invalid_pairs:
             self.assertFalse(ivp[0].is_descendant_of_snomed_concept(ivp[1]))
+
+    def test_related_snomed_concepts_and_descendants(self):
+        self.snomedct_12.readcode = self.readcode_11
+        self.snomedct_12.save()
+        self.assertCountEqual(
+            [
+                self.snomedct_11, self.snomedct_12,
+                self.snomedct_21, self.snomedct_22, self.snomedct_23,
+                self.snomedct_24, self.snomedct_31, self.snomedct_32
+            ],
+            self.readcode_11.related_snomed_concepts_and_descendants()
+        )
 
 
 class SnomedDescendantTest(TestCase):

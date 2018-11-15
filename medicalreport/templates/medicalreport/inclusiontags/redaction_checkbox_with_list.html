@@ -30,9 +30,14 @@
                             <span class="redaction-checkbox__text"><strong>{{ key }}: </strong>{{value}}</span>
                         {% endif %}
                     </label>
-            {% endfor %}
+                {% endfor %}
                 </li>
-        {% endfor %}
+            {% endfor %}
+            {% if label %}
+                <li>
+                    <h5><span class="badge badge-warning">{{ label }}</span></h5>
+                </li>
+            {% endif %}
         </ul>
     </label>
 </div>

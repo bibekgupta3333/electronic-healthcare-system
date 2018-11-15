@@ -13,6 +13,7 @@ from .value_event import ValueEvent
 from .problem import Problem
 from .referral import Referral
 from .attachment import Attachment
+from .xml_utils import normalize_data
 from instructions.models import Instruction
 from instructions import model_choices
 
@@ -84,8 +85,8 @@ class MedicalReportDecorator(MedicalRecord):
 
     def profile_events_for(self, event_type: str) -> List[XMLModelBase]:
         ret_xml = chronological_redactable_elements(super().acute_medications())
-        if self.instruction.type == model_choices.AMRA_TYPE:
-            ret_xml = chronological_redactable_elements(
+        # if self.instruction.type == model_choices.AMRA_TYPE:
+        ret_xml = chronological_redactable_elements(
                 auto_redact_profile_events(super().profile_event(event_type))
             )
 
@@ -93,9 +94,13 @@ class MedicalReportDecorator(MedicalRecord):
 
     def profile_events_by_type(self) -> Dict[str, List[XMLModelBase]]:
         obj = {}
-        for event_type in self.PROFILE_EVENT_TYPES:
-            obj[event_type] = self.profile_events_for(event_type)
-        return obj
+        if self.instruction.type == 'AMRA':
+            for event_type in self.AMRA__PROFILE_EVENT_TYPES:
+                obj[event_type] = self.profile_events_for(event_type)
+        else:
+            for event_type in self.SAR_PROFILE_EVENT_TYPES:
+                obj[event_type] = self.profile_events_for(event_type)
+        return normalize_data(obj)
 
     def bloods_for(self, blood_type: str) -> List[ValueEvent]:
         return self.__table_elements(chronological_redactable_elements(
@@ -112,6 +117,12 @@ class MedicalReportDecorator(MedicalRecord):
 
     # private
     def __table_elements(self, data: List[T]) -> List[T]:
+        element_list = data
+        element_list += [None] * (len(element_list))
+        return list(reversed(element_list))
+
+    @classmethod
+    def __table_blood_elements(cls, data: List[T]) -> List[T]:
         max_len = 3
         element_list = data[:max_len]
         element_list += [None] * (max_len - len(element_list))

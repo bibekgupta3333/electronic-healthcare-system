@@ -332,6 +332,61 @@
                   }
               });
             });
+
+            $('#id_surgery_name').select2({
+                tags: true,
+                ajax: {
+                    delay: 500,
+                    url: "{% url 'organisations:sign_up_autocomplete' %}",
+                    data: function (params) {
+                        let query = {
+                            name: params.term,
+                        };
+                        return query;
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.items
+                        }
+                    }
+                }
+            });
+
+            $('#id_practice_code').select2({
+                tags: true,
+                ajax: {
+                    delay: 500,
+                    url: "{% url 'organisations:sign_up_autocomplete' %}",
+                    data: function (params) {
+                        let query = {
+                            code: params.term,
+                        };
+                        return query;
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.items
+                        }
+                    }
+                }
+            });
+
+            $('#id_surgery_name, #id_practice_code').on('change', function () {
+                $.ajax({
+                    type: "GET",
+                    url: "{% url 'organisations:get_gp_sign_up_data' %}",
+                    data: {
+                        'code': $(this).val()
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#id_postcode').val(data.postcode);
+                        $('#id_address_line1').val(data.street);
+                        $('#id_city').val(data.city);
+                        $('#id_contact_num').val(data.phone_office);
+                    }
+                })
+            });
         });
     </script>
 {% endblock %}

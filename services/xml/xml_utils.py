@@ -28,3 +28,20 @@ def chronological_redactable_elements(elements):
 
 def alphabetical_redactable_elements(elements):
     return sorted(elements, key=lambda x: x.description().lower(), reverse=False)
+
+
+def normalize_data(context_data):
+    """
+    fill all empty places
+    """
+    max_elements_count = 7
+    for data in context_data:
+        if len(context_data[data]) > max_elements_count:
+            max_elements_count = len(context_data[data])
+    for data in context_data:
+        if len(context_data[data]) < max_elements_count:
+            length = max_elements_count - len(context_data[data])
+            while length:
+                context_data[data].append([])
+                length = length - 1
+    return context_data

@@ -15,8 +15,8 @@ from accounts.models import User, Patient, GeneralPracticeUser
 from accounts.models import PATIENT_USER, GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from accounts.forms import PatientForm, GPForm
 from organisations.forms import GeneralPracticeForm
-from organisations.models import OrganisationGeneralPractice, NHSGeneralPractice
-from organisations.views import get_nhs_data
+from organisations.models import OrganisationGeneralPractice
+from organisations.views import get_gporganisation_data
 from template.forms import TemplateInstructionForm
 from common.functions import multi_getattr
 from snomedct.models import SnomedConcept
@@ -33,15 +33,15 @@ DUMMY_EMAIL_LIST = settings.DUMMY_EMAIL_LIST
 SITE_NAME = settings.SITE_NAME
 
 
-def count_instructions(user, gp_practice_id, client_organisation):
+def count_instructions(user, gp_practice_code, client_organisation):
     naive = parse_datetime("2000-01-1 00:00:00")
     origin_date = pytz.timezone("Europe/London").localize(naive, is_dst=None)
     query_condition = Q(created__gt=origin_date)
     if user.type == GENERAL_PRACTICE_USER:
         if user.userprofilebase.generalpracticeuser.role == GeneralPracticeUser.PRACTICE_MANAGER:
-            query_condition = Q(gp_practice_id=gp_practice_id)
+            query_condition = Q(gp_practice_id=gp_practice_code)
         else:
-            query_condition = Q(gp_practice_id=gp_practice_id) & (Q(gp_user=user.userprofilebase.generalpracticeuser) | Q(gp_user__isnull=True))
+            query_condition = Q(gp_practice_id=gp_practice_code) & (Q(gp_user=user.userprofilebase.generalpracticeuser) | Q(gp_user__isnull=True))
     elif user.type == CLIENT_USER:
         query_condition = Q(client_user__organisation=client_organisation)
 
@@ -190,20 +190,20 @@ def instruction_pipeline_view(request):
     if filter_status != -1:
         instruction_query_set = instruction_query_set.filter(status=filter_status)
 
-    gp_practice_id = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.id', default=None)
+    gp_practice_code = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.pk', default=None)
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
-    overall_instructions_number = count_instructions(request.user, gp_practice_id, client_organisation)
+    overall_instructions_number = count_instructions(request.user, gp_practice_code, client_organisation)
     if request.user.type == CLIENT_USER:
-        overall_instructions_number = count_instructions(request.user, gp_practice_id, client_organisation)
+        overall_instructions_number = count_instructions(request.user, gp_practice_code, client_organisation)
         instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
 
     if request.user.type == GENERAL_PRACTICE_USER:
         gp_role = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.role')
         if gp_role == GeneralPracticeUser.PRACTICE_MANAGER:
-            instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_id)
+            instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
         else:
             instruction_query_set = instruction_query_set.filter(Q(gp_user__user_id=request.user.id) |
-                                                                 Q(gp_user__isnull=True), gp_practice_id=gp_practice_id)
+                                                                 Q(gp_user__isnull=True), gp_practice_id=gp_practice_code)
 
     table = InstructionTable(instruction_query_set)
     table.order_by = request.GET.get('sort', '-created')
@@ -245,6 +245,7 @@ def new_instruction(request):
         selected_add_cond = request.POST.getlist('addition_condition', [])
         selected_add_cond_title = request.POST.get('addition_condition_title', '')
         selected_add_cond_title = selected_add_cond_title.split(',')
+        selected_add_name_number = request.POST.get('address_name_number', '')
         i = 0
         while i < len(selected_add_cond):
             selected_add_cond[i] = int(selected_add_cond[i])
@@ -252,12 +253,9 @@ def new_instruction(request):
 
         # Is from NHS or gpOrganisation
         gp_practice_code = request.POST.get('gp_practice', None)
-        gp_practice = OrganisationGeneralPractice.objects.filter(practice_code=gp_practice_code).first()
-        gp_practice_request = HttpRequest()
-        gp_practice_request.GET['code'] = gp_practice_code
-        nhs_address = get_nhs_data(gp_practice_request, need_dict=True)['address']
-        if not gp_practice:
-            gp_practice = NHSGeneralPractice.objects.filter(code=gp_practice_code).first()
+        if not gp_practice_code:
+            gp_practice_code = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.pk', default=None)
+        gp_practice = OrganisationGeneralPractice.objects.filter(practcode=gp_practice_code).first()
 
         if (patient_form.is_valid() and scope_form.is_valid() and gp_practice) or request.user.type == GENERAL_PRACTICE_USER:
             if instruction_id:
@@ -299,7 +297,7 @@ def new_instruction(request):
             medidata_emails_list = [user.email for user in User.objects.filter(type=MEDIDATA_USER)]
             gp_emails_list = []
             # Notification: client selected NHS GP
-            if isinstance(gp_practice, NHSGeneralPractice):
+            if not gp_practice.live and not gp_practice.accept_policy:
                 send_mail(
                     'NHS GP is selected',
                     'Your client had selected NHS GP: {}'.format(gp_practice.name),
@@ -336,7 +334,9 @@ def new_instruction(request):
                 'selected_gp_code': selected_gp_code,
                 'selected_gp_name': selected_gp_name,
                 'selected_add_cond': selected_add_cond,
-                'selected_add_cond_title': json.dumps(selected_add_cond_title)
+                'selected_add_name_number': selected_add_name_number,
+                'selected_add_cond_title': json.dumps(selected_add_cond_title),
+                'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
             })
     patient_form = PatientForm()
     addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.none())
@@ -361,7 +361,7 @@ def new_instruction(request):
             gp_practice_code = instruction.gp_practice.pk
         gp_practice_request = HttpRequest()
         gp_practice_request.GET['code'] = gp_practice_code
-        nhs_address = get_nhs_data(gp_practice_request, need_dict=True)['address']
+        nhs_address = get_gporganisation_data(gp_practice_request, need_dict=True)['address']
         nhs_form = GeneralPracticeForm(
             initial={
                 'gp_practice': instruction.gp_practice
@@ -455,14 +455,10 @@ def review_instruction(request, instruction_id):
             'address_postcode': patient.address_postcode
         }
     )
-    # Initial GP/NHS Organisation Form
-    if isinstance(instruction.gp_practice, OrganisationGeneralPractice):
-        gp_practice_code = instruction.gp_practice.practice_code
-    else:
-        gp_practice_code = instruction.gp_practice.pk
+    gp_practice_code = instruction.gp_practice.pk
     gp_practice_request = HttpRequest()
     gp_practice_request.GET['code'] = gp_practice_code
-    nhs_address = get_nhs_data(gp_practice_request, need_dict=True)['address']
+    gp_organisation_address = get_gporganisation_data(gp_practice_request, need_dict=True)['address']
     nhs_form = GeneralPracticeForm(
         initial={
             'gp_practice': instruction.gp_practice
@@ -502,7 +498,7 @@ def review_instruction(request, instruction_id):
         'gp_form': gp_form,
         'scope_form': scope_form,
         'addition_question_formset': addition_question_formset,
-        'nhs_address': nhs_address,
+        'nhs_address': gp_organisation_address,
         'condition_of_interest': condition_of_interest,
         'consent_form_data': consent_form_data,
         'instruction_id': instruction_id,
@@ -522,14 +518,10 @@ def view_reject(request, instruction_id):
             'address_postcode': patient.address_postcode
         }
     )
-    # Initial GP/NHS Organisation Form
-    if isinstance(instruction.gp_practice, OrganisationGeneralPractice):
-        gp_practice_code = instruction.gp_practice.practice_code
-    else:
-        gp_practice_code = instruction.gp_practice.pk
+    gp_practice_code = instruction.gp_practice.pk
     gp_practice_request = HttpRequest()
     gp_practice_request.GET['code'] = gp_practice_code
-    nhs_address = get_nhs_data(gp_practice_request, need_dict=True)['address']
+    nhs_address = get_gporganisation_data(gp_practice_request, need_dict=True)['address']
     nhs_form = GeneralPracticeForm(
         initial={
             'gp_practice': instruction.gp_practice
@@ -656,5 +648,5 @@ def consent_contact(request, instruction_id, patient_emis_number):
         'mdx_consent_form': mdx_consent_form,
         'sars_consent_form_data': sars_consent_form_data,
         'mdx_consent_form_data': mdx_consent_form_data,
-        'reject_types': INSTRUCTION_REJECT_TYPE,
+        'reject_types': INSTRUCTION_REJECT_TYPE
     })

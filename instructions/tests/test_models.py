@@ -26,6 +26,7 @@ class InstructionTest(TestCase):
         instruction_id = self.instruction.id
         self.assertEqual(instruction_string, 'Instruction #{id}'.format(id=instruction_id))
 
+
 class InstructionAdditionQuestionTest(TestCase):
     def test_string_representation(self):
         instruction_addition_question = mommy.make(

@@ -19,9 +19,15 @@ from typing import List
 
 class MedicalRecord(XMLBase):
     XPATH = './/MedicalRecord'
-    PROFILE_EVENT_TYPES = [
+    SAR_PROFILE_EVENT_TYPES = [
         'height', 'weight', 'bmi', 'smoking', 'alcohol',
         'systolic_blood_pressure', 'diastolic_blood_pressure'
+    ]
+    AMRA__PROFILE_EVENT_TYPES = [
+        'height', 'weight', 'bmi', 'smoking', 'alcohol',
+        'systolic_blood_pressure', 'diastolic_blood_pressure',
+        'spirometry', 'peak_flow', 'cervical_smear_test',
+        'illicit_drug_use'
     ]
 
     def consultations(self) -> List[Consultation]:
@@ -101,10 +107,11 @@ class MedicalRecord(XMLBase):
         ]
 
     def profile_event(self, profile_event_type) -> List[XMLModelBase]:
-        if profile_event_type not in self.PROFILE_EVENT_TYPES:
+        if profile_event_type not in self.SAR_PROFILE_EVENT_TYPES:
             return []
         event_function = getattr(self, profile_event_type)
         return event_function()
+
 
     def smoking(self) -> List[SocialConsultationElement]:
         return [
@@ -116,6 +123,30 @@ class MedicalRecord(XMLBase):
         return [
             sce for sce in self.__social_consultation_elements()
             if sce.is_alcohol()
+        ]
+
+    def spirometry(self) -> List[ValueEvent]:
+        return [
+            ve for ve in self.__value_events()
+            if ve.has_spirometry()
+        ]
+
+    def peak_flow(self) -> List[ValueEvent]:
+        return [
+            ve for ve in self.__value_events()
+            if ve.has_peak_flow()
+        ]
+
+    def cervical_smear_test(self) -> List[ValueEvent]:
+        return [
+            ve for ve in self.__value_events()
+            if ve.has_cervical_smear()
+        ]
+
+    def illicit_drug_use(self) -> List[ValueEvent]:
+        return [
+            ve for ve in self.__value_events()
+            if ve.has_illicit_drug_use()
         ]
 
     def significant_active_problems(self) -> List[Problem]:
@@ -164,3 +195,4 @@ class MedicalRecord(XMLBase):
         elements = self.parsed_xml.findall(ReferralEvent.XPATH)
         result_list = [ReferralEvent(element) for element in elements]
         return result_list
+

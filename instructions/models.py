@@ -15,7 +15,7 @@ from django.conf import settings
 PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
 TITLE_CHOICE = account_models.TITLE_CHOICE
 
-from typing import List, Tuple
+from typing import List, Set
 
 
 class Instruction(TimeStampedModel, models.Model):
@@ -46,6 +46,18 @@ class Instruction(TimeStampedModel, models.Model):
     class Meta:
         verbose_name = "Instruction"
         ordering = ('-created',)
+        permissions = (
+            ('create_sars', 'Create SARS'),
+            ('reject_amra', 'Reject AMRA'),
+            ('reject_sars', 'Reject SARS'),
+            ('process_amra', 'Process AMRA'),
+            ('process_sars', 'Process SARS'),
+            ('allocate_gp', 'Allocate to other user to process'),
+            ('sign_off_amra', 'Sign off AMRA'),
+            ('sign_off_sars', 'Sign off SARS'),
+            ('view_completed_amra', 'View completed AMRA'),
+            ('view_completed_sars', 'View completed SARS')
+        )
 
     def __str__(self):
         return 'Instruction #{pk}'.format(pk=self.pk)
@@ -80,24 +92,32 @@ class Instruction(TimeStampedModel, models.Model):
             auth_password=settings.EMAIL_HOST_PASSWORD,
         )
 
-    def snomed_concepts_ids(self) -> List[int]:
-        snomed_concepts_ids = []
+    def snomed_concepts_ids(self) -> Set[int]:
+        snomed_concepts_ids = set()
         for sct in self.selected_snomed_concepts():
-            snomed_concepts_ids.append(sct.external_id)
-            for sd in sct.descendants():
-                snomed_concepts_ids.append(sd.external_id)
+            snomed_concepts_ids.update(
+                map(lambda sc: sc.external_id, sct.descendants())
+            )
         return snomed_concepts_ids
 
-    def readcodes(self) -> List[str]:
-        readcodes = []
-        for snomed_concept in self.selected_snomed_concepts():
-            readcodes += [
-                rc.ext_read_code for rc in snomed_concept.descendant_readcodes()
-            ]
+    def readcodes(self) -> Set[str]:
+        readcodes = set()
+        for sct in self.selected_snomed_concepts():
+            readcodes.update(
+                map(lambda rc: rc.ext_read_code, sct.descendant_readcodes())
+            )
         return readcodes
 
     def selected_snomed_concepts(self):
-        return SnomedConcept.objects.filter(instructionconditionsofinterest__instruction=self.id)
+        return SnomedConcept.objects.filter(
+            instructionconditionsofinterest__instruction=self.id
+        )
+
+    def get_type(self):
+        return self.type
+
+    def get_type(self):
+        return self.type
 
 
 class InstructionAdditionQuestion(models.Model):

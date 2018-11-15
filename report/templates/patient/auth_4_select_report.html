@@ -4,6 +4,10 @@
 {% load get_permissions %}
 {% bootstrap_css %}
 
+{% block ExtraHead %}
+    <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.cookie.js' %}"></script>
+{% endblock %}
 
 <div class="container">
     <div class="row">
@@ -28,3 +32,12 @@
         </div>
     </div>
 </div>
+{% block Script %}
+    <script>
+      $(document).ready(function () {
+        $(window).on('unload', function(e) {
+          $.removeCookie('verified_pin', { path: '/' });
+        });
+      });
+    </script>
+{% endblock %}

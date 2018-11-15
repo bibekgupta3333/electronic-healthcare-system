@@ -1,22 +1,21 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.models import Group
 from django.contrib import messages
-from django.core.mail import send_mail
 from django.db.models import Q
 from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.forms import modelformset_factory
 
-from permissions.forms import InstructionPermissionForm
+from permissions.forms import InstructionPermissionForm, GroupPermissionForm
 from permissions.models import InstructionPermission
-from common.functions import multi_getattr, get_env_variable, verify_password as verify_pass
+from common.functions import multi_getattr, verify_password as verify_pass
 from payment.models import OrganisationFee
 from django_tables2 import RequestConfig
 
-from .models import User, UserProfileBase
+from .models import User, UserProfileBase, GeneralPracticeUser
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
-from .forms import NewGPForm, NewClientForm
 from permissions.functions import access_user_management
 
 from django.conf import settings
@@ -101,12 +100,6 @@ def view_users(request):
         filter_status = int(request.COOKIES.get('status', -1))
         filter_user_type = request.COOKIES.get('user_type', None)
 
-    if request.method == 'POST':
-        if user_profile and hasattr(user_profile, 'generalpracticeuser'):
-            permission_set = modelformset_factory(InstructionPermission, form=InstructionPermissionForm, extra=0)
-            permission_formset = permission_set(request.POST, form_kwargs={'empty_permitted': False})
-            if permission_formset.is_valid():
-                permission_formset.save()
 
     if filter_type == '':
         filter_type = "active"
@@ -132,11 +125,13 @@ def view_users(request):
     table_data['table'].order_by = request.GET.get('sort', '-created')
     if user_profile and hasattr(user_profile, 'generalpracticeuser'):
         organisation = user_profile.generalpracticeuser.organisation
-        permissions = InstructionPermission.objects.filter(organisation_id=organisation.id)
+        permissions = InstructionPermission.objects.filter(organisation=organisation)
         permission_set = modelformset_factory(InstructionPermission, form=InstructionPermissionForm, extra=(3-permissions.count()))
         initial_data = []
-        for i in range (0,3-permissions.count()):
-            initial_data.append({'organisation': organisation.id})
+        for key, value in GeneralPracticeUser.ROLE_CHOICES:
+            if key is '': continue
+            if key not in permissions.values('role'):
+                initial_data.append({'organisation': organisation.pk, 'role': key})
         permission_formset = permission_set(queryset=permissions, initial=initial_data)
 
     response = render(request, 'user_management/user_management.html', {
@@ -149,6 +144,34 @@ def view_users(request):
     })
 
     return response
+
+
+@login_required(login_url='/accounts/login')
+def update_permission(request):
+    if request.method == 'POST':
+        user = request.user
+        user = User.objects.get(pk=user.id)
+        user_profile = UserProfileBase.objects.filter(user_id=user.pk).first()
+        permission_set = modelformset_factory(InstructionPermission, form=InstructionPermissionForm, extra=0)
+        permission_formset = permission_set(request.POST, form_kwargs={'empty_permitted': False})
+        if permission_formset.is_valid():
+            for form in permission_formset:
+                set_permission(request, form)
+    return redirect('accounts:view_users')
+
+
+def set_permission(request, form):
+    permission = form.save(commit=False)
+    data = form.cleaned_data
+    data['name'] = permission.__str__()
+    if permission.group:
+        group_form = GroupPermissionForm(data, instance=permission.group)
+    else:
+        group_form = GroupPermissionForm(data)
+    group = group_form.save()
+    permission.group = group
+    permission.save()
+    permission.allocate_permission_to_gp()
 
 
 @login_required(login_url='/accounts/login')

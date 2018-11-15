@@ -35,8 +35,10 @@ class Consultation(XMLModelBase):
         return any(element is not None for element in self.parsed_xml.xpath(ValueEvent.XPATH))
 
     def is_sick_note(self) -> bool:
-        if '9D11.' in self.readcodes():
+        sick_note_readcodes = ['9D11.', '9D15.']
+        sick_note_snomedcodes = ['1331000000103', '751731000000106']
+        if any(code in self.readcodes() for code in sick_note_readcodes):
             return True
-        if '1331000000103' in self.snomed_concepts():
+        if any(code in self.snomed_concepts() for code in sick_note_snomedcodes):
             return True
         return False

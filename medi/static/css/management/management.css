@@ -7,3 +7,14 @@
   width: 130px;
   color: white;
 }
+
+.list-permissions {
+  list-style-type: none;
+  display: flex;
+  margin: auto;
+}
+
+.permission-role {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}

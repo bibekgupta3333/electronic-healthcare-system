@@ -90,9 +90,11 @@
     background-color: white;
     color: #0a0a0a;
 }
+
 .callout--no-padding {
     padding: 0;
 }
+
 .callout__header {
     background-color: #376fa1;
     color: #fefefe;
@@ -100,6 +102,7 @@
     margin-bottom: 0;
     padding: 1em;
 }
+
 .callout__content {
     padding: 1em;
 }

@@ -12,26 +12,6 @@ from accounts.models import GpPractices
 from accounts.forms import PMForm
 
 
-def emr_setup(request):
-    emr_form = EMRSetupForm()
-    created = False
-    setting = Setting.objects.all().first()
-
-    if request.method == "POST":
-        emr_form = EMRSetupForm(request.POST)
-        if emr_form.is_valid():
-            emr = emr_form.save()
-            send_email_emr(request, emr)
-            send_email_pm(request, emr)
-            created = True
-
-    return render(request, 'onboarding/emr_setup.html', {
-        'emr_form': emr_form,
-        'created': created,
-        'setting': setting
-    })
-
-
 def sign_up(request):
     surgery_form = SurgeryForm()
     pm_form = PMForm()

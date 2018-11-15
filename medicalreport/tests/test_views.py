@@ -10,6 +10,7 @@ from instructions.model_choices import INSTRUCTION_STATUS_REJECT, INSTRUCTION_ST
     INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_NEW
 from accounts.models import ClientUser, User, GeneralPracticeUser, Patient, GENERAL_PRACTICE_USER, CLIENT_USER
 from services.models import EmisAPIConfig
+from snomedct.models import SnomedConcept
 from medicalreport.models import AmendmentsForRecord
 from medicalreport.views import get_matched_patient, get_patient_record
 from organisations.models import OrganisationGeneralPractice
@@ -32,9 +33,12 @@ class EmisAPITestCase(TestCase):
         user = mommy.make(User, type=GENERAL_PRACTICE_USER)
         gp_practice = mommy.make(
             OrganisationGeneralPractice, pk=1,
-            trading_name='GP Organisation', legal_name='GP',
-            address='99/99 Bangkok 2510', operating_system='OT',
-            practice_code='99999'
+            name='GP Organisation',
+            billing_address_street='99/99',
+            billing_address_city='Bangkok',
+            billing_address_postalcode='2510',
+            gp_operating_system='OT',
+            practcode='99999'
         )
         self.gp_user = mommy.make(GeneralPracticeUser, user=user, organisation=gp_practice)
         self.gp_practice = gp_practice
@@ -166,8 +170,10 @@ class EditReportTest(EmisAPITestCase):
         self.instruction = mommy.make(
             Instruction, pk=2, consent_form=consent_form,
             patient=self.patient, gp_user=self.gp_user,
-            gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_PROGRESS
+            gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_PROGRESS, type='SARS'
         )
+        self.snomed_concept = mommy.make(SnomedConcept, external_id=365981007)
+        self.snomed_concept = mommy.make(SnomedConcept, external_id=228273003)
         self.redaction = mommy.make(
             AmendmentsForRecord, instruction=self.instruction, pk=2
         )

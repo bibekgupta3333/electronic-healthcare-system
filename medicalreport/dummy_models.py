@@ -21,5 +21,6 @@ class DummyInstruction(object):
         self.id = instruction.id
         self.consent_form = instruction.consent_form
         self.selected_snomed_concepts = instruction.selected_snomed_concepts()
+        self.type = instruction.type
         if instruction.client_user:
             self.client = DummyClient(instruction.client_user.organisation)

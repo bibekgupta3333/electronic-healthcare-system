@@ -83,6 +83,31 @@ class ValueEvent(XMLModelBase):
             else:
                 return False
 
+    def has_spirometry(self) -> bool:
+            if '59328004' in self.snomed_concepts() or '50834005' in self.snomed_concepts():
+                return True
+            else:
+                return False
+
+    def has_peak_flow(self) -> bool:
+            if '18491006' in self.snomed_concepts() or '313192007' in self.snomed_concepts() or\
+                    '178271000000100' in self.snomed_concepts():
+                return True
+            else:
+                return False
+
+    def has_cervical_smear(self) -> bool:
+            if '269957009' in self.snomed_concepts():
+                return True
+            else:
+                return False
+
+    def has_illicit_drug_use(self) -> bool:
+            if '307052004' in self.snomed_concepts():
+                return True
+            else:
+                return False
+
     def has_blood_test(self, blood_type: str) -> bool:
         blood_snomed_concept_ids = self.SPECIFIED_BLOOD_CODES.get(blood_type).get('snomed_concept_ids')
         blood_read_codes = self.SPECIFIED_BLOOD_CODES.get(blood_type).get('read_codes')

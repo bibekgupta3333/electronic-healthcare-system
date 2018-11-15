@@ -18,7 +18,9 @@ def auto_redact_by_conditions(
 ) -> List[XMLModelBase]:
     snomed_concepts_ids = instruction.snomed_concepts_ids()
     readcodes = instruction.readcodes()
-    redactor = ConditionsRedactor(concepts=snomed_concepts_ids, readcodes=readcodes)
+    redactor = ConditionsRedactor(
+        concepts=list(snomed_concepts_ids),
+        readcodes=list(readcodes))
     return [m for m in models if not redactor.is_redact(m)]
 
 

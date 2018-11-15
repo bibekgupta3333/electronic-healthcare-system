@@ -4,7 +4,7 @@ from model_mommy import mommy
 
 from organisations.models import (
     OrganisationMedidata, OrganisationBase, OrganisationClient,
-    OrganisationGeneralPractice, NHSGeneralPractice
+    OrganisationGeneralPractice,
 )
 
 
@@ -35,14 +35,6 @@ class OrganisationClientTest(TestCase):
 class OrganisationGeneralPracticeTest(TestCase):
     def test_string_representation(self):
         organisation_general_practice = mommy.make(
-            OrganisationGeneralPractice, trading_name='trading_name'
+            OrganisationGeneralPractice, name='trading_name'
         )
         self.assertEqual(str(organisation_general_practice), 'trading_name')
-
-
-class NHSGeneralPracticeTest(TestCase):
-    def test_string_representation(self):
-        nhs_gp_practice = mommy.make(
-            NHSGeneralPractice, name='nhs_gp_practice_name'
-        )
-        self.assertEqual(str(nhs_gp_practice), 'nhs_gp_practice_name')
