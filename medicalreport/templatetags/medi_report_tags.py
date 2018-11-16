@@ -52,7 +52,8 @@ def form_profile(context):
 def form_bloods(context):
     return {
         'results': context['medical_record'].blood_test_results_by_type,
-        'redaction': context['redaction']
+        'redaction': context['redaction'],
+        'instruction_type': context['instruction'].type
     }
 
 

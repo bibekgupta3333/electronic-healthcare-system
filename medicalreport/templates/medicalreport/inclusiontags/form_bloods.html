@@ -4,7 +4,7 @@
     <div class="row">
         <div class="col">
             <h6 class="callout__header">
-                Bloods (3 most recent readings)
+                Bloods {% if instruction_type == 'AMRA' %} (for the last 5 years) {% endif %}
                 <span></span>
             </h6>
         </div>
@@ -16,18 +16,20 @@
                 <p>No blood tests</p>
             </div>
             {% else %}
-            <table class="value-event-table table-striped">
-                <tbody>
-                    {% for key, value in results.items %}
-                    <tr class="value-event-table__cell-row">
-                        <th class="value-event-table__header">{{ key|bloods_type_value_header }}</th>
-                        {% for event in value %}
-                        <td class="value-event-table__cell">{{ event|event_value_body|safe }}</td>
-                        {% endfor %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                <div class="table-scrollable">
+                    <table class="value-event-table table-striped">
+                        <tbody>
+                            {% for key, value in results.items %}
+                            <tr class="value-event-table__cell-row">
+                                <th class="value-event-table__header">{{ key|bloods_type_value_header }}</th>
+                                {% for event in value %}
+                                <td class="value-event-table__cell">{{ event|event_value_body|safe }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             {% endif %}
             <br>
             <div class="container">

@@ -1,3 +1,7 @@
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from dateutil.parser import parse
+
 from .xml_utils import (
     chronological_redactable_elements, alphabetical_redactable_elements
 )
@@ -103,7 +107,7 @@ class MedicalReportDecorator(MedicalRecord):
         return normalize_data(obj)
 
     def bloods_for(self, blood_type: str) -> List[ValueEvent]:
-        return self.__table_elements(chronological_redactable_elements(
+        return self.__table_blood_elements(chronological_redactable_elements(
             super().blood_test(blood_type)
         ))
 
@@ -113,7 +117,7 @@ class MedicalReportDecorator(MedicalRecord):
             result = self.bloods_for(blood_type)
             if result:
                 obj[blood_type] = result
-        return obj
+        return normalize_data(obj)
 
     # private
     def __table_elements(self, data: List[T]) -> List[T]:
@@ -121,9 +125,13 @@ class MedicalReportDecorator(MedicalRecord):
         element_list += [None] * (len(element_list))
         return list(reversed(element_list))
 
-    @classmethod
-    def __table_blood_elements(cls, data: List[T]) -> List[T]:
-        max_len = 3
-        element_list = data[:max_len]
-        element_list += [None] * (max_len - len(element_list))
+    def __table_blood_elements(self, data: List[T]) -> List[T]:
+        element_list = list()
+        if self.instruction.type == 'AMRA':
+            for i in data:
+                if i.parsed_date() > (datetime.now().date() - relativedelta(years=5)):
+                    element_list.append(i)
+        else:
+            element_list = data
         return list(reversed(element_list))
+
