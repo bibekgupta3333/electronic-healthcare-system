@@ -419,7 +419,6 @@ def new_instruction(request):
             'instruction_id': instruction_id,
         })
 
-
     return render(request, 'instructions/new_instruction.html', {
         'header_title': header_title,
         'patient_form': patient_form,
@@ -514,6 +513,7 @@ def review_instruction(request, instruction_id):
         'condition_of_interest': condition_of_interest,
         'consent_form_data': consent_form_data,
         'instruction_id': instruction_id,
+        'instruction': instruction
     })
 
 
@@ -544,7 +544,7 @@ def view_reject(request, instruction_id):
         initial={
             'title': instruction.gp_title_from_client,
             'initial': instruction.gp_initial_from_client,
-            'last_name': instruction.gp_last_name_from_client,
+            'gp_last_name': instruction.gp_last_name_from_client,
         }
     )
     # Initial Scope/Consent Form

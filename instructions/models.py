@@ -120,9 +120,6 @@ class Instruction(TimeStampedModel, models.Model):
     def get_type(self):
         return self.type
 
-    def get_type(self):
-        return self.type
-
 
 class InstructionAdditionQuestion(models.Model):
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE, related_name='addition_questions')
