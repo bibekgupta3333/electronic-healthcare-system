@@ -85,7 +85,7 @@
     padding: 10px 20px;
 }
 
-.modal-content {
+.modal-reject .modal-content {
     color: #856404;
     background-color: #fff3cd;
 }
@@ -111,4 +111,8 @@ textarea {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
+}
+
+#printModal .modal-body {
+    height: 600px;
 }

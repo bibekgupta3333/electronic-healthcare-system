@@ -211,3 +211,6 @@ GET_ADDRESS_API_KEY = 'KtAPZq77iEGQ05llKNiPCQ15846'
 
 # checkmobi API KEY
 CHECKMOBI_SECRET_KEY = 'AAF6C967-5697-488E-9D1F-97765C8F35BA'
+
+# mdx dual consent form template
+MDXCONSENT_DIR = os.path.join(BASE_DIR, 'templates/instructions/mdx_dual_consent.html')

@@ -21,6 +21,7 @@ from template.forms import TemplateInstructionForm
 from common.functions import multi_getattr
 from snomedct.models import SnomedConcept
 from permissions.functions import check_permission
+from .print_consents import MDXDualConsent
 
 import pytz
 from itertools import chain
@@ -655,9 +656,24 @@ def consent_contact(request, instruction_id, patient_emis_number):
     return render(request, 'instructions/consent_contact.html', {
         'patient_form': patient_form,
         'instruction': instruction,
+        'patient_emis_number': patient_emis_number,
         'sars_consent_form': sars_consent_form,
         'mdx_consent_form': mdx_consent_form,
         'sars_consent_form_data': sars_consent_form_data,
         'mdx_consent_form_data': mdx_consent_form_data,
         'reject_types': INSTRUCTION_REJECT_TYPE
     })
+
+
+@login_required(login_url='/accounts/login')
+def print_mdx_consent(request, instruction_id, patient_emis_number):
+    instruction = get_object_or_404(Instruction, id=instruction_id)
+    patient = instruction.patient
+    gp_practice = instruction.gp_practice
+
+    params = {
+        'patient': patient,
+        'gp_practice': gp_practice
+    }
+
+    return MDXDualConsent.render(params)
