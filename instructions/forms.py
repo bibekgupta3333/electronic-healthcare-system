@@ -1,6 +1,7 @@
 from django import forms
 from django.forms.models import modelformset_factory
 from django.core.exceptions import ValidationError
+from django.conf import settings
 
 from instructions.model_choices import AMRA_TYPE, SARS_TYPE
 from .models import InstructionAdditionQuestion, Instruction
@@ -8,6 +9,9 @@ from template.models import TemplateInstruction
 from common.functions import multi_getattr
 from snomedct.models import CommonSnomedConcepts
 from accounts.models import User, GeneralPracticeUser
+
+
+DATE_INPUT_FORMATS = settings.DATE_INPUT_FORMATS
 
 
 class MyMultipleChoiceField(forms.MultipleChoiceField):
@@ -28,6 +32,11 @@ class ScopeInstructionForm(forms.Form):
 
     def __init__(self, user=None, patient_email=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if user and user.type == 'CLT':
+            self.fields['date_range_from'] = forms.DateField(input_formats=DATE_INPUT_FORMATS, required=False,
+                                                             widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': 'From'}))
+            self.fields['date_range_to'] = forms.DateField(input_formats=DATE_INPUT_FORMATS, required=False,
+                                                           widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': 'To'}))
         initial_data = kwargs.get('initial')
         if initial_data:
             self.fields['type'] = forms.CharField(max_length=255, widget=forms.TextInput(attrs={'class': 'w-25'}))

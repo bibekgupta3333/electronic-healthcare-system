@@ -95,6 +95,11 @@
                                 {% bootstrap_field scope_form.template size='small' form_group_class='form-group col-md-6 px-0' show_label=False %}
                                 {% bootstrap_button 'Set conditions' button_type="button" extra_classes='btn-xs' id='save_from_template_btn' %}
                             </div>
+                            <div class="row">
+                                <div class="col-md-2 rowTitle">Medical reports date range</div>
+                                {% bootstrap_field scope_form.date_range_from size='small' form_group_class='form-group col-md-2 p-0 input-group dob' show_label=False %}
+                                {% bootstrap_field scope_form.date_range_to size='small'  form_group_class='form-group col-md-2 input-group dob' show_label=False %}
+                            </div>
                             <div class="conditions d-none">
                                 <div class="row">
                                     <div class="col-md-2 rowTitle" >Common Conditions of Interest*:</div>
@@ -262,6 +267,24 @@
                 '  </div>');
 
             $('#id_date_of_birth').datepicker({
+                format: 'dd/mm/yyyy',
+                orientation: 'bottom',
+                weekStart: 1,
+                daysOfWeekHighlighted: "6,0",
+                autoclose: true,
+                todayHighlight: true,
+            });
+            $('#id_date_range_from').datepicker({
+                format: 'dd/mm/yyyy',
+                orientation: 'bottom',
+                yearRange:"-100:2028",
+                weekStart: 1,
+                daysOfWeekHighlighted: "6,0",
+                autoclose: true,
+                todayHighlight: true,
+            });
+            $('#id_date_range_to').datepicker({
+                yearRange:"-100:2028",
                 format: 'dd/mm/yyyy',
                 orientation: 'bottom',
                 weekStart: 1,
