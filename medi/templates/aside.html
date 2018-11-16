@@ -12,17 +12,17 @@
             </div>
         </div>
         <ul class="mainmenu">
-            {% if user.type == 'CLT' %}
+            {% if perms.instructions.add_instruction %}
                 <li class="{% if request.resolver_match.url_name == 'new_instruction' %}active{% endif %}">
                     <a href="{% url 'instructions:new_instruction' %}">New Instructions</a>
                 </li>
             {% endif %}
-            {% if user.type %}
+            {% if perms.instructions.view_instruction %}
                 <li class="{% if request.resolver_match.url_name == 'view_pipeline' %}active{% endif %}">
                     <a href="{% url 'instructions:view_pipeline' %}" >Instructions</a>
                 </li>
             {% endif %}
-            {% if user.userprofilebase.clientuser.role == 0 or user.userprofilebase.generalpracticeuser.role == 0 or user.type == 'MEDI' %}
+            {% if perms.organisations.view_user_management %}
                 <li class="{% if request.resolver_match.url_name == 'view_users' %}active{% endif %}">
                     <a href="{% url 'accounts:view_users' %}">User Management</a>
                 </li>
@@ -32,7 +32,7 @@
                     <a href="#" >Income</a>
                 </li>
             {% endif %}
-            {% if user.userprofilebase.generalpracticeuser.role == 0 %}
+            {% if perms.payment.view_organisationfee %}
                 <li class="{% if request.resolver_match.url_name == 'view_account' %}active{% endif %}">
                     <a href="{% url 'accounts:view_account' %}" >Account</a>
                 </li>

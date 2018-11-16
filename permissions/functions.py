@@ -6,6 +6,9 @@ from instructions.model_choices import INSTRUCTION_STATUS_REJECT, INSTRUCTION_ST
 from django.shortcuts import get_object_or_404
 
 
+decorator_with_arguments = lambda decorator: lambda *args, **kwargs: lambda func: decorator(func, *args, **kwargs)
+
+
 def check_status_with_url(is_valid, path, status):
     if 'view-reject' in path and status != INSTRUCTION_STATUS_REJECT:
         is_valid = False
@@ -16,6 +19,8 @@ def check_status_with_url(is_valid, path, status):
     elif 'edit' in path and status != INSTRUCTION_STATUS_PROGRESS:
         is_valid = False
     elif 'review-instruction' in path and status != INSTRUCTION_STATUS_NEW:
+        is_valid = False
+    elif 'consent-contact' in path and status != INSTRUCTION_STATUS_NEW:
         is_valid = False
     return is_valid
 
@@ -53,17 +58,10 @@ def check_permission(func):
         return func(request, *args, **kwargs)
     return check_and_call
 
-def access_user_management(func):
+@decorator_with_arguments
+def access_user_management(func, perm):
     def check_and_call(request, *args, **kwargs):
-        user = User.objects.get(pk=request.user.pk)
-        is_valid = True
-        if user.type not in (MEDIDATA_USER, GENERAL_PRACTICE_USER):
-            is_valid = False
-        elif user.type == GENERAL_PRACTICE_USER and\
-            hasattr(user.userprofilebase, "generalpracticeuser") and\
-            user.userprofilebase.generalpracticeuser.role != GeneralPracticeUser.PRACTICE_MANAGER:
-            is_valid = False
-        if not is_valid:
+        if not request.user.has_perm(perm):
             return redirect('instructions:view_pipeline')
         return func(request, *args, **kwargs)
     return check_and_call

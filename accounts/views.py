@@ -77,7 +77,7 @@ def manage_user(request):
 
 
 @login_required(login_url='/accounts/login')
-@access_user_management
+@access_user_management('organisations.view_user_management')
 def view_users(request):
     header_title = "User Management"
     profiles = UserProfileBase.all_objects.all()
@@ -147,6 +147,7 @@ def view_users(request):
 
 
 @login_required(login_url='/accounts/login')
+@access_user_management('permissions.change_instructionpermission')
 def update_permission(request):
     if request.method == 'POST':
         user = request.user
@@ -175,7 +176,7 @@ def set_permission(request, form):
 
 
 @login_required(login_url='/accounts/login')
-@access_user_management
+@access_user_management('organisations.add_user_management')
 def create_user(request):
     header_title = "Add New User"
 

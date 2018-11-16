@@ -4,6 +4,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 
+from permissions.models import InstructionPermission
 from .models import *
 
 
@@ -120,6 +121,20 @@ class UserAdmin(BaseUserAdmin):
                     GeneralPracticeUser.objects.create(user=obj, organisation=organisation)
         else:
             super(UserAdmin, self).save_model(request, obj, form, change)
+
+    def save_related(self, request, form, formsets, change):
+        super(UserAdmin, self).save_related(request, form, formsets, change)
+        if form.instance.id:
+            user = User.objects.get(pk=form.instance.id)
+            if hasattr(user, 'userprofilebase') and hasattr(user.userprofilebase, 'generalpracticeuser'):
+                role = user.userprofilebase.generalpracticeuser.role
+                organisation = user.userprofilebase.generalpracticeuser.organisation
+                if organisation:
+                    for permission in InstructionPermission.objects.filter(organisation=organisation):
+                        if permission.role == role:
+                            user.groups.add(permission.group)
+                        else:
+                            user.groups.remove(permission.group)
 
 
 admin.site.register(User, UserAdmin)
