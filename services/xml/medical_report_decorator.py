@@ -94,7 +94,7 @@ class MedicalReportDecorator(MedicalRecord):
                 auto_redact_profile_events(super().profile_event(event_type))
             )
 
-        return self.__table_elements(ret_xml)
+        return (self.__table_elements(self.__redact_elements(ret_xml)))
 
     def profile_events_by_type(self) -> Dict[str, List[XMLModelBase]]:
         obj = {}
@@ -107,9 +107,9 @@ class MedicalReportDecorator(MedicalRecord):
         return normalize_data(obj)
 
     def bloods_for(self, blood_type: str) -> List[ValueEvent]:
-        return self.__table_blood_elements(chronological_redactable_elements(
-            super().blood_test(blood_type)
-        ))
+        return (self.__table_blood_elements(self.__redact_elements(chronological_redactable_elements(
+            super().blood_test(blood_type))
+        )))
 
     def blood_test_results_by_type(self) -> Dict[str, List[ValueEvent]]:
         obj = {}
@@ -135,3 +135,19 @@ class MedicalReportDecorator(MedicalRecord):
             element_list = data
         return list(reversed(element_list))
 
+    def __redact_elements(self, data: List[T]) -> List[T]:
+        """
+            receive elements by date from a date range from customers
+        """
+        element_list = list()
+        if self.instruction.date_range_from:
+            for i in data:
+                if self.instruction.date_range_from < i.parsed_date():
+                    element_list.append(i)
+        if self.instruction.date_range_to:
+            for i in data:
+                if i.parsed_date() < self.instruction.date_range_to:
+                    element_list.append(i)
+        if not self.instruction.date_range_to and not self.instruction.date_range_from:
+            return data
+        return list(reversed(element_list))
