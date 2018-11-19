@@ -79,6 +79,12 @@ def appendices(context):
         'redaction': context['redaction']
     }
 
+@register.inclusion_tag('medicalreport/reports/comments.html', takes_context=True)
+def comments(context):
+    return {
+        'comment_notes': context['redaction'].comment_notes
+    }
+
 def get_redaction(model, redaction):
     xpaths = model.xpaths()
     if redaction.redacted(xpaths) is True:

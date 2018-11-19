@@ -123,6 +123,7 @@ def view_users(request):
     table_data = get_table_data(user, query_set, filter_query)
     RequestConfig(request, paginate={'per_page': 5}).configure(table_data['table'])
     table_data['table'].order_by = request.GET.get('sort', '-created')
+    permission_formset = []
     if user_profile and hasattr(user_profile, 'generalpracticeuser'):
         organisation = user_profile.generalpracticeuser.organisation
         permissions = InstructionPermission.objects.filter(organisation=organisation)
