@@ -77,7 +77,7 @@ class MedicalReportDecorator(MedicalRecord):
         return ret_xml
 
     def repeat_medications(self) -> List[Medication]:
-        ret_xml = chronological_redactable_elements(super().acute_medications())
+        ret_xml = chronological_redactable_elements(super().repeat_medications())
         if self.instruction.type == model_choices.AMRA_TYPE:
             ret_xml = chronological_redactable_elements(
                 auto_redact_medications(super().repeat_medications())
