@@ -168,6 +168,7 @@
         <div class="modal-dialog modal-lg">
             <form action="{% url 'medicalreport:reject_request' instruction.id %}" method="POST"  enctype="multipart/form-data">
                 {% csrf_token %}
+                <input type="hidden" id="consent_reject" name="patient_email" />
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3>Reject note</h3>

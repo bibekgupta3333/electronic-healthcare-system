@@ -78,6 +78,9 @@ class Instruction(TimeStampedModel, models.Model):
         self.rejected_reason = context.get('rejected_reason', None)
         self.rejected_note = context.get('rejected_note', '')
         self.status = INSTRUCTION_STATUS_REJECT
+        patient_email = context.get('patient_email', '')
+        if patient_email != '':
+            self.send_reject_email_to_patient(patient_email)
         if self.client_user:
             self.send_reject_email([self.client_user.user.email])
         if self.gp_user and self.gp_user.role == GeneralPracticeUser.OTHER_PRACTICE:
@@ -85,6 +88,17 @@ class Instruction(TimeStampedModel, models.Model):
             self.send_reject_email(emails)
         self.save()
 
+    def send_reject_email_to_patient(self, patient_email):
+        send_mail(
+            'Rejected Instruction',
+            'Unfortunately your instruction could not be completed on this occasion. Please contact your GP Surgery for more information',
+            'MediData',
+            patient_email,
+            fail_silently=True,
+            auth_user=settings.EMAIL_HOST_USER,
+            auth_password=settings.EMAIL_HOST_PASSWORD,
+        )
+    
     def send_reject_email(self, to_email):
         send_mail(
             'Rejected Instruction',
