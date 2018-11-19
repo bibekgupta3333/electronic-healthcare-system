@@ -13,4 +13,5 @@ function onSelect(element){
 function updateRejectType(element){
     var rejectID = $(element).attr('id').replace('rejected_reason-', '');
     $('#rejected_reason').val(rejectID);
+    $('#consent_reject').val($('#id_patient_input_email').val());
 }

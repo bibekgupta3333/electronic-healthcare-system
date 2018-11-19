@@ -419,7 +419,6 @@ def new_instruction(request):
             'instruction_id': instruction_id,
         })
 
-
     return render(request, 'instructions/new_instruction.html', {
         'header_title': header_title,
         'patient_form': patient_form,
@@ -514,6 +513,7 @@ def review_instruction(request, instruction_id):
         'condition_of_interest': condition_of_interest,
         'consent_form_data': consent_form_data,
         'instruction_id': instruction_id,
+        'instruction': instruction
     })
 
 
@@ -544,7 +544,7 @@ def view_reject(request, instruction_id):
         initial={
             'title': instruction.gp_title_from_client,
             'initial': instruction.gp_initial_from_client,
-            'last_name': instruction.gp_last_name_from_client,
+            'gp_last_name': instruction.gp_last_name_from_client,
         }
     )
     # Initial Scope/Consent Form
@@ -581,6 +581,7 @@ def view_reject(request, instruction_id):
 
 
 @login_required(login_url='/accounts/login')
+@check_permission
 def consent_contact(request, instruction_id, patient_emis_number):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     patient = instruction.patient
@@ -602,7 +603,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
         instruction.save()
         patient.patient_input_email = request.POST.get('patient_input_email', '')
         patient.telephone_mobile = request.POST.get('telephone_mobile', '')
-        patient.alternate_phone = request.POST.get('alternate_phone', '')   
+        patient.alternate_phone = request.POST.get('alternate_phone', '')
         patient.save()
 
         nextStep = request.POST.get('next_step', '')
@@ -614,8 +615,8 @@ def consent_contact(request, instruction_id, patient_emis_number):
             patient.save()
             return redirect('instructions:view_pipeline')
         elif nextStep == 'proceed':
-            return redirect('medicalreport:select_patient', instruction_id=instruction_id, patient_emis_number=patient_emis_number)            
-    
+            return redirect('medicalreport:select_patient', instruction_id=instruction_id, patient_emis_number=patient_emis_number)
+
     # Initial Patient Form
     patient_form = PatientForm(
         instance=patient,

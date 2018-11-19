@@ -15,7 +15,7 @@
 {% block Content %}
         <div class="row" >
             <div class="col-md-3">
-                {% if user_type == "gp" and user.get_short_my_role == "Manager" or user_type == "client" %}
+                {% if perms.organisations.add_user_management %}
                     <a href="{% url 'accounts:create_user' %}" class="btn btn-primary" id="addUserButton">Add New</a>
                 {% endif %}
             </div>
@@ -54,29 +54,33 @@
                     {% bootstrap_button 'Apply' button_type="button" button_class="btn-primary"%}
                 </div>
                 <div class="col-md-2">
-                    {% if user_type == "gp" %}
-                    <select class="form-control" id="userRoleSelect">
-                        <option selected disabled>Change Role</option>
-                        <option value="0">Practice Manager</option>
-                        <option value="1">General Practice</option>
-                        <option value="2">SARS Responder</option>
-                    </select>
-                    {% endif %}
-                    {% if user_type == "client" %}
-                    <select class="form-control" id="userRoleSelect">
-                        <option selected disabled>Change Role</option>
-                        <option value="0">Client Admin</option>
-                        <option value="1">Client</option>
-                    </select>
+                    {% if perms.organisations.change_user_management %}
+                        {% if user_type == "gp" %}
+                            <select class="form-control" id="userRoleSelect">
+                                <option selected disabled>Change Role</option>
+                                <option value="0">Practice Manager</option>
+                                <option value="1">General Practice</option>
+                                <option value="2">SARS Responder</option>
+                            </select>
+                        {% endif %}
+                        {% if user_type == "client" %}
+                            <select class="form-control" id="userRoleSelect">
+                                <option selected disabled>Change Role</option>
+                                <option value="0">Client Admin</option>
+                                <option value="1">Client</option>
+                            </select>
+                        {% endif %}
                     {% endif %}
                 </div>
                 <div class="col-md-1">
-                    {% if user_type != "medidata" %}
+                    {% if perms.organisations.change_user_management %}
                         <input type="submit" id="userRoleBtn" value="Change" class="btn btn-primary" disabled="disabled">
                     {% endif %}
                 </div>
                 <div class="col-md-1">
-                    <input type="submit" id="removeUserBtn" value="Remove" class="btn btn-primary" disabled="disabled">
+                    {% if perms.organisations.delete_user_management %}
+                        <input type="submit" id="removeUserBtn" value="Remove" class="btn btn-primary" disabled="disabled">
+                    {% endif %}
                 </div>
                 <div class="col-md-2">
                     <input type="submit" id="resetPwdBtn" value="Reset Password" class="btn btn-primary" disabled="disabled">
@@ -96,45 +100,49 @@
                 </div>
             </div>
         </form>
-        <form action="{% url 'accounts:update_permission' %}" id="permissionForm" method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            <table class="table table-striped table-bordered table-hover dataTable no-footer">
-                {{ permission_formset.management_form }}
-                <thead>
-                    <tr class="text-center">
-                        {% for form in permission_formset.forms %}
-                            {% if forloop.first %}
-                                {% for field in form %}
-                                    {% if field.label == 'Role' %}
-                                        <th>{{field.label}}</th>
-                                    {% elif field.label == 'Permissions'%}
-                                        <th id="permissionTH">{{field.label}}</th>
-                                    {% else %}
-                                        <th style="display: none">{{field.label}}</th>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endif %}
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for form in permission_formset.forms %}
+        {% if perms.permissions.view_instructionpermission %}
+            <form action="{% url 'accounts:update_permission' %}" id="permissionForm" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <table class="table table-striped table-bordered table-hover dataTable no-footer">
+                    {{ permission_formset.management_form }}
+                    <thead>
                         <tr class="text-center">
-                            {% for field in form %}
-                                {% if field.label == 'Role' %}
-                                    <td>{{field}}</td>
-                                {% elif field.label == 'Permissions'%}
-                                    <td id="permissionTD_{{forloop.parentloop.counter}}">{{field}}</td>
-                                {% else %}
-                                    <td style="display: none">{{field}}</td>
+                            {% for form in permission_formset.forms %}
+                                {% if forloop.first %}
+                                    {% for field in form %}
+                                        {% if field.label == 'Role' %}
+                                            <th>{{field.label}}</th>
+                                        {% elif field.label == 'Permissions'%}
+                                            <th id="permissionTH">{{field.label}}</th>
+                                        {% else %}
+                                            <th style="display: none">{{field.label}}</th>
+                                        {% endif %}
+                                    {% endfor %}
                                 {% endif %}
                             {% endfor %}
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <button type="submit" class="btn btn-primary">Update Permission</button>
-        </form>
+                    </thead>
+                    <tbody>
+                        {% for form in permission_formset.forms %}
+                            <tr class="text-center">
+                                {% for field in form %}
+                                    {% if field.label == 'Role' %}
+                                        <td>{{field}}</td>
+                                    {% elif field.label == 'Permissions'%}
+                                        <td id="permissionTD_{{forloop.parentloop.counter}}">{{field}}</td>
+                                    {% else %}
+                                        <td style="display: none">{{field}}</td>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if perms.permissions.change_instructionpermission %}
+                    <button type="submit" class="btn btn-primary">Update Permission</button>
+                {% endif %}
+            </form>
+        {% endif %}
 
 
 {% endblock %}

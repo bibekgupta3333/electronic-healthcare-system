@@ -19,6 +19,10 @@
 {% endblock %}
 
 {% block Content %}
+    <div class="alert alert-info" role="alert">
+      <h5>Instruction</h5>
+      <span>Allocated to <label class="text-bold">{{instruction.gp_user}}</label> at {{instruction.created}} <label class="reject-reason"></label></span>
+    </div>
     <div class="card-deck instruction">
         <div class="pr-0 col-md-6">
             <div class="card mr-2">

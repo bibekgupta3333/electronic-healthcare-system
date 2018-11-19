@@ -26,6 +26,12 @@ class OrganisationBase(OrganisationMedidata):
 
     class Meta:
         verbose_name = 'Organisation'
+        permissions = (
+            ('view_user_management', 'Can view User Management'),
+            ('add_user_management', 'Can add User Management'),
+            ('change_user_management', 'Can change User Management'),
+            ('delete_user_management', 'Can delete User Management')
+        )
 
     def __str__(self):
         return self.trading_name
