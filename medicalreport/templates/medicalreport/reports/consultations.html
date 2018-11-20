@@ -14,7 +14,7 @@
                     </tr>
                     {% for item in dict_data %}
                         {% for key, value in item.items %}
-                            {% if key != 'xpath' %}
+                            {% if key != 'xpath' and key != 'map_code' %}
                                 <tr>
                                     <td><label style="font-weight:bold;">{{key}}</label>: {{value}}</td>
                                 </tr>

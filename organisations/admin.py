@@ -26,6 +26,7 @@ class OrganisationGeneralPracticeForm(forms.ModelForm):
 
 class OrganisationGeneralPracticeAdmin(ImportExportModelAdmin):
     skip_admin_log = True
+    search_fields = ['name', 'practcode']
     resource_class = OrganisationGeneralPracticeResource
     form = OrganisationGeneralPracticeForm
     list_display = ('name', 'practcode')

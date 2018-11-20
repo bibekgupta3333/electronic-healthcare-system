@@ -138,7 +138,7 @@
                         {% endfor %}
                     </tbody>
                 </table>
-                {% if perms.permissions.change_instructionpermission %}
+                {% if perms.permissions.change_instructionpermission and permission_formset %}
                     <button type="submit" class="btn btn-primary">Update Permission</button>
                 {% endif %}
             </form>

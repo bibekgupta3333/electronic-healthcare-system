@@ -17,6 +17,7 @@ class ClientProfileInline(admin.StackedInline):
 
 class GeneralPracticeProfileInline(admin.StackedInline):
     model = GeneralPracticeUser
+    raw_id_fields = ('organisation',)
     can_delete = False
     verbose_name_plural = 'Profile'
     fk_name = 'user'

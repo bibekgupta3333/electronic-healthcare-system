@@ -1,0 +1,10 @@
+{% load custom_filters %}
+{% load final_report_tags %}
+<div style="display:flex;background-color:#235597;margin:0;">
+    <label style="color:white;font-size:20px;">Additional comments</label>
+</div>
+<table style="width:100%;font-size:15px;margin-top:10px;">
+    <tr>
+      <td>{{ comment_notes|default:"" }}</td>
+    </tr>
+</table>

@@ -99,6 +99,7 @@ def get_sign_up_autocomplete(request):
 
 def get_gp_sign_up_data(request, **kwargs):
     code = request.GET.get('code', '')
+    name = request.GET.get('name', '')
     data = {
         'code': '',
         'name': '',
@@ -109,6 +110,8 @@ def get_gp_sign_up_data(request, **kwargs):
     }
     if code:
         gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=code).first()
+        if not gp_organisation and name:
+            gp_organisation = OrganisationGeneralPractice.objects.filter(name=name).first()
         if gp_organisation:
             data = {
                 'code': gp_organisation.practcode,
