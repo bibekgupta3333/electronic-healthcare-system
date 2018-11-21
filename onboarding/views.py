@@ -15,6 +15,7 @@ from accounts.forms import PMForm
 def sign_up(request):
     surgery_form = SurgeryForm()
     pm_form = PMForm()
+    setting = Setting.objects.all().first()
 
     if request.method == "POST":
         surgery_form = SurgeryForm(request.POST)
@@ -27,7 +28,9 @@ def sign_up(request):
                 return render(request, 'onboarding/emr_message.html')
     return render(request, 'onboarding/sign_up.html', {
         'surgery_form': surgery_form,
-        'pm_form': pm_form
+        'pm_form': pm_form,
+        'setting': setting,
+        'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
     })
 
 
