@@ -4,7 +4,7 @@ from django.conf import settings
 
 from common.functions import verify_password
 from .models import Patient, GeneralPracticeUser, ClientUser, TITLE_CHOICE, GENERAL_PRACTICE_USER, User
-
+from instructions.models import InstructionPatient
 DATE_INPUT_FORMATS = settings.DATE_INPUT_FORMATS
 
 
@@ -15,32 +15,23 @@ class MyChoiceField(forms.ChoiceField):
             raise ValidationError(self.error_messages['required'], code='required')
 
 
-class PatientForm(forms.ModelForm):
-    first_name = forms.CharField(max_length=255, required=True, label='First name*', widget=forms.TextInput(attrs={'placeholder': ''}))
-    last_name = forms.CharField(max_length=255, required=True, label='Last name*', widget=forms.TextInput(attrs={'placeholder': ''}))
+class InstructionPatientForm(forms.ModelForm):
     email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), required=False)
-    date_of_birth = forms.DateField(input_formats=DATE_INPUT_FORMATS, required=True, widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': ''}))
-    address_postcode = MyChoiceField(required=True)
-    address_name_number = MyChoiceField(required=False)
-    address_line2 = forms.CharField(max_length=255, required=True, label='address line2*', widget=forms.TextInput(attrs={'placeholder': ''}))
-    address_line3 = forms.CharField(max_length=255, required=True, label='address line3*', widget=forms.TextInput(attrs={'placeholder': ''}))
-    address_line4 = forms.CharField(max_length=255, required=True, label='address line4*', widget=forms.TextInput(attrs={'placeholder': ''}))
-    address_country = forms.CharField(max_length=255, required=True, label='address country*', widget=forms.TextInput(attrs={'placeholder': ''}))
+    patient_dob = forms.DateField(
+        input_formats=DATE_INPUT_FORMATS, required=True,
+        widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': ''})
+    )
+    patient_postcode = MyChoiceField(required=True, label='Address postcode')
+    patient_address_number = MyChoiceField(required=False, label='Address name number')
+    patient_address_line1 = forms.CharField(max_length=255, required=True)
 
     class Meta:
-        model = Patient
-        fields = ('title', 'first_name', 'last_name', 'date_of_birth', 'address_postcode', 'address_name_number',
-                  'nhs_number', 'patient_input_email', 'telephone_mobile', 'alternate_phone')
+        model = InstructionPatient
+        exclude = ('instruction', 'patient_user')
         widgets = {
-            'address_postcode': forms.TextInput(attrs={'placeholder': '', }),
-            'date_of_birth': forms.DateTimeInput(attrs={'placeholder': '', 'autocomplete': 'off'}),
-            'address_name_number': forms.TextInput(attrs={'placeholder': '', })
-        }
-
-        labels = {
-            'title': 'Title*',
-            'address_postcode': 'Postcode*',
-            'address_name_number': 'Select address*',
+            'patient_postcode': forms.TextInput(attrs={'placeholder': '', }),
+            'patient_dob': forms.DateTimeInput(attrs={'placeholder': '', 'autocomplete': 'off'}),
+            'patient_address_number': forms.TextInput(attrs={'placeholder': '', })
         }
 
     def __init__(self, *args, **kwargs):
@@ -49,10 +40,15 @@ class PatientForm(forms.ModelForm):
         if initial_data:
             edit_patient = initial_data.get('edit_patient')
             if not edit_patient:
-                post_code = initial_data.get('address_postcode')
+                post_code = initial_data.get('patient_postcode')
+                address_number = initial_data.get('patient_address_number')
                 if post_code:
-                    self.fields['address_postcode'] = forms.CharField(max_length=255)
-                self.fields['title'] = forms.CharField(max_length=255)
+                    self.fields['patient_postcode'] = forms.CharField(max_length=255, label='Address postcode')
+
+                if address_number:
+                    self.fields['patient_address_number'] = forms.CharField(max_length=255, label='Address name number')
+
+                self.fields['patient_title'] = forms.CharField(max_length=255, label='Title*')
 
 
 class GPForm(forms.Form):

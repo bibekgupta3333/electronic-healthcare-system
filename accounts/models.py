@@ -133,7 +133,6 @@ class UserProfileBase(TimeStampedModel, models.Model):
     address_name_number = models.CharField(max_length=255)
     address_line2 = models.CharField(max_length=255, blank=True)
     address_line3 = models.CharField(max_length=255, blank=True)
-    address_line4 = models.CharField(max_length=255, blank=True)
     address_postcode = models.CharField(max_length=255, blank=True)
     address_country = models.CharField(max_length=255, blank=True)
     telephone_home = models.CharField(max_length=255, blank=True)

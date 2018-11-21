@@ -50,20 +50,20 @@
                           <div class="col-md-6">
                               <div class="row">
                                   <h4 class="text-bold">
-                                      {{instruction.patient.user.first_name|default:"N/A"}} {{instruction.patient.user.last_name|default:""}}
+                                      {{instruction.patient_information.patient_first_name|default:"N/A"}} {{instruction.patient_information.patient_last_name|default:""}}
                                   </h4>
                               </div>
                               <div class="row">
                                   <h5 class="text-bold">Date of birth:&nbsp</h5>
-                                  <h5>{{instruction.patient.date_of_birth|format_date_filter|default:"N/A"}}</h5>
+                                  <h5>{{instruction.patient_information.patient_dob|format_date_filter|default:"N/A"}}</h5>
                               </div>
                               <div class="row">
                                   <h5 class="text-bold">Address:&nbsp</h5>
-                                  <h5>{{instruction.patient|instruction_patient_address|default:"N/A"}}</h5>
+                                  <h5>{{instruction.patient_information|instruction_patient_address|default:"N/A"}}</h5>
                               </div>
                               <div class="row">
                                   <h5 class="text-bold">NHS number:&nbsp</h5>
-                                  <h5>{{instruction.patient.nhs_number|default:"N/A"}}</h5>
+                                  <h5>{{instruction.patient_information.patient_nhs_number|default:"N/A"}}</h5>
                               </div>
                           </div>
                           {% if instruction.type == 'AMRA' %}

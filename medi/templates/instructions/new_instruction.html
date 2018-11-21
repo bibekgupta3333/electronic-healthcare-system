@@ -35,31 +35,31 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-2 rowTitle">Name*:</div>
-                            {% bootstrap_field patient_form.title size='small' form_group_class='form-group col-md-2 p-0' %}
-                            {% bootstrap_field patient_form.first_name size='small' form_group_class='form-group col-md-4 px-2' %}
-                            {% bootstrap_field patient_form.last_name size='small' form_group_class='form-group col-md-4 px-1' %}
+                            {% bootstrap_field patient_form.patient_title size='small' form_group_class='form-group col-md-2 p-0' %}
+                            {% bootstrap_field patient_form.patient_first_name size='small' form_group_class='form-group col-md-4 px-2' placeholder='' %}
+                            {% bootstrap_field patient_form.patient_last_name size='small' form_group_class='form-group col-md-4 px-1' placeholder='' %}
                         </div>
                         <div class="row">
                             <div class="col-md-2 rowTitle">Date of Birth*:</div>
-                            {% bootstrap_field patient_form.date_of_birth size='small' form_group_class='form-group col-md-6 p-0 input-group dob' show_label=False %}
+                            {% bootstrap_field patient_form.patient_dob size='small' form_group_class='form-group col-md-6 p-0 input-group dob' show_label=False %}
                         </div>
                         <div class="row">
                             <div class="col-md-2 rowTitle">Address*:</div>
-                            {% bootstrap_field patient_form.address_postcode size='small' form_group_class='form-group col-md-4 p-0 ' %}
-                            {% bootstrap_field patient_form.address_name_number size='small' form_group_class='form-group col-md-6 px-1' %}
+                            {% bootstrap_field patient_form.patient_postcode size='small' form_group_class='form-group col-md-4 p-0 ' %}
+                            {% bootstrap_field patient_form.patient_address_number size='small' form_group_class='form-group col-md-6 px-1' %}
                         </div>
                         <div class="row" >
-                              {% bootstrap_field patient_form.address_line2 size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' %}
-                              {% bootstrap_field patient_form.address_line3 size='small' form_group_class='form-group col-md-5' %}
-                              {% bootstrap_field patient_form.address_line4 size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' %}
-                              {% bootstrap_field patient_form.address_country size='small' form_group_class='form-group col-md-5' %}
+                            {% bootstrap_field patient_form.patient_address_line1 size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' placeholder=''%}
+                            {% bootstrap_field patient_form.patient_address_line2 size='small' form_group_class='form-group col-md-5' placeholder='' %}
+                            {% bootstrap_field patient_form.patient_address_line3 size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' placeholder='' %}
+                            {% bootstrap_field patient_form.patient_country size='small' form_group_class='form-group col-md-5' placeholder='' %}
                         </div>
                         <div class="row">
                             <div class="col-md-2 rowTitle">NHS #:</div>
-                            {% bootstrap_field patient_form.nhs_number size='small' form_group_class='form-group col-md-5 p-0 mt-1' show_label=False placeholder='' %}
+                            {% bootstrap_field patient_form.patient_nhs_number size='small' form_group_class='form-group col-md-4 p-0 mt-1' show_label=False placeholder='' %}
                             {% if request.user.type == 'CLT' %}
                                 <div class="col-md-2 pl-4 rowTitle">Email:</div>
-                                {% bootstrap_field patient_form.patient_input_email size='small' form_group_class='form-group input-group col-md-4 p-2' show_label=False placeholder='' %}
+                                {% bootstrap_field patient_form.patient_email size='small' form_group_class='form-group input-group col-md-4 px-1' show_label=False placeholder='' %}
                             {% endif %}
                         </div>
                     </div>
@@ -215,11 +215,6 @@
     <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
     <script src="{% static 'js/jquery.formset.js' %}"></script>
     <script>
-        const MUSCULOSKELETAL_SNOMED_CODE = '128237006';
-        const DISORDER_BACK_SNOMED_CODE = '33308003';
-        const NEURODEGENERATIVE_SNOMED_CODE = '80690008';
-        const PERIPHERAL_SNOMED_CODE = '42658009';
-
         $(document).ready(function () {
             var template_data = null;
             function reset_template_attrs(){
@@ -243,26 +238,6 @@
                 $('#id_addition_condition_title').val(titles);
             });
 
-            // hide same label choice
-            $("input[value=" + DISORDER_BACK_SNOMED_CODE +"]").closest("div").attr('style','display:none !important');
-            $("input[value=" + PERIPHERAL_SNOMED_CODE + "]").closest("div").attr('style','display:none !important');
-
-            $("input[type='checkbox']").on('change', function () {
-               if($(this).val() == MUSCULOSKELETAL_SNOMED_CODE){
-                    $("input[value=" + DISORDER_BACK_SNOMED_CODE + "]").trigger('click');
-               }
-
-               if($(this).val() == NEURODEGENERATIVE_SNOMED_CODE){
-                   $("input[value=" + PERIPHERAL_SNOMED_CODE + "]").trigger('click');
-               }
-            });
-
-            $('#id_type').find("input[name=type][value=SARS]").on('change', function(e) {
-                if(e.target.checked) {
-                    $("#date_range").hide();
-                }
-            });
-
             $("#id_consent_form").fileinput({
                 theme: 'fas',
                 showUpload: false,
@@ -278,7 +253,7 @@
                 '    </div>\n' +
                 '  </div>');
 
-            $('#id_date_of_birth').datepicker({
+            $('#id_patient_dob').datepicker({
                 format: 'dd/mm/yyyy',
                 orientation: 'bottom',
                 weekStart: 1,
@@ -424,7 +399,7 @@
             }
 
             
-            $('#id_address_postcode').select2({
+            $('#id_patient_postcode').select2({
                 ajax: {
                     url: function (params) {
                         return "https://api.postcodes.io/postcodes/"+ params.term +"/autocomplete"
@@ -440,7 +415,7 @@
                     }
                 }
             });
-            $('#id_address_postcode').prop('required', true);
+            $('#id_patient_postcode').prop('required', true);
 
             var $selectAllButton = $('<button class="btn btn-default btn-xs" id="selectAllButton" type="button">Select All</button>');
             var $deSelectAllButton = $('<button class="btn btn-default btn-xs" id="deSelectAllButton" type="button">Deselect All</button>');
@@ -476,7 +451,7 @@
                 $('#id_gp_practice').append(option).trigger('change');
             }
 
-             $('#id_address_postcode').on('change', function () {
+             $('#id_patient_postcode').on('change', function () {
                      var url = "https://api.getAddress.io/find/"+$(this).val()+'?api-key='+'{{ GET_ADDRESS_API_KEY }}';
                      $.ajax({
                         type: "GET",
@@ -487,36 +462,13 @@
                             var addresses = data.addresses.map(function(item){
                                 return item.split(',');
                             });
-                            data.formattedObj = {};
-                            var formattedData = data.addresses.map(function(item) {
-                                var name = item.split(',').filter(function (s) {
-                                    addresses.push(s);
-                                    return s != ' ';
-                                }).join(',');
-                                data.formattedObj[name] = item;
-                                return name;
-                            });
-
                             $('#id_address_name_number').select2({
-                                data: formattedData
+                                data: data.addresses
                              });
                             $('#id_address_name_number').on('select2:select', function (e) {
-                                var selected = e.params.data;
-
-                                var selectedData;
-                                if(data.formattedObj[selected.text]) {
-                                    selectedData = data.formattedObj[selected.text].split(',');
-                                }else {
-                                    selectedData = selected.text.split(',');
-
-                                }
-
-                                $('#id_address_line2').val(selectedData[1]);
-                                $('#id_address_line3').val(selectedData[2]);
-                                $('#id_address_line4').val(selectedData[3]);
-                                $('#id_address_country').val(selectedData[6]);
+                                var data = e.params.data;
                             });
-                            $('#id_address_name_number').trigger({
+                            $('#id_patient_address_number').trigger({
                                 type: 'select2:select',
                                 params: {
                                     data: {text: "{{selected_add_name_number}}" != '' ? "{{selected_add_name_number}}" : data.addresses[0]}
@@ -527,7 +479,7 @@
                 })
             });
 
-            $('#id_address_postcode').prop('required', true);
+            $('#id_patient_postcode').prop('required', true);
             if ('{{patient_form.address_postcode.value}}' != 'None') {
                 var option = new Option("{{patient_form.address_postcode.value}}", "{{patient_form.address_postcode.value}}", true, true);
                 $('#id_address_postcode').append(option).trigger('change');

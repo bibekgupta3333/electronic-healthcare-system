@@ -36,24 +36,24 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-2 rowTitle">Name*:</div>
-                        {% bootstrap_field patient_form.title size='small' form_group_class='form-group col-md-2 p-0'%}
-                        {% bootstrap_field patient_form.first_name size='small' form_group_class='form-group-plaintext  col-md-4 px-2' %}
-                        {% bootstrap_field patient_form.last_name size='small' form_group_class='form-group col-md-4 px-1' %}
+                        {% bootstrap_field patient_form.patient_title size='small' form_group_class='form-group col-md-2 p-0'%}
+                        {% bootstrap_field patient_form.patient_first_name size='small' form_group_class='form-group-plaintext  col-md-4 px-2' %}
+                        {% bootstrap_field patient_form.patient_last_name size='small' form_group_class='form-group col-md-4 px-1' %}
                     </div>
                     <div class="row">
                         <div class="col-md-2 rowTitle">Date of Birth*:</div>
-                        {% bootstrap_field patient_form.date_of_birth size='small' form_group_class='form-group col-md-6 p-0 input-group dob' show_label=False %}
+                        {% bootstrap_field patient_form.patient_dob size='small' form_group_class='form-group col-md-6 p-0 input-group dob' show_label=False %}
                     </div>
                     <div class="row">
                         <div class="col-md-2 rowTitle">Address*:</div>
-                        {% bootstrap_field patient_form.address_postcode size='small' form_group_class='form-group col-md-4 p-0 ' %}
-                        {% bootstrap_field patient_form.address_name_number size='small' form_group_class='form-group col-md-6 px-1' %}
+                        {% bootstrap_field patient_form.patient_postcode size='small' form_group_class='form-group col-md-4 p-0 ' %}
+                        {% bootstrap_field patient_form.patient_address_number size='small' form_group_class='form-group col-md-6 px-1' %}
                     </div>
                     <div class="row">
                         <div class="col-md-2 rowTitle">NHS #:</div>
-                        {% bootstrap_field patient_form.nhs_number size='small' form_group_class='form-group col-md-4 p-0 mt-1' show_label=False placeholder='' %}
+                        {% bootstrap_field patient_form.patient_nhs_number size='small' form_group_class='form-group col-md-4 p-0 mt-1' show_label=False placeholder='' %}
                         <div class="col-md-2 pl-4 rowTitle">Email:</div>
-                        {% bootstrap_field patient_form.patient_input_email size='small' form_group_class='form-group input-group col-md-4 px-1 emailField' show_label=False placeholder='' %}
+                        {% bootstrap_field patient_form.patient_email size='small' form_group_class='form-group input-group col-md-4 px-1 emailField' show_label=False placeholder='' %}
                     </div>
                 </div>
             </div>
@@ -176,8 +176,12 @@
 
         let total_addition_form = $('#id_form-TOTAL_FORMS').val() - 1;
 
+        $('#id_patient_address_number').attr("data-toggle", "tooltip");
         $('#id_form-'+ total_addition_form.toString() +'-question').remove();
         $('button[title="View Details"]').removeAttr('disabled');
+        $('#id_patient_address_number').tooltip({
+            title: $('#id_patient_address_number').val()
+        });
     });
     </script>
 

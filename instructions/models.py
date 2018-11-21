@@ -1,27 +1,48 @@
 from django.db import models
-from django import forms
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.core.mail import send_mail
-from django.core.exceptions import ValidationError
 from common.models import TimeStampedModel
 from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser, User
 from accounts import models as account_models
 from snomedct.models import SnomedConcept
 from .model_choices import *
-from common.functions import get_env_variable
 from django.conf import settings
+from typing import Set
 PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
 TITLE_CHOICE = account_models.TITLE_CHOICE
 
-from typing import List, Set
+
+class InstructionPatient(models.Model):
+    patient_user = models.ForeignKey(Patient, related_name='instruction_patients', on_delete=models.CASCADE, null=True)
+    patient_title = models.CharField(max_length=3, choices=TITLE_CHOICE, verbose_name='Title*')
+    patient_first_name = models.CharField(max_length=255, verbose_name="First name*")
+    patient_last_name = models.CharField(max_length=255, verbose_name="Last name*")
+    patient_dob = models.DateField(null=True)
+    patient_postcode = models.CharField(max_length=255, verbose_name='Postcode*')
+    patient_address_number = models.CharField(max_length=255, blank=True)
+    patient_address_line2 = models.CharField(max_length=255)
+    patient_address_line3 = models.CharField(max_length=255)
+    patient_country = models.CharField(max_length=255)
+    patient_nhs_number = models.CharField(max_length=10, blank=True)
+    patient_email = models.EmailField(max_length=255, blank=True)
+    patient_telephone_mobile = models.CharField(max_length=255, blank=True)
+    patient_alternate_phone = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = "Instruction Patient Information"
+
+    def __str__(self):
+        return "{first_name} {last_name} {dob}".format(
+            first_name=self.patient_first_name, last_name=self.patient_last_name, dob=self.patient_dob
+        )
 
 
 class Instruction(TimeStampedModel, models.Model):
     client_user = models.ForeignKey(ClientUser, on_delete=models.CASCADE, verbose_name='Client', null=True)
     gp_user = models.ForeignKey(GeneralPracticeUser, on_delete=models.CASCADE, verbose_name='GP Allocated', null=True)
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, verbose_name='Patient')
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, null=True, verbose_name='Patient')
     completed_signed_off_timestamp = models.DateTimeField(null=True, blank=True)
     rejected_timestamp = models.DateTimeField(null=True, blank=True)
     rejected_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -32,13 +53,13 @@ class Instruction(TimeStampedModel, models.Model):
     initial_monetary_value = models.FloatField(null=True, blank=True, verbose_name='Value £')
     status = models.IntegerField(choices=INSTRUCTION_STATUS_CHOICES, default=INSTRUCTION_STATUS_NEW)
     consent_form = models.FileField(upload_to='consent_forms', null=True, blank=True)
+    patient_information = models.OneToOneField(InstructionPatient, on_delete=models.CASCADE, verbose_name='Patient')
     gp_title_from_client = models.CharField(max_length=5, choices=TITLE_CHOICE, blank=True)
     gp_initial_from_client = models.CharField(max_length=20, blank=True)
     gp_last_name_from_client = models.CharField(max_length=255, blank=True)
 
     date_range_from = models.DateField(null=True)
     date_range_to = models.DateField(null=True)
-
 
     gp_practice_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     gp_practice_id = models.CharField(max_length=255)

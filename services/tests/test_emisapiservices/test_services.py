@@ -7,7 +7,7 @@ from services.emisapiservices.services import (
     EmisAPIServiceBase, GetAttachment, GetPatientList, GetMedicalRecord
 )
 from services.models import EmisAPIConfig
-from accounts.models import Patient, User
+from instructions.models import InstructionPatient
 
 from django.conf import settings
 EMIS_API_HOST = settings.EMIS_API_HOST
@@ -44,11 +44,19 @@ class GetAttachmentTest(TestCase):
 class GetPatientListTest(TestCase):
     def setUp(self):
         generate_emis_api_config()
-        user = mommy.make(User, first_name='first_name', last_name='last_name')
-        patient = mommy.make(Patient, user=user, date_of_birth=date(1990, 1, 2))
+        patient = mommy.make(
+            InstructionPatient,
+            patient_first_name='first_name',
+            patient_last_name='last_name',
+            patient_dob=date(1990, 1, 2)
+        )
         self.get_patient_list = GetPatientList(patient)
-        blank_user = mommy.make(User, first_name='', last_name='')
-        blank_patient = mommy.make(Patient, user=blank_user, date_of_birth=None)
+        blank_patient = mommy.make(
+            InstructionPatient,
+            patient_first_name='',
+            patient_last_name='',
+            patient_dob=None
+        )
         self.get_patient_list_blank = GetPatientList(blank_patient)
 
     def test_search_term(self):
