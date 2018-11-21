@@ -22,6 +22,10 @@ class PatientForm(forms.ModelForm):
     date_of_birth = forms.DateField(input_formats=DATE_INPUT_FORMATS, required=True, widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': ''}))
     address_postcode = MyChoiceField(required=True)
     address_name_number = MyChoiceField(required=False)
+    address_line2 = forms.CharField(max_length=255, required=True, label='address line2*', widget=forms.TextInput(attrs={'placeholder': ''}))
+    address_line3 = forms.CharField(max_length=255, required=True, label='address line3*', widget=forms.TextInput(attrs={'placeholder': ''}))
+    address_line4 = forms.CharField(max_length=255, required=True, label='address line4*', widget=forms.TextInput(attrs={'placeholder': ''}))
+    address_country = forms.CharField(max_length=255, required=True, label='address country*', widget=forms.TextInput(attrs={'placeholder': ''}))
 
     class Meta:
         model = Patient

@@ -48,12 +48,18 @@
                             {% bootstrap_field patient_form.address_postcode size='small' form_group_class='form-group col-md-4 p-0 ' %}
                             {% bootstrap_field patient_form.address_name_number size='small' form_group_class='form-group col-md-6 px-1' %}
                         </div>
+                        <div class="row" >
+                              {% bootstrap_field patient_form.address_line2 size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' %}
+                              {% bootstrap_field patient_form.address_line3 size='small' form_group_class='form-group col-md-5' %}
+                              {% bootstrap_field patient_form.address_line4 size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' %}
+                              {% bootstrap_field patient_form.address_country size='small' form_group_class='form-group col-md-5' %}
+                        </div>
                         <div class="row">
                             <div class="col-md-2 rowTitle">NHS #:</div>
-                            {% bootstrap_field patient_form.nhs_number size='small' form_group_class='form-group col-md-4 p-0 mt-1' show_label=False placeholder='' %}
+                            {% bootstrap_field patient_form.nhs_number size='small' form_group_class='form-group col-md-5 p-0 mt-1' show_label=False placeholder='' %}
                             {% if request.user.type == 'CLT' %}
                                 <div class="col-md-2 pl-4 rowTitle">Email:</div>
-                                {% bootstrap_field patient_form.patient_input_email size='small' form_group_class='form-group input-group col-md-4 px-1' show_label=False placeholder='' %}
+                                {% bootstrap_field patient_form.patient_input_email size='small' form_group_class='form-group input-group col-md-4 p-2' show_label=False placeholder='' %}
                             {% endif %}
                         </div>
                     </div>
@@ -471,14 +477,38 @@
                         processData: false,
                         url: url,
                         success: function (data) {
-                            data.addresses = data.addresses.map(function(item){
-                                return item.split(',').filter(function(s){ return s != ' ' }).join(',')
+
+                            var addresses = data.addresses.map(function(item){
+                                return item.split(',');
                             });
+                            data.formattedObj = {};
+                            var formattedData = data.addresses.map(function(item) {
+                                var name = item.split(',').filter(function (s) {
+                                    addresses.push(s);
+                                    return s != ' ';
+                                }).join(',');
+                                data.formattedObj[name] = item;
+                                return name;
+                            });
+
                             $('#id_address_name_number').select2({
-                                data: data.addresses
+                                data: formattedData
                              });
                             $('#id_address_name_number').on('select2:select', function (e) {
-                                var data = e.params.data;
+                                var selected = e.params.data;
+
+                                var selectedData;
+                                if(data.formattedObj[selected.text]) {
+                                    selectedData = data.formattedObj[selected.text].split(',');
+                                }else {
+                                    selectedData = selected.text.split(',');
+
+                                }
+
+                                $('#id_address_line2').val(selectedData[1]);
+                                $('#id_address_line3').val(selectedData[2]);
+                                $('#id_address_line4').val(selectedData[3]);
+                                $('#id_address_country').val(selectedData[6]);
                             });
                             $('#id_address_name_number').trigger({
                                 type: 'select2:select',
@@ -486,6 +516,7 @@
                                     data: {text: "{{selected_add_name_number}}" != '' ? "{{selected_add_name_number}}" : data.addresses[0]}
                                 }
                             });
+
                         }
                 })
             });
