@@ -6,6 +6,7 @@
 {% bootstrap_messages %}
 
 
+
 {% block ExtraHead %}
     <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/onboarding/sign_up.css' %}" rel="stylesheet"/>
@@ -213,11 +214,9 @@
             </button>
             </div>
             <div class="modal-body">
-            {% if setting and setting.policy_form %}
                 <div class="iframe" id="iframe">
-                <iframe id="policyForm" src="/{{ setting.policy_form.url }}#zoom=100" height="400px" width="100%"></iframe>
+                    <iframe id="policyForm" src="{% static 'documents/TCs.pdf' %}#zoom=100" height="400px" width="100%"></iframe>
                 </div>
-            {% endif %}
             </div>
             <div class="modal-footer">
                 <button id="goBack" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Go back</button>
@@ -252,7 +251,8 @@
 
 {% block Script %}
     <script src="{% static 'js/select2.min.js' %}"></script>
-    <script>
+    <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
+    <script src="{% static 'js/jquery.formset.js' %}"></script>    <script>
         $(document).ready(function () {
             var csrf_token = '{{ csrf_token }}';
             $('#acceptPolicy').click(function() {
@@ -289,6 +289,72 @@
                     event.preventDefault();
                 }
             });
+            $('#id_postcode').select2({
+                ajax: {
+                    url: function (params) {
+                        return "https://api.postcodes.io/postcodes/"+ params.term +"/autocomplete"
+                    },
+                    processResults: function (data) {
+                        let formed_data = [];
+                        for(let i=0; i < data['result'].length; i++){
+                            formed_data.push({'id': data['result'][i], 'text': data['result'][i]});
+                        }
+                        return {
+                            results: formed_data
+                        }
+                    }
+                }
+            });
+
+            $('#id_postcode').on('change', function () {
+                     var url = "https://api.getAddress.io/find/"+$(this).val()+'?api-key='+'{{ GET_ADDRESS_API_KEY }}';
+                     $.ajax({
+                        type: "GET",
+                        processData: false,
+                        url: url,
+                        success: function (data) {
+
+                            var addresses = data.addresses.map(function(item){
+                                return item.split(',');
+                            });
+                            data.formattedObj = {};
+                            var formattedData = data.addresses.map(function(item) {
+                                var name = item.split(',').filter(function (s) {
+                                    return s != ' ';
+                                }).join(',');
+                                data.formattedObj[name] = item;
+                                return name;
+                            });
+
+                            $('#id_address').select2({
+                                data: formattedData
+                             });
+                            $('#id_address').on('select2:select', function (e) {
+                                var selected = e.params.data;
+
+                                var selectedData;
+                                if(data.formattedObj[selected.text]) {
+                                    selectedData = data.formattedObj[selected.text].split(',');
+                                }else {
+                                    selectedData = selected.text.split(',');
+
+                                }
+
+                                $('#id_address_line1').val(selectedData[0]);
+                                $('#id_address_line2').val(selectedData[1]);
+                                $('#id_address_line3').val(selectedData[2]);
+                                $('#id_address_line4').val(selectedData[3]);
+                                $('#id_city').val(selectedData[5]);
+                                $('#id_country').val(selectedData[6]);
+                                $('#id_address').val(selectedData.join(','));
+                            });
+
+                        }
+                })
+            });
+
+
+
             $('#id_password1').change(function() {
               $.ajax({
                   url: "{% url 'accounts:verify_password' %}",

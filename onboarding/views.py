@@ -29,7 +29,8 @@ def sign_up(request):
     return render(request, 'onboarding/sign_up.html', {
         'surgery_form': surgery_form,
         'pm_form': pm_form,
-        'setting': setting
+        'setting': setting,
+        'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
     })
 
 

@@ -133,7 +133,11 @@ def view_users(request):
             if key is '': continue
             if key not in permissions.values('role'):
                 initial_data.append({'organisation': organisation.pk, 'role': key})
+
         permission_formset = permission_set(queryset=permissions, initial=initial_data)
+    show_pop_up = ''
+    if request.GET.get('show'):
+        show_pop_up = 'show'
 
     response = render(request, 'user_management/user_management.html', {
         'user': user,
@@ -141,15 +145,16 @@ def view_users(request):
         'table': table_data['table'],
         'overall_users_number': table_data['overall_users_number'],
         'permission_formset': permission_formset,
-        'user_type': table_data['user_type']
+        'user_type': table_data['user_type'],
+        'show_pop_up': show_pop_up
     })
-
     return response
 
 
 @login_required(login_url='/accounts/login')
 @access_user_management('permissions.change_instructionpermission')
 def update_permission(request):
+    request.META['HTTP_REFERER'] = ''
     if request.method == 'POST':
         user = request.user
         user = User.objects.get(pk=user.id)
@@ -159,7 +164,9 @@ def update_permission(request):
         if permission_formset.is_valid():
             for form in permission_formset:
                 set_permission(request, form)
-    return redirect('accounts:view_users')
+    response = redirect('accounts:view_users')
+    response['Location'] += "?show=True"
+    return response
 
 
 def set_permission(request, form):

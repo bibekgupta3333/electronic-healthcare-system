@@ -42,4 +42,4 @@ class UserManagementTest(PermissionTestCase):
         permission = Permission.objects.get(codename='change_instructionpermission')
         self.user.user_permissions.add(permission)
         response = self.client.get('/accounts/update-permission/')
-        self.assertEqual(response.url, '/accounts/view-users/')
+        self.assertEqual(response.url, '/accounts/view-users/?show=True')

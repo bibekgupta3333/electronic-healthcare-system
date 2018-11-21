@@ -20,7 +20,7 @@ def check_status_with_url(is_valid, path, status):
         is_valid = False
     elif 'review-instruction' in path and status != INSTRUCTION_STATUS_NEW:
         is_valid = False
-    elif 'consent-contact' in path and status != INSTRUCTION_STATUS_NEW:
+    elif 'consent-contact' in path and status not in [INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS]:
         is_valid = False
     return is_valid
 
@@ -46,8 +46,9 @@ def check_permission(func):
             user.userprofilebase.generalpracticeuser.organisation == gp_practice:
             is_valid = True
 
-        if hasattr(user.userprofilebase, "generalpracticeuser") and not gp_user and\
-            ("review-instruction" in request.path or "patient-emis-number" in request.path):
+        if hasattr(user.userprofilebase, "generalpracticeuser") and not gp_user and(\
+            "review-instruction" in request.path or "patient-emis-number" in request.path or\
+            "consent-contact" in request.path):
             is_valid = True
 
         if is_valid:

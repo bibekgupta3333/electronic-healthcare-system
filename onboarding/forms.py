@@ -54,8 +54,8 @@ class EMRSetupForm(forms.ModelForm):
 class SurgeryForm(forms.Form):
     surgery_name = forms.ChoiceField(choices=[])
     practice_code = forms.ChoiceField(choices=[])
-    postcode = forms.CharField(max_length=20, label='', widget=forms.TextInput())
-    address = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+    postcode = forms.ChoiceField(choices=[])
+    address = forms.ChoiceField(choices=[])
     address_line1 = forms.CharField(max_length=20, label='', widget=forms.TextInput())
     address_line2 = forms.CharField(max_length=20, label='', widget=forms.TextInput())
     address_line3 = forms.CharField(max_length=20, label='', widget=forms.TextInput())
@@ -85,7 +85,7 @@ class SurgeryForm(forms.Form):
 
     def clean_address_line1(self):
         address_line1 = self.cleaned_data.get('address_line1')
-        if OrganisationGeneralPractice.objects.filter(address__startswith=address_line1).exists():
+        if OrganisationGeneralPractice.objects.filter(billing_address_street__startswith=address_line1).exists():
             raise forms.ValidationError('This GP Surgery with this address already exists ')
         return address_line1
 
