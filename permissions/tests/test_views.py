@@ -1,7 +1,10 @@
 from django.test import TestCase
 from model_mommy import mommy
-from accounts.models import User, GENERAL_PRACTICE_USER, GeneralPracticeUser
+from accounts.models import User, MedidataUser, ClientUser, GeneralPracticeUser,\
+        MEDIDATA_USER, GENERAL_PRACTICE_USER, CLIENT_USER
 from django.contrib.auth.models import Permission
+from permissions.model_choices import MANAGER_PERMISSIONS, GP_PERMISSIONS,\
+        OTHER_PERMISSIONS, CLIENT_PERMISSIONS, MEDI_PERMISSIONS
 
 
 class PermissionTestCase(TestCase):
@@ -43,3 +46,63 @@ class UserManagementTest(PermissionTestCase):
         self.user.user_permissions.add(permission)
         response = self.client.get('/accounts/update-permission/')
         self.assertEqual(response.url, '/accounts/view-users/?show=True')
+
+
+class AutoAssignPermissionGP(TestCase):
+    def setUp(self):
+        self.user = mommy.make(User, type=GENERAL_PRACTICE_USER)
+        self.client.force_login(self.user, backend=None)
+
+    def test_permission_manager(self):
+        mommy.make(
+            GeneralPracticeUser,
+            user=self.user,
+            role=GeneralPracticeUser.PRACTICE_MANAGER,
+        )
+        for permission in self.user.user_permissions.all():
+            permission_verify = permission.codename in MANAGER_PERMISSIONS
+            self.assertEqual(permission_verify, True)
+
+    def test_permission_gp(self):
+        mommy.make(
+            GeneralPracticeUser,
+            user=self.user,
+            role=GeneralPracticeUser.GENERAL_PRACTICE,
+        )
+        for permission in self.user.user_permissions.all():
+            permission_verify = permission.codename in GP_PERMISSIONS
+            self.assertEqual(permission_verify, True)
+
+    def test_permission_other(self):
+        mommy.make(
+            GeneralPracticeUser,
+            user=self.user,
+            role=GeneralPracticeUser.OTHER_PRACTICE,
+        )
+        for permission in self.user.user_permissions.all():
+            permission_verify = permission.codename in OTHER_PERMISSIONS
+            self.assertEqual(permission_verify, True)
+
+
+class AutoAssignPermissionMedi(TestCase):
+    def setUp(self):
+        self.user = mommy.make(User, type=MEDIDATA_USER)
+        mommy.make(MedidataUser, user=self.user)
+        self.client.force_login(self.user, backend=None)
+
+    def test_permission_medi(self):
+        for permission in self.user.user_permissions.all():
+            permission_verify = permission.codename in MEDI_PERMISSIONS
+            self.assertEqual(permission_verify, True)
+
+
+class AutoAssignPermissionClient(TestCase):
+    def setUp(self):
+        self.user = mommy.make(User, type=CLIENT_USER)
+        mommy.make(ClientUser, user=self.user)
+        self.client.force_login(self.user, backend=None)
+
+    def test_permission_medi(self):
+        for permission in self.user.user_permissions.all():
+            permission_verify = permission.codename in CLIENT_PERMISSIONS
+            self.assertEqual(permission_verify, True)
