@@ -18,7 +18,7 @@ def check_status_with_url(is_valid, path, status):
         is_valid = False
     elif 'edit' in path and status != INSTRUCTION_STATUS_PROGRESS:
         is_valid = False
-    elif 'review-instruction' in path and status != INSTRUCTION_STATUS_NEW:
+    elif 'review-instruction' in path and status not in [INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS]:
         is_valid = False
     elif 'consent-contact' in path and status not in [INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS]:
         is_valid = False
