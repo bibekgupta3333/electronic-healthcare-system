@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import BaseUserManager, AbstractUser
+from django.contrib.auth.models import BaseUserManager, AbstractUser, Permission, Group
 from django.utils.translation import gettext_lazy as _
 
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
@@ -147,6 +147,18 @@ class UserProfileBase(TimeStampedModel, models.Model):
     def __str__(self):
         return self.user.email + "User Profile"
 
+    def remove_permission(self):
+        for permission in self.user.user_permissions.all():
+            self.user.user_permissions.remove(permission)
+
+        for group in self.user.groups.all():
+            self.user.groups.remove(group)
+
+    def set_permission(self, permissions):
+        for perm_codename in permissions:
+            permission = Permission.objects.get(codename=perm_codename)
+            self.user.user_permissions.add(permission)
+
 
 class MedidataUser(UserProfileBase):
     organisation = models.ForeignKey(OrganisationMedidata, on_delete=models.CASCADE)
@@ -157,6 +169,25 @@ class MedidataUser(UserProfileBase):
     def __str__(self):
         return 'Medidata' + self.user.first_name
 
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            self.update_permission()
+        super(MedidataUser, self).save(*args, **kwargs)
+
+    def update_permission(self):
+        permissions = [
+            'view_user_management',
+            'change_user_management',
+            'delete_user_management',
+            'add_user_management',
+            'view_instruction',
+            'view_organisationfee',
+            'view_instructionpermission',
+            'add_instructionpermission',
+            'change_instructionpermission',
+            'delete_instructionpermission'
+        ]
+        self.set_permission(permissions)
 
 class ClientUser(UserProfileBase):
     CLIENT_ADMIN = 0
@@ -176,6 +207,22 @@ class ClientUser(UserProfileBase):
     def __str__(self):
         user = self.user
         return ' '.join([self.get_title_display(), user.first_name, user.last_name])
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            self.update_permission()
+        super(ClientUser, self).save(*args, **kwargs)
+
+    def update_permission(self):
+        permissions = [
+            'view_user_management',
+            'change_user_management',
+            'delete_user_management',
+            'add_user_management',
+            'view_instruction',
+            'view_organisationfee'
+        ]
+        self.set_permission(permissions)
 
 
 class GeneralPracticeUser(UserProfileBase):
@@ -205,6 +252,47 @@ class GeneralPracticeUser(UserProfileBase):
     def __str__(self):
         user = self.user
         return ' '.join([self.get_title_display(), user.first_name, user.last_name])
+
+    def __init__(self, *args, **kwargs):
+        super(GeneralPracticeUser, self).__init__(*args, **kwargs)
+        self.initial_role = self.role
+
+    def save(self, *args, **kwargs):
+        super(GeneralPracticeUser, self).save(*args, **kwargs)
+        if self.initial_role != self.role:
+            self.update_permission()
+
+    def update_permission(self):
+        self.remove_permission()
+        group_name = "%s : %s"%(self.get_role_display(),self.organisation.__str__())
+        for group in Group.objects.filter(name=group_name):
+            self.user.groups.add(group)
+
+        if self.role == self.PRACTICE_MANAGER:
+            self.update_permission_manager()
+        else:
+            self.update_permission_gp()
+
+    def update_permission_manager(self):
+        permissions = [
+            'view_user_management',
+            'change_user_management',
+            'delete_user_management',
+            'add_user_management',
+            'view_instruction',
+            'view_organisationfee',
+            'view_instructionpermission',
+            'add_instructionpermission',
+            'change_instructionpermission',
+            'delete_instructionpermission'
+        ]
+        self.set_permission(permissions)
+
+    def update_permission_gp(self):
+        permissions = [
+            'view_instruction'
+        ]
+        self.set_permission(permissions)
 
 
 class Patient(UserProfileBase):
