@@ -171,7 +171,6 @@ class InstructionConditionsOfInterest(models.Model):
 
 class Setting(models.Model):
     consent_form = models.FileField(upload_to='consent_forms', null=True, blank=True)
-    policy_form = models.FileField(upload_to='policy_forms', null=True, blank=True)
     site = models.URLField(max_length=255, blank=True)
 
     def save(self, *args, **kwargs):
