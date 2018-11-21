@@ -101,7 +101,7 @@
                                 {% bootstrap_field scope_form.template size='small' form_group_class='form-group col-md-6 px-0' show_label=False %}
                                 {% bootstrap_button 'Set conditions' button_type="button" extra_classes='btn-xs' id='save_from_template_btn' %}
                             </div>
-                            <div class="row">
+                            <div class="row" id="date_range">
                                 <div class="col-md-2 rowTitle">Medical reports date range</div>
                                 {% bootstrap_field scope_form.date_range_from size='small' form_group_class='form-group col-md-2 p-0 input-group dob' show_label=False %}
                                 {% bootstrap_field scope_form.date_range_to size='small'  form_group_class='form-group col-md-2 input-group dob' show_label=False %}
@@ -255,6 +255,12 @@
                if($(this).val() == NEURODEGENERATIVE_SNOMED_CODE){
                    $("input[value=" + PERIPHERAL_SNOMED_CODE + "]").trigger('click');
                }
+            });
+
+            $('#id_type').find("input[name=type][value=SARS]").on('change', function(e) {
+                if(e.target.checked) {
+                    $("#date_range").hide();
+                }
             });
 
             $("#id_consent_form").fileinput({

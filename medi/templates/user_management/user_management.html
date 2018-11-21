@@ -144,6 +144,25 @@
             </form>
         {% endif %}
 
+            <div class="modal" id="permission_modal" tabindex="-1" role="dialog">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <p>Permissions have been updated</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+    {% if show_pop_up == 'show'%}
+        <script>
+            $('#permission_modal').modal('show');
+        </script>
+    {% endif %}
+
 
 {% endblock %}
 
@@ -199,7 +218,6 @@
             $("th input:checkbox").click(function(){
                 $('input:checkbox').not(this).prop('checked', this.checked);
             });
-
             $(".page-link").each(function () {
                 var type = getUrlParameter('type');
                 var status = getUrlParameter('status');
@@ -251,7 +269,7 @@
             })
             $("#permissionForm").submit(function(e){
                 $(".permission-role").removeAttr('disabled');
-            })
+            });
 
             render_permission();
         });
