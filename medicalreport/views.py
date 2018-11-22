@@ -8,14 +8,15 @@ from services.emisapiservices import services
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.xml.patient_list import PatientList
 from services.xml.registration import Registration
-from .dummy_models import (DummyInstruction, DummyClient, DummyPatient)
+from .dummy_models import (DummyInstruction)
 from medicalreport.forms import MedicalReportFinaliseSubmitForm
 from .models import AmendmentsForRecord
-from instructions.models import Instruction
+from instructions.models import Instruction, InstructionPatient
 from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT
 from .functions import create_or_update_redaction_record
 from medicalreport.reports import MedicalReport, AttachmentReport
-from accounts.models import GeneralPracticeUser, Patient, User
+from accounts.models import GeneralPracticeUser, User
+from accounts.functions import create_or_update_patient_user
 from .forms import AllocateInstructionForm
 from permissions.functions import check_permission
 from typing import List
@@ -28,7 +29,7 @@ def view_attachment(request, instruction_id, path_file):
     return attachment_report.render()
 
 
-def get_matched_patient(patient: Patient) -> List[Registration]:
+def get_matched_patient(patient: InstructionPatient) -> List[Registration]:
     raw_xml = services.GetPatientList(patient).call()
     patients = PatientList(raw_xml).patients()
     return patients
@@ -58,14 +59,13 @@ def reject_request(request, instruction_id):
 @login_required(login_url='/accounts/login')
 def select_patient(request, instruction_id, patient_emis_number):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
-    patient = instruction.patient
-    patient.emis_number = patient_emis_number
-    patient.save()
     if request.method == 'POST':
         allocate_instruction_form = AllocateInstructionForm(request.user, instruction_id, request.POST)
         if allocate_instruction_form.is_valid():
             allocate_option = int(allocate_instruction_form.cleaned_data['allocate_options'])
             if allocate_option == AllocateInstructionForm.PROCEED_REPORT:
+                patient_user = create_or_update_patient_user(instruction.patient_information, patient_emis_number)
+                instruction.patient = patient_user
                 instruction.gp_user = request.user.userprofilebase.generalpracticeuser
                 instruction.save()
                 messages.success(request, 'Allocated to self successful')
@@ -91,7 +91,7 @@ def select_patient(request, instruction_id, patient_emis_number):
 def set_patient_emis_number(request, instruction_id):
     instruction = Instruction.objects.get(id=instruction_id)
     dummy_instruction = DummyInstruction(instruction)
-    patient_list = get_matched_patient(instruction.patient)
+    patient_list = get_matched_patient(instruction.patient_information)
     allocate_instruction_form = AllocateInstructionForm(user=request.user, instruction_id=instruction_id)
 
     return render(request, 'medicalreport/patient_emis_number.html', {

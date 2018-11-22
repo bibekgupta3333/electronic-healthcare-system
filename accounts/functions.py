@@ -1,5 +1,5 @@
 from .models import User, UserProfileBase, GeneralPracticeUser
-from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
+from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER, PATIENT_USER, Patient
 from django.contrib import messages
 from django.core.mail import send_mail
 from .forms import NewGPForm, NewClientForm
@@ -165,3 +165,44 @@ def get_user_type_form(cur_user):
             "newuser_form": NewClientForm(),
             "user_type": "client"
         }
+
+
+def create_or_update_patient_user(patient_information, patient_emis_number) -> Patient:
+    password = User.objects.make_random_password()
+    patient = Patient.objects.filter(emis_number=patient_emis_number).first()
+
+    if patient:
+        patient.nhs_number = patient_information.patient_nhs_number
+        patient.address_name_number = patient_information.patient_address_number
+        patient.title = patient_information.patient_title
+        patient.address_postcode = patient_information.patient_postcode
+        patient.date_of_birth = patient_information.patient_dob
+        patient.save()
+
+        user = patient.user
+        user.email = patient_information.patient_email
+        user.first_name = patient_information.patient_first_name
+        user.last_name = patient_information.patient_last_name
+        user.save()
+    else:
+        if patient_information.patient_email:
+            user = User.objects._create_user(
+                email=patient_information.patient_email,
+                username=patient_emis_number,
+                password=password,
+                first_name=patient_information.patient_first_name,
+                last_name=patient_information.patient_last_name,
+                type=PATIENT_USER,
+            )
+
+            patient = Patient.objects.create(
+                user=user,
+                address_name_number=patient_information.patient_address_number,
+                nhs_number=patient_information.patient_nhs_number,
+                emis_number=patient_emis_number,
+                date_of_birth=patient_information.patient_dob,
+                address_postcode=patient_information.patient_postcode,
+                title=patient_information.patient_title
+            )
+
+    return patient

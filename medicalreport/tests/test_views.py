@@ -5,14 +5,14 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from model_mommy import mommy
 
-from instructions.models import Instruction
+from instructions.models import Instruction, InstructionPatient
 from instructions.model_choices import INSTRUCTION_STATUS_REJECT, INSTRUCTION_STATUS_PROGRESS,\
-    INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_NEW
-from accounts.models import ClientUser, User, GeneralPracticeUser, Patient, GENERAL_PRACTICE_USER, CLIENT_USER
+    INSTRUCTION_STATUS_COMPLETE
+from accounts.models import User, GeneralPracticeUser, Patient, GENERAL_PRACTICE_USER, CLIENT_USER
 from services.models import EmisAPIConfig
 from snomedct.models import SnomedConcept
 from medicalreport.models import AmendmentsForRecord
-from medicalreport.views import get_matched_patient, get_patient_record
+from medicalreport.views import get_matched_patient
 from organisations.models import OrganisationGeneralPractice
 
 import os
@@ -31,6 +31,12 @@ class EmisAPITestCase(TestCase):
         self.patient = mommy.make(
             Patient, user=patient_user, emis_number='2985', date_of_birth=None)
         user = mommy.make(User, type=GENERAL_PRACTICE_USER)
+        self.instruction_patient = mommy.make(
+            InstructionPatient,
+            patient_first_name='Alan',
+            patient_last_name='Ball',
+            patient_dob=None
+        )
         gp_practice = mommy.make(
             OrganisationGeneralPractice, pk=1,
             name='GP Organisation',
@@ -46,7 +52,8 @@ class EmisAPITestCase(TestCase):
         self.instruction = mommy.make(
             Instruction, pk=1, consent_form=consent_form,
             patient=self.patient, gp_user=self.gp_user,
-            gp_practice=gp_practice
+            gp_practice=gp_practice,
+            patient_information=self.instruction_patient
         )
         self.redaction = mommy.make(
             AmendmentsForRecord, instruction=self.instruction, pk=1
@@ -60,7 +67,7 @@ class EmisAPITestCase(TestCase):
 
 class GetMatchedPatientTest(EmisAPITestCase):
     def test_get_matched_patient(self):
-        registrations = get_matched_patient(self.patient)
+        registrations = get_matched_patient(self.instruction_patient)
         self.assertIn(
             'Mr Alan Ball',
             [registration.full_name() for registration in registrations]

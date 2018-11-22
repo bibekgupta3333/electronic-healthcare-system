@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractUser, Permission, Group
 from django.utils.translation import gettext_lazy as _
-
+from permissions.model_choices import MANAGER_PERMISSIONS, GP_PERMISSIONS,\
+        OTHER_PERMISSIONS, CLIENT_PERMISSIONS, MEDI_PERMISSIONS
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 from common.models import TimeStampedModel
 
@@ -133,7 +134,6 @@ class UserProfileBase(TimeStampedModel, models.Model):
     address_name_number = models.CharField(max_length=255)
     address_line2 = models.CharField(max_length=255, blank=True)
     address_line3 = models.CharField(max_length=255, blank=True)
-    address_line4 = models.CharField(max_length=255, blank=True)
     address_postcode = models.CharField(max_length=255, blank=True)
     address_country = models.CharField(max_length=255, blank=True)
     telephone_home = models.CharField(max_length=255, blank=True)
@@ -175,19 +175,7 @@ class MedidataUser(UserProfileBase):
         super(MedidataUser, self).save(*args, **kwargs)
 
     def update_permission(self):
-        permissions = [
-            'view_user_management',
-            'change_user_management',
-            'delete_user_management',
-            'add_user_management',
-            'view_instruction',
-            'view_organisationfee',
-            'view_instructionpermission',
-            'add_instructionpermission',
-            'change_instructionpermission',
-            'delete_instructionpermission'
-        ]
-        self.set_permission(permissions)
+        self.set_permission(MEDI_PERMISSIONS)
 
 class ClientUser(UserProfileBase):
     CLIENT_ADMIN = 0
@@ -214,15 +202,7 @@ class ClientUser(UserProfileBase):
         super(ClientUser, self).save(*args, **kwargs)
 
     def update_permission(self):
-        permissions = [
-            'view_user_management',
-            'change_user_management',
-            'delete_user_management',
-            'add_user_management',
-            'view_instruction',
-            'view_organisationfee'
-        ]
-        self.set_permission(permissions)
+        self.set_permission(CLIENT_PERMISSIONS)
 
 
 class GeneralPracticeUser(UserProfileBase):
@@ -258,9 +238,9 @@ class GeneralPracticeUser(UserProfileBase):
         self.initial_role = self.role
 
     def save(self, *args, **kwargs):
-        super(GeneralPracticeUser, self).save(*args, **kwargs)
-        if self.initial_role != self.role:
+        if self.initial_role != self.role or self._state.adding:
             self.update_permission()
+        super(GeneralPracticeUser, self).save(*args, **kwargs)
 
     def update_permission(self):
         self.remove_permission()
@@ -270,29 +250,19 @@ class GeneralPracticeUser(UserProfileBase):
 
         if self.role == self.PRACTICE_MANAGER:
             self.update_permission_manager()
-        else:
+        elif self.role == self.GENERAL_PRACTICE:
             self.update_permission_gp()
+        else:
+            self.update_permission_other()
 
     def update_permission_manager(self):
-        permissions = [
-            'view_user_management',
-            'change_user_management',
-            'delete_user_management',
-            'add_user_management',
-            'view_instruction',
-            'view_organisationfee',
-            'view_instructionpermission',
-            'add_instructionpermission',
-            'change_instructionpermission',
-            'delete_instructionpermission'
-        ]
-        self.set_permission(permissions)
+        self.set_permission(MANAGER_PERMISSIONS)
 
     def update_permission_gp(self):
-        permissions = [
-            'view_instruction'
-        ]
-        self.set_permission(permissions)
+        self.set_permission(GP_PERMISSIONS)
+
+    def update_permission_other(self):
+        self.set_permission(OTHER_PERMISSIONS)
 
 
 class Patient(UserProfileBase):

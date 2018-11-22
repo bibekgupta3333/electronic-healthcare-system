@@ -4,16 +4,16 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.utils.dateparse import parse_datetime
-from django.utils.timezone import now
 from django.http import HttpRequest
 from django_tables2 import RequestConfig
-from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest, Setting
+from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest, Setting, InstructionPatient
 from .tables import InstructionTable
 from .model_choices import *
 from .forms import ScopeInstructionForm, AdditionQuestionFormset, SarsConsentForm, MdxConsentForm
-from accounts.models import User, Patient, GeneralPracticeUser
-from accounts.models import PATIENT_USER, GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
-from accounts.forms import PatientForm, GPForm
+from accounts.models import User, GeneralPracticeUser
+from accounts.models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
+from accounts.forms import InstructionPatientForm, GPForm
+from accounts.functions import create_or_update_patient_user
 from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice
 from organisations.views import get_gporganisation_data
@@ -92,7 +92,7 @@ def calculate_next_prev(page=None, **kwargs):
 
 
 @login_required(login_url='/accounts/login')
-def create_or_update_instruction(request, patient, scope_form=None, gp_practice=None, instruction_id=None) -> Instruction:
+def create_or_update_instruction(request, patient_instruction, scope_form=None, gp_practice=None, instruction_id=None) -> Instruction:
     if instruction_id:
         instruction = get_object_or_404(Instruction, pk=instruction_id)
     else:
@@ -110,7 +110,7 @@ def create_or_update_instruction(request, patient, scope_form=None, gp_practice=
         instruction.gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
         instruction.gp_user = request.user.userprofilebase.generalpracticeuser
 
-    instruction.patient = patient
+    instruction.patient_information_id = patient_instruction.id
     instruction.save()
 
     return instruction
@@ -130,50 +130,6 @@ def create_snomed_relations(instruction, condition_of_interests):
         if snomedct.exists():
             snomedct = snomedct.first()
             InstructionConditionsOfInterest.objects.create(instruction=instruction, snomedct=snomedct)
-
-
-@login_required(login_url='/accounts/login')
-def create_or_update_patient_user(request, patient_form, prev_patient=None) -> Patient:
-    if prev_patient:
-        user_id = prev_patient.user.id
-        patient_id = prev_patient.id
-        
-        user = User.objects.get(pk=user_id)
-        user.first_name = patient_form.cleaned_data['first_name']
-        user.last_name = patient_form.cleaned_data['last_name']
-        user.save()
-
-        patient = Patient.objects.get(pk=patient_id)
-        patient.title = patient_form.cleaned_data['title']
-        patient.date_of_birth = patient_form.cleaned_data['date_of_birth']
-        patient.nhs_number = patient_form.cleaned_data['nhs_number']
-        patient.address_postcode = patient_form.cleaned_data['address_postcode']
-        patient.address_name_number = patient_form.cleaned_data['address_name_number']
-        patient.patient_input_email = patient_form.cleaned_data['patient_input_email']
-        patient.save()
-    else:    
-        password = User.objects.make_random_password()
-        unique_code = now().strftime('%m%d%Y%S%f')
-        user = User.objects.create(
-            email='{unique_code}@medidata.co'.format(unique_code=unique_code),
-            username=unique_code,
-            password=password,
-            first_name=patient_form.cleaned_data['first_name'],
-            last_name=patient_form.cleaned_data['last_name'],
-            type=PATIENT_USER,
-        )
-
-        patient = Patient.objects.create(
-        user=user,
-        title=patient_form.cleaned_data['title'],
-        date_of_birth=patient_form.cleaned_data['date_of_birth'],
-        nhs_number=patient_form.cleaned_data['nhs_number'],
-        address_postcode=patient_form.cleaned_data['address_postcode'],
-        address_name_number=patient_form.cleaned_data['address_name_number'],
-        patient_input_email=patient_form.cleaned_data['patient_input_email']
-    )
-
-    return patient
 
 
 @login_required(login_url='/accounts/login')
@@ -246,13 +202,13 @@ def new_instruction(request):
     if request.method == "POST":
         instruction_id = request.POST.get('instruction_id', None)
         gp_form = GPForm(request.POST)
-        patient_form = PatientForm(request.POST)
+        patient_form = InstructionPatientForm(request.POST)
         addition_question_formset = AdditionQuestionFormset(request.POST)
         raw_common_condition = request.POST.getlist('common_condition')
         common_condition_list = list(chain.from_iterable([ast.literal_eval(item) for item in raw_common_condition]))
         addition_condition_list = request.POST.getlist('addition_condition')
         condition_of_interests = list(set().union(common_condition_list, addition_condition_list))
-        scope_form = ScopeInstructionForm(request.user, request.POST.get('patient_input_email'), request.POST, request.FILES)
+        scope_form = ScopeInstructionForm(request.user, request.POST.get('patient_email'), request.POST, request.FILES)
         selected_gp_code = request.POST.get('gp_practice', '')
         selected_gp_name = request.POST.get('gp_practice_name', '')
         selected_add_cond = request.POST.getlist('addition_condition', [])
@@ -273,14 +229,18 @@ def new_instruction(request):
         if (patient_form.is_valid() and scope_form.is_valid() and gp_practice) or request.user.type == GENERAL_PRACTICE_USER:
             if instruction_id:
                 prev_instruction = get_object_or_404(Instruction, pk=instruction_id)
-                prev_patient = prev_instruction.patient
-                # update patient user
-                patient = create_or_update_patient_user(request, patient_form, prev_patient)
+                patient_instruction = get_object_or_404(InstructionPatient, instruction=prev_instruction)
+                patient_instruction_form = InstructionPatientForm(request.POST, instance=patient_instruction)
+                if patient_instruction_form.is_valid():
+                    patient_instruction_form.save()
             else:
-                # create patient user
-                patient = create_or_update_patient_user(request, patient_form)
+                patient_instruction = patient_form.save()
             # create instruction
-            instruction = create_or_update_instruction(request=request, patient=patient, scope_form=scope_form, gp_practice=gp_practice, instruction_id=instruction_id)
+            instruction = create_or_update_instruction(
+                request=request, patient_instruction=patient_instruction,
+                scope_form=scope_form, gp_practice=gp_practice,
+                instruction_id=instruction_id
+            )
             if request.user.type == CLIENT_USER:
                 # create relations of instruction with snomed code
                 create_snomed_relations(instruction, condition_of_interests)
@@ -291,7 +251,7 @@ def new_instruction(request):
                     'Patient Notification',
                     'Your instruction has been created',
                     'MediData',
-                    [patient_form.cleaned_data['patient_input_email']],
+                    [patient_form.cleaned_data['patient_email']],
                     fail_silently=True,
                 )
 
@@ -303,7 +263,7 @@ def new_instruction(request):
                     'Request consent',
                     message,
                     'MediData',
-                    [patient_form.cleaned_data['patient_input_email']],
+                    [patient_form.cleaned_data['patient_email']],
                     fail_silently=True,
                 )
 
@@ -350,7 +310,7 @@ def new_instruction(request):
                 'selected_add_cond_title': json.dumps(selected_add_cond_title),
                 'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
             })
-    patient_form = PatientForm()
+    patient_form = InstructionPatientForm()
     addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.none())
     scope_form = ScopeInstructionForm(user=request.user)
 
@@ -359,7 +319,7 @@ def new_instruction(request):
         instruction = get_object_or_404(Instruction, pk=instruction_id)
         patient = instruction.patient
         # Initial Patient Form
-        patient_form = PatientForm(
+        patient_form = InstructionPatientForm(
             instance=patient,
             initial={
                 'first_name': patient.user.first_name, 'last_name': patient.user.last_name,
@@ -457,13 +417,16 @@ def upload_consent(request, instruction_id):
 def review_instruction(request, instruction_id):
     header_title = "Instruction Reviewing"
     instruction = get_object_or_404(Instruction, pk=instruction_id)
-    patient = instruction.patient
+    patient_instruction = instruction.patient_information
     # Initial Patient Form
-    patient_form = PatientForm(
-        instance=patient,
+    patient_form = InstructionPatientForm(
+        instance=patient_instruction,
         initial={
-            'first_name': patient.user.first_name, 'last_name': patient.user.last_name,
-            'address_postcode': patient.address_postcode
+            'patient_title': patient_instruction.get_patient_title_display(),
+            'patient_first_name': patient_instruction.patient_first_name,
+            'patient_last_name': patient_instruction.patient_last_name,
+            'patient_postcode': patient_instruction.patient_postcode,
+            'patient_address_number': patient_instruction.patient_address_number,
         }
     )
     gp_practice_code = instruction.gp_practice.pk
@@ -521,13 +484,16 @@ def review_instruction(request, instruction_id):
 @check_permission
 def view_reject(request, instruction_id):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
-    patient = instruction.patient
+    patient_instruction = instruction.patient_information
     # Initial Patient Form
-    patient_form = PatientForm(
-        instance=patient,
+    patient_form = InstructionPatientForm(
+        instance=patient_instruction,
         initial={
-            'first_name': patient.user.first_name, 'last_name': patient.user.last_name,
-            'address_postcode': patient.address_postcode
+            'patient_title': patient_instruction.get_patient_title_display(),
+            'patient_first_name': patient_instruction.patient_first_name,
+            'patient_last_name': patient_instruction.patient_last_name,
+            'patient_postcode': patient_instruction.patient_postcode,
+            'patient_address_number': patient_instruction.patient_address_number,
         }
     )
     gp_practice_code = instruction.gp_practice.pk
@@ -584,12 +550,11 @@ def view_reject(request, instruction_id):
 @check_permission
 def consent_contact(request, instruction_id, patient_emis_number):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
-    patient = instruction.patient
+    patient_instruction = instruction.patient_information
 
     if request.method == "POST":
         sars_consent_form = SarsConsentForm(request.POST, request.FILES)
         mdx_consent_form = MdxConsentForm(request.POST, request.FILES)
-        patient_form = PatientForm(request.POST, instance=patient)
         if sars_consent_form.is_valid():
             # ToDo have to change logic check required consent form
             instruction.sars_consent = sars_consent_form.cleaned_data['sars_consent']
@@ -600,29 +565,33 @@ def consent_contact(request, instruction_id, patient_emis_number):
             instruction.sars_consent = None
         if request.POST.get('mdx_consent_cnt') == '0':
             instruction.mdx_consent = None
-        instruction.save()
-        patient.patient_input_email = request.POST.get('patient_input_email', '')
-        patient.telephone_mobile = request.POST.get('telephone_mobile', '')
-        patient.alternate_phone = request.POST.get('alternate_phone', '')
-        patient.save()
 
-        nextStep = request.POST.get('next_step', '')
-        if nextStep == 'view_pipeline':
+        patient_instruction.patient_email = request.POST.get('patient_email', '')
+        patient_instruction.telephone_mobile = request.POST.get('patient_telephone_mobile', '')
+        patient_instruction.alternate_phone = request.POST.get('patient_alternate_phone', '')
+        patient_instruction.save()
+        patient_user = create_or_update_patient_user(patient_instruction, patient_emis_number)
+        instruction.patient = patient_user
+        instruction.save()
+
+        next_step = request.POST.get('next_step', '')
+        if next_step == 'view_pipeline':
             instruction.saved = True
             gp_user = get_object_or_404(GeneralPracticeUser, user_id=request.user.id)
             instruction.in_progress(context={'gp_user': gp_user})
-            patient.emis_number = patient_emis_number
-            patient.save()
             return redirect('instructions:view_pipeline')
-        elif nextStep == 'proceed':
+        elif next_step == 'proceed':
             return redirect('medicalreport:select_patient', instruction_id=instruction_id, patient_emis_number=patient_emis_number)
 
     # Initial Patient Form
-    patient_form = PatientForm(
-        instance=patient,
+    patient_form = InstructionPatientForm(
+        instance=patient_instruction,
         initial={
-            'first_name': patient.user.first_name, 'last_name': patient.user.last_name,
-            'address_postcode': patient.address_postcode
+            'patient_title': patient_instruction.get_patient_title_display(),
+            'patient_first_name': patient_instruction.patient_first_name,
+            'patient_last_name': patient_instruction.patient_last_name,
+            'patient_postcode': patient_instruction.patient_postcode,
+            'patient_address_number': patient_instruction.patient_address_number,
         }
     )
     sars_consent_form = SarsConsentForm()

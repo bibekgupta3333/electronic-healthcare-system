@@ -5,10 +5,11 @@ register = template.Library()
 
 
 @register.filter
-def instruction_patient_address(patient):
-    address_lines = [patient.address_name_number, patient.address_line2,
-                     patient.address_line3, patient.address_line4,
-                     patient.address_postcode, patient.address_country]
+def instruction_patient_address(patient_information):
+    address_lines = [
+        patient_information.patient_postcode,
+        patient_information.patient_address_number,
+    ]
     address_lines = list(filter(None, address_lines))
     return ", ".join(address_lines)
 

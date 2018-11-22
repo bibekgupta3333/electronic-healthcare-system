@@ -23,7 +23,7 @@
         <form method="POST" id="consentContactForm" enctype="multipart/form-data" class="col-md-12 px-0">
             {% csrf_token %}
             <div class="col-md-12">
-                <div class="card patientForm">
+                <div class="card InstructionPatientForm">
                     <div class="card-header">
                         <div class="row">
                             <div class="col-md-6">
@@ -33,26 +33,26 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="row col-md-5">
-                                <div class="col-md-2 rowTitle">Name*:</div>
-                                {% bootstrap_field patient_form.title size='small' form_group_class='form-group col-md-2 p-0'%}
-                                {% bootstrap_field patient_form.first_name size='small' form_group_class='form-group-plaintext  col-md-4 px-2' %}
-                                {% bootstrap_field patient_form.last_name size='small' form_group_class='form-group col-md-4 px-1' %}
+                            <div class="row col-md-6">
+                                <div class="col-md-3 rowTitle">Name*:</div>
+                                {% bootstrap_field patient_form.patient_title size='small' form_group_class='form-group col-md-1 p-0'%}
+                                {% bootstrap_field patient_form.patient_first_name size='small' form_group_class='form-group-plaintext  col-md-4 px-2' %}
+                                {% bootstrap_field patient_form.patient_last_name size='small' form_group_class='form-group col-md-4 px-1' %}
                             </div>
-                            <div class="row offset-md-1 col-md-6">
+                            <div class="row col-md-6">
                                 <div class="col-md-2 rowTitle">Date of Birth*:</div>
-                                {% bootstrap_field patient_form.date_of_birth size='small' form_group_class='form-group col-md-10 pt-4 mt-1 dob' show_label=False %}
+                                {% bootstrap_field patient_form.patient_dob size='small' form_group_class='form-group col-md-10 pt-4 mt-1 dob' show_label=False %}
                             </div>
                         </div>
                         <div class="row">
-                            <div class="row col-md-5">
-                                <div class="col-md-2 rowTitle">Address*:</div>
-                                {% bootstrap_field patient_form.address_postcode size='small' form_group_class='form-group col-md-4 p-0 ' %}
-                                {% bootstrap_field patient_form.address_name_number size='small' form_group_class='form-group col-md-6 px-1' placeholder='' %}
+                            <div class="row col-md-6">
+                                <div class="col-md-3 rowTitle">Address*:</div>
+                                {% bootstrap_field patient_form.patient_postcode size='small' form_group_class='form-group col-md-3 p-0 ' %}
+                                {% bootstrap_field patient_form.patient_address_number size='small' form_group_class='form-group col-md-6 px-1' placeholder='' %}
                             </div>
-                            <div class="row offset-md-1 col-md-6">
+                            <div class="row col-md-6">
                                 <div class="col-md-2 rowTitle">NHS #:</div>
-                                {% bootstrap_field patient_form.nhs_number size='small' form_group_class='form-group col-md-10 pt-4 mt-1' show_label=False placeholder='' %}
+                                {% bootstrap_field patient_form.patient_nhs_number size='small' form_group_class='form-group col-md-10 pt-4 mt-1' show_label=False placeholder='' %}
                             </div>
                         </div>
                     </div>
@@ -108,7 +108,7 @@
                                 </div>
                                 <div class="row mt-4">
                                     <div class="col-md-3 rowTitle">Email</div>
-                                    {% bootstrap_field patient_form.patient_input_email size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
+                                    {% bootstrap_field patient_form.patient_email size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
                                 </div>
                                 <div class="row mt-4">
                                     <div class="col-md-3 rowTitle">Confirm Email</div>
@@ -116,11 +116,11 @@
                                 </div>
                                 <div class="row mt-4">
                                     <div class="col-md-3 rowTitle">Mobile Phone</div>
-                                    {% bootstrap_field patient_form.telephone_mobile size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
+                                    {% bootstrap_field patient_form.patient_telephone_mobile size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
                                 </div>
                                 <div class="row mt-4">
                                     <div class="col-md-3 rowTitle">Alternate Phone(optional)</div>
-                                    {% bootstrap_field patient_form.alternate_phone size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
+                                    {% bootstrap_field patient_form.patient_alternate_phone size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
                                 </div>
                             </div>
                         </div>
@@ -248,7 +248,7 @@
             transition: 'all 0.3s',
             scrolllock: true
         });
-        $('.patientForm input').attr('readonly', true);
+        $('.InstructionPatientForm input').attr('readonly', true);
         $("#id_sars_consent").fileinput({
             theme: 'fas',
             showUpload: false,
@@ -344,6 +344,10 @@
             $("#printModal").modal({
                 backdrop: 'static'
             });
+        });
+
+        $('#id_patient_address_number').tooltip({
+            title: $('#id_patient_address_number').val()
         });
     });
     </script>

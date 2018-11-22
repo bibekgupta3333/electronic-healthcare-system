@@ -8,7 +8,7 @@ from permissions.templatetags.get_permissions import view_complete_report
 
 class InstructionTable(tables.Table):
     checkbox = tables.CheckBoxColumn(attrs={'id': 'check_all'})
-    patient = tables.Column()
+    patient_information = tables.Column()
     status = tables.Column()
     user = None
 
@@ -18,7 +18,7 @@ class InstructionTable(tables.Table):
             'id': 'instructionsTable'
         }
         model = Instruction
-        fields = ('checkbox', 'client_user', 'gp_practice', 'type', 'patient', 'gp_user', 'initial_monetary_value', 'created', 'status')
+        fields = ('checkbox', 'client_user', 'gp_practice', 'type', 'patient_information', 'gp_user', 'initial_monetary_value', 'created', 'status')
         template_name = 'django_tables2/semantic.html'
         row_attrs = {
             'data-id': lambda record: record.pk
@@ -34,8 +34,10 @@ class InstructionTable(tables.Table):
     def render_client_user(self, value):
         return format_html(value.user.userprofilebase.clientuser.organisation.trading_name)
 
-    def render_patient(self, value):
-        return format_html('{} {} <br><b>NHS: </b>{}', value.user.first_name, value.user.last_name, value.nhs_number)
+    def render_patient_information(self, value):
+        return format_html(
+            '{} {} {} <br><b>NHS: </b>{}', value.get_patient_title_display(), value.patient_first_name, value.patient_last_name, value.patient_nhs_number
+        )
 
     def render_status(self, value, record):
         STATUS_DICT = {
