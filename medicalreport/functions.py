@@ -179,18 +179,18 @@ def delete_additional_allergies_records(request):
         AdditionalAllergies.objects.filter(id__in=additional_allergies_records_delete).delete()
 
 
-def send_patient_mail(patient, gp_user, instruction,  unique_url):
-    link = ''.join(settings.SITE_NAME) + '/report/' + str(instruction.pk) + '/' + unique_url
+def send_patient_mail(instruction,  unique_url):
+    link = ''.join(settings.SITE_NAME) + 'report/' + str(instruction.pk) + '/' + unique_url
     send_mail(
         'Completely eMR',
         'Your instruction has been submitted',
         'MediData',
-        [patient.user.email],
+        [instruction.patient_information.patient_email],
         fail_silently=True,
         html_message=loader.render_to_string('medicalreport/patient_email.html',
                                              {
-                                                 'name': patient.user.first_name,
-                                                 'gp': gp_user.user.first_name,
+                                                 'name': instruction.patient.user.first_name,
+                                                 'gp': instruction.gp_user.user.first_name,
                                                  'link': link
                                              }
                                              ))
@@ -198,5 +198,5 @@ def send_patient_mail(patient, gp_user, instruction,  unique_url):
 
 def create_patient_report(instruction):
     unique_url = uuid.uuid4().hex
-    PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
-    send_patient_mail(instruction.patient, instruction.gp_user, instruction, unique_url)
+    PatientReportAuth.objects.create(patient_id=instruction.patient_id, instruction=instruction, url=unique_url)
+    send_patient_mail(instruction, unique_url)
