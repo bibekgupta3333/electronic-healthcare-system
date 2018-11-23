@@ -49,10 +49,13 @@
                             {% bootstrap_field patient_form.patient_address_number size='small' form_group_class='form-group col-md-6 px-1' %}
                         </div>
                         <div class="row" >
-                            {% bootstrap_field patient_form.patient_address_line1 size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' placeholder=''%}
-                            {% bootstrap_field patient_form.patient_address_line2 size='small' form_group_class='form-group col-md-5' placeholder='' %}
-                            {% bootstrap_field patient_form.patient_address_line3 size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' placeholder='' %}
-                            {% bootstrap_field patient_form.patient_country size='small' form_group_class='form-group col-md-5' placeholder='' %}
+                              {% bootstrap_field patient_form.patient_address_line1 size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' %}
+                              {% bootstrap_field patient_form.patient_address_line2 size='small' form_group_class='form-group col-md-5' %}
+                              {% bootstrap_field patient_form.patient_address_line3 size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' %}
+                              {% bootstrap_field patient_form.patient_city size='small' form_group_class='form-group col-md-5' %}
+                        </div>
+                        <div class="row" >
+                              {% bootstrap_field patient_form.patient_country size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' %}
                         </div>
                         <div class="row">
                             <div class="col-md-2 rowTitle">NHS #:</div>
@@ -462,11 +465,35 @@
                             var addresses = data.addresses.map(function(item){
                                 return item.split(',');
                             });
-                            $('#id_address_name_number').select2({
-                                data: data.addresses
+                            data.formattedObj = {};
+                            var formattedData = data.addresses.map(function(item) {
+                                var name = item.split(',').filter(function (s) {
+                                    addresses.push(s);
+                                    return s != ' ';
+                                }).join(',');
+                                data.formattedObj[name] = item;
+                                return name;
+                            });
+
+                            $('#id_patient_address_number').select2({
+                                data: formattedData
                              });
-                            $('#id_address_name_number').on('select2:select', function (e) {
-                                var data = e.params.data;
+                            $('#id_patient_address_number').on('select2:select', function (e) {
+                                var selected = e.params.data;
+
+                                var selectedData;
+                                if(data.formattedObj[selected.text]) {
+                                    selectedData = data.formattedObj[selected.text].split(',');
+                                }else {
+                                    selectedData = selected.text.split(',');
+
+                                }
+
+                                $('#id_patient_address_line1').val(selectedData[0]);
+                                $('#id_patient_address_line2').val(selectedData[1]);
+                                $('id_patient_address_line3').val(selectedData[2]);
+                                $('#id_patient_city').val(selectedData[5]);
+                                $('#id_patient_country').val(selectedData[6]);
                             });
                             $('#id_patient_address_number').trigger({
                                 type: 'select2:select',

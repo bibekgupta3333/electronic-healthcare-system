@@ -24,6 +24,10 @@ class InstructionPatientForm(forms.ModelForm):
     patient_postcode = MyChoiceField(required=True, label='Address postcode')
     patient_address_number = MyChoiceField(required=False, label='Address name number')
     patient_address_line1 = forms.CharField(max_length=255, required=True)
+    patient_address_line2 = forms.CharField(max_length=255, required=True)
+    patient_address_line3 = forms.CharField(max_length=255, required=True)
+    patient_city = forms.CharField(max_length=255, required=True)
+    patient_country = forms.CharField(max_length=255, required=True)
 
     class Meta:
         model = InstructionPatient
