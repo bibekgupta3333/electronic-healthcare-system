@@ -1,7 +1,7 @@
 from django.test import TestCase
 from model_mommy import mommy
 from accounts.models import User, MedidataUser, ClientUser, GeneralPracticeUser,\
-        MEDIDATA_USER, GENERAL_PRACTICE_USER, CLIENT_USER
+        MEDIDATA_USER, GENERAL_PRACTICE_USER, CLIENT_USER, ADMIN_PERMISSIONS
 from django.contrib.auth.models import Permission
 from permissions.model_choices import MANAGER_PERMISSIONS, GP_PERMISSIONS,\
         OTHER_PERMISSIONS, CLIENT_PERMISSIONS, MEDI_PERMISSIONS
@@ -99,10 +99,24 @@ class AutoAssignPermissionMedi(TestCase):
 class AutoAssignPermissionClient(TestCase):
     def setUp(self):
         self.user = mommy.make(User, type=CLIENT_USER)
-        mommy.make(ClientUser, user=self.user)
         self.client.force_login(self.user, backend=None)
 
-    def test_permission_medi(self):
+    def test_permission_client(self):
+        mommy.make(
+            ClientUser,
+            user=self.user,
+            role=ClientUser.CLIENT_USER,
+        )
         for permission in self.user.user_permissions.all():
             permission_verify = permission.codename in CLIENT_PERMISSIONS
+            self.assertEqual(permission_verify, True)
+
+    def test_permission_admin(self):
+        mommy.make(
+            ClientUser,
+            user=self.user,
+            role=ClientUser.CLIENT_ADMIN,
+        )
+        for permission in self.user.user_permissions.all():
+            permission_verify = permission.codename in ADMIN_PERMISSIONS
             self.assertEqual(permission_verify, True)
