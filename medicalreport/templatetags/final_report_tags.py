@@ -82,6 +82,12 @@ def comments(context):
         'comment_notes': context['redaction'].comment_notes
     }
 
+@register.inclusion_tag('medicalreport/reports/questions.html', takes_context=True)
+def questions(context):
+    return {
+        'questions': context['instruction'].addition_questions.all()
+    }
+
 def get_redaction(model, redaction):
     xpaths = model.xpaths()
     if redaction.redacted(xpaths) is True:
