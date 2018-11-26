@@ -12,7 +12,7 @@ decorator_with_arguments = lambda decorator: lambda *args, **kwargs: lambda func
 def check_status_with_url(is_valid, path, status):
     if 'view-reject' in path and status != INSTRUCTION_STATUS_REJECT:
         is_valid = False
-    elif 'final-report' in path and status != INSTRUCTION_STATUS_COMPLETE:
+    elif 'final-report' in path and status not in [INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_PROGRESS]:
         is_valid = False
     elif 'patient-emis-number' in path and status != INSTRUCTION_STATUS_NEW:
         is_valid = False
