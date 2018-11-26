@@ -1,5 +1,11 @@
 from django.db import models
 from common.models import TimeStampedModel
+from common.functions import get_env_variable, aes_with_salt_encryption, aes_with_salt_decryption
+import random, string, logging
+
+AES_KEY = get_env_variable('AES_KEY')
+
+logger = logging.getLogger(__name__)
 
 
 class OrganisationBase(models.Model):
@@ -105,7 +111,12 @@ class OrganisationGeneralPractice(models.Model):
     website = models.CharField(max_length=255, blank=True)
 
     operating_system_socket_endpoint = models.CharField(max_length=255, blank=True)
+    operating_system_organisation_code = models.CharField(max_length=63, blank=True)
+    operating_system_username = models.CharField(max_length=255, blank=True)
+    _operating_system_salt_and_encrypted_password = models.CharField(max_length=511, blank=True)
+    operating_system_salt_and_encrypted_iv = models.CharField(max_length=255, blank=True)
     operating_system_auth_token = models.CharField(max_length=255, blank=True)
+
     payment_timing = models.CharField(max_length=2, choices=PAYMENT_TIMING_CHOICES, blank=True)
     payment_bank_holder_name = models.CharField(max_length=255, blank=True)
     payment_bank_sort_code = models.CharField(max_length=255, blank=True)
@@ -120,3 +131,27 @@ class OrganisationGeneralPractice(models.Model):
 
     def __str__(self):
         return self.name
+
+    def set_operating_system_salt_and_encrypted_password(self, val):
+        salt = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
+        iv_salt, iv_aes_key, ciphertext = aes_with_salt_encryption(val, salt)
+        self.operating_system_salt_and_encrypted_iv = '{iv_salt}${iv_aes_key}'.format(
+            iv_salt=iv_salt, iv_aes_key=iv_aes_key
+        )
+        self._operating_system_salt_and_encrypted_password = '{salt}${aes_ciphertext}'.format(
+            salt=salt, aes_ciphertext=ciphertext
+        )
+
+    def get_operating_system_salt_and_encrypted_password(self):
+        if self.operating_system_salt_and_encrypted_iv:
+            return aes_with_salt_decryption(
+                self._operating_system_salt_and_encrypted_password,
+                self.operating_system_salt_and_encrypted_iv,
+            )
+        return self._operating_system_salt_and_encrypted_password
+
+    operating_system_salt_and_encrypted_password = property(
+        get_operating_system_salt_and_encrypted_password,
+        set_operating_system_salt_and_encrypted_password
+    )
+

@@ -28,6 +28,7 @@ class OrganisationGeneralPracticeAdmin(ImportExportModelAdmin):
     skip_admin_log = True
     search_fields = ['name', 'practcode']
     resource_class = OrganisationGeneralPracticeResource
+    readonly_fields = ('_operating_system_salt_and_encrypted_password',)
     form = OrganisationGeneralPracticeForm
     list_display = ('name', 'practcode')
     fieldsets = (
@@ -44,7 +45,10 @@ class OrganisationGeneralPracticeAdmin(ImportExportModelAdmin):
             'fields': ('phone_office', 'phone_alternate', 'organisation_email', 'fax', 'website')
         }),
         ('Systmem Information', {
-            'fields': ('gp_operating_system', 'operating_system_socket_endpoint', 'operating_system_auth_token')
+            'fields': (
+                'gp_operating_system', 'operating_system_socket_endpoint',
+                '_operating_system_salt_and_encrypted_password', 'operating_system_auth_token'
+            )
         }),
         ('Payment Information', {
             'fields': (
