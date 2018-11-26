@@ -342,9 +342,9 @@ def new_instruction(request):
         # Initial GP Practitioner Form
         gp_form = GPForm(
             initial={
-                'title': instruction.gp_title_from_client,
+                'gp_title': instruction.gp_title_from_client,
                 'initial': instruction.gp_initial_from_client,
-                'last_name': instruction.gp_last_name_from_client,
+                'gp_last_name': instruction.gp_last_name_from_client,
             }
         )
         # Initial Scope/Consent Form
@@ -441,9 +441,9 @@ def review_instruction(request, instruction_id):
     # Initial GP Practitioner Form
     gp_form = GPForm(
         initial={
-            'title': instruction.gp_title_from_client,
+            'gp_title': instruction.gp_title_from_client,
             'initial': instruction.gp_initial_from_client,
-            'last_name': instruction.gp_last_name_from_client,
+            'gp_last_name': instruction.gp_last_name_from_client,
         }
     )
     # Initial Scope/Consent Form
@@ -508,7 +508,7 @@ def view_reject(request, instruction_id):
     # Initial GP Practitioner Form
     gp_form = GPForm(
         initial={
-            'title': instruction.gp_title_from_client,
+            'gp_title': instruction.gp_title_from_client,
             'initial': instruction.gp_initial_from_client,
             'gp_last_name': instruction.gp_last_name_from_client,
         }
