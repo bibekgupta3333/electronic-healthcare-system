@@ -638,7 +638,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
 @login_required(login_url='/accounts/login')
 def print_mdx_consent(request, instruction_id, patient_emis_number):
     instruction = get_object_or_404(Instruction, id=instruction_id)
-    patient = instruction.patient
+    patient = instruction.patient_information
     gp_practice = instruction.gp_practice
 
     params = {
