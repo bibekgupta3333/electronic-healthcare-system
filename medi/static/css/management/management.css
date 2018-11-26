@@ -18,3 +18,8 @@
   -webkit-appearance: none;
   -moz-appearance: none;
 }
+
+.disabled {
+  pointer-events: none;
+  opacity: .65;
+}

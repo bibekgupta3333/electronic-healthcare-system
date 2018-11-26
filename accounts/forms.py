@@ -1,10 +1,11 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.conf import settings
-
 from common.functions import verify_password
-from .models import Patient, GeneralPracticeUser, ClientUser, TITLE_CHOICE, GENERAL_PRACTICE_USER, User
+from .models import GeneralPracticeUser, ClientUser, TITLE_CHOICE, User,\
+        MEDIDATA_USER, CLIENT_USER, GENERAL_PRACTICE_USER, MedidataUser
 from instructions.models import InstructionPatient
+from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 DATE_INPUT_FORMATS = settings.DATE_INPUT_FORMATS
 
 
@@ -172,3 +173,59 @@ class NewClientForm(forms.ModelForm):
     class Meta:
         model = ClientUser
         fields = ('first_name', 'last_name', 'email', 'username', 'password', 'send_email')
+
+
+class NewMediForm(forms.ModelForm):
+
+    first_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
+    last_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), label='', required=True)
+    username = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
+    password = forms.CharField(required=True, widget=forms.HiddenInput())
+    send_email = forms.BooleanField(required=False, initial=False)
+
+    class Meta:
+        model = MedidataUser
+        fields = ('first_name', 'last_name', 'email', 'username', 'password', 'send_email')
+
+
+class AllUserForm(forms.Form):
+
+    USER_TYPE=(
+        (MEDIDATA_USER, 'Medidata'),
+        (CLIENT_USER, 'Client'),
+        (GENERAL_PRACTICE_USER, 'General Practice')
+    )
+
+    user_type = forms.ChoiceField(choices=USER_TYPE, label='', required=True)
+    first_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
+    last_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), label='', required=True)
+    username = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
+    password = forms.CharField(required=False, widget=forms.HiddenInput())
+    send_email = forms.BooleanField(required=False, initial=False)
+    role = forms.CharField(max_length=255, label='', required=False, widget=forms.HiddenInput())
+    payment_bank_account_number = forms.CharField(
+            max_length=255, required=False,
+            label='', widget=forms.TextInput()
+    )
+    payment_bank_holder_name = forms.CharField(
+            max_length=255, required=False,
+            label='', widget=forms.TextInput()
+    )
+    payment_bank_sort_code = forms.CharField(
+            max_length=255, required=False,
+            label='', widget=forms.HiddenInput()
+    )
+    gp_organisation = forms.ModelChoiceField(
+            queryset=OrganisationGeneralPractice.objects.all(), required=False,
+            label='', widget=forms.Select(attrs={'class': 'organisations'})
+    )
+    client_organisation = forms.ModelChoiceField(
+            queryset=OrganisationClient.objects.all(), required=False,
+            label='', widget=forms.Select(attrs={'class': 'organisations'})
+    )
+    medi_organisation = forms.ModelChoiceField(
+            queryset=OrganisationMedidata.objects.all(), required=False,
+            label='', widget=forms.Select(attrs={'class': 'organisations'})
+    )

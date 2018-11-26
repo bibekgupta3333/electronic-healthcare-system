@@ -182,6 +182,7 @@ class ClientUser(UserProfileBase):
     CLIENT_USER = 1
 
     ROLE_CHOICES = (
+        ('', '----'),
         (CLIENT_ADMIN, 'Client Admin'),
         (CLIENT_USER, 'Client')
     )
