@@ -317,13 +317,13 @@ def new_instruction(request):
     instruction_id = request.GET.get('instruction_id', None)
     if instruction_id:
         instruction = get_object_or_404(Instruction, pk=instruction_id)
-        patient = instruction.patient
+        patient_instruction = instruction.patient_information
         # Initial Patient Form
         patient_form = InstructionPatientForm(
-            instance=patient,
+            instance=patient_instruction,
             initial={
-                'first_name': patient.user.first_name, 'last_name': patient.user.last_name,
-                'address_postcode': patient.address_postcode, 'edit_patient': True
+                'first_name': patient_instruction.patient_first_name, 'last_name': patient_instruction.patient_last_name,
+                'address_postcode': patient_instruction.patient_postcode, 'edit_patient': True
             }
         )
         # Initial GP/NHS Organisation Form
