@@ -101,7 +101,7 @@ class Instruction(TimeStampedModel, models.Model):
         self.rejected_reason = context.get('rejected_reason', None)
         self.rejected_note = context.get('rejected_note', '')
         self.status = INSTRUCTION_STATUS_REJECT
-        patient_email = context.get('patient_email', '')
+        patient_email = context.get('reject_patient_email', '')
         if patient_email != '':
             self.send_reject_email_to_patient(patient_email)
         if self.client_user:

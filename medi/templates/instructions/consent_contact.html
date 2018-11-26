@@ -166,9 +166,9 @@
     </div>
     <div class="modal-reject" id="modal-reject">
         <div class="modal-dialog modal-lg">
-            <form action="{% url 'medicalreport:reject_request' instruction.id %}" method="POST"  enctype="multipart/form-data">
+            <form action="{% url 'medicalreport:reject_request' instruction.id %}" method="POST" enctype="multipart/form-data" id="rejectRequestForm">
                 {% csrf_token %}
-                <input type="hidden" id="consent_reject" name="patient_email" />
+                <input type="hidden" id="consent_reject" name="reject_patient_email" />
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3>Reject note</h3>
@@ -348,6 +348,9 @@
 
         $('#id_patient_address_number').tooltip({
             title: $('#id_patient_address_number').val()
+        });
+        $('#rejectRequestForm').submit(function(){
+            $("#consent_reject").val($("#id_patient_email").val());
         });
     });
     </script>
