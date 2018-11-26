@@ -14,7 +14,7 @@
                 {% for key, value in item.items %}
                     <label class="redaction-checkbox">
 
-                        {% if key != 'xpath' %}
+                        {% if key != 'xpath' and key != 'map_code'%}
                              <input name="redaction_xpaths"  key="{{ item|hash:'xpath'|first }}"
                                  {% if item|hash:'xpath'|first in redaction_checks %}
                                  checked
