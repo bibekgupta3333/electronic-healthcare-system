@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template import loader
+from django.utils.html import format_html
 
 from snomedct.models import SnomedConcept
 
@@ -43,8 +44,25 @@ def create_or_update_redaction_record(request, instruction):
         else:
             models.InstructionAdditionAnswer.objects.create(question=question, answer=input_answer)
 
-    if request.method == "POST" and not request.is_ajax():
-        submit_form = MedicalReportFinaliseSubmitForm(request.user, request.POST)
+    if request.method == "POST":
+        submit_form = MedicalReportFinaliseSubmitForm(request.user, request.POST,
+                                                      initial={
+                                                          'record_type': instruction.type,
+                                                          'SUBMIT_OPTION_CHOICES': (
+                                                              ('PREPARED_AND_SIGNED',
+                                                               'Prepared and signed directly by {}'.format(
+                                                                   request.user.first_name)),
+                                                              ('PREPARED_AND_REVIEWED', format_html(
+                                                                  'Prepared by <span id="preparer"></span> and reviewed by {}'
+                                                                  .format(request.user.first_name)),
+                                                               )
+
+                                                          ),
+                                                      'prepared_by': amendments_for_record.prepared_by,
+                                                      'prepared_and_signed': amendments_for_record.submit_choice,
+                                                      'instruction_checked': amendments_for_record.instruction_checked
+                                                      },
+                                                      )
         if status == 'draft':
             amendments_for_record.status = AmendmentsForRecord.REDACTION_STATUS_DRAFT
         elif status == 'submit':
@@ -55,8 +73,8 @@ def create_or_update_redaction_record(request, instruction):
         if submit_form.is_valid(post_data=request.POST):
             amendments_for_record.instruction_checked = submit_form.cleaned_data['instruction_checked']
             amendments_for_record.review_by = submit_form.cleaned_data['gp_practitioner']
-            amendments_for_record.submit_choice = submit_form.cleaned_data['prepared_and_signed']
-            amendments_for_record.prepared_by = submit_form.cleaned_data['prepared_by']
+            amendments_for_record.submit_choice = submit_form.cleaned_data.get('prepared_and_signed')
+            amendments_for_record.prepared_by = str(submit_form.cleaned_data.get('prepared_by'))
 
             if status == 'submit':
                 instruction.status = models.INSTRUCTION_STATUS_COMPLETE

@@ -1,5 +1,4 @@
 from django import forms
-from django.contrib import messages
 from permissions.templatetags.get_permissions import process_instruction
 from permissions.models import InstructionPermission
 from .models import AmendmentsForRecord
@@ -10,23 +9,33 @@ from accounts import models
 
 
 class MedicalReportFinaliseSubmitForm(forms.Form):
-    prepared_and_signed = forms.ChoiceField(
-        choices=AmendmentsForRecord.SUBMIT_OPTION_CHOICES,
-        widget=forms.RadioSelect(attrs={'class': 'finaliseChoice'}),
-        required=False,
-    )
-    prepared_by = forms.CharField(
-        max_length=255,
-        widget=forms.TextInput(attrs={'class': '', 'placeholder': '', 'readonly': True}),
-        required=False,
+    prepared_by = forms.ModelChoiceField(
+        queryset=GeneralPracticeUser.objects.all()
     )
     gp_practitioner = forms.ModelChoiceField(queryset=None, required=False)
     instruction_checked = forms.BooleanField(required=False, initial=False, label='')
+    prepared_and_signed = forms.ChoiceField(choices=AmendmentsForRecord.SUBMIT_OPTION_CHOICES,
+                                            widget=forms.RadioSelect(attrs={'class': 'finaliseChoice'}),
+                                            required=False,
+                                            )
 
     def __init__(self, user=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        queryset = GeneralPracticeUser.objects.all()
+        if kwargs:
+            submit_options = kwargs.get('initial').get('SUBMIT_OPTION_CHOICES')
+            if submit_options:
+                self.fields['prepared_and_signed'].choices = submit_options
+            record_type = kwargs.get('initial').get('record_type')
+            if record_type and record_type == 'AMRA':
+                queryset = queryset.filter(can_complete_amra=True)
+            if record_type and record_type == 'SARS':
+                queryset = queryset.filter(can_complete_sars=True)
         if user:
-            self.fields['gp_practitioner'] = forms.ModelChoiceField(queryset=user.get_query_set_within_organisation(), required=False)
+            self.fields['gp_practitioner'] = forms.ModelChoiceField(queryset=user.get_query_set_within_organisation(),
+                                                                    required=False)
+            queryset = queryset.filter(organisation=user.userprofilebase.generalpracticeuser.organisation)
+        self.fields['prepared_by'].queryset = queryset
 
     def is_valid(self, post_data):
         super().is_valid()
@@ -47,9 +56,14 @@ class MedicalReportFinaliseSubmitForm(forms.Form):
 
         return True
 
+    def clean_prepared_by(self):
+        prepared_by = self.cleaned_data['prepared_by']
+        self.cleaned_data['prepared_by'] = str(prepared_by)
+        return self.cleaned_data['prepared_by']
+
     def clean(self):
         super().clean()
-        if self.cleaned_data['prepared_and_signed'] == 'PREPARED_AND_SIGNED':
+        if self.cleaned_data.get('prepared_and_signed') == 'PREPARED_AND_SIGNED':
             self.cleaned_data['prepared_by'] = ''
 
         return self.cleaned_data

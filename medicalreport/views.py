@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponseRedirect
+from django.utils.html import format_html
 from django.urls import reverse
 from services.emisapiservices import services
 from services.xml.medical_report_decorator import MedicalReportDecorator
@@ -11,10 +12,11 @@ from services.xml.registration import Registration
 from .dummy_models import (DummyInstruction)
 from medicalreport.forms import MedicalReportFinaliseSubmitForm
 from .models import AmendmentsForRecord
+from medicalreport.reports import AttachmentReport
 from instructions.models import Instruction, InstructionPatient
 from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT
 from .functions import create_or_update_redaction_record
-from medicalreport.reports import MedicalReport, AttachmentReport
+from medicalreport.reports import MedicalReport
 from accounts.models import GeneralPracticeUser, User
 from accounts.functions import create_or_update_patient_user
 from .forms import AllocateInstructionForm
@@ -119,7 +121,14 @@ def edit_report(request, instruction_id):
     questions = instruction.addition_questions.all()
     finalise_submit_form = MedicalReportFinaliseSubmitForm(
         initial={
-            'gp_practitioner': redaction.review_by if redaction.review_by else request.user,
+            'record_type': redaction.instruction.type,
+            'SUBMIT_OPTION_CHOICES': (
+                    ('PREPARED_AND_SIGNED', 'Prepared and signed directly by {}'.format(request.user.first_name)),
+                    ('PREPARED_AND_REVIEWED', format_html('Prepared by <span id="preparer"></span> and reviewed by {}'
+                                                          .format(request.user.first_name)),
+                     )
+
+                ),
             'prepared_by': redaction.prepared_by,
             'prepared_and_signed': redaction.submit_choice,
             'instruction_checked': redaction.instruction_checked
@@ -129,6 +138,7 @@ def edit_report(request, instruction_id):
     inst_gp_user = User.objects.get(username=instruction.gp_user.user.username)
     cur_user = User.objects.get(username=request.user.username)
     return render(request, 'medicalreport/medicalreport_edit.html', {
+        'user': request.user,
         'medical_record': medical_record_decorator,
         'redaction': redaction,
         'instruction': instruction,

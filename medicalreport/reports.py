@@ -3,12 +3,8 @@ import xhtml2pdf.pisa as pisa
 from io import BytesIO
 from django.http import HttpResponse
 from django.template.loader import get_template
+
 from django.conf import settings
-from services.xml.base64_attachment import Base64Attachment
-from services.emisapiservices import services
-import reportlab
-import reportlab.lib.pagesizes as pdf_sizes
-from PIL import Image
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
