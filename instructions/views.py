@@ -390,7 +390,6 @@ def new_instruction(request):
     })
 
 
-@login_required(login_url='/accounts/login')
 def upload_consent(request, instruction_id):
     setting = Setting.objects.all().first()
     instruction = get_object_or_404(Instruction, pk=instruction_id)

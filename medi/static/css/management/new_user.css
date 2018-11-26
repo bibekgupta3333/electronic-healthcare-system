@@ -17,6 +17,10 @@ form {
     font-size:17px;
 }
 
+.top-line {
+    border-top: 1px solid #ccc;
+}
+
 .bottom-line {
     border-bottom: 1px solid #ccc;
 }
@@ -127,4 +131,9 @@ input[type="email"] {
 
 .sendemail {
     margin-top: 8px;
+}
+
+.disabled-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }

@@ -2,27 +2,10 @@ from django.db import models
 from common.models import TimeStampedModel
 
 
-class OrganisationMedidata(models.Model):
+class OrganisationBase(models.Model):
     trading_name = models.CharField(max_length=255)
     legal_name = models.CharField(max_length=255)
     address = models.TextField(max_length=255)
-
-    class Meta:
-        verbose_name = 'Organisation Medidata'
-
-    def __str__(self):
-        return self.trading_name
-
-
-class OrganisationBase(OrganisationMedidata):
-    contact_name = models.CharField(max_length=255, blank=True)
-    contact_telephone = models.CharField(max_length=255, blank=True)
-    contact_email = models.EmailField(blank=True)
-    generic_telephone = models.CharField(max_length=255, blank=True)
-    generic_email = models.EmailField(blank=True)
-    fax_number = models.CharField(max_length=255, blank=True)
-    companies_house_number = models.CharField(max_length=255, blank=True)
-    vat_number = models.CharField(max_length=255, blank=True)
 
     class Meta:
         verbose_name = 'Organisation'
@@ -32,6 +15,14 @@ class OrganisationBase(OrganisationMedidata):
             ('change_user_management', 'Can change User Management'),
             ('delete_user_management', 'Can delete User Management')
         )
+
+    def __str__(self):
+        return self.trading_name
+
+
+class OrganisationMedidata(OrganisationBase):
+    class Meta:
+        verbose_name = 'Organisation Medidata'
 
     def __str__(self):
         return self.trading_name
@@ -53,6 +44,14 @@ class OrganisationClient(OrganisationBase):
     division = models.TextField(blank=True)
     can_create_amra = models.BooleanField(default=False)
     can_create_sars = models.BooleanField(default=False)
+    contact_name = models.CharField(max_length=255, blank=True)
+    contact_telephone = models.CharField(max_length=255, blank=True)
+    contact_email = models.EmailField(blank=True)
+    generic_telephone = models.CharField(max_length=255, blank=True)
+    generic_email = models.EmailField(blank=True)
+    fax_number = models.CharField(max_length=255, blank=True)
+    companies_house_number = models.CharField(max_length=255, blank=True)
+    vat_number = models.CharField(max_length=255, blank=True)
 
     class Meta:
         verbose_name = 'Organisation Client'

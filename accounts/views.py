@@ -13,6 +13,7 @@ from permissions.models import InstructionPermission
 from common.functions import multi_getattr, verify_password as verify_pass
 from payment.models import OrganisationFee
 from django_tables2 import RequestConfig
+from accounts.forms import AllUserForm, NewGPForm, NewClientForm, NewMediForm
 
 from .models import User, UserProfileBase, GeneralPracticeUser
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
@@ -246,6 +247,131 @@ def create_user(request):
         'user_type': user_type
     })
 
+    return response
+
+
+@login_required(login_url='/accounts/login')
+@access_user_management('organisations.change_user_management')
+def medi_change_user(request, email):
+    user = User.objects.filter(email=email).first()
+    initial_data = {
+        'user_type': user.type,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'email': user.email,
+        'username': user.username,
+        'password': user.password
+    }
+    if hasattr(user, 'userprofilebase'):
+        user_profile = user.userprofilebase
+        if hasattr(user_profile, 'generalpracticeuser'):
+            gp = user.userprofilebase.generalpracticeuser
+            initial_data['gp_organisation'] = gp.organisation
+            initial_data['payment_bank_holder_name'] = gp.payment_bank_holder_name
+            initial_data['payment_bank_sort_code'] = gp.payment_bank_sort_code
+            initial_data['payment_bank_account_number'] = gp.payment_bank_account_number
+            initial_data['role'] = gp.role
+        elif hasattr(user_profile, 'clientuser'):
+            organisation = user.userprofilebase.clientuser.organisation
+            initial_data['client_organisation'] = organisation
+            initial_data['role'] = gp.role
+        elif hasattr(user_profile, 'medidatauser'):
+            organisation = user.userprofilebase.medidatauser.organisation
+            initial_data['medi_organisation'] = organisation
+
+    if request.method == 'POST':
+        newuser_form = AllUserForm(request.POST)
+        if newuser_form.is_valid():
+            data = newuser_form.cleaned_data
+            user.first_name = data['first_name']
+            user.last_name = data['last_name']
+            user.email = data['email']
+            user.save()
+            if data['user_type'] == GENERAL_PRACTICE_USER:
+                gp = user.userprofilebase.generalpracticeuser
+                user_form = NewGPForm(request.POST, instance=gp)
+                organisation = data['gp_organisation']
+            elif data['user_type'] == CLIENT_USER:
+                client = user.userprofilebase.clientuser
+                user_form = NewClientForm(request.POST, instance=client)
+                organisation = data['client_organisation']
+            else:
+                medi = user.userprofilebase.medidatauser
+                user_form = NewMediForm(request.POST, instance=medi)
+                organisation = data['medi_organisation']
+            if user_form.is_valid():
+                newuser = user_form.save(commit=False)
+                newuser.organisation = organisation
+                if user.type != MEDIDATA_USER:
+                    newuser.role = data.get('role')
+                newuser.save()
+                messages.success(request, 'User updated successfully.')
+                return redirect("accounts:view_users")
+            else:
+                messages.warning(request, user_form.errors)
+
+    newuser_form = AllUserForm(initial=initial_data)
+    response = render(request, 'user_management/medi_update_user.html',{
+        'newuser_form': newuser_form,
+        'user': user,
+    })
+    return response
+
+
+@login_required(login_url='/accounts/login')
+@access_user_management('organisations.add_user_management')
+def medi_create_user(request):
+    newuser_form = AllUserForm()
+    if request.method == 'POST':
+        newuser_form = AllUserForm(request.POST)
+        if newuser_form.is_valid():
+            data = newuser_form.cleaned_data
+            user = User.objects.filter(
+                Q(username=data['username']) |
+                Q(email=data['email'])
+            )
+            if not user.exists():
+                user = User.objects.create(
+                    first_name=newuser_form.cleaned_data['first_name'],
+                    last_name=newuser_form.cleaned_data['last_name'],
+                    username=newuser_form.cleaned_data['username'],
+                    email=newuser_form.cleaned_data['email'],
+                    type=data['user_type']
+                )
+                user.set_password(newuser_form.cleaned_data['password'])
+                user.save()
+                if data['user_type'] == GENERAL_PRACTICE_USER:
+                    user_form = NewGPForm(request.POST)
+                    organisation = data['gp_organisation']
+                elif data['user_type'] == CLIENT_USER:
+                    user_form = NewClientForm(request.POST)
+                    organisation = data['client_organisation']
+                else:
+                    user_form = NewMediForm(request.POST)
+                    organisation = data['medi_organisation']
+                if user_form.is_valid():
+                    newuser = user_form.save(commit=False)
+                    newuser.organisation = organisation
+                    if user.type != MEDIDATA_USER:
+                        newuser.role = data.get('role')
+                    newuser.user = user
+                    newuser.save()
+                    reset_password_form = PasswordResetForm(data={'email': user.email})
+                    if newuser_form.cleaned_data['send_email'] and reset_password_form.is_valid():
+                        reset_password_form.save(
+                            request=request,
+                            from_email=DEFAULT_FROM,
+                            subject_template_name='registration/password_reset_subject_new.txt',
+                            email_template_name='registration/password_reset_email_new.html')
+                    messages.success(request, 'New User Account created successfully.')
+                    return redirect("accounts:view_users")
+                else:
+                    messages.warning(request, user_form.errors)
+            else:
+                messages.warning(request, 'User Account Existing In Database')
+    response = render(request, 'user_management/medi_create_user.html',{
+        'newuser_form': newuser_form,
+    })
     return response
 
 
