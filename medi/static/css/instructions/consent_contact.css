@@ -114,5 +114,9 @@ textarea {
 }
 
 #printModal .modal-body {
-    height: 600px;
+    height: 700px;
+}
+
+#printModal .modal-lg {
+    max-width: 90%;
 }

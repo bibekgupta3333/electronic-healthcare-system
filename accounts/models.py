@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractUser, Permission, Group
 from django.utils.translation import gettext_lazy as _
 from permissions.model_choices import MANAGER_PERMISSIONS, GP_PERMISSIONS,\
-        OTHER_PERMISSIONS, CLIENT_PERMISSIONS, MEDI_PERMISSIONS
+        OTHER_PERMISSIONS, CLIENT_PERMISSIONS, MEDI_PERMISSIONS, ADMIN_PERMISSIONS
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 from common.models import TimeStampedModel
 
@@ -197,11 +197,22 @@ class ClientUser(UserProfileBase):
         return ' '.join([self.get_title_display(), user.first_name, user.last_name])
 
     def save(self, *args, **kwargs):
+        if self.role:
+            self.role = int(self.role)
         if self._state.adding:
             self.update_permission()
         super(ClientUser, self).save(*args, **kwargs)
 
     def update_permission(self):
+        if self.role == self.CLIENT_ADMIN:
+            self.update_permission_admin()
+        else:
+            self.update_permission_client()
+
+    def update_permission_admin(self):
+        self.set_permission(ADMIN_PERMISSIONS)
+
+    def update_permission_client(self):
         self.set_permission(CLIENT_PERMISSIONS)
 
 
@@ -238,6 +249,8 @@ class GeneralPracticeUser(UserProfileBase):
         self.initial_role = self.role
 
     def save(self, *args, **kwargs):
+        if self.role:
+            self.role = int(self.role)
         if self.initial_role != self.role or self._state.adding:
             self.update_permission()
         super(GeneralPracticeUser, self).save(*args, **kwargs)

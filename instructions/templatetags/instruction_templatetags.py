@@ -20,8 +20,8 @@ register.filter('format_date', format_date)
 
 
 @register.filter
-def full_name(user):
-    full_name = [user.title, user.user.first_name, user.user.last_name]
+def patient_full_name(user):
+    full_name = [user.patient_title, user.patient_first_name, user.patient_last_name]
     full_name = list(filter(None, full_name))
     return " ".join(full_name)
 

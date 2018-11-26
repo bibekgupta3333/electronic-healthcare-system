@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template import loader
+from django.utils.html import format_html
 
 from snomedct.models import SnomedConcept
 
@@ -43,8 +44,25 @@ def create_or_update_redaction_record(request, instruction):
         else:
             models.InstructionAdditionAnswer.objects.create(question=question, answer=input_answer)
 
-    if request.method == "POST" and not request.is_ajax():
-        submit_form = MedicalReportFinaliseSubmitForm(request.user, request.POST)
+    if request.method == "POST":
+        submit_form = MedicalReportFinaliseSubmitForm(request.user, request.POST,
+                                                      initial={
+                                                          'record_type': instruction.type,
+                                                          'SUBMIT_OPTION_CHOICES': (
+                                                              ('PREPARED_AND_SIGNED',
+                                                               'Prepared and signed directly by {}'.format(
+                                                                   request.user.first_name)),
+                                                              ('PREPARED_AND_REVIEWED', format_html(
+                                                                  'Prepared by <span id="preparer"></span> and reviewed by {}'
+                                                                  .format(request.user.first_name)),
+                                                               )
+
+                                                          ),
+                                                      'prepared_by': amendments_for_record.prepared_by,
+                                                      'prepared_and_signed': amendments_for_record.submit_choice,
+                                                      'instruction_checked': amendments_for_record.instruction_checked
+                                                      },
+                                                      )
         if status == 'draft':
             amendments_for_record.status = AmendmentsForRecord.REDACTION_STATUS_DRAFT
         elif status == 'submit':
@@ -55,8 +73,8 @@ def create_or_update_redaction_record(request, instruction):
         if submit_form.is_valid(post_data=request.POST):
             amendments_for_record.instruction_checked = submit_form.cleaned_data['instruction_checked']
             amendments_for_record.review_by = submit_form.cleaned_data['gp_practitioner']
-            amendments_for_record.submit_choice = submit_form.cleaned_data['prepared_and_signed']
-            amendments_for_record.prepared_by = submit_form.cleaned_data['prepared_by']
+            amendments_for_record.submit_choice = submit_form.cleaned_data.get('prepared_and_signed')
+            amendments_for_record.prepared_by = str(submit_form.cleaned_data.get('prepared_by'))
 
             if status == 'submit':
                 instruction.status = models.INSTRUCTION_STATUS_COMPLETE
@@ -179,18 +197,18 @@ def delete_additional_allergies_records(request):
         AdditionalAllergies.objects.filter(id__in=additional_allergies_records_delete).delete()
 
 
-def send_patient_mail(patient, gp_user, instruction,  unique_url):
-    link = ''.join(settings.SITE_NAME) + '/report/' + str(instruction.pk) + '/' + unique_url
+def send_patient_mail(instruction,  unique_url):
+    link = ''.join(settings.SITE_NAME) + 'report/' + str(instruction.pk) + '/' + unique_url
     send_mail(
         'Completely eMR',
         'Your instruction has been submitted',
         'MediData',
-        [patient.user.email],
+        [instruction.patient_information.patient_email],
         fail_silently=True,
         html_message=loader.render_to_string('medicalreport/patient_email.html',
                                              {
-                                                 'name': patient.user.first_name,
-                                                 'gp': gp_user.user.first_name,
+                                                 'name': instruction.patient.user.first_name,
+                                                 'gp': instruction.gp_user.user.first_name,
                                                  'link': link
                                              }
                                              ))
@@ -198,5 +216,5 @@ def send_patient_mail(patient, gp_user, instruction,  unique_url):
 
 def create_patient_report(instruction):
     unique_url = uuid.uuid4().hex
-    PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
-    send_patient_mail(instruction.patient, instruction.gp_user, instruction, unique_url)
+    PatientReportAuth.objects.create(patient_id=instruction.patient_id, instruction=instruction, url=unique_url)
+    send_patient_mail(instruction, unique_url)

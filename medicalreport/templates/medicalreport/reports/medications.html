@@ -5,31 +5,31 @@
     <label style="color:white;font-size:20px;">Acute medications</label>
 </div>
 <table style="width:100%;font-size:15px;margin-top:10px;">
-    {% for model in acute_medications%}
-        <tr>
-        {% with header=model|general_header  %} 
+    {% for model in acute_medications %}
+        {% with header=model|general_header %} 
             {% with model|get_redaction:redaction as redacted %}
                 {% if not redacted %}
-                    <td>{{ header }}</td>
+                    <tr>
+                        <td>{{ header }}</td>
+                    </tr>
                 {% endif %}
             {% endwith %}
         {% endwith %}
-        </tr>
     {% endfor %}
 </table>
 <div style="display:flex;background-color:#235597;margin:0;">
     <label style="color:white;font-size:20px;">Repeat medications</label>
 </div>
 <table style="width:100%;font-size:15px;margin-top:10px;">
-    {% for model in repeat_medications%}
-        <tr>
-        {% with header=model|general_header  %} 
+    {% for model in repeat_medications %}
+        {% with header=model|general_header %} 
             {% with model|get_redaction:redaction as redacted %}
                 {% if not redacted %}
-                    <td>{{ header }}</td>
+                    <tr>
+                        <td>{{ header }}</td>
+                    </tr>
                 {% endif %}
             {% endwith %}
         {% endwith %}
-        </tr>
     {% endfor %}
 </table>

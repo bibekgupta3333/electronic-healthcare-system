@@ -177,6 +177,7 @@ def consultation_element_list(consultation):
         data.append(obj)
     return data
 
+
 @register.filter
 def map_code(consultation):
     return consultation.map_code()

@@ -1,7 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template import loader
 from django.core.mail import send_mail
-from instructions.models import Setting
 from django.conf import settings
 from django.forms import formset_factory
 from django.http import JsonResponse
@@ -15,7 +14,6 @@ from accounts.forms import PMForm
 def sign_up(request):
     surgery_form = SurgeryForm()
     pm_form = PMForm()
-    setting = Setting.objects.all().first()
 
     if request.method == "POST":
         surgery_form = SurgeryForm(request.POST)
@@ -29,20 +27,17 @@ def sign_up(request):
     return render(request, 'onboarding/sign_up.html', {
         'surgery_form': surgery_form,
         'pm_form': pm_form,
-        'setting': setting,
         'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
     })
 
 
 def send_email_emr(request, emr):
-    setting = Setting.objects.all().first()
-    if setting:
-        from_email = settings.DEFAULT_FROM
-        to_list = [emr.pm_email]
-        html_message = loader.render_to_string('onboarding/emr_email.html',{
-            'link': '{}/onboarding/emr-setup-stage-2/{}'.format(setting.site, emr.id)
-        })
-        send_mail('Completely eMR','',from_email,to_list,fail_silently=True,html_message=html_message)
+    from_email = settings.DEFAULT_FROM
+    to_list = [emr.pm_email]
+    html_message = loader.render_to_string('onboarding/emr_email.html',{
+        'link': '{}/onboarding/emr-setup-stage-2/{}'.format(request.get_host(), emr.id)
+    })
+    send_mail('Completely eMR','',from_email,to_list,fail_silently=True,html_message=html_message)
 
 
 def send_email_pm(request, emr):

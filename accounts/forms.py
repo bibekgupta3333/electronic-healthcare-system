@@ -24,6 +24,10 @@ class InstructionPatientForm(forms.ModelForm):
     patient_postcode = MyChoiceField(required=True, label='Address postcode')
     patient_address_number = MyChoiceField(required=False, label='Address name number')
     patient_address_line1 = forms.CharField(max_length=255, required=True)
+    patient_address_line2 = forms.CharField(max_length=255, required=True)
+    patient_address_line3 = forms.CharField(max_length=255, required=True)
+    patient_city = forms.CharField(max_length=255, required=True)
+    patient_country = forms.CharField(max_length=255, required=True)
 
     class Meta:
         model = InstructionPatient
@@ -58,7 +62,7 @@ class GPForm(forms.Form):
 
     class Meta:
         model = GeneralPracticeUser
-        fields = ('title', 'initial', 'last_name')
+        fields = ('gp_title', 'initial', 'gp_last_name')
 
         labels = {
             'gp_title': 'Title'
@@ -68,7 +72,7 @@ class GPForm(forms.Form):
         super().__init__(*args, **kwargs)
         initial_data = kwargs.get('initial')
         if initial_data:
-            self.fields['title'] = forms.CharField(max_length=255)
+            self.fields['gp_title'] = forms.CharField(max_length=255, label='Title')
 
 
 class PMForm(forms.ModelForm):

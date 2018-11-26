@@ -255,10 +255,9 @@ def new_instruction(request):
                     fail_silently=True,
                 )
 
-            setting = Setting.objects.all().first()
-            if instruction.type == AMRA_TYPE and not instruction.consent_form and setting:
+            if instruction.type == AMRA_TYPE and not instruction.consent_form:
                 message = 'Your instruction has request consent form. Please upload or accept consent form in this link {}'\
-                    .format(setting.site + '/instruction/upload-consent/' + str(instruction.id) + '/')
+                    .format(request.get_host() + '/instruction/upload-consent/' + str(instruction.id) + '/')
                 send_mail(
                     'Request consent',
                     message,
@@ -317,13 +316,13 @@ def new_instruction(request):
     instruction_id = request.GET.get('instruction_id', None)
     if instruction_id:
         instruction = get_object_or_404(Instruction, pk=instruction_id)
-        patient = instruction.patient
+        patient_instruction = instruction.patient_information
         # Initial Patient Form
         patient_form = InstructionPatientForm(
-            instance=patient,
+            instance=patient_instruction,
             initial={
-                'first_name': patient.user.first_name, 'last_name': patient.user.last_name,
-                'address_postcode': patient.address_postcode, 'edit_patient': True
+                'first_name': patient_instruction.patient_first_name, 'last_name': patient_instruction.patient_last_name,
+                'address_postcode': patient_instruction.patient_postcode, 'edit_patient': True
             }
         )
         # Initial GP/NHS Organisation Form
@@ -342,9 +341,9 @@ def new_instruction(request):
         # Initial GP Practitioner Form
         gp_form = GPForm(
             initial={
-                'title': instruction.gp_title_from_client,
+                'gp_title': instruction.gp_title_from_client,
                 'initial': instruction.gp_initial_from_client,
-                'last_name': instruction.gp_last_name_from_client,
+                'gp_last_name': instruction.gp_last_name_from_client,
             }
         )
         # Initial Scope/Consent Form
@@ -441,9 +440,9 @@ def review_instruction(request, instruction_id):
     # Initial GP Practitioner Form
     gp_form = GPForm(
         initial={
-            'title': instruction.gp_title_from_client,
+            'gp_title': instruction.gp_title_from_client,
             'initial': instruction.gp_initial_from_client,
-            'last_name': instruction.gp_last_name_from_client,
+            'gp_last_name': instruction.gp_last_name_from_client,
         }
     )
     # Initial Scope/Consent Form
@@ -508,7 +507,7 @@ def view_reject(request, instruction_id):
     # Initial GP Practitioner Form
     gp_form = GPForm(
         initial={
-            'title': instruction.gp_title_from_client,
+            'gp_title': instruction.gp_title_from_client,
             'initial': instruction.gp_initial_from_client,
             'gp_last_name': instruction.gp_last_name_from_client,
         }
@@ -638,7 +637,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
 @login_required(login_url='/accounts/login')
 def print_mdx_consent(request, instruction_id, patient_emis_number):
     instruction = get_object_or_404(Instruction, id=instruction_id)
-    patient = instruction.patient
+    patient = instruction.patient_information
     gp_practice = instruction.gp_practice
 
     params = {

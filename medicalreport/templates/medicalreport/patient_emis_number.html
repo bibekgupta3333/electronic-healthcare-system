@@ -29,7 +29,6 @@
                           <h6>Patient confirmed.</h6>
                           <p>Next steps:</p>
                           {% bootstrap_field allocate_instruction_form.allocate_options show_label=False %}
-                          {% bootstrap_field allocate_instruction_form.gp_practitioner form_group_class='form-group col-md-8 allocate-gp' show_label=False %}
                       </div>
                       <div class="modal-footer">
                           <button type="button" class="btn btn-secondary" data-dismiss="modal">Go back</button>
@@ -124,13 +123,7 @@
                   </div>
                   <div class="card-footer">
                       <label class="text-footer">Reject this request if there are no suitable matching patients:</label>
-                      <div class="row reject-btn">
-                          {% if instruction.type == 'SARS' and request.user.type == 'GP'%}
-                          <form action="{% url 'instructions:new_instruction' %}" method="GET" class="edit-btn">
-                              <input type="hidden" id="instruction_id" name="instruction_id" value="{{ instruction.id }}" />
-                              <button class="btn btn-primary" id="editPatientBtn">Edit Patient Details</button>
-                          </form>
-                          {% endif %}
+                      <div class="btn-group reject-btn">
                           {% if user.id|reject_instruction:instruction.id %}
                               <button class="btn btn-danger dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 Reject Request
@@ -200,14 +193,10 @@
                 let instruction_id = $(this).data('instruction_id');
                 let patient_ref_id = $(this).data('patient_ref_id');
                 let action_url = '/medicalreport/'+ instruction_id+'/select-patient/' + patient_ref_id + '/';
-                {% if request.user.type == "GP" and instruction.type == "SARS" %}
-                    window.location.href = '/instruction/consent-contact/'+instruction_id+'/select-patient/'+patient_ref_id;
-                {% else %}
-                    $('#allocateInstructionForm').attr('action',
-                        action_url
-                    );
-                    $('#selectPatientModal').modal('show');
-                {% endif %}
+                $('#allocateInstructionForm').attr('action',
+                    action_url
+                );
+                $('#selectPatientModal').modal('show');
             });
 
             $('.allocate-gp').insertAfter('label[for="id_allocate_options_1"]');

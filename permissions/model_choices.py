@@ -20,11 +20,21 @@ OTHER_PERMISSIONS=[
 ]
 
 CLIENT_PERMISSIONS=[
+    'view_instruction',
+    'add_instruction',
+    'delete_instruction',
+    'change_instruction'
+]
+
+ADMIN_PERMISSIONS=[
     'view_user_management',
     'change_user_management',
     'delete_user_management',
     'add_user_management',
     'view_instruction',
+    'add_instruction',
+    'delete_instruction',
+    'change_instruction',
     'view_organisationfee'
 ]
 

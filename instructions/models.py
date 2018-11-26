@@ -22,8 +22,10 @@ class InstructionPatient(models.Model):
     patient_dob = models.DateField(null=True)
     patient_postcode = models.CharField(max_length=255, verbose_name='Postcode*')
     patient_address_number = models.CharField(max_length=255, blank=True)
+    patient_address_line1 = models.CharField(max_length=255)
     patient_address_line2 = models.CharField(max_length=255)
     patient_address_line3 = models.CharField(max_length=255)
+    patient_city = models.CharField(max_length=255)
     patient_country = models.CharField(max_length=255)
     patient_nhs_number = models.CharField(max_length=10, blank=True)
     patient_email = models.EmailField(max_length=255, blank=True)
@@ -99,7 +101,7 @@ class Instruction(TimeStampedModel, models.Model):
         self.rejected_reason = context.get('rejected_reason', None)
         self.rejected_note = context.get('rejected_note', '')
         self.status = INSTRUCTION_STATUS_REJECT
-        patient_email = context.get('patient_email', '')
+        patient_email = context.get('reject_patient_email', '')
         if patient_email != '':
             self.send_reject_email_to_patient(patient_email)
         if self.client_user:
@@ -192,7 +194,6 @@ class InstructionConditionsOfInterest(models.Model):
 
 class Setting(models.Model):
     consent_form = models.FileField(upload_to='consent_forms', null=True, blank=True)
-    site = models.URLField(max_length=255, blank=True)
 
     def save(self, *args, **kwargs):
         self.__class__.objects.exclude(id=self.id).delete()

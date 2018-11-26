@@ -93,9 +93,7 @@
                                         </label>
                                     </div>
                                         {% bootstrap_field finalise_submit_form.prepared_by show_label=Fasle %}
-                                    <div class="col-md-6">
-                                        {% bootstrap_field finalise_submit_form.gp_practitioner size='large' show_label=Fasle %}
-                                    </div>
+
                                 {% endif %}
                             </div>
                         </div>
@@ -142,7 +140,7 @@
     <script>
         $("#form-modal").modal({
             backdrop: 'static'
-        }); 
+        });
         $('#id_gp_practitioner').removeAttr('required');
 
         $('#id_prepared_and_signed_0').on('click', function () {
@@ -193,9 +191,6 @@
             enable_submit_button();
         });
         $('#id_prepared_by').on('change', function () {
-            enable_submit_button();
-        });
-        $('#id_gp_practitioner').on('change', function () {
             enable_submit_button();
         });
         $("input[type='checkbox'][name='instruction_checked']").click(function(){

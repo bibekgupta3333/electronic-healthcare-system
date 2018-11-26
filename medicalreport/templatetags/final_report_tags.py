@@ -66,10 +66,7 @@ def medications(context):
     return {
         'acute_medications': context['medical_record'].acute_medications,
         'repeat_medications': context['medical_record'].repeat_medications,
-        'additional_acute_medications': context['redaction'].additional_acute_medications,
-        'additional_repeat_medications': context['redaction'].additional_repeat_medications,
-        'redaction': context['redaction'],
-        'instruction': context['instruction']
+        'redaction': context['redaction']
     }
 
 @register.inclusion_tag('medicalreport/reports/appendices.html', takes_context=True)
