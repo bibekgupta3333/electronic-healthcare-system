@@ -197,14 +197,19 @@ class ClientUser(UserProfileBase):
         user = self.user
         return ' '.join([self.get_title_display(), user.first_name, user.last_name])
 
+    def __init__(self, *args, **kwargs):
+        super(ClientUser, self).__init__(*args, **kwargs)
+        self.initial_role = self.role
+
     def save(self, *args, **kwargs):
         if self.role:
             self.role = int(self.role)
-        if self._state.adding:
+        if self.initial_role != self.role or self._state.adding:
             self.update_permission()
         super(ClientUser, self).save(*args, **kwargs)
 
     def update_permission(self):
+        self.remove_permission()
         if self.role == self.CLIENT_ADMIN:
             self.update_permission_admin()
         else:
@@ -248,11 +253,15 @@ class GeneralPracticeUser(UserProfileBase):
     def __init__(self, *args, **kwargs):
         super(GeneralPracticeUser, self).__init__(*args, **kwargs)
         self.initial_role = self.role
+        self.initial_organisation_pk = None
+        if hasattr(self, "organisation"):
+            self.initial_organisation_pk = self.organisation.pk
 
     def save(self, *args, **kwargs):
         if self.role:
             self.role = int(self.role)
-        if self.initial_role != self.role or self._state.adding:
+        if self.initial_role != self.role or self._state.adding or\
+            self.initial_organisation_pk != self.organisation.pk:
             self.update_permission()
         super(GeneralPracticeUser, self).save(*args, **kwargs)
 

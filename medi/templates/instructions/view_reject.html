@@ -73,9 +73,7 @@
                     </div>
                     <div class="row ">
                         <div class="col-md-3 rowTitle">Named GP:</div>
-                        {% if gp_form.title %}
-                            {% bootstrap_field gp_form.title size='small' form_group_class='form-group col-md-2 p-0' %}
-                        {% endif %}
+                        {% bootstrap_field gp_form.gp_title size='small' form_group_class='form-group col-md-2 p-0' %}
                         {% bootstrap_field gp_form.initial size='small' form_group_class='form-group col-md-3 px-2' %}
                         {% bootstrap_field gp_form.gp_last_name size='small' form_group_class='form-group col-md-4 px-2' %}
                     </div>
