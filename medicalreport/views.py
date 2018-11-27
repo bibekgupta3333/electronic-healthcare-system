@@ -15,7 +15,7 @@ from .models import AmendmentsForRecord
 from medicalreport.reports import AttachmentReport
 from instructions.models import Instruction, InstructionPatient
 from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT
-from .functions import create_or_update_redaction_record
+from .functions import create_or_update_redaction_record, create_patient_report
 from medicalreport.reports import MedicalReport
 from accounts.models import GeneralPracticeUser, User
 from accounts.functions import create_or_update_patient_user
@@ -161,13 +161,7 @@ def update_report(request, instruction_id):
         else:
             is_valid = create_or_update_redaction_record(request, instruction)
             if request.POST.get('event_flag') == 'submit' and is_valid:
-                send_mail(
-                    'Patient Notification',
-                    'Your instruction has been completed',
-                    'MediData',
-                    [instruction.patient.user.email],
-                    fail_silently=True,
-                )
+                create_patient_report(instruction)
                 return redirect('instructions:view_pipeline')
 
         return redirect('medicalreport:edit_report', instruction_id=instruction_id)

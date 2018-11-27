@@ -55,6 +55,7 @@ psycopg2-binary==2.7.5
 pyasn1==0.4.4
 pycparser==2.18
 pycrypto==2.6.1
+pycryptodome==3.7.0
 pydotplus==2.0.2
 pyparsing==2.2.0
 python-dateutil==2.7.3

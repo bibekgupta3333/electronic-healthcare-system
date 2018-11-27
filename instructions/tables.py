@@ -32,7 +32,12 @@ class InstructionTable(tables.Table):
         self.user = request.user
 
     def render_client_user(self, value):
-        return format_html(value.user.userprofilebase.clientuser.organisation.trading_name)
+        user = value.user
+        trading_name = ""
+        if hasattr(user, 'userprofilebase') and hasattr(user.userprofilebase, 'clientuser') and\
+            user.userprofilebase.organisation:
+            trading_name = user.userprofilebase.clientuser.organisation.trading_name
+        return format_html(trading_name)
 
     def render_patient_information(self, value):
         return format_html(

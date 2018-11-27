@@ -51,6 +51,10 @@ def check_permission(func):
             "consent-contact" in request.path):
             is_valid = True
 
+        if hasattr(user.userprofilebase, "clientuser") and client_user and\
+            client_user.organisation == user.userprofilebase.clientuser.organisation:
+            is_valid = True
+
         if is_valid:
             is_valid = check_status_with_url(is_valid, request.path, instruction.status)
 

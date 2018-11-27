@@ -25,6 +25,7 @@ CONFIG_DIR = os.path.abspath(os.path.join(BASE_DIR, '../config/'))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '@rdh!%o$i9!8c%m5v1!sj(kv52z-23!cqw^o+qs@cybna81r%%'
+AES_KEY = get_env_variable('AES_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False

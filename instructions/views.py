@@ -540,7 +540,7 @@ def view_reject(request, instruction_id):
         'condition_of_interest': condition_of_interest,
         'consent_form_data': consent_form_data,
         'instruction': instruction,
-        'instruction_id': instruction_id,
+        'instruction_id': instruction.id,
     })
 
 
