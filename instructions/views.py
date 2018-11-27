@@ -226,7 +226,7 @@ def new_instruction(request):
             gp_practice_code = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.pk', default=None)
         gp_practice = OrganisationGeneralPractice.objects.filter(practcode=gp_practice_code).first()
 
-        if (patient_form.is_valid() and scope_form.is_valid() and gp_practice) or request.user.type == GENERAL_PRACTICE_USER:
+        if patient_form.is_valid() and ((scope_form.is_valid() and gp_practice) or request.user.type == GENERAL_PRACTICE_USER):
             if instruction_id:
                 prev_instruction = get_object_or_404(Instruction, pk=instruction_id)
                 patient_instruction = get_object_or_404(InstructionPatient, instruction=prev_instruction)
