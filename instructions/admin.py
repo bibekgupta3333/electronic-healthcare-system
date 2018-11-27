@@ -1,7 +1,10 @@
 from django.contrib import admin
 from . import models
 from django.shortcuts import get_object_or_404
+from common.import_export import CustomExport
 from instructions.model_choices import INSTRUCTION_STATUS_REJECT
+from django.utils import timezone
+from datetime import timedelta
 
 
 class InstructionConditionsInline(admin.TabularInline):
@@ -27,13 +30,63 @@ class InstructionAdditionQuestionInline(admin.TabularInline):
             return 1
 
 
-class InstructionAdmin(admin.ModelAdmin):
+class DaysSinceFilter(admin.SimpleListFilter):
+    title = 'Days since created'
+    parameter_name = 'created_date'
+
+    MORE_THAN_0 = 5
+    MORE_THAN_5 = 10
+    MORE_THAN_10 = 15
+    MORE_THAN_15 = 0
+
+    def lookups(self, request, model_admin):
+        return [
+            (self.MORE_THAN_0, '0 to 5 days'),
+            (self.MORE_THAN_5, '6 to 10 days'),
+            (self.MORE_THAN_10, '11 to 15 days'),
+            (self.MORE_THAN_15, 'More than 15 days')
+        ]
+
+    def queryset(self, request, queryset):
+        days = None
+        if self.value():
+            days = int(self.value())
+        if days == self.MORE_THAN_0:
+            date = timezone.now() - timedelta(days=self.MORE_THAN_0)
+            return queryset.filter(created__gt=date)
+        elif days == self.MORE_THAN_5:
+            date_from = timezone.now() - timedelta(days=self.MORE_THAN_5)
+            date_to = timezone.now() - timedelta(days=self.MORE_THAN_0)
+            return queryset.filter(created__gt=date_from, created__lte=date_to)
+        elif days == self.MORE_THAN_10:
+            date_from = timezone.now() - timedelta(days=self.MORE_THAN_10)
+            date_to = timezone.now() - timedelta(days=self.MORE_THAN_5)
+            return queryset.filter(created__gt=date_from, created__lte=date_to)
+        elif days == self.MORE_THAN_15:
+            date = timezone.now() - timedelta(days=self.MORE_THAN_10)
+            return queryset.filter(created__lt=date)
+        else:
+            return queryset
+
+
+class InstructionAdmin(CustomExport, admin.ModelAdmin):
     change_status = False
-    list_display = ('client_user', 'gp_user', 'gp_practice', 'status', 'created')
+    list_display = ('client_user', 'gp_practice', 'status', 'created', 'type', 'days_since_created')
+    list_filter = ('type', DaysSinceFilter, 'gp_user', 'client_user')
+    search_fields = [
+        'gp_user__userprofilebase_ptr__user__first_name',
+        'client_user__userprofilebase_ptr__user__first_name',
+        'gp_user__userprofilebase_ptr__user__last_name',
+        'client_user__userprofilebase_ptr__user__last_name',
+        'type'
+    ]
     inlines = [
         InstructionConditionsInline,
         InstructionAdditionQuestionInline
     ]
+
+    def days_since_created(self, instance):
+        return (timezone.now().date() - instance.created.date()).days
 
     def save_model(self, request, obj, form, change):
         change_status = False

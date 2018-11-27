@@ -1,5 +1,5 @@
 from django.contrib import admin
-from import_export.admin import ImportExportModelAdmin
+from common.import_export import CustomImportExport
 from import_export import resources
 from django import forms
 from .models import OrganisationMedidata, OrganisationGeneralPractice, OrganisationClient
@@ -24,7 +24,7 @@ class OrganisationGeneralPracticeForm(forms.ModelForm):
         fields = '__all__'
 
 
-class OrganisationGeneralPracticeAdmin(ImportExportModelAdmin):
+class OrganisationGeneralPracticeAdmin(CustomImportExport):
     skip_admin_log = True
     search_fields = ['name', 'practcode']
     resource_class = OrganisationGeneralPracticeResource
