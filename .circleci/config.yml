@@ -59,23 +59,6 @@ jobs:
           working_directory: ~/repo
           command: |
             ssh $STAGING_USER@$STAGING_HOST "$STAGING_RESTART"
-  deploy_new_staging:
-    machine:
-      enable: true
-    steps:
-      - add_ssh_keys:
-          fingerprints:
-            - "df:14:25:0d:9a:e8:85:25:da:0e:8a:99:33:f9:24:d6"
-      - run:
-          name: Deploy new staging
-          working_directory: ~/repo
-          command: |
-            ssh $STAGING_USER@$NEW_STAGING_HOST "$STAGING_COMMAND"
-      - run:
-          name: Restart server
-          working_directory: ~/repo
-          command: |
-            ssh $STAGING_USER@$NEW_STAGING_HOST "$STAGING_RESTART"
   deploy_uat:
     machine:
       enable: true
@@ -114,21 +97,11 @@ workflows:
               only:
                 - master
                 - develop
-      - deploy_new_staging:
-          requires:
-            - build
-            - sonarqube
-          filters:
-            branches:
-              only:
-                - master
-                - develop
       - deploy_uat:
           requires:
             - build
             - sonarqube
             - deploy_staging
-            - deploy_new_staging
           filters:
             branches:
               only:
