@@ -17,6 +17,7 @@ from accounts.functions import create_or_update_patient_user
 from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice
 from organisations.views import get_gporganisation_data
+from medicalreport.views import get_matched_patient
 from template.forms import TemplateInstructionForm
 from common.functions import multi_getattr
 from snomedct.models import SnomedConcept
@@ -554,23 +555,16 @@ def consent_contact(request, instruction_id, patient_emis_number):
     if request.method == "POST":
         sars_consent_form = SarsConsentForm(request.POST, request.FILES)
         mdx_consent_form = MdxConsentForm(request.POST, request.FILES)
-        if sars_consent_form.is_valid():
-            # ToDo have to change logic check required consent form
-            instruction.sars_consent = sars_consent_form.cleaned_data['sars_consent']
-        if mdx_consent_form.is_valid():
-            instruction.mdx_consent = mdx_consent_form.cleaned_data['mdx_consent']
-            instruction.consent_form = mdx_consent_form.cleaned_data['mdx_consent']
-        if request.POST.get('sars_consent_cnt') == '0':
-            instruction.sars_consent = None
-        if request.POST.get('mdx_consent_cnt') == '0':
-            instruction.mdx_consent = None
+
+        if request.POST.get('sars_consent_loaded') == 'loaded':
+            instruction.sars_consent = request.FILES['sars_consent']
+        if request.POST.get('mdx_consent_loaded') == 'loaded':
+            instruction.mdx_consent = request.FILES['mdx_consent']
 
         patient_instruction.patient_email = request.POST.get('patient_email', '')
         patient_instruction.telephone_mobile = request.POST.get('patient_telephone_mobile', '')
         patient_instruction.alternate_phone = request.POST.get('patient_alternate_phone', '')
         patient_instruction.save()
-        patient_user = create_or_update_patient_user(patient_instruction, patient_emis_number)
-        instruction.patient = patient_user
         instruction.save()
 
         next_step = request.POST.get('next_step', '')
@@ -580,8 +574,20 @@ def consent_contact(request, instruction_id, patient_emis_number):
             instruction.in_progress(context={'gp_user': gp_user})
             return redirect('instructions:view_pipeline')
         elif next_step == 'proceed':
+            patient_user = create_or_update_patient_user(patient_instruction, patient_emis_number)
+            instruction.patient = patient_user
+            instruction.save()
             return redirect('medicalreport:select_patient', instruction_id=instruction_id, patient_emis_number=patient_emis_number)
 
+    patient_email = ''
+    patient_telephone_mobile = ''
+    patient_alternate_phone = ''
+    patient_list = get_matched_patient(patient_instruction)
+    for patient in patient_list:
+        if patient_emis_number == patient.ref_id:
+            patient_email = patient.email
+            patient_telephone_mobile = patient.telephone_mobile
+            patient_alternate_phone = patient.alternate_phone
     # Initial Patient Form
     patient_form = InstructionPatientForm(
         instance=patient_instruction,
@@ -591,6 +597,9 @@ def consent_contact(request, instruction_id, patient_emis_number):
             'patient_last_name': patient_instruction.patient_last_name,
             'patient_postcode': patient_instruction.patient_postcode,
             'patient_address_number': patient_instruction.patient_address_number,
+            'patient_email': patient_email,
+            'patient_telephone_mobile': patient_telephone_mobile,
+            'patient_alternate_phone': patient_alternate_phone
         }
     )
     sars_consent_form = SarsConsentForm()
