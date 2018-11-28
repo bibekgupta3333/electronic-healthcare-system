@@ -12,13 +12,13 @@ function renderReport(element){
 }
 
 function enable_submit_button(){
-  $('#submitButton').prop('disabled', true);
+  $('#submitButton').prop("disabled", true);
   if($('#id_gp_practitioner').val()){
-      if($('#id_prepared_and_signed_0').is(':checked')){
-          $('#submitButton').prop('disabled', false);
-      } else if($('#id_prepared_and_signed_1').is(':checked')){
+      if($('#id_prepared_and_signed_0').is(":checked")){
+          $('#submitButton').prop("disabled", false);
+      } else if($('#id_prepared_and_signed_1').is(":checked")){
           if($('#id_prepared_by').val()){
-              $('#submitButton').prop('disabled', false);
+              $('#submitButton').prop("disabled", false);
           }
       }
   }
