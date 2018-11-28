@@ -86,8 +86,8 @@ def count_gpusers(queryset):
 
 def count_clientusers(queryset):
     all_count = queryset.count()
-    admin_count = queryset.filter(is_staff=True).count()
-    client_count = queryset.filter(is_staff=False).count()
+    admin_count = queryset.filter(userprofilebase__clientuser__role=0).count()
+    client_count = queryset.filter(userprofilebase__clientuser__role=1).count()
     overall_users_number = {
         'All': all_count,
         'Admin': admin_count,
