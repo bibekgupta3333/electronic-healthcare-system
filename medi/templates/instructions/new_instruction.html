@@ -41,7 +41,10 @@
                         </div>
                         <div class="row">
                             <div class="col-md-2 rowTitle">Date of Birth*:</div>
-                            {% bootstrap_field patient_form.patient_dob size='small' form_group_class='form-group col-md-6 p-0 input-group dob' show_label=False %}
+{#                            {% bootstrap_field patient_form.patient_dob size='small' form_group_class='form-group col-md-6 p-0 input-group dob' show_label=False %}#}
+                            {% bootstrap_field patient_form.patient_dob_day size='small' show_label=True %}
+                            {% bootstrap_field patient_form.patient_dob_month size='small' show_label=True%}
+                            {% bootstrap_field patient_form.patient_dob_year size='small'  show_label=True %}
                         </div>
                         <div class="row">
                             <div class="col-md-2 rowTitle">Address*:</div>

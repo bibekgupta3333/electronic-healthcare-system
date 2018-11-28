@@ -200,9 +200,10 @@ def new_instruction(request):
     template_form = TemplateInstructionForm()
 
     if request.method == "POST":
+        request.POST._mutable = True
         instruction_id = request.POST.get('instruction_id', None)
         gp_form = GPForm(request.POST)
-        patient_form = InstructionPatientForm(request.POST)
+        patient_form = InstructionPatientForm(InstructionPatientForm.change_request_date(request.POST))
         addition_question_formset = AdditionQuestionFormset(request.POST)
         raw_common_condition = request.POST.getlist('common_condition')
         common_condition_list = list(chain.from_iterable([ast.literal_eval(item) for item in raw_common_condition]))
@@ -225,8 +226,8 @@ def new_instruction(request):
         if not gp_practice_code:
             gp_practice_code = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.pk', default=None)
         gp_practice = OrganisationGeneralPractice.objects.filter(practcode=gp_practice_code).first()
-
-        if patient_form.is_valid() and ((scope_form.is_valid() and gp_practice) or request.user.type == GENERAL_PRACTICE_USER):
+        if (patient_form.is_valid() and scope_form.is_valid() and gp_practice) or\
+                (request.user.type == GENERAL_PRACTICE_USER and patient_form.is_valid()):
             if instruction_id:
                 prev_instruction = get_object_or_404(Instruction, pk=instruction_id)
                 patient_instruction = get_object_or_404(InstructionPatient, instruction=prev_instruction)
@@ -309,7 +310,7 @@ def new_instruction(request):
                 'selected_add_cond_title': json.dumps(selected_add_cond_title),
                 'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
             })
-    patient_form = InstructionPatientForm()
+    patient_form = InstructionPatientForm(initial={'patient_dob_year': '2000'})
     addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.none())
     scope_form = ScopeInstructionForm(user=request.user)
 

@@ -18,10 +18,10 @@ class MyChoiceField(forms.ChoiceField):
 
 class InstructionPatientForm(forms.ModelForm):
     email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), required=False)
-    patient_dob = forms.DateField(
-        input_formats=DATE_INPUT_FORMATS, required=True,
-        widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': ''})
-    )
+    patient_dob = forms.DateField(show_hidden_initial=True)
+    patient_dob_day = forms.ChoiceField(choices=((str(x), x) for x in range(1, 32)), label='Day')
+    patient_dob_month = forms.ChoiceField(choices=((str(x), x) for x in range(1, 13)), label='Month')
+    patient_dob_year = forms.ChoiceField(choices=((str(x), x) for x in range(1900, 2028)), label='Year')
     patient_postcode = MyChoiceField(required=True, label='Address postcode')
     patient_address_number = MyChoiceField(required=False, label='Address name number')
     patient_address_line1 = forms.CharField(max_length=255, required=True)
@@ -35,7 +35,6 @@ class InstructionPatientForm(forms.ModelForm):
         exclude = ('instruction', 'patient_user')
         widgets = {
             'patient_postcode': forms.TextInput(attrs={'placeholder': '', }),
-            'patient_dob': forms.DateTimeInput(attrs={'placeholder': '', 'autocomplete': 'off'}),
             'patient_address_number': forms.TextInput(attrs={'placeholder': '', })
         }
 
@@ -54,6 +53,18 @@ class InstructionPatientForm(forms.ModelForm):
                     self.fields['patient_address_number'] = forms.CharField(max_length=255, label='Address name number')
 
                 self.fields['patient_title'] = forms.CharField(max_length=255, label='Title*')
+
+    @classmethod
+    def str_to_date(cls, day, month, year):
+        return year + '-' + month + '-' + day
+
+    @classmethod
+    def change_request_date(cls, request):
+        request['patient_dob'] = InstructionPatientForm.str_to_date(request.get('patient_dob_day'),
+                                                 request.get('patient_dob_month'),
+                                                 request.get('patient_dob_year')
+                                                 )
+        return request
 
 
 class GPForm(forms.Form):
