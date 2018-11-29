@@ -204,7 +204,6 @@ def new_instruction(request):
         request.POST._mutable = True
         instruction_id = request.POST.get('instruction_id', None)
         gp_form = GPForm(request.POST)
-        patient_form = InstructionPatientForm(InstructionPatientForm.change_request_date(request.POST))
         addition_question_formset = AdditionQuestionFormset(request.POST)
         raw_common_condition = request.POST.getlist('common_condition')
         common_condition_list = list(chain.from_iterable([ast.literal_eval(item) for item in raw_common_condition]))
@@ -222,7 +221,7 @@ def new_instruction(request):
         selected_gp_adr_line2 = request.POST.get('patient_address_line2', '')
         selected_gp_adr_line3 = request.POST.get('patient_address_line3', '')
         selected_gp_adr_country = request.POST.get('patient_country', '')
-        patient_form = InstructionPatientForm(request.POST, initial={
+        patient_form = InstructionPatientForm(InstructionPatientForm.change_request_date(request.POST), initial={
                         'patient_address_line1': selected_gp_adr_line1,
                         'patient_address_line2': selected_gp_adr_line2,
                         'patient_address_line3': selected_gp_adr_line3,
@@ -323,7 +322,7 @@ def new_instruction(request):
                 'selected_add_cond_title': json.dumps(selected_add_cond_title),
                 'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
             })
-    patient_form = InstructionPatientForm(initial={'patient_dob_year': '2000'})
+    patient_form = InstructionPatientForm()
     addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.none())
     scope_form = ScopeInstructionForm(user=request.user)
 

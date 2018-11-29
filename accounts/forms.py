@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.conf import settings
-from django.db.models import Q
+from django.utils.timezone import now
 from common.functions import verify_password
 from .models import GeneralPracticeUser, ClientUser, TITLE_CHOICE, User,\
         MEDIDATA_USER, CLIENT_USER, GENERAL_PRACTICE_USER, PATIENT_USER, MedidataUser
@@ -19,10 +19,10 @@ class MyChoiceField(forms.ChoiceField):
 
 class InstructionPatientForm(forms.ModelForm):
     email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), required=False)
-    patient_dob = forms.DateField(show_hidden_initial=True)
+    patient_dob = forms.DateField(show_hidden_initial=True, input_formats=DATE_INPUT_FORMATS)
     patient_dob_day = forms.ChoiceField(choices=((str(x), x) for x in range(1, 32)), label='Day')
     patient_dob_month = forms.ChoiceField(choices=((str(x), x) for x in range(1, 13)), label='Month')
-    patient_dob_year = forms.ChoiceField(choices=((str(x), x) for x in range(1900, 2028)), label='Year')
+    patient_dob_year = forms.ChoiceField(choices=((str(x), x) for x in range(1900, now().year)), label='Year')
     patient_postcode = MyChoiceField(required=True, label='Address postcode')
     patient_address_number = MyChoiceField(required=False, label='Address name number')
     patient_address_line1 = forms.CharField(max_length=255, required=True)

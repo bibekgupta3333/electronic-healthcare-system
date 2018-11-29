@@ -202,16 +202,12 @@
                 let instruction_type = $(this).data('instruction_type');
                 let patient_ref_id = $(this).data('patient_ref_id');
                 let action_url = '/medicalreport/'+ instruction_id+'/select-patient/' + patient_ref_id + '/';
-                $('#allocateInstructionForm').attr('action',
-                    action_url
-                );
+                $('#allocateInstructionForm').attr('action', action_url);
                 if (instruction_type == "SARS"){
-                    window.location.replace(action_url)
-
+                    window.location = '/instruction/consent-contact/'+  instruction_id + '/select-patient/' + patient_ref_id;
                 }else {
                     $('#selectPatientModal').modal('show');
                 }
-
             });
 
             $('.allocate-gp').insertAfter('label[for="id_allocate_options_1"]');
