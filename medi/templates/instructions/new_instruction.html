@@ -501,7 +501,7 @@
                             $('#id_patient_address_number').trigger({
                                 type: 'select2:select',
                                 params: {
-                                    data: {text: "{{selected_add_name_number}}" != '' ? "{{selected_add_name_number}}" : data.addresses[0]}
+                                    data: {text: "{{selected_pat_adr_num}}" != '' ? "{{selected_pat_adr_num}}" : data.addresses[0]}
                                 }
                             });
 
@@ -509,10 +509,9 @@
                 })
             });
 
-            $('#id_patient_postcode').prop('required', true);
-            if ('{{patient_form.address_postcode.value}}' != 'None') {
-                var option = new Option("{{patient_form.address_postcode.value}}", "{{patient_form.address_postcode.value}}", true, true);
-                $('#id_address_postcode').append(option).trigger('change');
+            if ('{{selected_pat_code}}' != '') {
+                var option = new Option("{{selected_pat_code}}", "{{selected_pat_code}}", true, true);
+                $('#id_patient_postcode').append(option).trigger('change');
             }
 
             $('.instructionType').on('change', function () {

@@ -211,12 +211,23 @@ def new_instruction(request):
         addition_condition_list = request.POST.getlist('addition_condition')
         condition_of_interests = list(set().union(common_condition_list, addition_condition_list))
         scope_form = ScopeInstructionForm(request.user, request.POST.get('patient_email'), request.POST, request.FILES)
+        selected_pat_code = request.POST.get('patient_postcode', '')
+        selected_pat_adr_num = request.POST.get('patient_address_number', '')
         selected_gp_code = request.POST.get('gp_practice', '')
         selected_gp_name = request.POST.get('gp_practice_name', '')
         selected_add_cond = request.POST.getlist('addition_condition', [])
         selected_add_cond_title = request.POST.get('addition_condition_title', '')
         selected_add_cond_title = selected_add_cond_title.split(',')
-        selected_add_name_number = request.POST.get('address_name_number', '')
+        selected_gp_adr_line1 = request.POST.get('patient_address_line1', '')
+        selected_gp_adr_line2 = request.POST.get('patient_address_line2', '')
+        selected_gp_adr_line3 = request.POST.get('patient_address_line3', '')
+        selected_gp_adr_country = request.POST.get('patient_country', '')
+        patient_form = InstructionPatientForm(request.POST, initial={
+                        'patient_address_line1': selected_gp_adr_line1,
+                        'patient_address_line2': selected_gp_adr_line2,
+                        'patient_address_line3': selected_gp_adr_line3,
+                        'patient_country': selected_gp_adr_country
+                    })
         i = 0
         while i < len(selected_add_cond):
             selected_add_cond[i] = int(selected_add_cond[i])
@@ -304,10 +315,11 @@ def new_instruction(request):
                 'scope_form': scope_form,
                 'addition_question_formset': addition_question_formset,
                 'template_form': template_form,
+                'selected_pat_code': selected_pat_code,
+                'selected_pat_adr_num': selected_pat_adr_num,
                 'selected_gp_code': selected_gp_code,
                 'selected_gp_name': selected_gp_name,
                 'selected_add_cond': selected_add_cond,
-                'selected_add_name_number': selected_add_name_number,
                 'selected_add_cond_title': json.dumps(selected_add_cond_title),
                 'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
             })
