@@ -478,6 +478,7 @@
                                 return name;
                             });
 
+                            $('#id_patient_address_number').empty();
                             $('#id_patient_address_number').select2({
                                 data: formattedData
                              });
@@ -494,7 +495,7 @@
 
                                 $('#id_patient_address_line1').val(selectedData[0]);
                                 $('#id_patient_address_line2').val(selectedData[1]);
-                                $('id_patient_address_line3').val(selectedData[2]);
+                                $('#id_patient_address_line3').val(selectedData[2]);
                                 $('#id_patient_city').val(selectedData[5]);
                                 $('#id_patient_country').val(selectedData[6]);
                             });
