@@ -312,7 +312,7 @@
                     url: "{% url 'template:search' %}",
                     data: function (params) {
                         let query = {
-                            template_title: params.term,
+                            search: params.term,
                         };
                         return query;
                     },
@@ -323,12 +323,16 @@
                     }
                 }
             });
-
+            
             //load template into the form
             $('#id_template').on('change', function () {
                 $.ajax({
-                    url: "/template/details/" + this.value,
-                    method: 'get',
+                    url: "{% url 'template:details' %}",
+                    type: "GET",
+                    data: {
+                        "template_title": $(this).val()
+                    },
+                    dataType: 'json',
                     success: function (data) {
                         template_data = data;
                     },

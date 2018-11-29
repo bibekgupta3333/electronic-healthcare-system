@@ -11,7 +11,7 @@ class TemplateConditionsInline(admin.TabularInline):
     fields = ['snomedct']
 
     def get_extra(self, request, obj=None, **kwargs):
-        if obj and obj.instructionconditionsofinterest_set.count():
+        if obj and obj.templateconditionsofinterest_set.count():
             return 0
         else:
             return 1
@@ -22,7 +22,7 @@ class TemplateQuestionsInline(admin.TabularInline):
     fields = ['question']
 
     def get_extra(self, request, obj=None, **kwargs):
-        if obj and obj.instructionconditionsofinterest_set.count():
+        if obj and obj.templateinstructionadditionalquestion_set.count():
             return 0
         else:
             return 1
