@@ -1,9 +1,10 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.db.models import Q
 from common.functions import verify_password
 from .models import GeneralPracticeUser, ClientUser, TITLE_CHOICE, User,\
-        MEDIDATA_USER, CLIENT_USER, GENERAL_PRACTICE_USER, MedidataUser
+        MEDIDATA_USER, CLIENT_USER, GENERAL_PRACTICE_USER, PATIENT_USER, MedidataUser
 from instructions.models import InstructionPatient
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 DATE_INPUT_FORMATS = settings.DATE_INPUT_FORMATS
@@ -54,9 +55,15 @@ class InstructionPatientForm(forms.ModelForm):
 
                 self.fields['patient_title'] = forms.CharField(max_length=255, label='Title*')
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=self.cleaned_data.get('email')).exclude(type=PATIENT_USER).exists():
+            raise forms.ValidationError('{email} already used by user that is not Patient'.format(email=email))
+        return email
+
     @classmethod
     def str_to_date(cls, day, month, year):
-        return year + '-' + month + '-' + day
+        return '/'.join([day, month, year])
 
     @classmethod
     def change_request_date(cls, request):
