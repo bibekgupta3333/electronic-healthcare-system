@@ -90,7 +90,7 @@ def get_sign_up_autocomplete(request):
 
     for nhs_gp in nhs_gps:
         if name:
-            data['items'].append({'id': nhs_gp.practcode, 'text': nhs_gp.name})
+            data['items'].append({'id': nhs_gp.name, 'text': nhs_gp.name})
         elif code:
             data['items'].append({'id': nhs_gp.practcode, 'text': nhs_gp.practcode})
 
@@ -105,6 +105,7 @@ def get_gp_sign_up_data(request, **kwargs):
         'name': '',
         'street': '',
         'city': '',
+        'country': '',
         'postcode': '',
         'phone_office': '',
     }
@@ -117,6 +118,7 @@ def get_gp_sign_up_data(request, **kwargs):
                 'code': gp_organisation.practcode,
                 'name': gp_organisation.name,
                 'street': gp_organisation.billing_address_street,
+                'country': gp_organisation.billing_address_state,
                 'city': gp_organisation.billing_address_city,
                 'postcode': gp_organisation.billing_address_postalcode,
                 'phone_office': gp_organisation.phone_office,

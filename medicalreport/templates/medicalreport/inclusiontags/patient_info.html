@@ -12,20 +12,21 @@
 
             </ul>
         </div>
-        <div class="col-md-6 ml-auto">
-            <h6><strong>{{ instruction.client.company_name }}</strong></h6>
-            <strong>Requested Conditions:</strong>
-            {% if not instruction.selected_snomed_concepts %}
-                No conditions
-            {% else %}
-            <ul class=''>
-                {% for snomed in instruction.selected_snomed_concepts %}
-                <li>{{ snomed.fsn_description }}</li>
-                {% endfor %}
-            </ul>
-            {% endif %}
-        </div>
-
+        {% if instruction.type == 'AMRA' %}
+            <div class="col-md-6 ml-auto">
+                <h6><strong>{{ instruction.client.company_name }}</strong></h6>
+                <strong>Requested Conditions:</strong>
+                {% if not instruction.selected_snomed_concepts %}
+                    No conditions
+                {% else %}
+                <ul class=''>
+                    {% for snomed in instruction.selected_snomed_concepts %}
+                    <li>{{ snomed.fsn_description }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
     <div class="row">
         <div class="col-md-12 text-right">

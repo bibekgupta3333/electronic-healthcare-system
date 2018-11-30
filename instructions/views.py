@@ -10,7 +10,7 @@ from .models import Instruction, InstructionAdditionQuestion, InstructionConditi
 from .tables import InstructionTable
 from .model_choices import *
 from .forms import ScopeInstructionForm, AdditionQuestionFormset, SarsConsentForm, MdxConsentForm
-from accounts.models import User, GeneralPracticeUser
+from accounts.models import User, GeneralPracticeUser, PracticePreferences
 from accounts.models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from accounts.forms import InstructionPatientForm, GPForm
 from accounts.functions import create_or_update_patient_user
@@ -253,6 +253,15 @@ def new_instruction(request):
                 scope_form=scope_form, gp_practice=gp_practice,
                 instruction_id=instruction_id
             )
+            practice_preferences = PracticePreferences.objects.get(gp_organisation=gp_practice)
+            if practice_preferences.notification == 'NEW':
+                send_mail(
+                    'New Instruction',
+                    'You have a new instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
+                    'MediData',
+                    [gp_practice.organisation_email],
+                    fail_silently=True,
+                )
             if request.user.type == CLIENT_USER:
                 # create relations of instruction with snomed code
                 create_snomed_relations(instruction, condition_of_interests)

@@ -17,7 +17,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(delete_user),
         migrations.DeleteModel(name='OrganisationBase'),
         migrations.DeleteModel(name='OrganisationMedidata'),
         migrations.DeleteModel(name='OrganisationClient'),

@@ -4,17 +4,12 @@ from django.conf import settings
 from django.utils.timezone import now
 from common.functions import verify_password
 from .models import GeneralPracticeUser, ClientUser, TITLE_CHOICE, User,\
-        MEDIDATA_USER, CLIENT_USER, GENERAL_PRACTICE_USER, PATIENT_USER, MedidataUser
+        MEDIDATA_USER, CLIENT_USER, GENERAL_PRACTICE_USER, PATIENT_USER,\
+        MedidataUser, NOTIFICATIONS, PracticePreferences
 from instructions.models import InstructionPatient
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
+from common.fields import MyChoiceField
 DATE_INPUT_FORMATS = settings.DATE_INPUT_FORMATS
-
-
-class MyChoiceField(forms.ChoiceField):
-
-    def validate(self, value):
-        if self.required and not value:
-            raise ValidationError(self.error_messages['required'], code='required')
 
 
 class InstructionPatientForm(forms.ModelForm):
@@ -142,6 +137,7 @@ class PMForm(forms.ModelForm):
             username=self.cleaned_data.get('first_name'),
             password=self.cleaned_data.get('password1'),
             first_name=self.cleaned_data.get('first_name'),
+            last_name=self.cleaned_data.get('surname'),
             type=GENERAL_PRACTICE_USER,
             is_staff=True,
         )
@@ -191,6 +187,19 @@ class NewClientForm(forms.ModelForm):
     class Meta:
         model = ClientUser
         fields = ('first_name', 'last_name', 'email', 'username', 'password', 'send_email')
+
+
+class PracticePreferencesForm(forms.ModelForm):
+    notification = forms.ChoiceField(choices=NOTIFICATIONS, required=False)
+    contact_feedback = forms.BooleanField(required=False)
+    contact_updates = forms.BooleanField(required=False)
+
+    class Meta:
+        model = PracticePreferences
+        fields = ('notification', 'contact_feedback', 'contact_updates')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 class NewMediForm(forms.ModelForm):

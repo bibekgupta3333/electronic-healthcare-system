@@ -10,6 +10,7 @@
 {% block ExtraHead %}
     <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/onboarding/sign_up.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/onboarding/emr_setup_stage_2.css' %}" rel="stylesheet">
 {% endblock %}
 
 {% block Content %}
@@ -34,13 +35,13 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-3 title-pos">Surgery Name</div>
+                                <div class="col-md-4 title-pos">Surgery Name <span class="red">*</span></div>
                                 {% bootstrap_field surgery_form.surgery_name show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-3 title-pos">Practice Code</div>
+                                <div class="col-md-4 title-pos">Practice Code <span class="red">*</span></div>
                                 {% bootstrap_field surgery_form.practice_code show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
@@ -48,13 +49,13 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-3 title-pos">Postcode</div>
+                                <div class="col-md-4 title-pos">Postcode<span class="red">*</span></div>
                                 {% bootstrap_field surgery_form.postcode show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-3 title-pos">Find Address</div>
+                                <div class="col-md-4 title-pos">Find Address</div>
                                 {% bootstrap_field surgery_form.address show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
@@ -62,13 +63,13 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-3 title-pos">Address Line 1</div>
+                                <div class="col-md-4 title-pos">Address Line 1<span class="red">*</span></div>
                                 {% bootstrap_field surgery_form.address_line1 show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-3 title-pos">Address Line 2</div>
+                                <div class="col-md-4 title-pos">Address Line 2</div>
                                 {% bootstrap_field surgery_form.address_line2 show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
@@ -76,13 +77,13 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-3 title-pos">Address Line 3</div>
+                                <div class="col-md-4 title-pos">Address Line 3</div>
                                 {% bootstrap_field surgery_form.address_line3 show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-3 title-pos">City</div>
+                                <div class="col-md-4 title-pos">City<span class="red">*</span></div>
                                 {% bootstrap_field surgery_form.city show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
@@ -90,13 +91,13 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-3 title-pos">Country</div>
+                                <div class="col-md-4 title-pos">Country<span class="red">*</span></div>
                                 {% bootstrap_field surgery_form.country show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-3 title-pos">Contact Number</div>
+                                <div class="col-md-4 title-pos">Contact Number<span class="red">*</span></div>
                                 {% bootstrap_field surgery_form.contact_num show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
@@ -104,13 +105,13 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-3 title-pos">EMIS Organisation Code</div>
+                                <div class="col-md-4 title-pos">EMIS Organisation Code<span class="red">*</span></div>
                                 {% bootstrap_field surgery_form.emis_org_code show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
                          <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-3 title-pos">Primary Care record system</div>
+                                <div class="col-md-4 title-pos">Primary Care record system<span class="red">*</span></div>
                                 {% bootstrap_field surgery_form.operating_system show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
@@ -132,13 +133,13 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-3 title-pos">First Name</div>
+                                <div class="col-md-4 title-pos">First Name<span class="red">*</span></div>
                                 {% bootstrap_field pm_form.first_name show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-3 title-pos">Surname</div>
+                                <div class="col-md-4 title-pos">Surname<span class="red">*</span></div>
                                 {% bootstrap_field pm_form.surname show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
@@ -146,7 +147,7 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row" id="email_form">
-                                <div class="col-md-3 title-pos">Email address</div>
+                                <div class="col-md-4 title-pos">Email address<span class="red">*</span></div>
                                 {% bootstrap_field pm_form.email1 show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                             <div id="email_error" class="offset-md-3"></div>
@@ -155,7 +156,7 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-3 title-pos">Confirm email</div>
+                                <div class="col-md-4 title-pos">Confirm email<span class="red">*</span></div>
                                 {% bootstrap_field pm_form.email2 show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
@@ -163,7 +164,7 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row" id="password_form">
-                                <div class="col-md-3 title-pos">Choose password</div>
+                                <div class="col-md-4 title-pos">Choose password<span class="red">*</span></div>
                                 {% bootstrap_field pm_form.password1 show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                             <div id="password_error" class="offset-md-3"></div>
@@ -175,7 +176,7 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-3 title-pos">Confirm password</div>
+                                <div class="col-md-4 title-pos">Confirm password<span class="red">*</span></div>
                                 {% bootstrap_field pm_form.password2 show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
@@ -194,7 +195,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="offset-md-1 col-md-3">
+                        <div class="offset-md-1 col-md-4">
                             <div class="row">
                                 <button id="BtnSignUp" class="btn btn-primary btn-lg" type="submit">Sign Up</button>
                             </div>
@@ -439,22 +440,6 @@
                 }
             });
 
-            $('#id_surgery_name, #id_practice_code').on('change', function () {
-                $.ajax({
-                    type: "GET",
-                    url: "{% url 'organisations:get_gp_sign_up_data' %}",
-                    data: {
-                        'code': $(this).val()
-                    },
-                    dataType: 'json',
-                    success: function (data) {
-                        $('#id_postcode').val(data.postcode);
-                        $('#id_address_line1').val(data.street);
-                        $('#id_city').val(data.city);
-                        $('#id_contact_num').val(data.phone_office);
-                    }
-                })
-            });
             $(document).on({
                 mouseover: function(){
                     $.ajax({
@@ -469,6 +454,7 @@
                             $('#id_postcode').val(data.postcode);
                             $('#id_address_line1').val(data.street);
                             $('#id_city').val(data.city);
+                            $('#id_country').val(data.country);
                             $('#id_contact_num').val(data.phone_office);
                         }
                     })

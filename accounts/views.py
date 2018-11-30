@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.models import Group
@@ -15,9 +15,11 @@ from payment.models import OrganisationFee
 from django_tables2 import RequestConfig
 from accounts.forms import AllUserForm, NewGPForm, NewClientForm, NewMediForm
 
-from .models import User, UserProfileBase, GeneralPracticeUser
+from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
+from .forms import PracticePreferencesForm
 from permissions.functions import access_user_management
+from organisations.models import OrganisationGeneralPractice
 
 from django.conf import settings
 DEFAULT_FROM = settings.DEFAULT_FROM
@@ -31,6 +33,24 @@ from .functions import change_role, remove_user, get_table_data,\
 def account_view(request):
     header_title = 'Account'
     user = request.user
+    gp_user = GeneralPracticeUser.objects.get(pk=user.userprofilebase.generalpracticeuser.pk)
+    gp_organisation = gp_user.organisation
+    try:
+        practice_preferences = PracticePreferences.objects.get(gp_organisation=gp_organisation)
+    except PracticePreferences.DoesNotExist:
+        practice_preferences = PracticePreferences()
+        practice_preferences.gp_organisation = gp_organisation
+        practice_preferences.notification = 'NEW'
+        practice_preferences.save()
+    
+    if request.is_ajax():
+        gp_preferences_form = PracticePreferencesForm(request.POST, instance=practice_preferences)
+        if gp_preferences_form.is_valid():
+            gp_preferences_form.save()
+            return JsonResponse({'message': 'Preferences have been saved.'})
+
+    gp_preferences_form = PracticePreferencesForm(instance=practice_preferences)
+    
     organisation = multi_getattr(user, 'userprofilebase.generalpracticeuser.organisation', default=None)
     organisation_fee = OrganisationFee.objects.filter(gp_practice=organisation).first()
     organisation_fee_data = list()
@@ -58,6 +78,7 @@ def account_view(request):
     return render(request, 'accounts/accounts_view.html', {
         'header_title': header_title,
         'organisation_fee_data': organisation_fee_data,
+        'gp_preferences_form': gp_preferences_form
     })
 
 

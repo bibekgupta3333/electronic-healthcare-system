@@ -37,8 +37,8 @@ class OrganisationGeneralPracticeAdmin(CustomImportExport):
         }),
         ('Address Information', {
             'fields': (
-                'region', 'comm_area', 'billing_address_street', 'billing_address_city', 'billing_address_state',
-                'billing_address_postalcode'
+                'region', 'comm_area', 'billing_address_street', 'billing_address_line_2', 'billing_address_line_3',
+                'billing_address_city', 'billing_address_state', 'billing_address_postalcode'
             )
         }),
         ('Contact Information', {
@@ -46,7 +46,7 @@ class OrganisationGeneralPracticeAdmin(CustomImportExport):
         }),
         ('Systmem Information', {
             'fields': (
-                'gp_operating_system', 'operating_system_socket_endpoint',
+                'gp_operating_system', 'operating_system_socket_endpoint', 'operating_system_organisation_code',
                 '_operating_system_salt_and_encrypted_password', 'operating_system_auth_token'
             )
         }),
