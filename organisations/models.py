@@ -92,6 +92,8 @@ class OrganisationGeneralPractice(models.Model):
     name = models.CharField(max_length=255, blank=True)
     billing_address_street = models.CharField(max_length=255, blank=True)
     billing_address_city = models.CharField(max_length=22, blank=True)
+    billing_address_line_2 = models.CharField(max_length=255, blank=True)
+    billing_address_line_3 = models.CharField(max_length=255, blank=True)
     billing_address_state = models.CharField(max_length=16, blank=True)
     billing_address_postalcode = models.CharField(max_length=8, blank=True)
     phone_office = models.CharField(max_length=28, blank=True)

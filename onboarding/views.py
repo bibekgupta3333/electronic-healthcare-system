@@ -9,6 +9,8 @@ from .functions import *
 from .forms import *
 from accounts.models import GpPractices
 from accounts.forms import PMForm
+import random
+import string
 
 
 def sign_up(request):
@@ -22,8 +24,16 @@ def sign_up(request):
         if surgery_form.is_valid() and pm_form.is_valid():
             gp_organisation = surgery_form.save()
             pm_form.save__with_gp(gp_organisation=gp_organisation)
-            if not surgery_form.cleaned_data.get('operating_system') == 'EW':
+            if not surgery_form.cleaned_data.get('operating_system') == 'EMISWeb':
                 return render(request, 'onboarding/emr_message.html')
+
+            initial_password = random.choices(string.ascii_uppercase, k=1)
+            body_password = random.choices(string.ascii_letters+string.digits, k=12)
+            tail_password = random.choices(string.digits, k=1)
+            password = ''.join(initial_password + body_password + tail_password)
+            gp_organisation.operating_system_salt_and_encrypted_password = password
+            gp_organisation.save()
+
     return render(request, 'onboarding/sign_up.html', {
         'surgery_form': surgery_form,
         'pm_form': pm_form,

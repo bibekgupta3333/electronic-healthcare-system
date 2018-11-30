@@ -6,6 +6,7 @@ from accounts.models import GpPractices
 q = GpPractices.objects.none()
 from organisations.models import OrganisationGeneralPractice
 from .models import EMRSetup
+from common.fields import MyChoiceField
 
 
 class EMRSetupForm(forms.ModelForm):
@@ -52,13 +53,13 @@ class EMRSetupForm(forms.ModelForm):
 
 
 class SurgeryForm(forms.Form):
-    surgery_name = forms.ChoiceField(choices=[])
-    practice_code = forms.ChoiceField(choices=[])
-    postcode = forms.ChoiceField(choices=[])
-    address = forms.ChoiceField(choices=[])
-    address_line1 = forms.CharField(max_length=20, label='', widget=forms.TextInput())
-    address_line2 = forms.CharField(max_length=20, label='', widget=forms.TextInput())
-    address_line3 = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+    surgery_name = MyChoiceField(choices=[])
+    practice_code = MyChoiceField(choices=[])
+    postcode = MyChoiceField(choices=[])
+    address = MyChoiceField(choices=[], required=False)
+    address_line1 = forms.CharField(max_length=255, label='', widget=forms.TextInput())
+    address_line2 = forms.CharField(max_length=255, label='', widget=forms.TextInput(), required=False)
+    address_line3 = forms.CharField(max_length=255, label='', widget=forms.TextInput(), required=False)
     city = forms.CharField(max_length=20, label='', widget=forms.TextInput())
     country = forms.CharField(max_length=20, label='', widget=forms.TextInput())
     contact_num = forms.CharField(max_length=20, label='', widget=forms.TextInput())
@@ -72,22 +73,10 @@ class SurgeryForm(forms.Form):
 
     def clean_practice_code(self):
         practice_code = self.cleaned_data.get('practice_code')
-
-        if OrganisationGeneralPractice.objects.filter(practice_code=practice_code).exists():
+        gp_onboarding = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
+        if gp_onboarding and gp_onboarding.generalpracticeuser_set.first():
             raise forms.ValidationError('This GP Surgery with this practice code already exists ')
         return practice_code
-
-    def clean_surgery_name(self):
-        surgery_name = self.cleaned_data.get('surgery_name')
-        if OrganisationGeneralPractice.objects.filter(trading_name=surgery_name).exists():
-            raise forms.ValidationError('This GP Surgery with this name already exists ')
-        return surgery_name
-
-    def clean_address_line1(self):
-        address_line1 = self.cleaned_data.get('address_line1')
-        if OrganisationGeneralPractice.objects.filter(billing_address_street__startswith=address_line1).exists():
-            raise forms.ValidationError('This GP Surgery with this address already exists ')
-        return address_line1
 
     def validate_operating_system(self):
         operating_system = self.cleaned_data.get('operating_system')
@@ -95,23 +84,28 @@ class SurgeryForm(forms.Form):
             self.cleaned_data['accept_policy'] = False
         return operating_system
 
-    def save(self, commit=True):
-        gp_address = ' '.join([
-            self.cleaned_data.get('address_line1'),
-            self.cleaned_data.get('address_line2') if self.cleaned_data.get('address_line2') else '',
-            self.cleaned_data.get('city'),
-            self.cleaned_data.get('postcode')
-        ])
+    def save(self):
         accept_policy = True if self.data.get('accept_policy') == 'on' else False
-        gp_organisation = OrganisationGeneralPractice.objects.create(
-            trading_name=self.cleaned_data.get('surgery_name'),
-            accept_policy=accept_policy,
-            legal_name=self.cleaned_data.get('surgery_name'),
-            address=gp_address,
-            contact_telephone=self.cleaned_data.get('contact_num'),
-            practice_code=self.cleaned_data.get('practice_code'),
+        live = True if self.cleaned_data.get('operating_system') == 'EW' else False
+        gp_organisation = OrganisationGeneralPractice.objects.update_or_create(
+            practcode=self.cleaned_data.get('practice_code'),
+            defaults={
+                'name': self.cleaned_data.get('surgery_name'),
+                'accept_policy': accept_policy,
+                'billing_address_street': self.cleaned_data.get('address_line1'),
+                'billing_address_line_2': self.cleaned_data.get('address_line2'),
+                'billing_address_line_3': self.cleaned_data.get('address_line3'),
+                'billing_address_city': self.cleaned_data.get('city'),
+                'billing_address_state': self.cleaned_data.get('country'),
+                'billing_address_postalcode': self.cleaned_data.get('postcode'),
+                'phone_office': self.cleaned_data.get('contact_num'),
+                'operating_system_organisation_code': self.cleaned_data.get('emis_org_code'),
+                'gp_operating_system': self.cleaned_data.get('operating_system'),
+                'live': live,
+            }
         )
-        return gp_organisation
+
+        return gp_organisation[0]
 
 
 class SurgeryEmrSetUpStage2Form(forms.Form):

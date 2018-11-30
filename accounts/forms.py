@@ -8,14 +8,8 @@ from .models import GeneralPracticeUser, ClientUser, TITLE_CHOICE, User,\
         MedidataUser, NOTIFICATIONS, PracticePreferences
 from instructions.models import InstructionPatient
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
+from common.fields import MyChoiceField
 DATE_INPUT_FORMATS = settings.DATE_INPUT_FORMATS
-
-
-class MyChoiceField(forms.ChoiceField):
-
-    def validate(self, value):
-        if self.required and not value:
-            raise ValidationError(self.error_messages['required'], code='required')
 
 
 class InstructionPatientForm(forms.ModelForm):
@@ -143,6 +137,7 @@ class PMForm(forms.ModelForm):
             username=self.cleaned_data.get('first_name'),
             password=self.cleaned_data.get('password1'),
             first_name=self.cleaned_data.get('first_name'),
+            last_name=self.cleaned_data.get('surname'),
             type=GENERAL_PRACTICE_USER,
             is_staff=True,
         )
