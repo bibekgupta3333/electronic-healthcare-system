@@ -111,7 +111,7 @@
                                     </a>
                                     <button type="button" id="saveDraftButton" onclick="subMitMedicalReport('draft')" class="btn btn-primary"><i class="fas fa-save"></i> SAVE DRAFT</button>
                                     {% if request.user.id|sign_off_report:instruction.id %}
-                                        <button type="button" id="submitButton" onclick="subMitMedicalReport('submit')" class="btn btn-primary btn-lg" disabled><i class="fas fa-check"></i> SUBMIT</button>
+                                        <button type="button" id="submitButton" onclick="subMitMedicalReport('submit')" class="btn btn-primary btn-lg"><i class="fas fa-check"></i> SUBMIT</button>
                                     {% endif %}
                                     <div class="row">
                                         <div class="col-md-9 offset-3 p-0">
@@ -191,6 +191,9 @@
             enable_submit_button();
         });
         $('#id_prepared_by').on('change', function () {
+            enable_submit_button();
+        });
+        $('#accept_disclaimer').on('change', function () {
             enable_submit_button();
         });
         $("input[type='checkbox'][name='instruction_checked']").click(function(){

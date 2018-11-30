@@ -170,21 +170,21 @@ class TemplateSearch(LoginRequiredMixin, ListView):
     http_method_names = ['get']
 
     def get_queryset(self):
-        search_param = self.request.GET.get('title', None)
+        search_param = self.request.GET.get('search', None)
         qs = super().get_queryset()
         client_organisation = multi_getattr(self.request.user, 'userprofilebase.clientuser.organisation', default=None)
         qs = qs.filter(Q(client_organisation=client_organisation) | Q(client_organisation__isnull=True))
         if search_param:
-            qs = qs.filter(title__icontains=search_param)
+            qs = qs.filter(template_title__icontains=search_param)
         return qs
 
     def get(self, request, *args, **kwargs):
-        templates = self.get_queryset().values('pk', 'title')
+        templates = self.get_queryset().values('pk', 'template_title')
         response = []
         for item in templates:
             response.append({
                 "id": item['pk'],
-                "text": item['title'],
+                "text": item['template_title']
             })
         return JsonResponse(response, status=200, safe=False)
 
@@ -195,7 +195,8 @@ class TemplateDetails(LoginRequiredMixin, DetailView):
     http_method_names = ['get']
 
     def get(self, request, *args, **kwargs):
-        template_instruction = self.get_object()
+        template_id = int(request.GET.get('template_title'))-1
+        template_instruction = self.get_queryset()[template_id]
         template_questions = TemplateInstructionAdditionalQuestion.objects.filter(template_instruction=template_instruction)
         template_conditions = TemplateConditionsOfInterest.objects.filter(template_instruction=template_instruction)
         response = {'questions': [], 'conditions': []}

@@ -113,7 +113,9 @@
                               <div class="col-md-2">{{ patient.date_of_birth }}</div>
                               <div class="col-md-4">{{ patient|patient_address }}</div>
                               <div class="col-md-2 select-btn">
-                                  <button data-instruction_id="{{ instruction.id }}" data-patient_ref_id="{{ patient.ref_id }}"
+                                  <button data-instruction_id="{{ instruction.id }}"
+                                          data-instruction_type="{{ instruction.type }}"
+                                          data-patient_ref_id="{{ patient.ref_id }}"
                                           class="btn btn-primary selectPatientButton">
                                       Select
                                   </button>
@@ -123,7 +125,13 @@
                   </div>
                   <div class="card-footer">
                       <label class="text-footer">Reject this request if there are no suitable matching patients:</label>
-                      <div class="btn-group reject-btn">
+                      <div class="row reject-btn">
+                          {% if instruction.type == 'SARS' and request.user.type == 'GP'%}
+                          <form action="{% url 'instructions:new_instruction' %}" method="GET" class="edit-btn">
+                              <input type="hidden" id="instruction_id" name="instruction_id" value="{{ instruction.id }}" />
+                              <button class="btn btn-primary" id="editPatientBtn">Edit Patient Details</button>
+                          </form>
+                          {% endif %}
                           {% if user.id|reject_instruction:instruction.id %}
                               <button class="btn btn-danger dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 Reject Request
@@ -191,12 +199,15 @@
         $(document).ready(function () {
             $('.selectPatientButton').on('click', function () {
                 let instruction_id = $(this).data('instruction_id');
+                let instruction_type = $(this).data('instruction_type');
                 let patient_ref_id = $(this).data('patient_ref_id');
                 let action_url = '/medicalreport/'+ instruction_id+'/select-patient/' + patient_ref_id + '/';
-                $('#allocateInstructionForm').attr('action',
-                    action_url
-                );
-                $('#selectPatientModal').modal('show');
+                $('#allocateInstructionForm').attr('action', action_url);
+                if (instruction_type == "SARS"){
+                    window.location = '/instruction/consent-contact/'+  instruction_id + '/select-patient/' + patient_ref_id;
+                }else {
+                    $('#selectPatientModal').modal('show');
+                }
             });
 
             $('.allocate-gp').insertAfter('label[for="id_allocate_options_1"]');

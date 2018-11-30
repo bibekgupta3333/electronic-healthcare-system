@@ -116,7 +116,6 @@ def edit_report(request, instruction_id):
         return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
 
     raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
-    # print('\n', raw_xml, '\n')
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     questions = instruction.addition_questions.all()
     finalise_submit_form = MedicalReportFinaliseSubmitForm(

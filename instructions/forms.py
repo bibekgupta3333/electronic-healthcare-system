@@ -101,19 +101,15 @@ AdditionQuestionFormset = modelformset_factory(
 )
 
 
-class SarsConsentForm(forms.ModelForm):
-    class Meta:
-        model = Instruction
-        fields = ('sars_consent', )
+class SarsConsentForm(forms.Form):
+    sars_consent = forms.FileField(required=False, label="Select a File")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
 
-class MdxConsentForm(forms.ModelForm):
-    class Meta:
-        model = Instruction
-        fields = ('mdx_consent', )
-    
+class MdxConsentForm(forms.Form):
+    mdx_consent = forms.FileField(required=False)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

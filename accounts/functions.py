@@ -1,13 +1,13 @@
-from .models import User, UserProfileBase, GeneralPracticeUser
-from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER, PATIENT_USER, Patient
 from django.contrib import messages
-from django.core.mail import send_mail
+from django.conf import settings
+from django.db.models import Q
+
 from .forms import NewGPForm, NewClientForm
 from .tables import UserTable
-from common.functions import get_env_variable
-from django.conf import settings
-DEFAULT_FROM = settings.DEFAULT_FROM
+from .models import User
+from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER, PATIENT_USER, Patient
 
+DEFAULT_FROM = settings.DEFAULT_FROM
 
 def reset_password(request):
     emails = request.POST.getlist("users[]")
@@ -86,8 +86,8 @@ def count_gpusers(queryset):
 
 def count_clientusers(queryset):
     all_count = queryset.count()
-    admin_count = queryset.filter(is_staff=True).count()
-    client_count = queryset.filter(is_staff=False).count()
+    admin_count = queryset.filter(userprofilebase__clientuser__role=0).count()
+    client_count = queryset.filter(userprofilebase__clientuser__role=1).count()
     overall_users_number = {
         'All': all_count,
         'Admin': admin_count,
@@ -185,7 +185,7 @@ def create_or_update_patient_user(patient_information, patient_emis_number) -> P
         user.last_name = patient_information.patient_last_name
         user.save()
     else:
-        if patient_information.patient_email:
+        if patient_information.patient_email and not User.objects.filter(email=patient_information.patient_email).exists():
             user = User.objects._create_user(
                 email=patient_information.patient_email,
                 username=patient_emis_number,

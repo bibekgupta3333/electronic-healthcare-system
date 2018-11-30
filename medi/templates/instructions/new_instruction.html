@@ -41,7 +41,10 @@
                         </div>
                         <div class="row">
                             <div class="col-md-2 rowTitle">Date of Birth*:</div>
-                            {% bootstrap_field patient_form.patient_dob size='small' form_group_class='form-group col-md-6 p-0 input-group dob' show_label=False %}
+{#                            {% bootstrap_field patient_form.patient_dob size='small' form_group_class='form-group col-md-6 p-0 input-group dob' show_label=False %}#}
+                            {% bootstrap_field patient_form.patient_dob_day size='small' show_label=True %}
+                            {% bootstrap_field patient_form.patient_dob_month size='small' show_label=True%}
+                            {% bootstrap_field patient_form.patient_dob_year size='small'  show_label=True %}
                         </div>
                         <div class="row">
                             <div class="col-md-2 rowTitle">Address*:</div>
@@ -309,7 +312,7 @@
                     url: "{% url 'template:search' %}",
                     data: function (params) {
                         let query = {
-                            template_title: params.term,
+                            search: params.term,
                         };
                         return query;
                     },
@@ -320,12 +323,16 @@
                     }
                 }
             });
-
+            
             //load template into the form
             $('#id_template').on('change', function () {
                 $.ajax({
-                    url: "/template/details/" + this.value,
-                    method: 'get',
+                    url: "{% url 'template:details' %}",
+                    type: "GET",
+                    data: {
+                        "template_title": $(this).val()
+                    },
+                    dataType: 'json',
                     success: function (data) {
                         template_data = data;
                     },
@@ -475,6 +482,7 @@
                                 return name;
                             });
 
+                            $('#id_patient_address_number').empty();
                             $('#id_patient_address_number').select2({
                                 data: formattedData
                              });
@@ -491,14 +499,14 @@
 
                                 $('#id_patient_address_line1').val(selectedData[0]);
                                 $('#id_patient_address_line2').val(selectedData[1]);
-                                $('id_patient_address_line3').val(selectedData[2]);
+                                $('#id_patient_address_line3').val(selectedData[2]);
                                 $('#id_patient_city').val(selectedData[5]);
                                 $('#id_patient_country').val(selectedData[6]);
                             });
                             $('#id_patient_address_number').trigger({
                                 type: 'select2:select',
                                 params: {
-                                    data: {text: "{{selected_add_name_number}}" != '' ? "{{selected_add_name_number}}" : data.addresses[0]}
+                                    data: {text: "{{selected_pat_adr_num}}" != '' ? "{{selected_pat_adr_num}}" : data.addresses[0]}
                                 }
                             });
 
@@ -506,10 +514,9 @@
                 })
             });
 
-            $('#id_patient_postcode').prop('required', true);
-            if ('{{patient_form.address_postcode.value}}' != 'None') {
-                var option = new Option("{{patient_form.address_postcode.value}}", "{{patient_form.address_postcode.value}}", true, true);
-                $('#id_address_postcode').append(option).trigger('change');
+            if ('{{selected_pat_code}}' != '') {
+                var option = new Option("{{selected_pat_code}}", "{{selected_pat_code}}", true, true);
+                $('#id_patient_postcode').append(option).trigger('change');
             }
 
             $('.instructionType').on('change', function () {
@@ -590,8 +597,6 @@
                     }
                 })
             });
-
-
         });
     </script>
 

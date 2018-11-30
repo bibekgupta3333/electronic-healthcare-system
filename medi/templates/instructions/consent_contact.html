@@ -75,7 +75,7 @@
                                 <div class="offset-md-1 col-md-10 mt-4">
                                         <div class="form-group">
                                             <div class="file-loading">
-                                                <input type="hidden" name="sars_consent_cnt" id="id_sars_consent_cnt" />
+                                                <input type="hidden" name="sars_consent_loaded" id="id_sars_consent_loaded" />
                                                 {% bootstrap_field sars_consent_form.sars_consent show_label=false %}
                                             </div>
                                         </div>
@@ -95,7 +95,7 @@
                                     <div class="offset-md-1 col-md-10 mt-1">
                                         <div class="form-group">
                                             <div class="file-loading">
-                                                <input type="hidden" name="mdx_consent_cnt" id="id_mdx_consent_cnt" />
+                                                <input type="hidden" name="mdx_consent_loaded" id="id_mdx_consent_loaded" />
                                                 {% bootstrap_field mdx_consent_form.mdx_consent show_label=false %}
                                             </div>
                                         </div>
@@ -328,11 +328,19 @@
                 $('#consentContactForm').submit();
             }
         });
-        $('#saveBtn').click(function(){
-            var sarscnt = $("#id_sars_consent")[0].files;
-            $('#id_sars_consent_cnt').val(sarscnt.length);
-            var mdxcnt = $("#id_mdx_consent")[0].files;
-            $('#id_mdx_consent_cnt').val(mdxcnt.length);
+        $('#id_sars_consent').on('change', function(){
+            var sarscnt = $("#id_sars_consent")[0].files.length;
+            if (sarscnt > 0){
+                $('#id_sars_consent_loaded').val('loaded');
+            }
+        });
+        $('#id_mdx_consent').on('change', function(){
+            var mdxcnt = $("#id_mdx_consent")[0].files.length;
+            if (mdxcnt > 0){
+                $('#id_mdx_consent_loaded').val('loaded');
+            }
+        });
+        $('#saveBtn').click(function(){            
             $('#id_next_step').val('view_pipeline'); 
             $('#consentContactForm').submit();
         });

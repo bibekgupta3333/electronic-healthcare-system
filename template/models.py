@@ -12,7 +12,7 @@ class TemplateInstruction(TimeStampedModel, models.Model):
     template_title = models.CharField(max_length=255, unique=True)
     description = models.TextField()
     type = models.CharField(max_length=4, choices=INSTRUCTION_TYPE_CHOICES)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         verbose_name = 'Template of Instruction'
