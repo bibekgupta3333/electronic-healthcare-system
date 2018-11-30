@@ -4,6 +4,7 @@ from organisations.models import OrganisationGeneralPractice
 from payment.models import OrganisationFee
 from .forms import BankDetailsEmrSetUpStage2Form
 from .models import EMRSetup
+from accounts.models import PracticePreferences
 
 
 def create_gp_user(gp_organisation: OrganisationGeneralPractice, user_form: dict=None, emr_setup: EMRSetup=None) -> dict:
@@ -78,6 +79,10 @@ def create_gp_organisation(emr_setup: EMRSetup, bank_details_form: BankDetailsEm
         payment_bank_sort_code=bank_details_form.cleaned_data['bank_account_sort_code'],
         payment_bank_account_number=bank_details_form.cleaned_data['bank_account_number'],
     )
+    practice_preferences = PracticePreferences()
+    practice_preferences.gp_organisation = gp_organisation
+    practice_preferences.notification = 'NEW'
+    practice_preferences.save()
 
     return gp_organisation
 

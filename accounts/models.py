@@ -32,6 +32,16 @@ USER_TYPE_CHOICES = (
     (PATIENT_USER, 'Patient')
 )
 
+NEW_REPORT_REQUEST = "NEW"
+DIGEST_REPORT_REQUESTS = "DIGEST"
+NO_EMAIL = "NO"
+
+NOTIFICATIONS = (
+    (NEW_REPORT_REQUEST, 'Email me on each new report request'),
+    (DIGEST_REPORT_REQUESTS, 'Email me a digest of report requests twice a day'),
+    (NO_EMAIL, "Don't send me Incoming Report Notifications")
+)
+
 
 class MyUserManager(BaseUserManager):
     def _create_user(self, email, password, **extra_fields):
@@ -286,6 +296,20 @@ class GeneralPracticeUser(UserProfileBase):
 
     def update_permission_other(self):
         self.set_permission(OTHER_PERMISSIONS)
+
+
+class PracticePreferences(models.Model):
+
+    gp_organisation = models.OneToOneField(OrganisationGeneralPractice, on_delete=models.CASCADE)
+    notification = models.CharField(choices=NOTIFICATIONS, blank=True, max_length=20)
+    contact_feedback = models.BooleanField(default=False, blank=True)
+    contact_updates = models.BooleanField(default=False, blank=True)
+
+    class Meta:
+        verbose_name = 'GP Practice Preferences'
+
+    def __str__(self):
+        return self.gp_organisation.name + " Preferences"
 
 
 class Patient(UserProfileBase):

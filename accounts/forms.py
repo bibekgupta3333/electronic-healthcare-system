@@ -4,7 +4,8 @@ from django.conf import settings
 from django.utils.timezone import now
 from common.functions import verify_password
 from .models import GeneralPracticeUser, ClientUser, TITLE_CHOICE, User,\
-        MEDIDATA_USER, CLIENT_USER, GENERAL_PRACTICE_USER, PATIENT_USER, MedidataUser
+        MEDIDATA_USER, CLIENT_USER, GENERAL_PRACTICE_USER, PATIENT_USER,\
+        MedidataUser, NOTIFICATIONS, PracticePreferences
 from instructions.models import InstructionPatient
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 DATE_INPUT_FORMATS = settings.DATE_INPUT_FORMATS
@@ -191,6 +192,19 @@ class NewClientForm(forms.ModelForm):
     class Meta:
         model = ClientUser
         fields = ('first_name', 'last_name', 'email', 'username', 'password', 'send_email')
+
+
+class PracticePreferencesForm(forms.ModelForm):
+    notification = forms.ChoiceField(choices=NOTIFICATIONS, required=False)
+    contact_feedback = forms.BooleanField(required=False)
+    contact_updates = forms.BooleanField(required=False)
+
+    class Meta:
+        model = PracticePreferences
+        fields = ('notification', 'contact_feedback', 'contact_updates')
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 class NewMediForm(forms.ModelForm):

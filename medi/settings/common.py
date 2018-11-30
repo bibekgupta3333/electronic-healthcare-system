@@ -196,7 +196,8 @@ DATE_INPUT_FORMATS = [
 ]
 
 CRONJOBS = [
-    ('0 0 * * *', 'instructions.cron.notification_mail.instruction_notification_email_job')
+    ('0 0 * * *', 'instructions.cron.notification_mail.instruction_notification_email_job'),
+    ('0 11,16 * * *', 'instructions.cron.notification_mail.send_email_to_practice_job'),
 ]
 
 PIPELINE_INSTRUCTION_LINK = 'http://medi.mohub.co/instruction/view-pipeline/'
