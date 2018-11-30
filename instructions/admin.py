@@ -5,6 +5,9 @@ from common.import_export import CustomExport
 from instructions.model_choices import INSTRUCTION_STATUS_REJECT
 from django.utils import timezone
 from datetime import timedelta
+from instructions.models import Instruction
+from django.db.models import Q
+from organisations.models import OrganisationGeneralPractice
 
 
 class InstructionConditionsInline(admin.TabularInline):
@@ -69,21 +72,69 @@ class DaysSinceFilter(admin.SimpleListFilter):
             return queryset
 
 
+class ClientOrgFilter(admin.SimpleListFilter):
+    title = 'Client'
+    parameter_name = 'organisation'
+
+    def lookups(self, request, model_admin):
+        organisations = set()
+        for data in Instruction.objects.filter(client_user__isnull=False, client_user__organisation__isnull=False):
+            organisation = data.client_user.organisation
+            organisations.add((organisation.pk, organisation.trading_name))
+        return organisations
+
+    def queryset(self, request, queryset):
+        organisation_id = self.value()
+        if organisation_id:
+            organisation_id = int(organisation_id)
+            return queryset.filter(client_user__isnull=False, client_user__organisation_id=organisation_id)
+        return queryset
+
+
+class GPOrgFilter(admin.SimpleListFilter):
+    title = 'GP Practice'
+    parameter_name = 'gp_pratice'
+
+    def lookups(self, request, model_admin):
+        organisations = set()
+        for data in Instruction.objects.filter(gp_practice_id__isnull=False, gp_practice_type__isnull=False):
+            organisation = data.gp_practice
+            organisations.add((organisation.pk, organisation.name))
+        return organisations
+
+    def queryset(self, request, queryset):
+        organisation_pk = self.value()
+        if organisation_pk:
+            return queryset.filter(gp_practice_id__isnull=False, gp_practice_id=organisation_pk)
+        return queryset
+
+
 class InstructionAdmin(CustomExport, admin.ModelAdmin):
     change_status = False
-    list_display = ('client_user', 'gp_practice', 'status', 'created', 'type', 'days_since_created')
-    list_filter = ('type', DaysSinceFilter, 'gp_user', 'client_user')
+    list_display = ('client', 'gp_practice', 'status', 'created', 'type', 'days_since_created')
+    list_filter = ('type', DaysSinceFilter, ClientOrgFilter, GPOrgFilter)
     search_fields = [
-        'gp_user__userprofilebase_ptr__user__first_name',
-        'client_user__userprofilebase_ptr__user__first_name',
-        'gp_user__userprofilebase_ptr__user__last_name',
-        'client_user__userprofilebase_ptr__user__last_name',
         'type'
     ]
     inlines = [
         InstructionConditionsInline,
         InstructionAdditionQuestionInline
     ]
+
+    def get_search_results(self, request, queryset, search_term):
+        gp_organisations = [gp_org.pk for gp_org in OrganisationGeneralPractice.objects.filter(name__icontains=search_term)]
+        queryset = queryset.filter(
+            Q(type__icontains=search_term) |
+            Q(gp_practice_id__in=gp_organisations) |
+            Q(client_user__organisation__trading_name__icontains=search_term)
+        )
+        return queryset, False
+
+    def client(self, instance):
+        client_organisation = ''
+        if instance.client_user:
+            client_organisation = instance.client_user.organisation.__str__()
+        return client_organisation
 
     def days_since_created(self, instance):
         return (timezone.now().date() - instance.created.date()).days
