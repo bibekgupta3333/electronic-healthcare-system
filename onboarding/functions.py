@@ -3,17 +3,18 @@ from accounts.models import GENERAL_PRACTICE_USER
 from organisations.models import OrganisationGeneralPractice
 from payment.models import OrganisationFee
 from .forms import BankDetailsEmrSetUpStage2Form
-from .models import EMRSetup
 from accounts.models import PracticePreferences
+import random
+import string
 
 
-def create_gp_user(gp_organisation: OrganisationGeneralPractice, user_form: dict=None, emr_setup: EMRSetup=None) -> dict:
+def create_gp_user(gp_organisation: OrganisationGeneralPractice, user_form: dict=None) -> dict:
     password = User.objects.make_random_password()
     if user_form:
         if not User.objects.filter(email=user_form['email']).exists():
             user = User.objects._create_user(
                 email=user_form['email'],
-                username="{}.{}".format(user_form['first_name'],user_form['last_name']),
+                username=''.join(random.choices(string.ascii_letters, k=10)),
                 password=password,
                 first_name=user_form['first_name'],
                 last_name=user_form['last_name'],
@@ -31,13 +32,16 @@ def create_gp_user(gp_organisation: OrganisationGeneralPractice, user_form: dict
                 'general_pratice_user': general_pratice_user,
                 'password': password
             }
-    elif emr_setup:
-        if not User.objects.filter(email=emr_setup.pm_email).exists():
+    elif gp_organisation:
+        if not User.objects.filter(email=gp_organisation.practicemanager_email).exists():
+            gp_manager_first_name = gp_organisation.practicemanagername_c.split(' ')[0]
+            gp_manager_last_name = gp_organisation.practicemanagername_c.split(' ')[1]
             gp_manager_user = User.objects._create_user(
-                email=emr_setup.pm_email,
-                username=emr_setup.pm_name,
+                email=gp_organisation.practicemanager_email,
+                username=''.join(random.choices(string.ascii_letters, k=10)),
                 password=password,
-                first_name=emr_setup.pm_name,
+                first_name=gp_manager_first_name,
+                last_name=gp_manager_last_name,
                 type=GENERAL_PRACTICE_USER,
                 is_staff=True,
             )
@@ -56,48 +60,19 @@ def create_gp_user(gp_organisation: OrganisationGeneralPractice, user_form: dict
         return {}
 
 
-def create_gp_organisation(emr_setup: EMRSetup, bank_details_form: BankDetailsEmrSetUpStage2Form) -> OrganisationGeneralPractice:
-    gp_address = ' '.join([
-        emr_setup.address_line1,
-        emr_setup.address_line2 if emr_setup.address_line2 else '',
-        emr_setup.city,
-        emr_setup.post_code
-    ])
-
-    gp_organisation = OrganisationGeneralPractice.objects.create(
-        trading_name=emr_setup.surgery_name,
-        accept_policy=emr_setup.accept_policy,
-        legal_name=emr_setup.surgery_name,
-        address=gp_address,
-        contact_telephone=emr_setup.phone,
-        contact_email=emr_setup.receive_email,
-        generic_telephone=emr_setup.phone,
-        generic_email=emr_setup.surgery_email,
-        operating_system=emr_setup.primary_care,
-        practice_code=emr_setup.surgery_code,
-        payment_bank_holder_name=bank_details_form.cleaned_data['bank_account_name'],
-        payment_bank_sort_code=bank_details_form.cleaned_data['bank_account_sort_code'],
-        payment_bank_account_number=bank_details_form.cleaned_data['bank_account_number'],
-    )
-    practice_preferences = PracticePreferences()
-    practice_preferences.gp_organisation = gp_organisation
-    practice_preferences.notification = 'NEW'
-    practice_preferences.save()
-
-    return gp_organisation
-
-
 def create_gp_payments_fee(bank_details_form: BankDetailsEmrSetUpStage2Form, gp_organisation: OrganisationGeneralPractice) -> OrganisationFee:
-    organisation_fee = OrganisationFee.objects.create(
+    organisation_fee = OrganisationFee.objects.update_or_create(
         gp_practice=gp_organisation,
-        max_day_lvl_1=3,
-        max_day_lvl_2=6,
-        max_day_lvl_3=10,
-        max_day_lvl_4=11,
-        amount_rate_lvl_1=bank_details_form.cleaned_data['received_within_3_days'],
-        amount_rate_lvl_2=bank_details_form.cleaned_data['received_within_4_to_6_days'],
-        amount_rate_lvl_3=bank_details_form.cleaned_data['received_within_7_to_10_days'],
-        amount_rate_lvl_4=bank_details_form.cleaned_data['received_after_10_days'],
+        defaults={
+            'max_day_lvl_1': 3,
+            'max_day_lvl_2': 6,
+            'max_day_lvl_3': 10,
+            'max_day_lvl_4': 11,
+            'amount_rate_lvl_1': bank_details_form.cleaned_data['received_within_3_days'],
+            'amount_rate_lvl_2': bank_details_form.cleaned_data['received_within_4_to_6_days'],
+            'amount_rate_lvl_3': bank_details_form.cleaned_data['received_within_7_to_10_days'],
+            'amount_rate_lvl_4': bank_details_form.cleaned_data['received_after_10_days'],
+        }
     )
 
-    return organisation_fee
+    return organisation_fee[0]
