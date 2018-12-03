@@ -67,7 +67,7 @@ class InstructionTable(tables.Table):
             url = 'medicalreport:edit_report'
         elif value == 'In Progress' and self.user.type == models.GENERAL_PRACTICE_USER and record.saved:
             url = 'instructions:consent_contact'
-            return format_html('<a href='+reverse(url, args=[record.pk, record.patient.emis_number])+'><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
+            return format_html('<a href='+reverse(url, args=[record.pk, record.patient_information.patient_emis_number])+'><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
         return format_html('<a href='+reverse(url, args=[record.pk])+'><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
 
 

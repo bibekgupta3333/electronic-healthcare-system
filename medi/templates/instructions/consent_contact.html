@@ -275,16 +275,16 @@
                 ]
             {% endif %}
         });
-        $('#id_patient_input_email').blur(function(){
+        $('#id_patient_email').blur(function(){
             validation = new RegExp(validations['email'][0]);
-            if ($('#id_patient_input_email').val() !='' && !validation.test(this.value) && !isPopup){
+            if ($('#id_patient_email').val() !='' && !validation.test(this.value) && !isPopup){
                 isPopup = true;
                 // If the validation fails then we show the custom error message
                 setTimeout(function(){$("#emailDialog1").popup('show')}, 500);
             }
         });
         $('#confirm_email').blur(function(){
-            if ($('#confirm_email').val() !='' && $('#confirm_email').val() != $('#id_patient_input_email').val() && !isPopup){
+            if ($('#confirm_email').val() !='' && $('#confirm_email').val() != $('#id_patient_email').val() && !isPopup){
                 isPopup = true;
                 // If the validation fails then we show the custom error message
                 setTimeout(function(){$("#emailDialog2").popup('show')}, 500)
@@ -300,7 +300,7 @@
             if(mdxcnt == 0) {
                 $('#noMdxConsent').popup('show');
             }
-            else if($('#id_patient_input_email').val() == ''){
+            else if($('#id_patient_email').val() == ''){
                 $('#noEmailAddress').popup('show');
             }
             else{
@@ -320,7 +320,7 @@
             else if(mdxcnt == 0) {
                 $('#noMdxConsent').popup('show');
             }
-            else if($('#id_patient_input_email').val() == ''){
+            else if($('#id_patient_email').val() == ''){
                 $('#noEmailAddress').popup('show');
             }
             else{
@@ -345,7 +345,7 @@
             $('#consentContactForm').submit();
         });
         $('.enterEmailBtn').click(function(){
-            $('#id_patient_input_email').focus();
+            $('#id_patient_email').focus();
         });
         $('#downloadBtn').click(function(e){
             e.preventDefault();

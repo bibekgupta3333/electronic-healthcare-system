@@ -18,7 +18,6 @@ from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice
 from organisations.views import get_gporganisation_data
 from medicalreport.views import get_matched_patient
-from template.forms import TemplateInstructionForm
 from common.functions import multi_getattr
 from snomedct.models import SnomedConcept
 from permissions.functions import check_permission
@@ -198,7 +197,6 @@ def new_instruction(request):
 
     gp_form = GPForm()
     nhs_form = GeneralPracticeForm()
-    template_form = TemplateInstructionForm()
 
     if request.method == "POST":
         request.POST._mutable = True
@@ -317,7 +315,6 @@ def new_instruction(request):
                 'gp_form': gp_form,
                 'scope_form': scope_form,
                 'addition_question_formset': addition_question_formset,
-                'template_form': template_form,
                 'selected_pat_code': selected_pat_code,
                 'selected_pat_adr_num': selected_pat_adr_num,
                 'selected_gp_code': selected_gp_code,
@@ -406,7 +403,6 @@ def new_instruction(request):
         'gp_form': gp_form,
         'scope_form': scope_form,
         'addition_question_formset': addition_question_formset,
-        'template_form': template_form,
         'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
     })
 
@@ -587,6 +583,8 @@ def consent_contact(request, instruction_id, patient_emis_number):
         next_step = request.POST.get('next_step', '')
         if next_step == 'view_pipeline':
             instruction.saved = True
+            patient_instruction.patient_emis_number = patient_emis_number
+            patient_instruction.save()
             gp_user = get_object_or_404(GeneralPracticeUser, user_id=request.user.id)
             instruction.in_progress(context={'gp_user': gp_user})
             return redirect('instructions:view_pipeline')

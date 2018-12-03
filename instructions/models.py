@@ -31,6 +31,7 @@ class InstructionPatient(models.Model):
     patient_email = models.EmailField(max_length=255, blank=True)
     patient_telephone_mobile = models.CharField(max_length=255, blank=True)
     patient_alternate_phone = models.CharField(max_length=255, blank=True)
+    patient_emis_number = models.CharField(max_length=255, blank=True)
 
     class Meta:
         verbose_name = "Instruction Patient Information"

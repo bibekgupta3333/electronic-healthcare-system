@@ -133,24 +133,6 @@
             }
         });
 
-        if("{{ conditions }}"){
-            let template_data = "{{ conditions|safe }}"
-            template_data = JSON.parse(template_data)
-            template_data.conditions.forEach(function(element, index) {
-                if(element['is_common_condition']){
-                    $('#id_common_condition').find("input[name=common_condition]").each(function () {
-                        if($(this).val()==element["id"]){
-                            $(this).prop('checked', true);
-                        }
-                    })
-                } else {
-                    $('#id_addition_condition').append(new Option(element["text"], element["id"]));
-                    $('#id_addition_condition').select2('val', [element["id"]]);
-                }
-
-            });
-        };
-
         var $selectAllButton = $('<button class="btn btn-default btn-xs" id="selectAllButton" type="button">Select All</button>');
         var $deSelectAllButton = $('<button class="btn btn-default btn-xs" id="deSelectAllButton" type="button">Deselect All</button>');
         $('#id_common_condition').append([$selectAllButton, $deSelectAllButton]);
