@@ -31,7 +31,9 @@ class InstructionPatientForm(forms.ModelForm):
         exclude = ('instruction', 'patient_user')
         widgets = {
             'patient_postcode': forms.TextInput(attrs={'placeholder': '', }),
-            'patient_address_number': forms.TextInput(attrs={'placeholder': '', })
+            'patient_address_number': forms.TextInput(attrs={'placeholder': '', }),
+            'patient_telephone_code': forms.HiddenInput(attrs={'placeholder': ''}),
+            'patient_alternate_code': forms.HiddenInput(attrs={'placeholder': ''})
         }
 
     def __init__(self, *args, **kwargs):
