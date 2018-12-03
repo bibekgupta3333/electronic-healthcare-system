@@ -394,6 +394,7 @@ def new_instruction(request):
             'condition_of_interest': condition_of_interest,
             'consent_form_data': consent_form_data,
             'instruction_id': instruction_id,
+            'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
         })
 
     return render(request, 'instructions/new_instruction.html', {
