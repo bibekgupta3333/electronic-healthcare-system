@@ -13,7 +13,6 @@ class OrganisationGeneralPracticeResource(resources.ModelResource):
 
     def skip_row(self, instance, original):
         if OrganisationGeneralPractice.objects.filter(practcode=instance.practcode).exists():
-            print("duplicate: {code}".format(code=instance.practcode))
             return True
         return super().skip_row(instance, original)
 

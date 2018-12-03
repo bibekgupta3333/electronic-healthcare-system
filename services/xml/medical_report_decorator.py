@@ -8,7 +8,7 @@ from .xml_utils import (
 from .medical_record import MedicalRecord
 from .auto_redactable import (
     auto_redact_referrals, auto_redact_consultations, auto_redact_attachments,
-    auto_redact_medications, auto_redact_profile_events,
+    auto_redact_medications, auto_redact_profile_events, auto_redact_by_date
 )
 from .xml_base import XMLModelBase
 from .consultation import Consultation
@@ -40,6 +40,11 @@ class MedicalReportDecorator(MedicalRecord):
                     self.instruction
                 )
             )
+        else:
+            ret_xml = auto_redact_by_date(super().consultations(),
+                                          from_date=self.instruction.date_range_from,
+                                          to_date=self.instruction.date_range_to,
+                                          )
         return ret_xml
 
     def significant_active_problems(self) -> List[Problem]:

@@ -1,3 +1,5 @@
+import datetime
+
 from django.test import TestCase
 from django.http import JsonResponse
 from django.shortcuts import reverse
@@ -5,6 +7,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from model_mommy import mommy
 
+from services.xml.medical_record import MedicalRecord
 from instructions.models import Instruction, InstructionPatient
 from instructions.model_choices import INSTRUCTION_STATUS_REJECT, INSTRUCTION_STATUS_PROGRESS,\
     INSTRUCTION_STATUS_COMPLETE, AMRA_TYPE
@@ -178,7 +181,8 @@ class EditReportTest(EmisAPITestCase):
         self.instruction = mommy.make(
             Instruction, pk=2, consent_form=consent_form,
             patient=self.patient, gp_user=self.gp_user,
-            gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_PROGRESS, type='SARS'
+            gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_PROGRESS, type='SARS',
+            **{'date_range_from': datetime.datetime(1995, 10, 10), 'date_range_to': datetime.datetime(2015, 10, 10)}
         )
         self.snomed_concept = mommy.make(SnomedConcept, external_id=365981007)
         self.snomed_concept = mommy.make(SnomedConcept, external_id=228273003)
@@ -209,6 +213,34 @@ class EditReportTest(EmisAPITestCase):
         self.redaction.delete()
         response = self.client.get('/medicalreport/2/edit/')
         self.assertEqual(302, response.status_code)
+
+    def test_view_profile_field_for_amra(self):
+        response = self.client.get('/medicalreport/2/edit/')
+        medical_record = response.context.get('medical_record')
+        medical_record.instruction.type = "AMRA"
+        test_data = medical_record.profile_events_by_type()
+        self.assertListEqual(list(test_data.keys()), MedicalRecord.AMRA__PROFILE_EVENT_TYPES)
+
+    def test_view_profile_field_for_sars(self):
+        response = self.client.get('/medicalreport/2/edit/')
+        medical_record = response.context.get('medical_record')
+        medical_record.instruction.type = "SARS"
+        test_data = medical_record.profile_events_by_type()
+        self.assertListEqual(list(test_data.keys()), MedicalRecord.SAR_PROFILE_EVENT_TYPES)
+
+    def test_date_range_for_records(self):
+        response = self.client.get('/medicalreport/2/edit/')
+        medical_record = response.context.get('medical_record')
+        medical_record.instruction.date_range_to = datetime.datetime(2015, 10, 10)
+        medical_record.instruction.date_range_from = datetime.datetime(1995, 10, 10)
+        test_data = medical_record.consultations()
+        for item in test_data:
+            is_valid = True
+            if medical_record.instruction.id == 2 and\
+                    item.parsed_date() < medical_record.instruction.date_range_from.date() or \
+                    item.parsed_date() > medical_record.instruction.date_range_to.date():
+                    is_valid = False
+            self.assertTrue(is_valid)
 
 
 class UpdateReportTest(EmisAPITestCase):

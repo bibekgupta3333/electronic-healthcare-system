@@ -26,16 +26,18 @@ def auto_redact_by_conditions(
 
 def auto_redact_by_date(
         models: Iterable[XMLModelBase],
-        start_date: date
+        start_date=None,
+        from_date=None,
+        to_date=None,
 ) -> List[XMLModelBase]:
-    redactor = DateRedactor(start_date=start_date)
+    redactor = DateRedactor(start_date=start_date, from_date=from_date, to_date=to_date)
     return [m for m in models if not redactor.is_redact(m)]
 
 
 def auto_redact_consultations(consultations, instruction, current_date=date.today()):
     return auto_redact_by_date(
         auto_redact_by_conditions(consultations, instruction),
-        start_date=years_ago(5, current_date)
+        start_date=years_ago(5, current_date), from_date=instruction.date_range_from, to_date=instruction.date_range_to
     )
 
 
