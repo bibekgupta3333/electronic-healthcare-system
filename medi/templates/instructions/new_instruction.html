@@ -501,6 +501,18 @@
                                 $('#id_patient_address_line3').val(selectedData[2]);
                                 $('#id_patient_city').val(selectedData[5]);
                                 $('#id_patient_country').val(selectedData[6]);
+                                if ("{{selected_gp_adr_line1}}") {
+                                    $('#id_patient_address_line1').val("{{selected_gp_adr_line1}}");
+                                }
+                                if ("{{selected_gp_adr_line2}}") {
+                                    $('#id_patient_address_line2').val("{{selected_gp_adr_line2}}");
+                                }
+                                if ("{{selected_gp_adr_line3}}") {
+                                    $('#id_patient_address_line3').val("{{selected_gp_adr_line3}}");
+                                }
+                                if ("{{selected_gp_adr_country}}") {
+                                    $('#id_patient_country').val("{{selected_gp_adr_country}}");
+                                }
                             });
                             $('#id_patient_address_number').trigger({
                                 type: 'select2:select',
