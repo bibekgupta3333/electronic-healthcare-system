@@ -8,9 +8,29 @@
 
 {% block ExtraHead %}
     <link href="{% static 'css/onboarding/emis_setup.css' %}" rel="stylesheet"/>
+    <link rel="stylesheet" href="{% static 'assets/fancybox/jquery.fancybox.min.css' %}" />
 {% endblock %}
 
 {% block Content %}
+    <div class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Modal body text goes here.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="modal fade" id="failSetupEmisModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg">
             <div class="modal-content failSetupEmisModal alert-warning">
@@ -51,19 +71,25 @@
     <div class="row">
         <div class="col-md-4">
             <figure class="figure">
-                <img src="/media/emis_setup/test_image.png" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 02.png' %}>
+                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 02.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                </a>
                 <figcaption class="figure-caption">a) Menu > Configuration > Organisation Configuration</figcaption>
             </figure>
         </div>
         <div class="col-md-4">
             <figure class="figure">
-                <img src="/media/emis_setup/test_image.png" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 03.png' %}>
+                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 03.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                </a>
                 <figcaption class="figure-caption">b) Click the "Add" button, select "New user"</figcaption>
             </figure>
         </div>
         <div class="col-md-4">
             <figure class="figure">
-                <img src="/media/emis_setup/test_image.png" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 04.png' %}>
+                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 04.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                </a>
                 <figcaption class="figure-caption">c) Enter the username and password below, and give the user a suitable role where it can read records</figcaption>
             </figure>
         </div>
@@ -99,25 +125,33 @@
     <div class="row">
         <div class="col-md-3">
             <figure class="figure">
-                <img src="/media/emis_setup/test_image.png">
+                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 08.png' %}>
+                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 08.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                </a>
                 <figcaption class="figure-caption">d) Menu > System Tools > EMAS Manager</figcaption>
             </figure>
         </div>
         <div class="col-md-3">
             <figure class="figure">
-                <img src="/media/emis_setup/test_image.png">
+                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 09.png' %}>
+                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 09.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                </a>
                 <figcaption class="figure-caption">e) Select "Partner API" at the bottom</figcaption>
             </figure>
         </div>
         <div class="col-md-3">
             <figure class="figure">
-                <img src="/media/emis_setup/test_image.png">
+                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 10.png' %}>
+                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 10.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                </a>
                 <figcaption class="figure-caption">f) Select "eMR" in the Partner API list</figcaption>
             </figure>
         </div>
         <div class="col-md-3">
             <figure class="figure">
-                <img src="/media/emis_setup/test_image.png">
+                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 11.png' %}>
+                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 11.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                </a>
                 <figcaption class="figure-caption">g) Click "Activate Application" at the top</figcaption>
             </figure>
         </div>
@@ -133,25 +167,33 @@
     <div class="row">
         <div class="col-md-3">
             <figure class="figure">
-                <img src="/media/emis_setup/test_image.png">
+                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 12.png' %}>
+                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 12.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                </a>
                 <figcaption class="figure-caption">h) Click "Edits Users" button</figcaption>
             </figure>
         </div>
         <div class="col-md-3">
             <figure class="figure">
-                <img src="/media/emis_setup/test_image.png">
+                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 13.png' %}>
+                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 13.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                </a>
                 <figcaption class="figure-caption">i) Find the new user you created and tick the box next to it</figcaption>
             </figure>
         </div>
         <div class="col-md-3">
             <figure class="figure">
-                <img src="/media/emis_setup/test_image.png">
+                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 14.png' %}>
+                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 14.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                </a>
                 <figcaption class="figure-caption">j) You'll be asked for that password we gave you above again</figcaption>
             </figure>
         </div>
         <div class="col-md-3">
             <figure class="figure">
-                <img src="/media/emis_setup/test_image.png">
+                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 15.png' %}>
+                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 15.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                </a>
                 <figcaption class="figure-caption">k) Click "OK"</figcaption>
             </figure>
         </div>
@@ -159,19 +201,25 @@
     <div class="row">
         <div class="col-md-4">
             <figure class="figure">
-                <img src="/media/emis_setup/test_image.png" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 16.png' %}>
+                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 16.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                </a>
                 <figcaption class="figure-caption">l) Click "Login Access" button</figcaption>
             </figure>
         </div>
         <div class="col-md-4">
             <figure class="figure">
-                <img src="/media/emis_setup/test_image.png" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 17.png' %}>
+                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 17.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                </a>
                 <figcaption class="figure-caption">m) Find the new user you created and tick the boxes to the right of it</figcaption>
             </figure>
         </div>
         <div class="col-md-4">
             <figure class="figure">
-                <img src="/media/emis_setup/test_image.png" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 18.png' %}>
+                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 18.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
+                </a>
                 <figcaption class="figure-caption">n) Click "OK". Setup is complete</figcaption>
             </figure>
         </div>
@@ -209,6 +257,7 @@
 
 {% block Script %}
     <script src="{% static 'js/onboarding/emis_setup.js' %}"></script>
+    <script src="{% static 'assets/fancybox/jquery.fancybox.min.js' %}"></script>
     <script>
         $(document).ready(function() {
             $('.js-tooltip').tooltip();
