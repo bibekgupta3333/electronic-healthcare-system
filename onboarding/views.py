@@ -81,18 +81,27 @@ def emr_setup_stage_2(request, practice_code=None):
     UserEmrSetUpStage2Formset = formset_factory(UserEmrSetUpStage2Form, min_num=2, validate_min=True, extra=2)
     user_formset = UserEmrSetUpStage2Formset()
     bank_details_form = BankDetailsEmrSetUpStage2Form()
+    surgery_email_form = SurgeryEmailForm(instance=gp_organisation)
 
     if request.method == "POST":
         user_formset = UserEmrSetUpStage2Formset(request.POST)
         bank_details_form = BankDetailsEmrSetUpStage2Form(request.POST)
-        if user_formset.is_valid() and bank_details_form.is_valid():
+        surgery_email_form = SurgeryEmailForm(request.POST, instance=gp_organisation)
+        if user_formset.is_valid() and bank_details_form.is_valid() and surgery_email_form.is_valid():
+            surgery_email = surgery_email_form.save()
             gp_payments_fee = create_gp_payments_fee(bank_details_form, gp_organisation)
             created_user_list = []
             created_manager_user_dict = create_gp_user(gp_organisation)
-            if created_manager_user_dict:
-                # TODO remove comments for activate send mails to real gp manager's mail
-                pass
-                # created_user_list.append(created_manager_user_dict)
+            if surgery_email.organisation_email:
+                html_message = loader.render_to_string('onboarding/surgery_email.html')
+                send_mail(
+                    'Thank you for setting up',
+                    '',
+                    settings.DEFAULT_FROM,
+                    [surgery_email.organisation_email],
+                    fail_silently=True,
+                    html_message=html_message,
+                )
             for user in user_formset:
                 if user.is_valid() and user.cleaned_data:
                     created_user_dict = create_gp_user(gp_organisation, user_form=user.cleaned_data)
@@ -122,6 +131,7 @@ def emr_setup_stage_2(request, practice_code=None):
         'surgery_form': surgery_form,
         'user_formset': user_formset,
         'bank_details_form': bank_details_form,
+        'surgery_email_form': surgery_email_form
     })
 
 

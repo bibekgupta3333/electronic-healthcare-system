@@ -80,6 +80,23 @@ class UserEmrSetUpStage2Form(forms.Form):
     gp_code = forms.CharField(max_length=255, required=False, label='')
 
 
+class SurgeryEmailForm(forms.ModelForm):
+    organisation_email = forms.EmailField(max_length=255, label='')
+    confirm_email = forms.EmailField(max_length=255, label='')
+
+    class Meta:
+        model = OrganisationGeneralPractice
+        fields = ('organisation_email',)
+
+    def clean_confirm_email(self):
+        confirm_email = self.cleaned_data.get('confirm_email')
+        organisation_email = self.cleaned_data.get('organisation_email')
+        if confirm_email != organisation_email:
+            raise forms.ValidationError('The email addresses provided do not match')
+        else:
+            return confirm_email
+
+
 class BankDetailsEmrSetUpStage2Form(forms.Form):
     min_fee_payments = 60.00
     level_1_payments = min_fee_payments*0.85
