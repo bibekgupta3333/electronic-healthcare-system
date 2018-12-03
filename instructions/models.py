@@ -157,6 +157,12 @@ class Instruction(TimeStampedModel, models.Model):
     def get_type(self):
         return self.type
 
+    def is_sars(self):
+        return self.type == SARS_TYPE
+
+    def is_amra(self):
+        return self.type == AMRA_TYPE
+
 
 class InstructionAdditionQuestion(models.Model):
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE, related_name='addition_questions')

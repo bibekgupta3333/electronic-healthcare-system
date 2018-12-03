@@ -47,6 +47,8 @@ class UserAdmin(BaseUserAdmin):
     inlines = []
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
+    list_display = ('email', 'first_name', 'last_name', 'type', 'is_staff')
+    list_filter = ('type',)
 
     def get_queryset(self, request):
         if hasattr(request.user, 'userprofilebase'):

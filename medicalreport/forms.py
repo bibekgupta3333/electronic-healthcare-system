@@ -41,9 +41,6 @@ class MedicalReportFinaliseSubmitForm(forms.Form):
         super().is_valid()
         error_message = "The report was not submitted. Please review your answers and save the report. " \
                         "If the problem persists please contact your MediData representative."
-        if post_data['event_flag'] == 'submit' and not post_data['gp_practitioner']:
-            self._errors = error_message
-            return False
 
         if post_data['event_flag'] == 'submit' and 'prepared_and_signed' not in post_data:
             self._errors = error_message

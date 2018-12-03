@@ -1,55 +1,9 @@
 from django import forms
 
 from accounts import models as accounts_models
-from accounts.models import GpPractices
 
-q = GpPractices.objects.none()
 from organisations.models import OrganisationGeneralPractice
-from .models import EMRSetup
 from common.fields import MyChoiceField
-
-
-class EMRSetupForm(forms.ModelForm):
-    surgery_code = forms.CharField()
-    surgery_name = forms.CharField()
-
-    class Meta:
-        model = EMRSetup
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['surgery_code'] = forms.CharField(widget=forms.Select(choices=GpPractices.objects.all().values_list('id', 'sitenumber_c')))
-        self.fields['surgery_name'] = forms.CharField(widget=forms.Select(choices=GpPractices.objects.all().values_list('id', 'name')))
-
-        initial_data = kwargs.get('initial')
-        if initial_data:
-            surgery_code = initial_data.get('surgery_code')
-            surgery_name = initial_data.get('surgery_name')
-            if surgery_name:
-                self.fields['surgery_name'] = forms.CharField(max_length=255)
-            if surgery_code:
-                self.fields['surgery_code'] = forms.ChoiceField(mmax_length=255)
-
-    def clean(self):
-        cleaned_data = super().clean()
-        surgery_code = cleaned_data.get('surgery_code')
-        surgery_name = cleaned_data.get('surgery_name')
-
-        if EMRSetup.objects.filter(surgery_code=surgery_code, surgery_name=surgery_name).exists():
-            raise forms.ValidationError('This GP Surgery has already been created.'
-                                        ' Please contact MediData for more information')
-        return cleaned_data
-
-    def clean(self):
-        cleaned_data = super().clean()
-        surgery_code = cleaned_data.get('surgery_code')
-        surgery_name = cleaned_data.get('surgery_name')
-
-        if EMRSetup.objects.filter(surgery_code=surgery_code, surgery_name=surgery_name).exists():
-            raise forms.ValidationError('This GP Surgery has already been created.'
-                                        ' Please contact MediData for more information')
-        return cleaned_data
 
 
 class SurgeryForm(forms.Form):

@@ -299,11 +299,10 @@ class GeneralPracticeUser(UserProfileBase):
 
 
 class PracticePreferences(models.Model):
-
     gp_organisation = models.OneToOneField(OrganisationGeneralPractice, on_delete=models.CASCADE)
-    notification = models.CharField(choices=NOTIFICATIONS, blank=True, max_length=20)
-    contact_feedback = models.BooleanField(default=False, blank=True)
-    contact_updates = models.BooleanField(default=False, blank=True)
+    notification = models.CharField(default=NEW_REPORT_REQUEST, choices=NOTIFICATIONS, max_length=20)
+    contact_feedback = models.BooleanField(default=False)
+    contact_updates = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = 'GP Practice Preferences'

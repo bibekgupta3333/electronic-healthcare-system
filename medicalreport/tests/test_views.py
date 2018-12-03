@@ -7,8 +7,8 @@ from model_mommy import mommy
 
 from instructions.models import Instruction, InstructionPatient
 from instructions.model_choices import INSTRUCTION_STATUS_REJECT, INSTRUCTION_STATUS_PROGRESS,\
-    INSTRUCTION_STATUS_COMPLETE
-from accounts.models import User, GeneralPracticeUser, Patient, GENERAL_PRACTICE_USER, CLIENT_USER
+    INSTRUCTION_STATUS_COMPLETE, AMRA_TYPE
+from accounts.models import User, GeneralPracticeUser, Patient, GENERAL_PRACTICE_USER
 from services.models import EmisAPIConfig
 from snomedct.models import SnomedConcept
 from medicalreport.models import AmendmentsForRecord
@@ -53,7 +53,8 @@ class EmisAPITestCase(TestCase):
             Instruction, pk=1, consent_form=consent_form,
             patient=self.patient, gp_user=self.gp_user,
             gp_practice=gp_practice,
-            patient_information=self.instruction_patient
+            patient_information=self.instruction_patient,
+            mdx_consent=consent_form,
         )
         self.redaction = mommy.make(
             AmendmentsForRecord, instruction=self.instruction, pk=1
@@ -252,6 +253,7 @@ class UpdateReportTest(EmisAPITestCase):
     def test_view_adds_error_message_and_redirects_to_correct_url_if_no_consent_form(self):
         os.remove(self.instruction.consent_form.path)
         self.instruction.consent_form = None
+        self.instruction.type = AMRA_TYPE
         self.instruction.save()
         response = self.client.get('/medicalreport/1/update/', follow=True)
         self.assertEquals(

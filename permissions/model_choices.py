@@ -34,8 +34,7 @@ ADMIN_PERMISSIONS=[
     'view_instruction',
     'add_instruction',
     'delete_instruction',
-    'change_instruction',
-    'view_organisationfee'
+    'change_instruction'
 ]
 
 MEDI_PERMISSIONS=[

@@ -3,7 +3,7 @@ from organisations.models import OrganisationGeneralPractice
 from common.models import TimeStampedModel
 
 
-class OrganisationFee(TimeStampedModel, models.Model):
+class OrganisationFee(models.Model):
     gp_practice = models.OneToOneField(OrganisationGeneralPractice, on_delete=models.CASCADE, verbose_name='General Practice')
     max_day_lvl_1 = models.PositiveSmallIntegerField(verbose_name='Top payment band until day')
     max_day_lvl_2 = models.PositiveSmallIntegerField(verbose_name='Medium payment band until day')

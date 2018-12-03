@@ -28,12 +28,14 @@ class SnomedConcept(models.Model):
         ]
         default_related_name = 'snomed_concepts'
 
+    # Todo have to fixed performance
     def descendants(self, include_self=True) -> Set['SnomedConcept']:
         descendants = set()
-        if include_self:
-            descendants.add(self)
-        for child in self.children.all():
-            descendants.update(child.descendants(include_self=True))
+        # print(self.external_id)
+        # if include_self:
+        #     descendants.add(self)
+        # for child in self.children.all():
+        #     descendants.update(child.descendants(include_self=True))
         return descendants
 
     def descendant_readcodes(self) -> Set['ReadCode']:

@@ -1,0 +1,66 @@
+div img {
+    width: 100%;
+    min-height: 100%;
+}
+
+p {
+    font-size: 18px;
+}
+
+.credentialSection {
+    background-color: rgba(12, 12, 13, 0.1);
+}
+
+.credential {
+    font-size: 20px;
+    font-weight: bolder;
+}
+
+.btn-checkSetup {
+    margin-bottom: 50px;
+    box-shadow: 7px 6px #cfcfcf;
+    border-radius: 0;
+    font-size: 30px;
+    color: white;
+    background-color: #33aea0;
+    height: 60px;
+    width: 350px;
+}
+
+.btn-amendDetails {
+    background-color: rgba(188, 188, 188, 0.4);
+    margin-top: 10px;
+    font-size: 20px;
+    color: #2b2b2b;
+    border-radius: 0;
+}
+
+
+.checkingEmis {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.pendingCheck {
+    background-color: #a2a2a2;
+}
+
+
+.failSetupEmisModal {
+    background-color: #faec89;
+    border-radius: 0rem !important;
+    border: 0px;
+    color: black;
+    width: 680px;
+}
+
+#organisationCode {
+    color: black;
+    font-size: larger;
+    font-weight: bold;
+}
+
+.failSetupEmisMessage {
+    color: #585858;
+}
