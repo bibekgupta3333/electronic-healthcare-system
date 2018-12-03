@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.core.mail import send_mail
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponseRedirect
 from django.utils.html import format_html
@@ -155,8 +154,10 @@ def update_report(request, instruction_id):
         create_or_update_redaction_record(request, instruction)
         return JsonResponse({'message': 'Report has been saved.'})
     else:
-        if not instruction.consent_form:
+        if instruction.is_amra() and not instruction.consent_form:
             messages.error(request, "You do not have a consent form")
+        elif instruction.is_sars() and not instruction.mdx_consent:
+            messages.error(request, "You do not have a mdx consent")
         else:
             is_valid = create_or_update_redaction_record(request, instruction)
             if request.POST.get('event_flag') == 'submit' and is_valid:

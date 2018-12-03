@@ -82,7 +82,6 @@ class Command(BaseCommand):
         if options['snomed_concepts']:
             self.import_data(SnomedConcept, self.data_file_path + 'snomed_concepts.csv.gz')
             self.import_data(SnomedDescendant, self.data_file_path + 'snomed_descendants.csv.gz')
-            self.import_data(ReadCode, self.data_file_path + 'readcodes.csv.gz')
         if options['snomed_descendants']:
             self.import_data(SnomedDescendant, self.data_file_path + 'snomed_descendants.csv.gz')
         if options['readcodes']:

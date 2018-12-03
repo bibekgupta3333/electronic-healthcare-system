@@ -41,7 +41,6 @@
                         </div>
                         <div class="row">
                             <div class="col-md-2 rowTitle">Date of Birth*:</div>
-{#                            {% bootstrap_field patient_form.patient_dob size='small' form_group_class='form-group col-md-6 p-0 input-group dob' show_label=False %}#}
                             {% bootstrap_field patient_form.patient_dob_day size='small' show_label=True %}
                             {% bootstrap_field patient_form.patient_dob_month size='small' show_label=True%}
                             {% bootstrap_field patient_form.patient_dob_year size='small'  show_label=True %}
@@ -52,10 +51,10 @@
                             {% bootstrap_field patient_form.patient_address_number size='small' form_group_class='form-group col-md-6 px-1' %}
                         </div>
                         <div class="row" >
-                              {% bootstrap_field patient_form.patient_address_line1 size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' %}
-                              {% bootstrap_field patient_form.patient_address_line2 size='small' form_group_class='form-group col-md-5' %}
-                              {% bootstrap_field patient_form.patient_address_line3 size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' %}
-                              {% bootstrap_field patient_form.patient_city size='small' form_group_class='form-group col-md-5' %}
+                              {% bootstrap_field patient_form.patient_address_line1 size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' placeholder='' %}
+                              {% bootstrap_field patient_form.patient_address_line2 size='small' form_group_class='form-group col-md-5' placeholder='' %}
+                              {% bootstrap_field patient_form.patient_address_line3 size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' placeholder='' %}
+                              {% bootstrap_field patient_form.patient_city size='small' form_group_class='form-group col-md-5' placeholder='' %}
                         </div>
                         <div class="row" >
                               {% bootstrap_field patient_form.patient_country size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' %}

@@ -119,7 +119,7 @@ def create_or_update_instruction(request, patient_instruction, scope_form=None, 
 
 def create_addition_question(instruction, addition_question_formset):
     for form in addition_question_formset:
-        if form.is_valid():
+        if form.is_valid() and form.cleaned_data:
             addition_question = form.save(commit=False)
             addition_question.instruction = instruction
             addition_question.save()
@@ -253,8 +253,8 @@ def new_instruction(request):
                 scope_form=scope_form, gp_practice=gp_practice,
                 instruction_id=instruction_id
             )
-            practice_preferences = PracticePreferences.objects.get(gp_organisation=gp_practice)
-            if practice_preferences.notification == 'NEW':
+            practice_preferences = PracticePreferences.objects.get_or_create(gp_organisation=gp_practice)
+            if practice_preferences[0].notification == 'NEW':
                 send_mail(
                     'New Instruction',
                     'You have a new instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
@@ -573,20 +573,18 @@ def consent_contact(request, instruction_id, patient_emis_number):
     patient_instruction = instruction.patient_information
 
     if request.method == "POST":
-        sars_consent_form = SarsConsentForm(request.POST, request.FILES)
-        mdx_consent_form = MdxConsentForm(request.POST, request.FILES)
-
         if request.POST.get('sars_consent_loaded') == 'loaded':
             instruction.sars_consent = request.FILES['sars_consent']
         if request.POST.get('mdx_consent_loaded') == 'loaded':
             instruction.mdx_consent = request.FILES['mdx_consent']
 
         patient_instruction.patient_email = request.POST.get('patient_email', '')
-        patient_instruction.telephone_mobile = request.POST.get('patient_telephone_mobile', '')
-        patient_instruction.alternate_phone = request.POST.get('patient_alternate_phone', '')
+        patient_instruction.patient_telephone_mobile = request.POST.get('patient_telephone_mobile', '')
+        patient_instruction.patient_alternate_phone = request.POST.get('patient_alternate_phone', '')
         patient_instruction.save()
+        patient_user = create_or_update_patient_user(patient_instruction, patient_emis_number)
+        instruction.patient = patient_user
         instruction.save()
-
         next_step = request.POST.get('next_step', '')
         if next_step == 'view_pipeline':
             instruction.saved = True
@@ -594,18 +592,15 @@ def consent_contact(request, instruction_id, patient_emis_number):
             instruction.in_progress(context={'gp_user': gp_user})
             return redirect('instructions:view_pipeline')
         elif next_step == 'proceed':
-            patient_user = create_or_update_patient_user(patient_instruction, patient_emis_number)
-            instruction.patient = patient_user
-            instruction.save()
             return redirect('medicalreport:select_patient', instruction_id=instruction_id, patient_emis_number=patient_emis_number)
 
-    patient_email = ''
-    patient_telephone_mobile = ''
-    patient_alternate_phone = ''
+    patient_email = patient_instruction.patient_email
+    patient_telephone_mobile = patient_instruction.patient_telephone_mobile
+    patient_alternate_phone = patient_instruction.patient_alternate_phone
     patient_list = get_matched_patient(patient_instruction)
     for patient in patient_list:
         if patient_emis_number == patient.ref_id:
-            patient_email = patient.email
+            patient_email = patient_instruction.patient_email
             patient_telephone_mobile = patient.telephone_mobile
             patient_alternate_phone = patient.alternate_phone
     # Initial Patient Form

@@ -11,6 +11,7 @@
     </div>
     <div class="row callout__content">
         <div class="container">
+        {% if questions %}
             {% for q in questions %}
                 <div class="row mt-1">
                     <div class="col-md-6">{{ q }}</div>
@@ -21,6 +22,9 @@
                 </div>
             {% endfor %}
             <button type="submit" class="btn btn-primary mt-2 float-right update_report_btn">Update Report</button>
+        {% else %}
+            No addition questions.
+        {% endif %}
         </div>
     </div>
 </div>
