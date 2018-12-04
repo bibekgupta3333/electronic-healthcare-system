@@ -35,7 +35,7 @@ class InstructionPermissionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if kwargs.get('instance'):
+        if kwargs.get('instance') and kwargs['instance'].group:
             self.initial['permissions'] = kwargs['instance'].group.permissions.all()
 
 
