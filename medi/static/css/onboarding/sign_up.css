@@ -29,3 +29,17 @@
 .title-pos {
     line-height: 2.5rem;
 }
+
+.emrMessage {
+    text-align: center;
+    height: 50vh;
+}
+
+.welcomeMessage {
+    margin: 0px;
+    font-size: 30px;
+}
+
+.centerMessage {
+    margin-top: 6rem;
+}

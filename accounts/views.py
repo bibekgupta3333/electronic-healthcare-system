@@ -150,13 +150,14 @@ def view_users(request):
         organisation = user_profile.generalpracticeuser.organisation
         permissions = InstructionPermission.objects.filter(organisation=organisation)
         permission_set = modelformset_factory(InstructionPermission, form=InstructionPermissionForm, extra=(3-permissions.count()))
-        initial_data = []
-        for key, value in GeneralPracticeUser.ROLE_CHOICES:
-            if key is '': continue
-            if key not in permissions.values('role'):
-                initial_data.append({'organisation': organisation.pk, 'role': key})
-
+        initial_data = set_initial_data_permission(permissions, organisation.pk)
         permission_formset = permission_set(queryset=permissions, initial=initial_data)
+    elif user_profile and hasattr(user_profile, 'medidatauser'):
+        permissions = InstructionPermission.objects.filter(global_permission=True)
+        permission_set = modelformset_factory(InstructionPermission, form=InstructionPermissionForm, extra=(3-permissions.count()))
+        initial_data = set_initial_data_permission(permissions, None)
+        permission_formset = permission_set(queryset=permissions, initial=initial_data)
+
     show_pop_up = ''
     if request.GET.get('show'):
         show_pop_up = 'show'
@@ -173,6 +174,15 @@ def view_users(request):
     return response
 
 
+def set_initial_data_permission(permissions, organisation_id):
+    initial_data = []
+    for key, value in GeneralPracticeUser.ROLE_CHOICES:
+        if key is '': continue
+        if key not in permissions.values('role'):
+            initial_data.append({'organisation': organisation_id, 'role': key})
+    return initial_data
+
+
 @login_required(login_url='/accounts/login')
 @access_user_management('permissions.change_instructionpermission')
 def update_permission(request):
@@ -185,10 +195,43 @@ def update_permission(request):
         permission_formset = permission_set(request.POST, form_kwargs={'empty_permitted': False})
         if permission_formset.is_valid():
             for form in permission_formset:
-                set_permission(request, form)
+                if user.type == MEDIDATA_USER:
+                    set_all_permissions(request, form)
+                else:
+                    set_permission(request, form)
     response = redirect('accounts:view_users')
     response['Location'] += "?show=True"
     return response
+
+
+def set_all_permissions(request, form):
+    permission = form.save(commit=False)
+    data = form.cleaned_data
+    for organisation in OrganisationGeneralPractice.objects.filter(accept_policy= True, live=True):
+        gp_permission, create = InstructionPermission.objects.get_or_create(organisation=organisation, role=permission.role)
+        data['name'] = '%s : %s'%(permission.get_role_display(),organisation.__str__())
+        if gp_permission.group:
+            group_form = GroupPermissionForm(data, instance=gp_permission.group)
+        else:
+            group_form = GroupPermissionForm(data)
+
+        if group_form.is_valid():
+            group = group_form.save()
+            gp_permission.group = group
+            gp_permission.save()
+            gp_permission.allocate_permission_to_gp()
+
+    data['name'] = '%s : MediData'%permission.get_role_display()
+    if permission.group:
+        group_form = GroupPermissionForm(data, instance=gp_permission.group)
+    else:
+        group_form = GroupPermissionForm(data)
+
+    if group_form.is_valid():
+        group = group_form.save()
+        permission.group = group
+        permission.global_permission = True
+        permission.save()
 
 
 def set_permission(request, form):

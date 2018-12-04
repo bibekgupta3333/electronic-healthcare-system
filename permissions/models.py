@@ -6,8 +6,9 @@ from django.contrib.auth.models import Group
 
 class InstructionPermission(models.Model):
     role = models.IntegerField(choices=GeneralPracticeUser.ROLE_CHOICES, verbose_name='Role', null=True)
-    organisation = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE, null=True)
+    organisation = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE, null=True, blank=True)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, blank=True)
+    global_permission = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ["role", "organisation", "group"]

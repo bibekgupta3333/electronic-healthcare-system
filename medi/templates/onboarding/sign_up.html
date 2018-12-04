@@ -5,8 +5,6 @@
 {% bootstrap_javascript jquery='full' %}
 {% bootstrap_messages %}
 
-
-
 {% block ExtraHead %}
     <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/onboarding/sign_up.css' %}" rel="stylesheet"/>
@@ -290,6 +288,7 @@
                     event.preventDefault();
                 }
             });
+
             $('#id_postcode').select2({
                 ajax: {
                     url: function (params) {
@@ -308,53 +307,45 @@
             });
 
             $('#id_postcode').on('change', function () {
-                     var url = "https://api.getAddress.io/find/"+$(this).val()+'?api-key='+'{{ GET_ADDRESS_API_KEY }}';
-                     $.ajax({
-                        type: "GET",
-                        processData: false,
-                        url: url,
-                        success: function (data) {
+                var url = "https://api.getAddress.io/find/"+$(this).val()+'?api-key='+'{{ GET_ADDRESS_API_KEY }}';
+                $.ajax({
+                type: "GET",
+                processData: false,
+                url: url,
+                success: function (data) {
+                    data.formattedObj = {};
+                    var formattedData = data.addresses.map(function(item) {
+                        var name = item.split(',').filter(function (s) {
+                            return s != ' ';
+                        }).join(',');
+                        data.formattedObj[name] = item;
+                        return name;
+                    });
+                    $('#id_address').empty();
+                    $('#id_address').select2({
+                        data: formattedData
+                     });
+                    $('#id_address').on('select2:select', function (e) {
+                        var selected = e.params.data;
+                        var selectedData;
 
-                            var addresses = data.addresses.map(function(item){
-                                return item.split(',');
-                            });
-                            data.formattedObj = {};
-                            var formattedData = data.addresses.map(function(item) {
-                                var name = item.split(',').filter(function (s) {
-                                    return s != ' ';
-                                }).join(',');
-                                data.formattedObj[name] = item;
-                                return name;
-                            });
-                            $('#id_address').empty();
-                            $('#id_address').select2({
-                                data: formattedData
-                             });
-                            $('#id_address').on('select2:select', function (e) {
-                                var selected = e.params.data;
-
-                                var selectedData;
-                                if(data.formattedObj[selected.text]) {
-                                    selectedData = data.formattedObj[selected.text].split(',');
-                                }else {
-                                    selectedData = selected.text.split(',');
-
-                                }
-
-                                $('#id_address_line1').val(selectedData[0]);
-                                $('#id_address_line2').val(selectedData[1]);
-                                $('#id_address_line3').val(selectedData[2]);
-                                $('#id_address_line4').val(selectedData[3]);
-                                $('#id_city').val(selectedData[5]);
-                                $('#id_country').val(selectedData[6]);
-                                $('#id_address').val(selectedData.join(','));
-                            });
-
+                        if(data.formattedObj[selected.text]) {
+                            selectedData = data.formattedObj[selected.text].split(',');
+                        }else {
+                            selectedData = selected.text.split(',');
                         }
+                        $('#id_address_line1').val(selectedData[0]);
+                        $('#id_address_line2').val(selectedData[1]);
+                        $('#id_address_line3').val(selectedData[2]);
+                        $('#id_address_line4').val(selectedData[3]);
+                        $('#id_city').val(selectedData[5]);
+                        $('#id_country').val(selectedData[6]);
+                        $('#id_address').val(selectedData.join(','));
+                    });
+
+                }
                 })
             });
-
-
 
             $('#id_password1').change(function() {
               $.ajax({
@@ -380,24 +371,25 @@
                   }
               });
             });
+
             $('#id_email1').change(function() {
-              $.ajax({
-                  url: "{% url 'accounts:check_email' %}",
-                  type: "POST",
-                  dataType: "json",
-                  data:{
-                      "email": $(this).val() ,
-                      "csrfmiddlewaretoken": csrf_token
-                  },
-                  success:function(data) {
-                    $('#id_email1').removeClass("is-invalid");
-                    $('#email_form').find('.invalid-feedback').remove();
-                    if (data.exists){
-                      $('#id_email1').addClass("is-invalid");
-                      $('#id_email1').after('<div class="invalid-feedback">This email address has already been used to register.</div>');
+                $.ajax({
+                    url: "{% url 'accounts:check_email' %}",
+                    type: "POST",
+                    dataType: "json",
+                    data:{
+                        "email": $(this).val() ,
+                        "csrfmiddlewaretoken": csrf_token
+                    },
+                    success:function(data) {
+                        $('#id_email1').removeClass("is-invalid");
+                        $('#email_form').find('.invalid-feedback').remove();
+                        if (data.exists){
+                            $('#id_email1').addClass("is-invalid");
+                            $('#id_email1').after('<div class="invalid-feedback">This email address has already been used to register.</div>');
+                        }
                     }
-                  }
-              });
+                });
             });
 
             $('#id_surgery_name').select2({
@@ -440,6 +432,14 @@
                 }
             });
 
+            $('#id_practice_code, #id_surgery_name').change(function () {
+                $('#id_postcode').empty();
+                $('#id_postcode').select2({
+                    data: [$('#id_postcode').data('postcode')]
+                });
+                $('#id_postcode').trigger('change');
+            });
+
             $(document).on({
                 mouseover: function(){
                     $.ajax({
@@ -456,6 +456,7 @@
                             $('#id_city').val(data.city);
                             $('#id_country').val(data.country);
                             $('#id_contact_num').val(data.phone_office);
+                            $('#id_postcode').data('postcode', data.postcode);
                         }
                     })
                 }
