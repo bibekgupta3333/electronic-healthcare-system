@@ -9,6 +9,7 @@ from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER, PATIENT_U
 
 DEFAULT_FROM = settings.DEFAULT_FROM
 
+
 def reset_password(request):
     emails = request.POST.getlist("users[]")
     PASSWORD = 'medi2018'
@@ -31,6 +32,7 @@ def reset_password(request):
         messages.success(request, "The selected user's password has been reset. Password: {}".format(PASSWORD))
     else:
         messages.success(request, "All the passwords of the selected users have been reset. Password: {}".format(PASSWORD))
+
 
 def change_role(request):
     cur_user = request.user
@@ -58,6 +60,7 @@ def change_role(request):
     else:
         messages.success(request, "All the roles of the selected users have been changed.")
 
+
 def remove_user(request):
     emails = request.POST.getlist("users[]")
     user_cnt = len(emails)
@@ -69,6 +72,7 @@ def remove_user(request):
         messages.success(request, "The selected user has been deleted.")
     else:
         messages.success(request, "Selected users have been deleted.")
+
 
 def count_gpusers(queryset):
     all_count = queryset.count()

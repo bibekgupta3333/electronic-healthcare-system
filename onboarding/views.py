@@ -34,7 +34,6 @@ def sign_up(request):
                 return render(request, 'onboarding/emr_message.html', context={
                     'messages_1': message1,
                     'messages_2': message2,
-
                 })
 
             initial_password = random.choices(string.ascii_uppercase, k=1)
@@ -122,9 +121,11 @@ def emr_setup_stage_2(request, practice_code=None):
                     html_message=html_message,
                 )
             messages.success(request, 'Create User Successful!')
-            welcome_message = 'Onboarding Successful! Welcome to Emr System'
+            welcome_message1 = 'Onboarding Successful!'
+            welcome_message2 = 'Welcome to Emr System'
             return render(request, 'onboarding/emr_message.html', {
-                'welcome_message': welcome_message
+                'welcome_message1': welcome_message1,
+                'welcome_message2': welcome_message2
             })
 
     return render(request, 'onboarding/emr_setup_stage_2.html', {

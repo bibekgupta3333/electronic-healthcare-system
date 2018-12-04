@@ -11,8 +11,17 @@
 
 
 {% block Content %}
-
-    <p>{{ messages_1 }}</p>
-    <p>{{ messages_2 }}</p>
-
+    <div class="card emrMessage">
+        <div class="centerMessage">
+            {% if welcome_message1 %}
+                <div class="welcomeMessage">
+                    <p>{{ welcome_message1 }}</p>
+                    <p>{{ welcome_message2 }}</p>
+                </div>
+            {% elif messages_1 %}
+                <p>{{ messages_1 }}</p>
+                <p>{{ messages_2 }}</p>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}
