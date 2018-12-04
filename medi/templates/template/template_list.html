@@ -1,40 +1,79 @@
 {% extends 'base.html' %}
 
+{% load bootstrap4 %}
+{% load static %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
 
-
+{% block ExtraHead %}
+    <link href="{% static 'css/template/template.css' %}" rel="stylesheet"/>
+{% endblock %}
 
 {% block Content %}
-            {% for template in object_list %}
-                <div class="template-list">
-                    <p><strong>Title:</strong> {{ template.title }}</p>
-                    <p><strong>Description:</strong> {{ template.description }}</p>
-                    {% if  template.templateconditionsofinterest_set %}
-                        <div>
-                            <strong>Conditions:</strong>
-                            <ul>
-                                {% for condition in template.templateconditionsofinterest_set.all %}
-                                <li>{{ condition.snomedct.fsn_description }}</li>
-                                {% endfor %}
-                            </ul>
+    <div class="card-deck instruction">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header"><h5>New Template</h5></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <a href="{% url 'template:new_template' %}" class="btn btn-primary" id="btn_newTemplate">Add New Template</a>
                         </div>
-
-                    {% endif %}
-                    {% if  template.templateinstructionadditionalquestion_set  %}
-                        <div>
-                            <strong>Questions:</strong>
-                            <ul>
-                                {% for question in template.templateinstructionadditionalquestion_set.all %}
-                                <li>{{ question }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    {% endif %}
-                    <a class="btn btn-primary" href="{% url 'template:edit' template.pk %}" role="button">Edit</a>
+                    </div>
                 </div>
-            {% endfor %}
-            {% include 'template/pagination.html' %}
+            </div>
+        </div>
+    </div>
+    <div class="card-deck instruction">
+        <div class="col-md-12 mt-4">
+            <div class="card">
+                <div class="card-header"><h5>Saved Templates</h5></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            {% if templates|length == 0 %}
+                                <h6>No Templates Available</h6>
+                            {% endif %}
+                            {% for template in templates %}
+                                <div class="row">
+                                    <div class="col-md-3 templateLabelText">{{ template.template_title }}</div>
+                                    <div class="col-md-2"><button id="btn_editTemplate" class="btn btn-sm btn-outline-primary templateListBtn" data-template_id="{{ template.pk }}">Edit</button></div>
+                                    <div class="col-md-2"><button id="btn_discardTemplate" class="btn btn-danger btn-sm templateListBtn" data-template_id="{{ template.pk }}">Discard</button></div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block Script %}
-
+    <script src="{% static 'js/jquery.formset.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            $('#btn_editTemplate').click(function(){
+                let template_id = $(this).data('template_id');
+                window.location = '/template/edit-template/' + template_id +'/';
+            });
+            $('#btn_discardTemplate').click(function(){
+                let template_id = $(this).data('template_id');
+                let action = '/template/remove-template';
+                $.ajax({
+                    url: action,
+                    method: 'GET',
+                    data: {
+                        "template_id": template_id
+                    },
+                    success: function(){
+                        create_alert('Template has been deleted.', 'success');
+                    },
+                    error: function(){
+                        
+                    }
+                })
+            });
+        });
+    </script>
 {% endblock %}

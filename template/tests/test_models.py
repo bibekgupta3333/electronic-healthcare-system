@@ -3,7 +3,7 @@ from django.test import TestCase
 from model_mommy import mommy
 
 from template.models import (
-    TemplateInstruction, TemplateInstructionAdditionalQuestion
+    TemplateInstruction, TemplateAdditionalQuestion
 )
 
 
@@ -15,11 +15,11 @@ class TemplateInstructionTest(TestCase):
         self.assertEqual(str(template_instruction), 'template_instruction')
 
 
-class TemplateInstructionAdditionalQuestionTest(TestCase):
+class TemplateAdditionalQuestionTest(TestCase):
     def test_string_representation(self):
-        template_instruction_additional_question = mommy.make(
-            TemplateInstructionAdditionalQuestion, question='test_question?'
+        template_additional_question = mommy.make(
+            TemplateAdditionalQuestion, question='test_question?'
         )
         self.assertEqual(
-            str(template_instruction_additional_question), 'test_question?'
+            str(template_additional_question), 'test_question?'
         )

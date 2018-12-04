@@ -1,0 +1,21 @@
+.rightBtn {
+    float: right;
+}
+
+.templateNewBtn {
+    width: 150px;
+}
+
+.card-header {
+    background-color: #36569a;
+    color: whitesmoke
+}
+
+.templateLabelText {
+    font-size: 17px;
+    margin: 3px 0 0 15px;
+}
+
+.templateListBtn {
+    width: 80%;
+}

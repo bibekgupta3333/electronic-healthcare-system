@@ -29,8 +29,11 @@ class InstructionPatient(models.Model):
     patient_country = models.CharField(max_length=255)
     patient_nhs_number = models.CharField(max_length=10, blank=True)
     patient_email = models.EmailField(max_length=255, blank=True)
+    patient_telephone_code = models.CharField(max_length=10, blank=True)
     patient_telephone_mobile = models.CharField(max_length=255, blank=True)
+    patient_alternate_code = models.CharField(max_length=10, blank=True)
     patient_alternate_phone = models.CharField(max_length=255, blank=True)
+    patient_emis_number = models.CharField(max_length=255, blank=True)
 
     class Meta:
         verbose_name = "Instruction Patient Information"
@@ -39,6 +42,12 @@ class InstructionPatient(models.Model):
         return "{first_name} {last_name} {dob}".format(
             first_name=self.patient_first_name, last_name=self.patient_last_name, dob=self.patient_dob
         )
+
+    def get_telephone_e164(self):
+        return "+%s%s"%(self.patient_telephone_code, self.patient_telephone_mobile)
+
+    def get_alternate_e164(self):
+        return "+%s%s"%(self.patient_alternate_code, self.patient_alternate_phone)
 
 
 class Instruction(TimeStampedModel, models.Model):

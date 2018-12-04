@@ -87,6 +87,22 @@
             </div>
             </div>
             <div class="col-md-12 mt-5">
+                <h4><b>Central contact email for the Surgery <span class="red">*</span></b></h4>
+                <p class="mb-4"><b>Please provide a central contact email for the Surgery, where all instructions and notifications will be sent (in addition to notification choices of the individual users)</b></p>
+                <div class="row">
+                    <div class="col-md-3"><b>Surgery email</b></div>
+                    <div class="col-md-6">
+                        {% bootstrap_field surgery_email_form.organisation_email placeholder='' %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3"><b>Confirm email</b></div>
+                    <div class="col-md-6">
+                        {% bootstrap_field surgery_email_form.confirm_email placeholder='' %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 mt-5">
                 <h4 class="mb-4"><b>Bank Details for Fee Payments</b></h4>
                  <div class="row">
                     <div class="col-md-3">Bank Account Name</div>

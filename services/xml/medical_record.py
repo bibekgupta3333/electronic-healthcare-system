@@ -112,7 +112,6 @@ class MedicalRecord(XMLBase):
         event_function = getattr(self, profile_event_type)
         return event_function()
 
-
     def smoking(self) -> List[SocialConsultationElement]:
         return [
             sce for sce in self.__social_consultation_elements()

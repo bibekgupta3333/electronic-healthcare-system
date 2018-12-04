@@ -126,9 +126,9 @@
                   </div>
                   <div class="card-footer">
                       <label class="text-footer">Reject this request if there are no suitable matching patients:</label>
-                      <div class="row reject-btn">
+                      <div class="row reject-btn mr-1">
                           {% if instruction.type == 'SARS' and request.user.type == 'GP'%}
-                          <form action="{% url 'instructions:new_instruction' %}" method="GET" class="edit-btn">
+                          <form action="{% url 'instructions:new_instruction' %}" method="GET" class="mr-2">
                               <input type="hidden" id="instruction_id" name="instruction_id" value="{{ instruction.id }}" />
                               <button class="btn btn-primary" id="editPatientBtn">Edit Patient Details</button>
                           </form>

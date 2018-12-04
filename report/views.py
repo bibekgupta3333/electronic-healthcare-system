@@ -16,19 +16,16 @@ from .forms import AccessCodeForm
 from report.mobile import AuthMobile
 
 
-dummy_phone = "+447557107129"
-
-
 def sar_request_code(request, instruction_id, url):
     error_message = None
-    get_object_or_404(Instruction, pk=instruction_id)
+    instruction = get_object_or_404(Instruction, pk=instruction_id)
     patient_auth = get_object_or_404(PatientReportAuth, url=url)
     if patient_auth.locked_report:
         return redirect_auth_limit(request)
     if request.method == 'POST':
         patient_auth.count = 0
         patient_auth.save()
-        response = AuthMobile(number=dummy_phone).request()
+        response = AuthMobile(number=instruction.patient_information.get_telephone_e164()).request()
 
         if response.status_code == 200:
             response_results_dict = json.loads(response.text)
@@ -51,14 +48,16 @@ def sar_access_code(request, url):
 
     if url:
         patient_auth = PatientReportAuth.objects.filter(url=url).first()
+        instruction = patient_auth.instruction
+        patient_phone = instruction.patient_information.get_telephone_e164()
         if patient_auth.locked_report:
             return redirect_auth_limit(request)
-        number = ["*"] * (len(dummy_phone) - 2)
-        number.append(dummy_phone[-2:])
+        number = ["*"] * (len(patient_phone) - 2)
+        number.append(patient_phone[-2:])
         number = " ".join(map(str, number))
         if request.method == 'POST':
             if request.POST.get('button') == 'Request New Code':
-                response = AuthMobile(number=dummy_phone).request()
+                response = AuthMobile(number=patient_phone).request()
                 if response.status_code == 200:
                     response_results_dict = json.loads(response.text)
                     patient_auth.mobi_request_id = response_results_dict['id']

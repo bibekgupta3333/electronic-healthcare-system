@@ -84,6 +84,34 @@ class ScopeInstructionForm(forms.Form):
         return self.cleaned_data
 
 
+class TemplateInstructionForm(forms.Form):
+    template_title = forms.CharField(max_length=225, required=True, widget=forms.TextInput())
+    type = forms.ChoiceField(choices=[], widget=forms.RadioSelect(attrs={'class': 'd-inline instructionType'}))
+    common_condition = forms.MultipleChoiceField(choices=[], widget=forms.CheckboxSelectMultiple(), required=False)
+    addition_condition = MyMultipleChoiceField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        fields = ('')
+        super().__init__(*args, **kwargs)
+        FORM_INSTRUCTION_TYPE_CHOICES = [
+            (AMRA_TYPE, 'Underwriting(AMRA)'),
+            (AMRA_TYPE, 'Claim(AMRA)')
+        ]
+
+        SCOPE_COMMON_CONDITION_CHOICES = [
+            [[snomed.external_id for snomed in common_snomed.snomed_concept_code.all()], common_snomed.common_name] for common_snomed in CommonSnomedConcepts.objects.all()
+        ]
+
+        self.fields['common_condition'] = forms.MultipleChoiceField(choices=SCOPE_COMMON_CONDITION_CHOICES, widget=forms.CheckboxSelectMultiple(), required=False)
+
+        self.fields['type'] = forms.ChoiceField(
+            choices=FORM_INSTRUCTION_TYPE_CHOICES,
+            widget=forms.RadioSelect(
+                attrs={'class': 'd-inline instructionType'}
+            )
+        )
+
+
 class AdditionQuestionForm(forms.ModelForm):
     class Meta:
         model = InstructionAdditionQuestion

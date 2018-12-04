@@ -13,6 +13,7 @@
     <link href="{% static 'css/instructions/consent_contact.css' %}" rel="stylesheet"/>
     <link rel="stylesheet" href="{% static 'assets/kartik-v-boostrap-fileinput/css/fileinput.css' %}">
     <link rel="stylesheet" href="{% static 'assets/kartik-v-boostrap-fileinput/themes/explorer-fas/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'css/intlTelInput.min.css' %}">
     <script src="{% static 'assets/kartik-v-boostrap-fileinput/js/fileinput.js' %}"></script>
     <script src="{% static 'assets/kartik-v-boostrap-fileinput/js/locales/LANG.js' %}"></script>
     <script src="{% static 'assets/kartik-v-boostrap-fileinput/themes/fas/theme.js' %}"></script>
@@ -117,10 +118,12 @@
                                 <div class="row mt-4">
                                     <div class="col-md-3 rowTitle">Mobile Phone</div>
                                     {% bootstrap_field patient_form.patient_telephone_mobile size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
+                                    {% bootstrap_field patient_form.patient_telephone_code %}
                                 </div>
                                 <div class="row mt-4">
                                     <div class="col-md-3 rowTitle">Alternate Phone(optional)</div>
                                     {% bootstrap_field patient_form.patient_alternate_phone size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
+                                    {% bootstrap_field patient_form.patient_alternate_code %}
                                 </div>
                             </div>
                         </div>
@@ -222,6 +225,7 @@
     <!-- Include jQuery Popup Overlay -->
     <script src="{% static 'js/jquery.popupoverlay.js' %}"></script>
     <script src="{% static 'js/instructions/consent_form.js' %}"></script>
+    <script src="{% static 'js/intlTelInput.min.js' %}"></script>
     <script>
     $(document).ready(function () {
         var isPopup = false;
@@ -229,6 +233,47 @@
         var validations ={
             email: [/^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/, 'Please enter a valid email address']
         };
+        var inputPhone = document.querySelector("#id_patient_telephone_mobile");
+        var inputAlternatePhone = document.querySelector("#id_patient_alternate_phone");
+        intlTelInput(inputPhone, {
+          separateDialCode: true,
+          initialCountry: "auto"
+        });
+        intlTelInput(inputAlternatePhone, {
+          separateDialCode: true,
+          initialCountry: "auto"
+        });
+        inputPhone.addEventListener("countrychange", function() {
+          var code = $(this).parent().find('.selected-flag')[0].title.split(': ')[1];
+          $(this).parent().find('.selected-dial-code').html(code);
+        });
+        inputAlternatePhone.addEventListener("countrychange", function() {
+          var code = $(this).parent().find('.selected-flag')[0].title.split(': ')[1];
+          $(this).parent().find('.selected-dial-code').html(code);
+        });
+        $.get('https://ipinfo.io', function() {}, "jsonp").always(function(resp) {
+          var countryCode = (resp && resp.country) ? resp.country : "";
+          countryCode = countryCode.toLocaleLowerCase();
+          phoneCode = $('.country-list li[data-country-code=' + countryCode + ']').attr('data-dial-code');
+          var telephoneCode = $('#id_patient_telephone_code').val();
+          if(telephoneCode){
+            countryCode = $('.country-list li[data-dial-code=' + telephoneCode + ']').attr('data-country-code');
+            phoneCode = telephoneCode;
+          }
+          $('#id_patient_telephone_code').parent().find('.intl-tel-input').addClass('iti-sdc-3');
+          $('#id_patient_telephone_code').parent().find('.selected-flag').attr('title', '+' + phoneCode);
+          $('#id_patient_telephone_code').parent().find('.selected-flag .iti-flag').addClass(countryCode);
+          $('#id_patient_telephone_code').parent().find('.selected-flag .selected-dial-code').html('+' + phoneCode);
+          var alternateCode = $('#id_patient_alternate_code').val();
+          if(alternateCode){
+            countryCode = $('.country-list li[data-dial-code=' + alternateCode + ']').attr('data-country-code');
+            phoneCode = alternateCode;
+          }
+          $('#id_patient_alternate_code').parent().find('.intl-tel-input').addClass('iti-sdc-3');
+          $('#id_patient_alternate_code').parent().find('.selected-flag').attr('title', '+' + phoneCode);
+          $('#id_patient_alternate_code').parent().find('.selected-flag .iti-flag').addClass(countryCode);
+          $('#id_patient_alternate_code').parent().find('.selected-flag .selected-dial-code').html('+' + phoneCode);
+        });
         $(".emailModal").popup({
             transition: 'all 0.3s',
             scrolllock: true,
@@ -275,16 +320,16 @@
                 ]
             {% endif %}
         });
-        $('#id_patient_input_email').blur(function(){
+        $('#id_patient_email').blur(function(){
             validation = new RegExp(validations['email'][0]);
-            if ($('#id_patient_input_email').val() !='' && !validation.test(this.value) && !isPopup){
+            if ($('#id_patient_email').val() !='' && !validation.test(this.value) && !isPopup){
                 isPopup = true;
                 // If the validation fails then we show the custom error message
                 setTimeout(function(){$("#emailDialog1").popup('show')}, 500);
             }
         });
         $('#confirm_email').blur(function(){
-            if ($('#confirm_email').val() !='' && $('#confirm_email').val() != $('#id_patient_input_email').val() && !isPopup){
+            if ($('#confirm_email').val() !='' && $('#confirm_email').val() != $('#id_patient_email').val() && !isPopup){
                 isPopup = true;
                 // If the validation fails then we show the custom error message
                 setTimeout(function(){$("#emailDialog2").popup('show')}, 500)
@@ -300,7 +345,7 @@
             if(mdxcnt == 0) {
                 $('#noMdxConsent').popup('show');
             }
-            else if($('#id_patient_input_email').val() == ''){
+            else if($('#id_patient_email').val() == ''){
                 $('#noEmailAddress').popup('show');
             }
             else{
@@ -320,11 +365,13 @@
             else if(mdxcnt == 0) {
                 $('#noMdxConsent').popup('show');
             }
-            else if($('#id_patient_input_email').val() == ''){
+            else if($('#id_patient_email').val() == ''){
                 $('#noEmailAddress').popup('show');
             }
             else{
                 $('#id_next_step').val('proceed');
+                $('#id_patient_telephone_code').val($('#id_patient_telephone_mobile').parent().find('.selected-flag')[0].title.split('+')[1]);
+                $('#id_patient_alternate_code').val($('#id_patient_alternate_phone').parent().find('.selected-flag')[0].title.split('+')[1]);
                 $('#consentContactForm').submit();
             }
         });
@@ -342,10 +389,12 @@
         });
         $('#saveBtn').click(function(){            
             $('#id_next_step').val('view_pipeline'); 
+            $('#id_patient_telephone_code').val($('#id_patient_telephone_mobile').parent().find('.selected-flag')[0].title.split('+')[1]);
+            $('#id_patient_alternate_code').val($('#id_patient_alternate_phone').parent().find('.selected-flag')[0].title.split('+')[1]);
             $('#consentContactForm').submit();
         });
         $('.enterEmailBtn').click(function(){
-            $('#id_patient_input_email').focus();
+            $('#id_patient_email').focus();
         });
         $('#downloadBtn').click(function(e){
             e.preventDefault();
