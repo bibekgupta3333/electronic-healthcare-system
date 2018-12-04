@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.conf import settings
 from django.db.models import Q
-
+from django.core.mail import send_mail
 from .forms import NewGPForm, NewClientForm
 from .tables import UserTable
 from .models import User
@@ -14,8 +14,13 @@ def reset_password(request):
     emails = request.POST.getlist("users[]")
     PASSWORD = 'medi2018'
     user_cnt = len(emails)
+    organisations = set()
     for email in emails:
         user = User.objects.get(email=email)
+        if user.type == GENERAL_PRACTICE_USER and hasattr(user, 'userprofilebase') and\
+            hasattr(user.userprofilebase, 'generalpracticeuser') and\
+            user.userprofilebase.generalpracticeuser.organisation:
+            organisations.add(user.userprofilebase.generalpracticeuser.organisation.organisation_email)
         user.set_password(PASSWORD)
         user.save()
         # send_mail(
@@ -27,6 +32,15 @@ def reset_password(request):
         #     auth_user=get_env_variable('SENDGRID_USER'),
         #     auth_password=get_env_variable('SENDGRID_PASS'),
         # )
+
+    for organisation_email in organisations:
+        send_mail(
+            'Reset password',
+            'User password has been changed by your manager.',
+            DEFAULT_FROM,
+            [organisation_email],
+            fail_silently=True,
+        )
 
     if user_cnt == 1:
         messages.success(request, "The selected user's password has been reset. Password: {}".format(PASSWORD))

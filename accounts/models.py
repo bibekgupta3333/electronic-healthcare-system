@@ -5,6 +5,7 @@ from permissions.model_choices import MANAGER_PERMISSIONS, GP_PERMISSIONS,\
         OTHER_PERMISSIONS, CLIENT_PERMISSIONS, MEDI_PERMISSIONS, ADMIN_PERMISSIONS
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 from common.models import TimeStampedModel
+from django.core.mail import send_mail
 
 SEX_CHOICES = (
     ('M', 'Male'),
@@ -273,7 +274,19 @@ class GeneralPracticeUser(UserProfileBase):
         if self.initial_role != self.role or self._state.adding or\
             self.initial_organisation_pk != self.organisation.pk:
             self.update_permission()
+        if self._state.adding:
+            self.sending_surgery_email()
         super(GeneralPracticeUser, self).save(*args, **kwargs)
+
+    def sending_surgery_email(self):
+        if self.organisation and self.organisation.organisation_email:
+            send_mail(
+                'New user',
+                'You have a new user. %s %s'%(self.user.get_full_name(), self.get_role_display()),
+                'MediData',
+                [self.organisation.organisation_email],
+                fail_silently=True,
+            )
 
     def update_permission(self):
         self.remove_permission()
