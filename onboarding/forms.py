@@ -34,13 +34,13 @@ class SurgeryForm(forms.Form):
 
     def validate_operating_system(self):
         operating_system = self.cleaned_data.get('operating_system')
-        if not operating_system == 'EW':
+        if not operating_system == 'EMISWeb':
             self.cleaned_data['accept_policy'] = False
         return operating_system
 
     def save(self):
         accept_policy = True if self.data.get('accept_policy') == 'on' else False
-        live = True if self.cleaned_data.get('operating_system') == 'EW' else False
+        live = True if self.cleaned_data.get('operating_system') == 'EMISWeb' else False
         gp_organisation = OrganisationGeneralPractice.objects.update_or_create(
             practcode=self.cleaned_data.get('practice_code'),
             defaults={

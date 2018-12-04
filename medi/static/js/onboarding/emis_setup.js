@@ -1,3 +1,4 @@
+
 function copyToClipboard(text, el) {
     var copyTest = document.queryCommandSupported("copy");
     var elOriginalText = el.attr("data-original-title");
@@ -25,7 +26,9 @@ function copyToClipboard(text, el) {
 function pollingEmis(url) {
     $( "input" ).prop( "disabled", true );
     $("#checkingEmisButton").addClass("pendingCheck");
-    $("#checkingEmisButton").html("<img src='{% static "images/Spin-1s-40px.gif" %}' style='height: 50px; width: 50px;'/> Checking...");
+    $("#checkingEmisButton").html(
+        "<img src='/static/images/emis_setup/Spin-1s-40px.gif' style='height: 50px; width: 50px;'/> Checking..."
+    );
     setTimeout(function () {
         $.ajax({
             url: url,
