@@ -79,8 +79,6 @@ def create_or_update_redaction_record(request, instruction):
             if status == 'submit':
                 instruction.status = models.INSTRUCTION_STATUS_COMPLETE
                 messages.success(request, 'Completed Medical Report')
-            else:
-                messages.success(request, 'Updated Report Successful')
 
             instruction.save()
             amendments_for_record.save()
