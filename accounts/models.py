@@ -142,7 +142,7 @@ class UserProfileBase(TimeStampedModel, models.Model):
     middle_name = models.CharField(max_length=255, blank=True)
     maiden_name = models.CharField(max_length=255, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
-    address_name_number = models.CharField(max_length=255)
+    address_name_number = models.CharField(max_length=255, blank=True)
     address_line2 = models.CharField(max_length=255, blank=True)
     address_line3 = models.CharField(max_length=255, blank=True)
     address_postcode = models.CharField(max_length=255, blank=True)
