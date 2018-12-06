@@ -24,13 +24,13 @@ function enable_submit_button(){
 }
 
 function subMitMedicalReport(event){
-    if(!$('#accept_disclaimer').is(':checked')){
-        create_alert('Please accept the Medidata Exchange Ltd disclaimer.', 'error');
-        return false;
-    }
     if(event == "draft"){
         $('#event_flag').val('draft');
     } else {
+        if(!$('#accept_disclaimer').is(':checked')){
+            create_alert('Please accept the Medidata Exchange Ltd disclaimer.', 'error');
+            return false;
+        }
         $('#event_flag').val('submit');
     }
     $('#medicalReportForm').submit();
