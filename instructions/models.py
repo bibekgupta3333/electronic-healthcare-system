@@ -111,6 +111,7 @@ class Instruction(TimeStampedModel, models.Model):
         self.save()
 
     def reject(self, request, context):
+        self.gp_user = request.user.userprofilebase.generalpracticeuser
         self.rejected_timestamp = timezone.now()
         self.rejected_by = request.user
         self.rejected_reason = context.get('rejected_reason', None)
