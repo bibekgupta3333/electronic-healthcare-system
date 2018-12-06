@@ -110,6 +110,7 @@ class PMForm(forms.ModelForm):
         email = self.cleaned_data.get('email1')
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError('This email address has already been used to register.')
+        return email
 
     def clean_password1(self):
         password = self.cleaned_data.get('password1')
