@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.utils.dateparse import parse_datetime
-from django.http import HttpRequest
+from django.http import HttpRequest, JsonResponse
 from django_tables2 import RequestConfig
 from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest, Setting, InstructionPatient
 from .tables import InstructionTable
@@ -26,6 +26,7 @@ from .print_consents import MDXDualConsent
 import pytz
 from itertools import chain
 import ast
+import requests
 import json
 
 from django.conf import settings
@@ -670,3 +671,12 @@ def print_mdx_consent(request, instruction_id, patient_emis_number):
     }
 
     return MDXDualConsent.render(params)
+
+
+def api_get_address(request, address):
+    if not address:
+        return JsonResponse({'status': 'error', 'error': 'Address not found.'}, status=404)
+
+    url = 'https://api.getAddress.io/find/' + address + '?api-key=' + settings.GET_ADDRESS_API_KEY
+    response = requests.get(url)
+    return JsonResponse(response.json())
