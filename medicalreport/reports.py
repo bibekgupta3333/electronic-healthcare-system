@@ -1,6 +1,7 @@
 import os
 import xhtml2pdf.pisa as pisa
 from io import BytesIO
+from django.core.files.base import ContentFile
 from django.http import HttpResponse
 from django.template.loader import get_template
 from services.xml.base64_attachment import Base64Attachment
@@ -54,6 +55,15 @@ class MedicalReport:
             response['Content-Disposition'] = 'attachment; filename="report.pdf"'
             response.write(file.getvalue())
             return response
+
+    @staticmethod
+    def get_pdf_file(params: dict):
+        template = get_template(REPORT_DIR)
+        html = template.render(params)
+        file = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), file, link_callback=link_callback)
+        if not pdf.err:
+            return ContentFile(file.getvalue())
 
 
 class AttachmentReport:

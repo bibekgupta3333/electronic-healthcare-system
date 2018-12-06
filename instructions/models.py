@@ -83,6 +83,7 @@ class Instruction(TimeStampedModel, models.Model):
     gp_practice = GenericForeignKey('gp_practice_type', 'gp_practice_id')
     sars_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
     mdx_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
+    medical_report = models.FileField(upload_to='medical_reports', null=True, blank=True)
     saved = models.BooleanField(default=False)
 
     class Meta:
