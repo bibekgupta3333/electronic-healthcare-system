@@ -307,7 +307,7 @@
             });
 
             $('#id_postcode').on('change', function () {
-                var url = "https://api.getAddress.io/find/"+$(this).val()+'?api-key='+'{{ GET_ADDRESS_API_KEY }}';
+                var url = "{% url 'instructions:api_get_address' address='Address' %}".replace('Address', $(this).val());
                 $.ajax({
                 type: "GET",
                 processData: false,

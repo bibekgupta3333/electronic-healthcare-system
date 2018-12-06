@@ -34,13 +34,13 @@ class SurgeryForm(forms.Form):
 
     def validate_operating_system(self):
         operating_system = self.cleaned_data.get('operating_system')
-        if not operating_system == 'EW':
+        if not operating_system == 'EMISWeb':
             self.cleaned_data['accept_policy'] = False
         return operating_system
 
     def save(self):
         accept_policy = True if self.data.get('accept_policy') == 'on' else False
-        live = True if self.cleaned_data.get('operating_system') == 'EW' else False
+        live = True if self.cleaned_data.get('operating_system') == 'EMISWeb' else False
         gp_organisation = OrganisationGeneralPractice.objects.update_or_create(
             practcode=self.cleaned_data.get('practice_code'),
             defaults={
@@ -78,6 +78,12 @@ class UserEmrSetUpStage2Form(forms.Form):
     email = forms.EmailField(max_length=255, label='')
     role = forms.ChoiceField(choices=accounts_models.GeneralPracticeUser.ROLE_CHOICES, label='')
     gp_code = forms.CharField(max_length=255, required=False, label='')
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email1')
+        if accounts_models.User.objects.filter(email=email).exists():
+            raise forms.ValidationError('This email address has already been used to register.')
+        return email
 
 
 class SurgeryEmailForm(forms.ModelForm):

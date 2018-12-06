@@ -79,8 +79,6 @@ def create_or_update_redaction_record(request, instruction):
             if status == 'submit':
                 instruction.status = models.INSTRUCTION_STATUS_COMPLETE
                 messages.success(request, 'Completed Medical Report')
-            else:
-                messages.success(request, 'Updated Report Successful')
 
             instruction.save()
             amendments_for_record.save()
@@ -212,8 +210,22 @@ def send_patient_mail(instruction,  unique_url):
                                              }
                                              ))
 
+def send_surgery_email(instruction):
+    send_mail(
+        'Completely eMR',
+        'Your instruction has been submitted',
+        'MediData',
+        [instruction.gp_practice.organisation_email],
+        fail_silently=True,
+        html_message=loader.render_to_string('medicalreport/surgery_email.html',
+                                             {
+                                                 'name': instruction.patient.user.first_name,
+                                                 'gp': instruction.gp_user.user.first_name,
+                                             }
+                                             ))
 
 def create_patient_report(instruction):
     unique_url = uuid.uuid4().hex
     PatientReportAuth.objects.create(patient_id=instruction.patient_id, instruction=instruction, url=unique_url)
     send_patient_mail(instruction, unique_url)
+    send_surgery_email(instruction)
