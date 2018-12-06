@@ -570,10 +570,14 @@ def consent_contact(request, instruction_id, patient_emis_number):
     patient_instruction = instruction.patient_information
 
     if request.method == "POST":
-        if request.POST.get('sars_consent_loaded') == 'loaded':
+        if request.POST.get('sars_consent_loaded') == 'loaded' and not instruction.sars_consent:
             instruction.sars_consent = request.FILES['sars_consent']
-        if request.POST.get('mdx_consent_loaded') == 'loaded':
+        elif request.POST.get('sars_consent_loaded') != 'loaded':
+            instruction.sars_consent.delete()
+        if request.POST.get('mdx_consent_loaded') == 'loaded' and not instruction.mdx_consent:
             instruction.mdx_consent = request.FILES['mdx_consent']
+        elif request.POST.get('mdx_consent_loaded') != 'loaded':
+            instruction.mdx_consent.delete()
 
         patient_instruction.patient_email = request.POST.get('patient_email', '')
         patient_instruction.patient_telephone_mobile = request.POST.get('patient_telephone_mobile', '')

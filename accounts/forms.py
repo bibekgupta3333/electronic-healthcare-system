@@ -1,5 +1,4 @@
 from django import forms
-from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.utils.timezone import now
 from common.functions import verify_password
@@ -110,7 +109,8 @@ class PMForm(forms.ModelForm):
     def clean_email1(self):
         email = self.cleaned_data.get('email1')
         if User.objects.filter(email=email).exists():
-            raise forms.ValidationError('This GP Surgery with this email already exists ')
+            raise forms.ValidationError('This email address has already been used to register.')
+
     def clean_password1(self):
         password = self.cleaned_data.get('password1')
         first_name = self.cleaned_data.get('first_name')
@@ -121,22 +121,16 @@ class PMForm(forms.ModelForm):
             raise forms.ValidationError(password_auth.get('warning'))
         return password
 
-    def clean_email1(self):
-        email = self.cleaned_data.get('email1')
+    def clean_email2(self):
+        email = self.cleaned_data.get('email2')
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError('This email address has already been used to register.')
         return email
 
-    def clean_first_name(self):
-        first_name = self.cleaned_data.get('first_name')
-        if User.objects.filter(first_name=first_name).exists():
-            raise forms.ValidationError('This GP Surgery with this name already exists ')
-        return first_name
-
     def save__with_gp(self, gp_organisation=None):
         gp_manager_user = User.objects._create_user(
             email=self.cleaned_data.get('email1'),
-            username=self.cleaned_data.get('first_name'),
+            username=self.cleaned_data.get('email1'),
             password=self.cleaned_data.get('password1'),
             first_name=self.cleaned_data.get('first_name'),
             last_name=self.cleaned_data.get('surname'),

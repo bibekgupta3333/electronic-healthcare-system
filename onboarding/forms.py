@@ -23,13 +23,12 @@ class SurgeryForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.initial['operating_system'] = 'EW'
-        # initial_data = kwargs.get('initial')
 
     def clean_practice_code(self):
         practice_code = self.cleaned_data.get('practice_code')
         gp_onboarding = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
         if gp_onboarding and gp_onboarding.generalpracticeuser_set.first():
-            raise forms.ValidationError('This GP Surgery with this practice code already exists ')
+            raise forms.ValidationError('GP Surgery with this practice code already Onboarding')
         return practice_code
 
     def validate_operating_system(self):
@@ -40,7 +39,7 @@ class SurgeryForm(forms.Form):
 
     def save(self):
         accept_policy = True if self.data.get('accept_policy') == 'on' else False
-        live = True if self.cleaned_data.get('operating_system') == 'EMISWeb' else False
+        live = True if self.cleaned_data.get('operating_system') == 'EMISWeb' and accept_policy else False
         gp_organisation = OrganisationGeneralPractice.objects.update_or_create(
             practcode=self.cleaned_data.get('practice_code'),
             defaults={

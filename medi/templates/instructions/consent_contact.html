@@ -226,8 +226,10 @@
     <script src="{% static 'js/jquery.popupoverlay.js' %}"></script>
     <script src="{% static 'js/instructions/consent_form.js' %}"></script>
     <script src="{% static 'js/intlTelInput.min.js' %}"></script>
+    <script src="{% static 'js/csrf_safe.js' %}"></script>
     <script>
     $(document).ready(function () {
+        var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
         var isPopup = false;
         var isErrorPopup = false;
         var validations ={
@@ -299,11 +301,15 @@
             showUpload: false,
             {% if sars_consent_form_data.path %}
                 initialPreview: [
-                    window.location.origin+'/{{ sars_consent_form_data.path }}'
+                    "/{{ sars_consent_form_data.path }}"
                 ],
                 initialPreviewAsData: true,
                 initialPreviewConfig: [
-                    {type: "{{ sars_consent_form_data.type }}", url: "{% static sars_consent_form_data.path %}" }
+                    {
+                        type: "{{ sars_consent_form_data.type }}",
+                        url: "/{{ sars_consent_form_data.path }}",
+                        extra: {csrfmiddlewaretoken: csrftoken}
+                    }
                 ]
             {% endif %}
         });
@@ -312,11 +318,15 @@
             showUpload: false,
             {% if mdx_consent_form_data.path %}
                 initialPreview: [
-                    window.location.origin+'/{{ mdx_consent_form_data.path }}'
+                    "/{{ mdx_consent_form_data.path }}"
                 ],
                 initialPreviewAsData: true,
                 initialPreviewConfig: [
-                    {type: "{{ mdx_consent_form_data.type }}", url: "{% static mdx_consent_form_data.path %}" }
+                    {
+                        type: "{{ mdx_consent_form_data.type }}",
+                        url: "/{{ mdx_consent_form_data.path }}",
+                        extra: {csrfmiddlewaretoken: csrftoken}
+                    }
                 ]
             {% endif %}
         });
@@ -340,29 +350,8 @@
         });
         $('#sarsProceed').click(function(){
             $('#noSarsConsent').popup('hide');
-            var mdxcnt = $("#id_mdx_consent")[0].files;
-            mdxcnt = mdxcnt.length;
-            if(mdxcnt == 0) {
-                $('#noMdxConsent').popup('show');
-            }
-            else if($('#id_patient_email').val() == ''){
-                $('#noEmailAddress').popup('show');
-            }
-            else{
-                $('#id_next_step').val('proceed');
-                $('#consentContactForm').submit();
-            }
-        });
-        $('#proceedBtn').click(function(){
-            $('#proceedBtn').blur();
-            var sarscnt = $("#id_sars_consent")[0].files;
-            var mdxcnt = $("#id_mdx_consent")[0].files;
-            sarscnt = sarscnt.length;
-            mdxcnt = mdxcnt.length;
-            if(sarscnt == 0) {
-                $('#noSarsConsent').popup('show');
-            }
-            else if(mdxcnt == 0) {
+            var mdx_loaded = $('.file-caption-name').last().attr('title');
+            if(!mdx_loaded) {
                 $('#noMdxConsent').popup('show');
             }
             else if($('#id_patient_email').val() == ''){
@@ -375,19 +364,61 @@
                 $('#consentContactForm').submit();
             }
         });
+        $('#emailProceed').click(function(){
+            $('#id_next_step').val('proceed');
+            $('#id_patient_telephone_code').val($('#id_patient_telephone_mobile').parent().find('.selected-flag')[0].title.split('+')[1]);
+            $('#id_patient_alternate_code').val($('#id_patient_alternate_phone').parent().find('.selected-flag')[0].title.split('+')[1]);
+            $('#consentContactForm').submit();
+        });
+        $('#proceedBtn').click(function(){
+            $('#proceedBtn').blur();
+            var sars_loaded = $('.file-caption-name').first().attr('title');
+            var mdx_loaded = $('.file-caption-name').last().attr('title');
+            if(!sars_loaded) {
+                $('#noSarsConsent').popup('show');
+                $('#id_sars_consent_loaded').val('');
+            }
+            else if(!mdx_loaded) {
+                $('#noMdxConsent').popup('show');
+                $('#id_sars_consent_loaded').val('loaded');
+                $('#id_mdx_consent_loaded').val('');
+            }
+            else if($('#id_patient_email').val() == ''){
+                $('#noEmailAddress').popup('show');
+                $('#id_mdx_consent_loaded').val('loaded');
+            }
+            else{
+                $('#id_next_step').val('proceed');
+                $('#id_patient_telephone_code').val($('#id_patient_telephone_mobile').parent().find('.selected-flag')[0].title.split('+')[1]);
+                $('#id_patient_alternate_code').val($('#id_patient_alternate_phone').parent().find('.selected-flag')[0].title.split('+')[1]);
+                $('#consentContactForm').submit();
+            }
+        });
         $('#id_sars_consent').on('change', function(){
-            var sarscnt = $("#id_sars_consent")[0].files.length;
-            if (sarscnt > 0){
+            var sars_loaded = $('.file-caption-name').first().attr('title');
+            if (sars_loaded){
                 $('#id_sars_consent_loaded').val('loaded');
             }
         });
         $('#id_mdx_consent').on('change', function(){
-            var mdxcnt = $("#id_mdx_consent")[0].files.length;
-            if (mdxcnt > 0){
+            var mdx_loaded = $('.file-caption-name').last().attr('title');
+            if (mdx_loaded){
                 $('#id_mdx_consent_loaded').val('loaded');
             }
         });
-        $('#saveBtn').click(function(){            
+        $('#saveBtn').click(function(){
+            var sars_loaded = $('.file-caption-name').first().attr('title');
+            var mdx_loaded = $('.file-caption-name').last().attr('title');
+            if(sars_loaded) {
+                $('#id_sars_consent_loaded').val('loaded');
+            } else {
+                $('#id_sars_consent_loaded').val('');
+            }
+            if(mdx_loaded) {
+                $('#id_mdx_consent_loaded').val('loaded');
+            } else {
+                $('#id_mdx_consent_loaded').val('');
+            }
             $('#id_next_step').val('view_pipeline'); 
             $('#id_patient_telephone_code').val($('#id_patient_telephone_mobile').parent().find('.selected-flag')[0].title.split('+')[1]);
             $('#id_patient_alternate_code').val($('#id_patient_alternate_phone').parent().find('.selected-flag')[0].title.split('+')[1]);
