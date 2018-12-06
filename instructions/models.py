@@ -44,11 +44,17 @@ class InstructionPatient(models.Model):
         )
 
     def get_telephone_e164(self):
-        return "+%s%s"%(self.patient_telephone_code, self.patient_telephone_mobile)
+        phone = self.get_phone_without_zero(self.patient_telephone_mobile)
+        return "+%s%s"%(self.patient_telephone_code, phone)
 
     def get_alternate_e164(self):
-        return "+%s%s"%(self.patient_alternate_code, self.patient_alternate_phone)
+        phone = self.get_phone_without_zero(self.patient_alternate_phone)
+        return "+%s%s"%(self.patient_alternate_code, phone)
 
+    def get_phone_without_zero(self, phone):
+        if phone and phone[0] == '0':
+            phone = phone[1:]
+        return phone
 
 class Instruction(TimeStampedModel, models.Model):
     client_user = models.ForeignKey(ClientUser, on_delete=models.CASCADE, verbose_name='Client', null=True)
