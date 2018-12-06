@@ -79,6 +79,12 @@ class UserEmrSetUpStage2Form(forms.Form):
     role = forms.ChoiceField(choices=accounts_models.GeneralPracticeUser.ROLE_CHOICES, label='')
     gp_code = forms.CharField(max_length=255, required=False, label='')
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email1')
+        if accounts_models.User.objects.filter(email=email).exists():
+            raise forms.ValidationError('This email address has already been used to register.')
+        return email
+
 
 class SurgeryEmailForm(forms.ModelForm):
     organisation_email = forms.EmailField(max_length=255, label='')

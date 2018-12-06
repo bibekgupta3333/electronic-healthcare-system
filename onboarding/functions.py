@@ -14,7 +14,7 @@ def create_gp_user(gp_organisation: OrganisationGeneralPractice, user_form: dict
         if not User.objects.filter(email=user_form['email']).exists():
             user = User.objects._create_user(
                 email=user_form['email'],
-                username=''.join(random.choices(string.ascii_letters, k=10)),
+                username=user_form['email'],
                 password=password,
                 first_name=user_form['first_name'],
                 last_name=user_form['last_name'],
