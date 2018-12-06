@@ -74,7 +74,10 @@ def create_or_update_redaction_record(request, instruction):
             amendments_for_record.instruction_checked = submit_form.cleaned_data['instruction_checked']
             amendments_for_record.review_by = submit_form.cleaned_data['gp_practitioner']
             amendments_for_record.submit_choice = submit_form.cleaned_data.get('prepared_and_signed')
-            amendments_for_record.prepared_by = str(submit_form.cleaned_data.get('prepared_by'))
+            if submit_form.cleaned_data.get('prepared_and_signed') == AmendmentsForRecord.PREPARED_AND_SIGNED:
+                amendments_for_record.prepared_by = str(request.user.get_full_name())
+            else:
+                amendments_for_record.prepared_by = str(submit_form.cleaned_data.get('prepared_by'))
 
             if status == 'submit':
                 instruction.status = models.INSTRUCTION_STATUS_COMPLETE
