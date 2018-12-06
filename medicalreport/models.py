@@ -18,9 +18,12 @@ class AmendmentsForRecord(models.Model):
         (REDACTION_STATUS_SUBMIT, 'Submit')
     )
 
+    PREPARED_AND_SIGNED = 'PREPARED_AND_SIGNED'
+    PREPARED_AND_REVIEWED = 'PREPARED_AND_REVIEWED'
+
     SUBMIT_OPTION_CHOICES = (
-        ('PREPARED_AND_SIGNED', 'Prepared and signed directly by {}'),
-        ('PREPARED_AND_REVIEWED', format_html('Prepared by <span id="preparer"></span> and reviewed by')),
+        (PREPARED_AND_SIGNED, 'Prepared and signed directly by {}'),
+        (PREPARED_AND_REVIEWED, format_html('Prepared by <span id="preparer"></span> and reviewed by')),
     )
 
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)

@@ -44,11 +44,17 @@ class InstructionPatient(models.Model):
         )
 
     def get_telephone_e164(self):
-        return "+%s%s"%(self.patient_telephone_code, self.patient_telephone_mobile)
+        phone = self.get_phone_without_zero(self.patient_telephone_mobile)
+        return "+%s%s"%(self.patient_telephone_code, phone)
 
     def get_alternate_e164(self):
-        return "+%s%s"%(self.patient_alternate_code, self.patient_alternate_phone)
+        phone = self.get_phone_without_zero(self.patient_alternate_phone)
+        return "+%s%s"%(self.patient_alternate_code, phone)
 
+    def get_phone_without_zero(self, phone):
+        if phone and phone[0] == '0':
+            phone = phone[1:]
+        return phone
 
 class Instruction(TimeStampedModel, models.Model):
     client_user = models.ForeignKey(ClientUser, on_delete=models.CASCADE, verbose_name='Client', null=True)
@@ -77,6 +83,7 @@ class Instruction(TimeStampedModel, models.Model):
     gp_practice = GenericForeignKey('gp_practice_type', 'gp_practice_id')
     sars_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
     mdx_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
+    medical_report = models.FileField(upload_to='medical_reports', null=True, blank=True)
     saved = models.BooleanField(default=False)
 
     class Meta:
@@ -105,6 +112,7 @@ class Instruction(TimeStampedModel, models.Model):
         self.save()
 
     def reject(self, request, context):
+        self.gp_user = request.user.userprofilebase.generalpracticeuser
         self.rejected_timestamp = timezone.now()
         self.rejected_by = request.user
         self.rejected_reason = context.get('rejected_reason', None)

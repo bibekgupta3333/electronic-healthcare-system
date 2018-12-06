@@ -4,7 +4,7 @@ import json
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from medicalreport.models import AmendmentsForRecord
 from services.emisapiservices import services
 from medicalreport.reports import MedicalReport
@@ -104,28 +104,18 @@ def get_report(request):
 
     if request.method == 'POST':
             instruction = get_object_or_404(Instruction, id=report_auth.instruction_id)
-            redaction = get_object_or_404(AmendmentsForRecord, instruction=report_auth.instruction_id)
 
-            raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
-            medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
-            dummy_instruction = DummyInstruction(instruction)
-            gp_name = redaction.get_gp_name
-
-            params = {
-                'medical_record': medical_record_decorator,
-                'redaction': redaction,
-                'instruction': instruction,
-                'gp_name': gp_name,
-                'dummy_instruction': dummy_instruction
-            }
             if request.POST.get('button') == 'Download Report':
-                return MedicalReport.download(params)
+                response = HttpResponse(content_type='application/pdf')
+                response['Content-Disposition'] = 'attachment; filename="medical_report.pdf"'
+                response.write(instruction.medical_report.read())
+                return response
 
             elif request.POST.get('button') == 'View Report':
-                return MedicalReport.render(params)
+                return HttpResponse(instruction.medical_report, content_type='application/pdf')
 
             elif request.POST.get('button') == 'Print Report':
-                return render(request, 'medicalreport/reports/medicalreport.html', params)
+                return HttpResponse(instruction.medical_report, content_type='application/pdf')
 
     return render(request, 'patient/auth_4_select_report.html',{
         'verified_pin': verified_pin,

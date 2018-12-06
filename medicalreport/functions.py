@@ -6,12 +6,14 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.template import loader
 from django.utils.html import format_html
-
+from services.xml.medical_report_decorator import MedicalReportDecorator
 from snomedct.models import SnomedConcept
-
+from services.emisapiservices import services
 from instructions import models
+from .dummy_models import (DummyInstruction)
 from .forms import MedicalReportFinaliseSubmitForm
 from .models import AdditionalMedicationRecords, AdditionalAllergies, AmendmentsForRecord
+from medicalreport.reports import MedicalReport
 from report.models import PatientReportAuth
 
 UI_DATE_FORMAT = '%m/%d/%Y'
@@ -74,7 +76,10 @@ def create_or_update_redaction_record(request, instruction):
             amendments_for_record.instruction_checked = submit_form.cleaned_data['instruction_checked']
             amendments_for_record.review_by = submit_form.cleaned_data['gp_practitioner']
             amendments_for_record.submit_choice = submit_form.cleaned_data.get('prepared_and_signed')
-            amendments_for_record.prepared_by = str(submit_form.cleaned_data.get('prepared_by'))
+            if submit_form.cleaned_data.get('prepared_and_signed') == AmendmentsForRecord.PREPARED_AND_SIGNED:
+                amendments_for_record.prepared_by = str(request.user.get_full_name())
+            else:
+                amendments_for_record.prepared_by = str(submit_form.cleaned_data.get('prepared_by'))
 
             if status == 'submit':
                 instruction.status = models.INSTRUCTION_STATUS_COMPLETE
@@ -82,6 +87,8 @@ def create_or_update_redaction_record(request, instruction):
 
             instruction.save()
             amendments_for_record.save()
+            if status == 'submit':
+                save_medical_report(request, instruction, amendments_for_record)
 
             return True
         else:
@@ -94,6 +101,21 @@ def create_or_update_redaction_record(request, instruction):
         messages.success(request, 'Save Medical Report Successful')
 
     return True
+
+
+def save_medical_report(request, instruction, amendments_for_record):
+    raw_xml = services.GetMedicalRecord(amendments_for_record.patient_emis_number).call()
+    medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
+    dummy_instruction = DummyInstruction(instruction)
+    gp_name = amendments_for_record.get_gp_name()
+    params = {
+        'medical_record': medical_record_decorator,
+        'redaction': amendments_for_record,
+        'instruction': instruction,
+        'gp_name': gp_name,
+        'dummy_instruction': dummy_instruction
+    }
+    instruction.medical_report.save('report_%s.pdf'%uuid.uuid4().hex,MedicalReport.get_pdf_file(params))
 
 
 def get_redaction_xpaths(request, amendments_for_record):

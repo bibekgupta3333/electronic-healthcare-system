@@ -175,7 +175,7 @@ def view_report(request, instruction_id):
     raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     dummy_instruction = DummyInstruction(instruction)
-    gp_name = redaction.get_gp_name
+    gp_name = redaction.get_gp_name()
 
     params = {
         'medical_record': medical_record_decorator,
