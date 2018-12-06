@@ -229,15 +229,14 @@
         <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-            <p class="modal-body">
-                The terms and conditions are not accepted. You can proceed but you will not be able to receive or initiate instructions until reviewed and accepted
-            </p>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body">
-
+                <p class="modal-body">
+                    The terms and conditions are not accepted. You can proceed but you will not be able to receive or initiate instructions until reviewed and accepted
+                </p>
             </div>
             <div class="modal-footer">
                 <button id="closeConfirm" type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Go back and review</button>
@@ -251,9 +250,23 @@
 {% block Script %}
     <script src="{% static 'js/select2.min.js' %}"></script>
     <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
-    <script src="{% static 'js/jquery.formset.js' %}"></script>    <script>
+    <script src="{% static 'js/jquery.formset.js' %}"></script>
+    <script src="{% static 'js/onboarding/emr_signup.js' %}"></script>
+    <script>
         $(document).ready(function () {
-            var csrf_token = '{{ csrf_token }}';
+            init_select2_postcode(
+                {% if selected_post_code %} ["{{ selected_post_code }}"] {% else %} [''] {% endif %}
+            );
+            init_select2_practice_code(
+                {% if selected_practice_code %} ["{{ selected_practice_code }}"] {% else %} [''] {% endif %},
+                "{% url 'organisations:sign_up_autocomplete' %}"
+            );
+            init_select2_surgery_name(
+                {% if selected_surgery_name %} ["{{ selected_surgery_name }}"] {% else %} [''] {% endif %},
+                "{% url 'organisations:sign_up_autocomplete' %}"
+            );
+
+            let csrf_token = '{{ csrf_token }}';
             $('#acceptPolicy').click(function() {
               $('#accept-policy').attr("checked", true);
             });
@@ -289,87 +302,69 @@
                 }
             });
 
-            $('#id_postcode').select2({
-                ajax: {
-                    url: function (params) {
-                        return "https://api.postcodes.io/postcodes/"+ params.term +"/autocomplete"
-                    },
-                    processResults: function (data) {
-                        let formed_data = [];
-                        for(let i=0; i < data['result'].length; i++){
-                            formed_data.push({'id': data['result'][i], 'text': data['result'][i]});
-                        }
-                        return {
-                            results: formed_data
-                        }
-                    }
-                }
-            });
-
             $('#id_postcode').on('change', function () {
                 var url = "{% url 'instructions:api_get_address' address='Address' %}".replace('Address', $(this).val());
                 $.ajax({
-                type: "GET",
-                processData: false,
-                url: url,
-                success: function (data) {
-                    data.formattedObj = {};
-                    var formattedData = data.addresses.map(function(item) {
-                        var name = item.split(',').filter(function (s) {
-                            return s != ' ';
-                        }).join(',');
-                        data.formattedObj[name] = item;
-                        return name;
-                    });
-                    $('#id_address').empty();
-                    $('#id_address').select2({
-                        data: formattedData
-                     });
-                    $('#id_address').on('select2:select', function (e) {
-                        var selected = e.params.data;
-                        var selectedData;
+                    type: "GET",
+                    processData: false,
+                    url: url,
+                    success: function (data) {
+                        data.formattedObj = {};
+                        var formattedData = data.addresses.map(function(item) {
+                            var name = item.split(',').filter(function (s) {
+                                return s != ' ';
+                            }).join(',');
+                            data.formattedObj[name] = item;
+                            return name;
+                        });
+                        $('#id_address').empty();
+                        $('#id_address').select2({
+                            data: formattedData
+                         });
+                        $('#id_address').on('select2:select', function (e) {
+                            var selected = e.params.data;
+                            var selectedData;
 
-                        if(data.formattedObj[selected.text]) {
-                            selectedData = data.formattedObj[selected.text].split(',');
-                        }else {
-                            selectedData = selected.text.split(',');
-                        }
-                        $('#id_address_line1').val(selectedData[0]);
-                        $('#id_address_line2').val(selectedData[1]);
-                        $('#id_address_line3').val(selectedData[2]);
-                        $('#id_address_line4').val(selectedData[3]);
-                        $('#id_city').val(selectedData[5]);
-                        $('#id_country').val(selectedData[6]);
-                        $('#id_address').val(selectedData.join(','));
-                    });
-
-                }
+                            if(data.formattedObj[selected.text]) {
+                                selectedData = data.formattedObj[selected.text].split(',');
+                            }else {
+                                selectedData = selected.text.split(',');
+                            }
+                            $('#id_address_line1').val(selectedData[0]);
+                            $('#id_address_line2').val(selectedData[1]);
+                            $('#id_address_line3').val(selectedData[2]);
+                            $('#id_address_line4').val(selectedData[3]);
+                            $('#id_city').val(selectedData[5]);
+                            $('#id_country').val(selectedData[6]);
+                            $('#id_address').val(selectedData.join(','));
+                        });
+                    }
                 })
             });
 
             $('#id_password1').change(function() {
-              $.ajax({
-                  url: "{% url 'accounts:verify_password' %}",
-                  type: "POST",
-                  dataType: "json",
-                  data:{
-                      "password": $(this).val(),
-                      "first_name": $('#id_first_name').val(),
-                      "surname": $('#id_surname').val(),
-                      "email": $('#id_email1').val(),
-                      "csrfmiddlewaretoken": csrf_token
-                  },
-                  success:function(data) {
-                    $('#password_form').find('.invalid-feedback').remove();
-                    $('#id_password1').removeClass("is-invalid");
-                    if (!data.results.verified){
-                      $('#id_password1').addClass("is-invalid");
-                      data.results.warning.map(function(item){
-                        $('#id_password1').after('<div class="invalid-feedback">' + item + '</div>');
-                      });
+                $.ajax({
+                    url: "{% url 'accounts:verify_password' %}",
+                    type: "POST",
+                    dataType: "json",
+                    data:{
+                        "password": $(this).val(),
+                        "first_name": $('#id_first_name').val(),
+                        "surname": $('#id_surname').val(),
+                        "email": $('#id_email1').val(),
+                        "csrfmiddlewaretoken": csrf_token
+                    },
+                    success:function(data) {
+                        $('#password_form').find('.invalid-feedback').remove();
+                        $('#id_password1').removeClass("is-invalid");
+                        if (!data.results.verified){
+                            $('#id_password1').addClass("is-invalid");
+                            data.results.warning.map(function(item){
+                                $('#id_password1').after('<div class="invalid-feedback">' + item + '</div>');
+                            });
+                        }
                     }
-                  }
-              });
+                });
             });
 
             $('#id_email1').change(function() {
@@ -392,66 +387,34 @@
                 });
             });
 
-            $('#id_surgery_name').select2({
-                minimumInputLength: 3,
-                tags: true,
-                ajax: {
-                    delay: 500,
-                    url: "{% url 'organisations:sign_up_autocomplete' %}",
-                    data: function (params) {
-                        let query = {
-                            name: params.term,
-                        };
-                        return query;
-                    },
-                    processResults: function (data) {
-                        return {
-                            results: data.items
-                        }
-                    }
-                }
-            });
-
-            $('#id_practice_code').select2({
-                minimumInputLength: 3,
-                tags: true,
-                ajax: {
-                    delay: 500,
-                    url: "{% url 'organisations:sign_up_autocomplete' %}",
-                    data: function (params) {
-                        let query = {
-                            code: params.term,
-                        };
-                        return query;
-                    },
-                    processResults: function (data) {
-                        return {
-                            results: data.items
-                        }
-                    }
-                }
-            });
-
-            $('#id_practice_code, #id_surgery_name').change(function () {
+            $('#id_practice_code').change(function () {
                 $('#id_postcode').empty();
-                $('#id_postcode').select2({
-                    data: [$('#id_postcode').data('postcode')],
-                    ajax: {
-                        url: function (params) {
-                            return "https://api.postcodes.io/postcodes/"+ params.term +"/autocomplete"
-                        },
-                        processResults: function (data) {
-                            let formed_data = [];
-                            for(let i=0; i < data['result'].length; i++){
-                                formed_data.push({'id': data['result'][i], 'text': data['result'][i]});
-                            }
-                            return {
-                                results: formed_data
-                            }
-                        }
-                    }
-                });
-                $('#id_postcode').trigger('change');
+                $('#id_address').empty();
+                $('#id_surgery_name').empty();
+                init_select2_surgery_name(
+                    [$('#signup_form').data('surgery-name')],
+                    "{% url 'organisations:sign_up_autocomplete' %}"
+                );
+
+                init_select2_postcode([$('#id_postcode').data('post-code')]);
+                if($('#id_postcode').data('postcode')){
+                    $('#id_postcode').trigger('change');
+                }
+            });
+
+            $('#id_surgery_name').change(function () {
+                $('#id_postcode').empty();
+                $('#id_address').empty();
+                $('#id_practice_code').empty();
+                init_select2_practice_code(
+                    [$('#signup_form').data('practice-code')],
+                    "{% url 'organisations:sign_up_autocomplete' %}"
+                );
+
+                init_select2_postcode([$('#id_postcode').data('post-code')]);
+                if($('#id_postcode').data('post-code')){
+                    $('#id_postcode').trigger('change');
+                }
             });
 
             $(document).on({
@@ -465,14 +428,31 @@
                         },
                         dataType: 'json',
                         success: function (data) {
-                            $('#id_postcode').val(data.postcode);
+                            if(data.name){
+                                $('#signup_form').data('surgery-name', data.name);
+                            } else {
+                                $('#signup_form').data(
+                                    'surgery-name',
+                                    $('#select2-id_surgery_name-container').text()
+                                );
+                            }
+
+                            if(data.code){
+                                $('#signup_form').data('practice-code', data.code);
+                            } else {
+                                $('#signup_form').data(
+                                    'practice-code',
+                                    $('#select2-id_practice_code-container').text()
+                                );
+                            }
+
                             $('#id_address_line1').val(data.street);
                             $('#id_city').val(data.city);
                             $('#id_country').val(data.country);
                             $('#id_contact_num').val(data.phone_office);
-                            $('#id_postcode').data('postcode', data.postcode);
+                            $('#id_postcode').data('post-code', data.postcode);
                         }
-                    })
+                    });
                 }
               },
               '.select2-results__option'

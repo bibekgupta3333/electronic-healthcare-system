@@ -22,6 +22,9 @@ def sign_up(request):
     if request.method == "POST":
         surgery_form = SurgeryForm(request.POST)
         pm_form = PMForm(request.POST)
+        selected_surgery_name = request.POST.get('surgery_name', '')
+        selected_practice_code = request.POST.get('practice_code', '')
+        selected_post_code = request.POST.get('postcode', '')
 
         if surgery_form.is_valid() and pm_form.is_valid():
             gp_organisation = surgery_form.save()
@@ -44,6 +47,15 @@ def sign_up(request):
             gp_organisation.operating_system_username = 'medidata_access'
             gp_organisation.save()
             return redirect('onboarding:emis_setup', practice_code=gp_organisation.practcode)
+
+        return render(request, 'onboarding/sign_up.html', {
+            'selected_surgery_name': selected_surgery_name,
+            'selected_practice_code': selected_practice_code,
+            'selected_post_code': selected_post_code,
+            'surgery_form': surgery_form,
+            'pm_form': pm_form,
+            'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
+        })
 
     return render(request, 'onboarding/sign_up.html', {
         'surgery_form': surgery_form,
