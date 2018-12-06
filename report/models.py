@@ -11,3 +11,6 @@ class PatientReportAuth(TimeStampedModel):
     verify_pin = models.CharField(max_length=6, blank=True)
     url = models.CharField(max_length=256)
     locked_report = models.BooleanField(default=False)
+
+    def __str__(self):
+        return '%s : %s'%(self.instruction.__str__(), self.patient.__str__())
