@@ -56,6 +56,8 @@ class AmendmentsForRecord(models.Model):
                 gp_name = self.prepared_by
             elif self.review_by:
                 gp_name = self.review_by.get_full_name()
+                if hasattr(self.review_by, 'userprofilebase'):
+                    gp_name = "%s %s"%(self.review_by.userprofilebase.get_title_display(), gp_name)
         return gp_name
 
     def additional_acute_medications(self):

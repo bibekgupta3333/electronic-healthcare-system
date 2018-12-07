@@ -48,12 +48,11 @@ def create_or_update_snomed_relations(temp_instruction, condition_of_interests):
             TemplateConditionsOfInterest.objects.create(template_instruction=temp_instruction, snomedct=snomedct)
 
 
-def template_create(request, temp_instruction=None):
+def template_create_or_update(request, temp_instruction=None):
     if request.is_ajax():
         raw_common_condition = request.POST.getlist('common_condition[]')
         common_condition_list = list(chain.from_iterable([ast.literal_eval(item) for item in raw_common_condition]))
         addition_condition_list = request.POST.getlist('addition_condition[]')
-        addition_condition_list = list(chain.from_iterable([ast.literal_eval(item) for item in addition_condition_list]))
         condition_of_interests = list(set().union(common_condition_list, addition_condition_list))
 
         # create or update template
@@ -123,15 +122,13 @@ def template_edit(request, template_id):
     
     template_questions = TemplateAdditionalQuestion.objects.filter(template_instruction=template_instruction)
     template_conditions = TemplateConditionsOfInterest.objects.filter(template_instruction=template_instruction)
-    # template_common_conditions = template_conditions.annotate(num_common=Count('snomedct__commonsnomedconcepts')).filter(num_common=1)
-    # template_addition_conditions = template_conditions.annotate(num_common=Count('snomedct__commonsnomedconcepts')).filter(num_common=0)
 
     conditions = []
     for condition in template_conditions:
         conditions.append({
-            "id": str([condition.snomedct.pk]),
+            "id": str(condition.snomedct.pk),
             "text": condition.snomedct.fsn_description,
-            "is_common_condition": bool(condition.snomedct.commonsnomedconcepts_set.count())
+            "is_common_condition": str(bool(condition.snomedct.commonsnomedconcepts_set.count()))
         })
 
     template_form = TemplateInstructionForm(initial={
@@ -143,14 +140,19 @@ def template_edit(request, template_id):
     return render(request, 'template/template_edit.html', {
         'header_title': header_title,
         'template_form': template_form,
+        'template_id': template_id,
         'conditions': conditions,
         'addition_question_formset': addition_question_formset
     })
 
 
 def template_remove(request):
-    response = []
-    return response
+    if request.method == "POST":
+        template_id = request.POST.get('template_id', None)
+        template_instruction = TemplateInstruction.objects.get(pk=template_id)
+        template_instruction.delete()
+        messages.success(request, 'Template successfully deleted.')
+        return JsonResponse({'state': 'success'})
 
 
 def template_autocomplete(request):
@@ -187,7 +189,7 @@ def get_template_data(request):
         
         for condition in template_conditions:
             response['conditions'].append({
-                "id": str([condition.snomedct.pk]),
+                "id": str(condition.snomedct.pk),
                 "text": condition.snomedct.fsn_description,
                 "is_common_condition": bool(condition.snomedct.commonsnomedconcepts_set.count())
             })

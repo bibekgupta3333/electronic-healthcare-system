@@ -33,21 +33,17 @@ class SocialConsultationElementTest(XMLTestCase):
     def test_is_smoking_returns_false_for_non_smoker(self):
         self.assertFalse(self.social_consultation_elements[0].is_smoking())
 
-    @tag('notimplemented')
     def test_is_smoking_from_readcode(self):
         self.assertTrue(self.social_consultation_elements[2].is_smoking())
 
-    @tag('notimplemented')
     def test_is_smoking_from_snomed(self):
         self.assertTrue(self.social_consultation_elements[3].is_smoking())
 
     def test_is_alcohol_returns_false_for_non_alcohol_drinker(self):
         self.assertFalse(self.social_consultation_elements[0].is_alcohol())
 
-    @tag('notimplemented')
     def test_is_alcohol_from_readcode(self):
         self.assertTrue(self.social_consultation_elements[4].is_alcohol())
 
-    @tag('notimplemented')
     def test_is_alcohol_from_snomed(self):
         self.assertTrue(self.social_consultation_elements[5].is_alcohol())

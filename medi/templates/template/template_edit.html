@@ -47,7 +47,6 @@
                     <div class="row">
                         <div class="col-md-2 rowTitle">Addition Conditions of Interest*:</div>
                         {% bootstrap_field template_form.addition_condition size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
-                        {{ template_form.addition_condition_title }}
                     </div>
                 </div>
             </div>
@@ -88,20 +87,37 @@
                         </div>
                     </div>
                     <div class="mt-4">
-                        <button class="btn btn-primary btn-lg templateNewBtn" id="btn_save">Save</button>
-                        <button class="btn btn-danger btn-lg templateNewBtn rightBtn" id="btn_discard">Discard</button>
+                        <input type="submit" class="btn btn-primary btn-lg templateNewBtn" id="btn_save" value="Save" />
+                        <input type="button" class="btn btn-danger btn-lg templateNewBtn rightBtn" id="btn_discard" value="Discard" />
                     </div>
                 </div>
             </div>
         </div>
     </form>
+    <div id="confirmPopup" class="well">
+        <h4><i class="fas fa-exclamation-triangle"></i>Warning</h4>
+        <p>Are you sure you wish to discard this template?</p>
+        <button class="confirmPopup_close rightBtn btn btn-sm btn-primary mr-1" id="deleteProceed">Yes</button>
+        <button class="confirmPopup_close rightBtn btn btn-sm btn-default mr-1 ">No</button>
+    </div>
 {% endblock %}
 
 {% block Script %}
     <script src="{% static 'js/select2.min.js' %}"></script>
+    <script src="{% static 'js/jquery.popupoverlay.js' %}"></script>
     <script src="{% static 'js/jquery.formset.js' %}"></script>
+    <script src="{% static 'js/csrf_safe.js' %}"></script>
     <script>
         $(document).ready(function () {
+            var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+            });
+
             $('#newTemplateForm tbody tr').formset({
                 'deleteText': 'X remove',
                 'addText': '+ Add Another',
@@ -111,56 +127,82 @@
             $('.radio').addClass('d-inline');
             $('#id_common_condition').addClass('row px-2');
             $('.checkbox').addClass('d-inline col-md-3');
-        });
+        
+            $("#confirmPopup").popup({
+                transition: 'all 0.3s',
+                scrolllock: true
+            });
+            $('#btn_discard').click(function(){
+                $('#confirmPopup').popup('show');
+            });
 
-        $('#id_addition_condition').select2({
-            minimumInputLength: 3,
-            width: 500,
-            multiple: true,
-            ajax: {
-                url: "{% url 'snomedct:query_snomed' %}",
-                data: function (params) {
-                    let query = {
-                        keyword: params.term,
-                    };
-                    return query;
-                },
-                processResults: function (data) {
-                    return {
-                        results: data
+            $('#deleteProceed').click(function(){
+                let template_id = {{ template_id }};
+                let action = "{% url 'template:remove_template' %}";
+                $.ajax({
+                    url: action,
+                    method: 'post',
+                    data: {
+                        'template_id': template_id
+                    },
+                    success: function(){
+                        window.location = '/template/view-templates/';
+                    },
+                    error: function(){
+                        create_alert("Couldn't delete the template", 'error');
+                    }
+                })
+            });
+
+            $('#id_addition_condition').select2({
+                minimumInputLength: 3,
+                width: 500,
+                multiple: true,
+                ajax: {
+                    url: "{% url 'snomedct:query_snomed' %}",
+                    data: function (params) {
+                        let query = {
+                            keyword: params.term,
+                        };
+                        return query;
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        }
                     }
                 }
-            }
-        });
-
-        if("{{ conditions }}"){
-            let template_data = "{{ conditions|safe }}"
-            template_data = JSON.parse(template_data)
-            template_data.conditions.forEach(function(element, index) {
-                if(element['is_common_condition']){
-                    $('#id_common_condition').find("input[name=common_condition]").each(function () {
-                        if($(this).val()==element["id"]){
-                            $(this).prop('checked', true);
-                        }
-                    })
-                } else {
-                    $('#id_addition_condition').append(new Option(element["text"], element["id"]));
-                    $('#id_addition_condition').select2('val', [element["id"]]);
-                }
-
             });
-        };
 
-        var $selectAllButton = $('<button class="btn btn-default btn-xs" id="selectAllButton" type="button">Select All</button>');
-        var $deSelectAllButton = $('<button class="btn btn-default btn-xs" id="deSelectAllButton" type="button">Deselect All</button>');
-        $('#id_common_condition').append([$selectAllButton, $deSelectAllButton]);
-        
-        $('#selectAllButton').on('click', function () {
-            $('.commonConditions input:checkbox').prop('checked', true);
-        });
+            if("{{ conditions }}"){
+                let conditions = {{ conditions|safe }}
+                conditions.forEach(function(element, index) {
+                    if(element['is_common_condition'] == "True"){
+                        $('#id_common_condition').find("input[name=common_condition]").each(function () {
+                            var common_id = '['+parseInt(element["id"])+']';
+                            if($(this).val()==common_id){
+                                $(this).prop('checked', true);
+                            }
+                        })
+                    } else {
+                        $('#id_addition_condition').append(new Option(element["text"], element["id"]));
+                        $('#id_addition_condition').select2('val', [element["id"]]);
+                    }
 
-        $('#deSelectAllButton').on('click', function () {
-            $('.commonConditions input:checkbox').prop('checked', false);
+                });
+            };
+
+            var $selectAllButton = $('<button class="btn btn-default btn-xs" id="selectAllButton" type="button">Select All</button>');
+            var $deSelectAllButton = $('<button class="btn btn-default btn-xs" id="deSelectAllButton" type="button">Deselect All</button>');
+            $('#id_common_condition').append([$selectAllButton, $deSelectAllButton]);
+            
+            $('#selectAllButton').on('click', function () {
+                $('.commonConditions input:checkbox').prop('checked', true);
+            });
+
+            $('#deSelectAllButton').on('click', function () {
+                $('.commonConditions input:checkbox').prop('checked', false);
+            });
         });
     </script>
 {% endblock %}

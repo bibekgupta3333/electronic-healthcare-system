@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.utils.html import format_html
 from django.urls import reverse
 from services.emisapiservices import services
@@ -13,7 +13,8 @@ from medicalreport.forms import MedicalReportFinaliseSubmitForm
 from .models import AmendmentsForRecord
 from medicalreport.reports import AttachmentReport
 from instructions.models import Instruction, InstructionPatient
-from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT
+from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT,\
+    INSTRUCTION_STATUS_COMPLETE
 from .functions import create_or_update_redaction_record, create_patient_report
 from medicalreport.reports import MedicalReport
 from accounts.models import GeneralPracticeUser, User
@@ -170,22 +171,25 @@ def update_report(request, instruction_id):
 @login_required(login_url='/accounts/login')
 def view_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
-    redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
+    if instruction.status != INSTRUCTION_STATUS_COMPLETE:
+        redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
-    raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
-    medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
-    dummy_instruction = DummyInstruction(instruction)
-    gp_name = redaction.get_gp_name()
+        raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
+        medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
+        dummy_instruction = DummyInstruction(instruction)
+        gp_name = redaction.get_gp_name()
 
-    params = {
-        'medical_record': medical_record_decorator,
-        'redaction': redaction,
-        'instruction': instruction,
-        'gp_name': gp_name,
-        'dummy_instruction': dummy_instruction
-    }
+        params = {
+            'medical_record': medical_record_decorator,
+            'redaction': redaction,
+            'instruction': instruction,
+            'gp_name': gp_name,
+            'dummy_instruction': dummy_instruction
+        }
 
-    return MedicalReport.render(params)
+        return MedicalReport.render(params)
+    else:
+        return HttpResponse(instruction.medical_report, content_type='application/pdf')
 
 
 @login_required(login_url='/accounts/login')

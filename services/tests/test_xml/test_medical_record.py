@@ -111,11 +111,9 @@ class MedicalRecordTest(XMLTestCase):
     def test_profile_event_returns_empty_list_for_unrecognised_function(self):
         self.assertEqual([], self.medical_record.profile_event('non_existent'))
 
-    @tag('notimplemented')
     def test_smoking(self):
         self.assertEqual(2, len(self.medical_record.smoking()))
 
-    @tag('notimplemented')
     def test_alcohol(self):
         self.assertEqual(2, len(self.medical_record.alcohol()))
 

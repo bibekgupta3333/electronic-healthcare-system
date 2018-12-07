@@ -364,7 +364,8 @@
                     template_data.conditions.forEach(function(element, index) {
                         if(element['is_common_condition']){
                             $('#id_common_condition').find("input[name=common_condition]").each(function () {
-                                if($(this).val()==element["id"]){
+                                var common_id = '['+parseInt(element["id"])+']';
+                                if($(this).val()==common_id){
                                     $(this).prop('checked', true);
                                 }
                             })
