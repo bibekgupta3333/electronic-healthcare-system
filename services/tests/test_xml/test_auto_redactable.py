@@ -52,7 +52,6 @@ class AutoRedactableTest(XMLTestCase):
         self.assertEqual(expected_date_2, years_ago(1, test_date_2))
         self.assertEqual(expected_date_3, years_ago(1, test_date_3))
 
-    @tag('notimplemented')
     def test_auto_redact_by_conditions(self):
         self.assertEqual(4, len(self.medications))
         self.assertEqual(
@@ -63,7 +62,6 @@ class AutoRedactableTest(XMLTestCase):
     def test_auto_redact_by_date(self):
         self.test_auto_redact_referrals()
 
-    @tag('notimplemented')
     def test_auto_redact_consultations(self):
         consultation_elements = self.parsed_xml.xpath(Consultation.XPATH)
         consultations = [Consultation(e) for e in consultation_elements]

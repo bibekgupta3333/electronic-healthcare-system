@@ -87,7 +87,6 @@ class SnomedConceptTest(ConceptCodeTestCase):
             f'{self.snomedct.pk} - fsn_description'
         )
 
-    @tag('notimplemented')
     def test_descendant_readcodes(self):
         self.assertCountEqual(
             [
@@ -117,7 +116,6 @@ class SnomedConceptTest(ConceptCodeTestCase):
             self.snomedct_23.children.all()
         )
 
-    @tag('notimplemented')
     def test_descendants_with_include_self(self):
         self.assertCountEqual(
             [
@@ -128,7 +126,6 @@ class SnomedConceptTest(ConceptCodeTestCase):
             self.snomedct_0.descendants(ret_descendants=set())
         )
 
-    @tag('notimplemented')
     def test_descendants_without_include_self(self):
         self.assertCountEqual(
             [
@@ -139,7 +136,6 @@ class SnomedConceptTest(ConceptCodeTestCase):
             self.snomedct_0.descendants(include_self=False, ret_descendants=set())
         )
 
-    @tag('notimplemented')
     def test_is_descendant_of(self):
         valid_pairs = [
             (self.snomedct_0, self.snomedct_0),
@@ -168,7 +164,6 @@ class ReadCodeTest(ConceptCodeTestCase):
             str(self.readcode), f'{self.readcode.pk} - 12345'
         )
 
-    @tag('notimplemented')
     def test_is_descendant_of_snomed_concept(self):
         valid_pairs = [
             (self.readcode_0, self.snomedct_0),
@@ -186,16 +181,14 @@ class ReadCodeTest(ConceptCodeTestCase):
         for ivp in invalid_pairs:
             self.assertFalse(ivp[0].is_descendant_of_snomed_concept(ivp[1]))
 
-    @tag('notimplemented')
     def test_related_snomed_concepts_and_descendants(self):
-        self.snomedct_12.readcode = self.readcode_11
-        self.snomedct_12.save()
+        self.readcode_11.concept_id = self.snomedct_12
+        self.readcode_11.save()
         self.assertCountEqual(
-            [
-                self.snomedct_11, self.snomedct_12,
-                self.snomedct_21, self.snomedct_22, self.snomedct_23,
-                self.snomedct_24, self.snomedct_31, self.snomedct_32
-            ],
+            set([
+                self.snomedct_31, self.snomedct_32, self.snomedct_22,
+                self.snomedct_12, self.snomedct_23,self.snomedct_24,
+            ]),
             self.readcode_11.related_snomed_concepts_and_descendants()
         )
 
