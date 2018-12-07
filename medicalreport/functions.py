@@ -77,7 +77,10 @@ def create_or_update_redaction_record(request, instruction):
             amendments_for_record.review_by = submit_form.cleaned_data['gp_practitioner']
             amendments_for_record.submit_choice = submit_form.cleaned_data.get('prepared_and_signed')
             if submit_form.cleaned_data.get('prepared_and_signed') == AmendmentsForRecord.PREPARED_AND_SIGNED:
-                amendments_for_record.prepared_by = str(request.user.get_full_name())
+                prepared_by = request.user.get_full_name()
+                if hasattr(request.user, 'userprofilebase'):
+                    prepared_by = "%s %s"%(request.user.userprofilebase.get_title_display(), prepared_by)
+                amendments_for_record.prepared_by = str(prepared_by)
             else:
                 amendments_for_record.prepared_by = str(submit_form.cleaned_data.get('prepared_by'))
 
