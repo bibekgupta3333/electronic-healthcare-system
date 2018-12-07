@@ -395,6 +395,11 @@ def new_instruction(request):
             'condition_of_interest': condition_of_interest,
             'consent_form_data': consent_form_data,
             'instruction_id': instruction_id,
+            'patient_postcode': patient_instruction.patient_postcode,
+            'selected_gp_adr_line1': patient_instruction.patient_address_line1,
+            'selected_gp_adr_line2': patient_instruction.patient_address_line2,
+            'selected_gp_adr_line3': patient_instruction.patient_address_line3,
+            'selected_gp_adr_country': patient_instruction.patient_country,
             'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
         })
 
@@ -435,6 +440,7 @@ def review_instruction(request, instruction_id):
     header_title = "Instruction Reviewing"
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     patient_instruction = instruction.patient_information
+    date_format = patient_instruction.patient_dob.strftime("%d/%m/%Y")
     # Initial Patient Form
     patient_form = InstructionPatientForm(
         instance=patient_instruction,
@@ -444,6 +450,7 @@ def review_instruction(request, instruction_id):
             'patient_last_name': patient_instruction.patient_last_name,
             'patient_postcode': patient_instruction.patient_postcode,
             'patient_address_number': patient_instruction.patient_address_number,
+            'patient_dob': date_format
         }
     )
     gp_practice_code = instruction.gp_practice.pk
