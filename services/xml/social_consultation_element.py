@@ -39,7 +39,7 @@ class SocialConsultationElement(XMLModelBase):
         else:
             descendant_concepts = map(
                 lambda sc: sc.external_id,
-                snomed_model.descendants()
+                snomed_model.descendants(ret_descendants=set())
             )
             return not set(
                 map(int, self.snomed_concepts())

@@ -56,6 +56,7 @@ class InstructionPatient(models.Model):
             phone = phone[1:]
         return phone
 
+
 class Instruction(TimeStampedModel, models.Model):
     client_user = models.ForeignKey(ClientUser, on_delete=models.CASCADE, verbose_name='Client', null=True)
     gp_user = models.ForeignKey(GeneralPracticeUser, on_delete=models.CASCADE, verbose_name='GP Allocated', null=True)
@@ -150,13 +151,20 @@ class Instruction(TimeStampedModel, models.Model):
             auth_password=settings.EMAIL_HOST_PASSWORD,
         )
 
-    def snomed_concepts_ids(self) -> Set[int]:
+    def snomed_concepts_ids_and_readcodes(self) -> Set[int]:
         snomed_concepts_ids = set()
+        readcodes = set()
         for sct in self.selected_snomed_concepts():
+            snomed_descendants = sct.descendants(ret_descendants=set())
+
             snomed_concepts_ids.update(
-                map(lambda sc: sc.external_id, sct.descendants())
+                map(lambda sc: sc.external_id, snomed_descendants)
             )
-        return snomed_concepts_ids
+
+            readcodes.update(
+                map(lambda rc: rc.ext_read_code, sct.descendant_readcodes(snomed_descendants))
+            )
+        return snomed_concepts_ids, readcodes
 
     def readcodes(self) -> Set[str]:
         readcodes = set()

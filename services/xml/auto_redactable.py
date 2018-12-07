@@ -16,11 +16,11 @@ def auto_redact_by_conditions(
         models: Iterable[XMLModelBase],
         instruction: Instruction
 ) -> List[XMLModelBase]:
-    snomed_concepts_ids = instruction.snomed_concepts_ids()
-    readcodes = instruction.readcodes()
+    snomed_concepts_ids, readcodes = instruction.snomed_concepts_ids_and_readcodes()
     redactor = ConditionsRedactor(
         concepts=list(snomed_concepts_ids),
-        readcodes=list(readcodes))
+        readcodes=list(readcodes)
+    )
     return [m for m in models if not redactor.is_redact(m)]
 
 

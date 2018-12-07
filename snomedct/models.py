@@ -15,7 +15,6 @@ class SnomedConcept(models.Model):
         through_fields=('external_id', 'descendant_external_id')
     )
     external_fsn_description_id = models.BigIntegerField()
-    readcode = models.ForeignKey('ReadCode', on_delete=models.CASCADE, null=True)
     objects = CopyManager()
 
     def __str__(self):
@@ -29,23 +28,29 @@ class SnomedConcept(models.Model):
         default_related_name = 'snomed_concepts'
 
     # Todo have to fixed performance
-    def descendants(self, include_self=True) -> Set['SnomedConcept']:
-        descendants = set()
-        # print(self.external_id)
-        # if include_self:
-        #     descendants.add(self)
-        # for child in self.children.all():
-        #     descendants.update(child.descendants(include_self=True))
-        return descendants
+    def descendants(self, include_self=True, ret_descendants=set()) -> Set['SnomedConcept']:
+        if self not in ret_descendants:
+            if include_self:
+                ret_descendants.add(self)
+            for child in self.children.all():
+                if child not in ret_descendants:
+                    child.descendants(include_self=True, ret_descendants=ret_descendants)
+        return ret_descendants
 
-    def descendant_readcodes(self) -> Set['ReadCode']:
+    def descendant_readcodes(self, snome_descendants=None) -> Set['ReadCode']:
         """
         Return readcodes of this snomed concept and its descendants.
         """
-        return set(map(lambda sc: sc.readcode, self.descendants()))
+        descendants_readcodes = set()
+        if not snome_descendants:
+            snome_descendants = self.descendants(ret_descendants=set())
+        for sc in snome_descendants:
+            for r in sc.readcode.all():
+                descendants_readcodes.add(r)
+        return descendants_readcodes
 
     def is_descendant_of(self, snomed_concept: 'SnomedConcept') -> bool:
-        return self in snomed_concept.descendants()
+        return self in snomed_concept.descendants(ret_descendants=set())
 
 
 class ReadCode(models.Model):
@@ -53,6 +58,10 @@ class ReadCode(models.Model):
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     file_path = models.CharField(max_length=255)
+    concept_id = models.ForeignKey(
+        SnomedConcept, to_field='external_id', on_delete=models.CASCADE, db_column="concept_id", null=True,
+        related_name='readcode'
+    )
     objects = CopyManager()
 
     def __str__(self):
@@ -67,8 +76,7 @@ class ReadCode(models.Model):
         descendants.
         """
         snomed_concepts = set()
-        for sc in self.snomed_concepts.all():
-            snomed_concepts.update(sc.descendants())
+        snomed_concepts.update(self.concept_id.descendants(ret_descendants=set()))
         return snomed_concepts
 
 

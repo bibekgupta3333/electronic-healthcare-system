@@ -13,10 +13,10 @@ class SocialConsultationElementTest(XMLTestCase):
         self.social_consultation_elements = [
             SocialConsultationElement(e) for e in self.elements
         ]
-        smoking_readcode = mommy.make(ReadCode, ext_read_code='SMO8')
-        alcohol_readcode = mommy.make(ReadCode, ext_read_code='ALC7')
-        mommy.make(SnomedConcept, external_id=365981007, readcode=smoking_readcode)
-        mommy.make(SnomedConcept, external_id=228273003, readcode=alcohol_readcode)
+        smoking_concept = mommy.make(SnomedConcept, external_id=365981007)
+        alcohol_concept = mommy.make(SnomedConcept, external_id=228273003)
+        mommy.make(ReadCode, ext_read_code='SMO8', concept_id=smoking_concept)
+        mommy.make(ReadCode, ext_read_code='ALC7', concept_id=alcohol_concept)
 
     def test_date(self):
         self.assertEqual(

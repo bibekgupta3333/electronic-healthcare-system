@@ -26,12 +26,12 @@ class AutoRedactableTest(XMLTestCase):
         medication_elements = self.parsed_xml.xpath(Medication.XPATH)
         self.medications = [Medication(e) for e in medication_elements]
         self.instruction = mommy.make(Instruction)
-        readcode_1 = mommy.make(ReadCode, ext_read_code='1371.')
-        readcode_2 = mommy.make(ReadCode, ext_read_code='9D11.')
         snomed_ct_1 = mommy.make(
-            SnomedConcept, external_id=90332006, readcode=readcode_1)
+            SnomedConcept, external_id=90332006)
         snomed_ct_2 = mommy.make(
-            SnomedConcept, external_id=1331000000103, readcode=readcode_2)
+            SnomedConcept, external_id=1331000000103)
+        mommy.make(ReadCode, ext_read_code='1371.', concept_id=snomed_ct_1)
+        mommy.make(ReadCode, ext_read_code='9D11.', concept_id=snomed_ct_2)
         mommy.make(
             InstructionConditionsOfInterest, instruction=self.instruction,
             snomedct=snomed_ct_1
