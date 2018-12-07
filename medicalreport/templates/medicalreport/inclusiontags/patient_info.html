@@ -46,6 +46,8 @@
            <div class="modal-body">
                {% if instruction.consent_form %}
                    <iframe src="/{{ instruction.consent_form.url }}#zoom=200" height="735px" width="100%"></iframe>
+               {% elif instruction.mdx_consent %}
+                   <iframe src="/{{ instruction.mdx_consent.url }}#zoom=200" height="735px" width="100%"></iframe>
                {% else %}
                <p>No consent form </p>
                {% endif %}
