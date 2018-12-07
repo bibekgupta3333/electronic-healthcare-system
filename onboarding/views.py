@@ -11,6 +11,7 @@ from accounts.models import GpPractices
 from accounts.forms import PMForm
 from services.emisapiservices.services import GetEmisStatusCode
 from organisations.models import OrganisationGeneralPractice
+from permissions.functions import generate_gp_permission
 import random
 import string
 
@@ -46,6 +47,7 @@ def sign_up(request):
             gp_organisation.operating_system_salt_and_encrypted_password = password
             gp_organisation.operating_system_username = 'medidata_access'
             gp_organisation.save()
+            generate_gp_permission(gp_organisation)
             return redirect('onboarding:emis_setup', practice_code=gp_organisation.practcode)
 
         return render(request, 'onboarding/sign_up.html', {

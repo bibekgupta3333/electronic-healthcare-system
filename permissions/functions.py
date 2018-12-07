@@ -4,6 +4,9 @@ from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_REJECT, INSTRUCTION_STATUS_COMPLETE,\
         INSTRUCTION_STATUS_PROGRESS, INSTRUCTION_STATUS_NEW
 from django.shortcuts import get_object_or_404
+from permissions.models import InstructionPermission
+from permissions.model_choices import INSTRUCTION_PERMISSIONS
+from django.contrib.auth.models import Group, Permission
 
 
 decorator_with_arguments = lambda decorator: lambda *args, **kwargs: lambda func: decorator(func, *args, **kwargs)
@@ -23,6 +26,7 @@ def check_status_with_url(is_valid, path, status):
     elif 'consent-contact' in path and status not in [INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS]:
         is_valid = False
     return is_valid
+
 
 def check_permission(func):
     def check_and_call(request, *args, **kwargs):
@@ -63,6 +67,7 @@ def check_permission(func):
         return func(request, *args, **kwargs)
     return check_and_call
 
+
 @decorator_with_arguments
 def access_user_management(func, perm):
     def check_and_call(request, *args, **kwargs):
@@ -70,3 +75,27 @@ def access_user_management(func, perm):
             return redirect('instructions:view_pipeline')
         return func(request, *args, **kwargs)
     return check_and_call
+
+
+def generate_gp_permission(organisation):
+    for role_choices in GeneralPracticeUser.ROLE_CHOICES:
+        role, label = role_choices
+        if role != '':
+            permission, created = InstructionPermission.objects.get_or_create(
+                role=role,
+                organisation=organisation
+            )
+            group, created = Group.objects.get_or_create(
+                name='%s : %s'%(permission.get_role_display(),organisation.__str__())
+            )
+            set_default_gp_perm(group)
+            permission.group = group
+            permission.save()
+            permission.allocate_permission_to_gp()
+
+
+def set_default_gp_perm(group):
+    for codename in INSTRUCTION_PERMISSIONS:
+        perm = Permission.objects.get(codename=codename)
+        group.permissions.add(perm)
+    group.save()
