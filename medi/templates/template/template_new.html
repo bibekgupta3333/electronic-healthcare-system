@@ -88,8 +88,8 @@
                         </div>
                     </div>
                     <div class="mt-4">
-                        <button class="btn btn-primary btn-lg templateNewBtn" id="btn_save">Save</button>
-                        <button class="btn btn-danger btn-lg templateNewBtn rightBtn" id="btn_discard">Discard</button>
+                        <input type="submit" class="btn btn-primary btn-lg templateNewBtn" id="btn_save" value="Save" />
+                        <input type="button" class="btn btn-danger btn-lg templateNewBtn rightBtn" id="btn_discard" value="Discard" />
                     </div>
                 </div>
             </div>
@@ -111,38 +111,42 @@
             $('.radio').addClass('d-inline');
             $('#id_common_condition').addClass('row px-2');
             $('.checkbox').addClass('d-inline col-md-3');
-        });
 
-        $('#id_addition_condition').select2({
-            minimumInputLength: 3,
-            width: 500,
-            multiple: true,
-            ajax: {
-                url: "{% url 'snomedct:query_snomed' %}",
-                data: function (params) {
-                    let query = {
-                        keyword: params.term,
-                    };
-                    return query;
-                },
-                processResults: function (data) {
-                    return {
-                        results: data
+            $('#btn_discard').click(function(){
+                window.location = '/template/view-templates';
+            });
+            
+            $('#id_addition_condition').select2({
+                minimumInputLength: 3,
+                width: 500,
+                multiple: true,
+                ajax: {
+                    url: "{% url 'snomedct:query_snomed' %}",
+                    data: function (params) {
+                        let query = {
+                            keyword: params.term,
+                        };
+                        return query;
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        }
                     }
                 }
-            }
-        });
+            });
 
-        var $selectAllButton = $('<button class="btn btn-default btn-xs" id="selectAllButton" type="button">Select All</button>');
-        var $deSelectAllButton = $('<button class="btn btn-default btn-xs" id="deSelectAllButton" type="button">Deselect All</button>');
-        $('#id_common_condition').append([$selectAllButton, $deSelectAllButton]);
-        
-        $('#selectAllButton').on('click', function () {
-            $('.commonConditions input:checkbox').prop('checked', true);
-        });
+            var $selectAllButton = $('<button class="btn btn-default btn-xs" id="selectAllButton" type="button">Select All</button>');
+            var $deSelectAllButton = $('<button class="btn btn-default btn-xs" id="deSelectAllButton" type="button">Deselect All</button>');
+            $('#id_common_condition').append([$selectAllButton, $deSelectAllButton]);
+            
+            $('#selectAllButton').on('click', function () {
+                $('.commonConditions input:checkbox').prop('checked', true);
+            });
 
-        $('#deSelectAllButton').on('click', function () {
-            $('.commonConditions input:checkbox').prop('checked', false);
+            $('#deSelectAllButton').on('click', function () {
+                $('.commonConditions input:checkbox').prop('checked', false);
+            });
         });
     </script>
 {% endblock %}
