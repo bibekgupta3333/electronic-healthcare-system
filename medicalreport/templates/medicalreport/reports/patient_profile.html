@@ -8,7 +8,14 @@
         <tr>
             <td style="font-weight:bold;padding:5px;">{{ key|profile_event_value_header }}</td>
             {% for event in value %}
-                <td style="padding:5px;">{{ event|event_value_body|safe }}</td>
+                {% if forloop.counter|mod_column and forloop.counter != forloop.first %}
+                    </tr>
+                    <tr>
+                        <td/>
+                        <td style="padding:5px;">{{ event|event_value_body|safe }}</td>
+                {% else %}
+                    <td style="padding:5px;">{{ event|event_value_body|safe }}</td>
+                {% endif %}
             {% endfor %}
         </tr>
     {% endfor %}

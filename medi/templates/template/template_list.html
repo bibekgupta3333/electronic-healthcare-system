@@ -31,14 +31,15 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-12">
+                            {% csrf_token %}
                             {% if templates|length == 0 %}
                                 <h6>No Templates Available</h6>
                             {% endif %}
                             {% for template in templates %}
-                                <div class="row">
+                                <div class="row form-group">
                                     <div class="col-md-3 templateLabelText">{{ template.template_title }}</div>
-                                    <div class="col-md-2"><button id="btn_editTemplate" class="btn btn-sm btn-outline-primary templateListBtn" data-template_id="{{ template.pk }}">Edit</button></div>
-                                    <div class="col-md-2"><button id="btn_discardTemplate" class="btn btn-danger btn-sm templateListBtn" data-template_id="{{ template.pk }}">Discard</button></div>
+                                    <div class="col-md-2"><button class="btn btn-sm btn-outline-primary templateListBtn btn_editTemplate" data-template_id="{{ template.pk }}">Edit</button></div>
+                                    <div class="col-md-2"><button class="btn btn-danger btn-sm templateListBtn btn_discardTemplate" data-template_id="{{ template.pk }}">Discard</button></div>
                                 </div>
                             {% endfor %}
                         </div>
@@ -47,30 +48,55 @@
             </div>
         </div>
     </div>
+    
+    <div id="confirmPopup" class="well">
+        <h4><i class="fas fa-exclamation-triangle"></i>Warning</h4>
+        <p>Are you sure you wish to delete this template?</p>
+        <button class="confirmPopup_close rightBtn btn btn-sm btn-primary mr-1" id="deleteProceed">Yes</button>
+        <button class="confirmPopup_close rightBtn btn btn-sm btn-default mr-1">No</button>
+    </div>
 {% endblock %}
 
 {% block Script %}
-    <script src="{% static 'js/jquery.formset.js' %}"></script>
+    <script src="{% static 'js/csrf_safe.js' %}"></script>
+    <script src="{% static 'js/jquery.popupoverlay.js' %}"></script>
     <script>
         $(document).ready(function () {
-            $('#btn_editTemplate').click(function(){
-                let template_id = $(this).data('template_id');
+            var template_id;
+            var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                }
+            });
+
+            $("#confirmPopup").popup({
+                transition: 'all 0.3s',
+                scrolllock: true
+            });
+            $('.btn_editTemplate').click(function(){
+                template_id = $(this).data('template_id');
                 window.location = '/template/edit-template/' + template_id +'/';
             });
-            $('#btn_discardTemplate').click(function(){
-                let template_id = $(this).data('template_id');
-                let action = '/template/remove-template';
+            $('.btn_discardTemplate').click(function(){
+                template_id = $(this).data('template_id');
+                $('#confirmPopup').popup('show');
+            });
+            $('#deleteProceed').click(function(){
+                let action = "{% url 'template:remove_template' %}";
                 $.ajax({
                     url: action,
-                    method: 'GET',
+                    method: 'post',
                     data: {
-                        "template_id": template_id
+                        'template_id': template_id
                     },
                     success: function(){
-                        create_alert('Template has been deleted.', 'success');
+                        window.location.reload();
                     },
                     error: function(){
-                        
+                        create_alert("Couldn't delete the template", 'error');
                     }
                 })
             });

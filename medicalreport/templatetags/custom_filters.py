@@ -184,5 +184,13 @@ def map_code(consultation):
 
 
 @register.filter
+def mod_column(count):
+    max_column = 4
+    if not (count-1) % max_column:
+        return True
+    return False
+
+
+@register.filter
 def hash(h, key):
     return h[key]

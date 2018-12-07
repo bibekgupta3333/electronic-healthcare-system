@@ -111,7 +111,7 @@ class GPOrgFilter(admin.SimpleListFilter):
 
 class InstructionAdmin(CustomExport, admin.ModelAdmin):
     change_status = False
-    list_display = ('client', 'gp_practice', 'status', 'created', 'type', 'days_since_created')
+    list_display = ('gp_practice', 'client', 'status', 'created', 'type', 'days_since_created')
     list_filter = ('type', DaysSinceFilter, ClientOrgFilter, GPOrgFilter)
     search_fields = [
         'type'

@@ -49,3 +49,16 @@ MEDI_PERMISSIONS=[
     'change_instructionpermission',
     'delete_instructionpermission'
 ]
+
+INSTRUCTION_PERMISSIONS=[
+    'create_sars',
+    'reject_amra',
+    'reject_sars',
+    'process_amra',
+    'process_sars',
+    'allocate_gp',
+    'sign_off_amra',
+    'sign_off_sars',
+    'view_completed_amra',
+    'view_completed_sars'
+]
