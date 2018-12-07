@@ -336,9 +336,9 @@ def medi_change_user(request, email):
             initial_data['payment_bank_account_number'] = gp.payment_bank_account_number
             initial_data['role'] = gp.role
         elif hasattr(user_profile, 'clientuser'):
-            organisation = user.userprofilebase.clientuser.organisation
-            initial_data['client_organisation'] = organisation
-            initial_data['role'] = gp.role
+            client = user.userprofilebase.clientuser
+            initial_data['client_organisation'] = client.organisation
+            initial_data['role'] = client.role
         elif hasattr(user_profile, 'medidatauser'):
             organisation = user.userprofilebase.medidatauser.organisation
             initial_data['medi_organisation'] = organisation
