@@ -340,8 +340,10 @@ def new_instruction(request):
         patient_form = InstructionPatientForm(
             instance=patient_instruction,
             initial={
-                'first_name': patient_instruction.patient_first_name, 'last_name': patient_instruction.patient_last_name,
-                'address_postcode': patient_instruction.patient_postcode, 'edit_patient': True
+                'first_name': patient_instruction.patient_first_name,
+                'last_name': patient_instruction.patient_last_name,
+                'address_postcode': patient_instruction.patient_postcode,
+                'edit_patient': True
             }
         )
         # Initial GP/NHS Organisation Form
