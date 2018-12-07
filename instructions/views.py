@@ -106,6 +106,9 @@ def create_or_update_instruction(request, patient_instruction, scope_form=None, 
         instruction.gp_title_from_client = request.POST.get('gp_title')
         instruction.gp_initial_from_client = request.POST.get('initial')
         instruction.gp_last_name_from_client = request.POST.get('gp_last_name')
+        instruction.date_range_from = scope_form.cleaned_data['date_range_from']
+        instruction.date_range_to = scope_form.cleaned_data['date_range_to']
+
     else:
         instruction.type = SARS_TYPE
         instruction.gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
@@ -221,6 +224,7 @@ def new_instruction(request):
         selected_gp_adr_line3 = request.POST.get('patient_address_line3', '')
         selected_gp_adr_country = request.POST.get('patient_country', '')
         patient_form = InstructionPatientForm(InstructionPatientForm.change_request_date(request.POST))
+
         i = 0
         while i < len(selected_add_cond):
             selected_add_cond[i] = int(selected_add_cond[i])
