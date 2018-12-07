@@ -39,13 +39,16 @@ def sign_up(request):
                     'messages_1': message1,
                     'messages_2': message2,
                 })
-
-            initial_password = random.choices(string.ascii_uppercase, k=1)
-            body_password = random.choices(string.ascii_letters+string.digits, k=12)
-            tail_password = random.choices(string.digits, k=1)
-            password = ''.join(initial_password + body_password + tail_password)
-            gp_organisation.operating_system_salt_and_encrypted_password = password
-            gp_organisation.operating_system_username = 'medidata_access'
+            if gp_organisation.practcode[:4] == 'TEST':
+                gp_organisation.operating_system_username = 'michaeljtbrooks'
+                gp_organisation.operating_system_salt_and_encrypted_password = 'Medidata2018'
+            else:
+                initial_password = random.choices(string.ascii_uppercase, k=1)
+                body_password = random.choices(string.ascii_letters+string.digits, k=12)
+                tail_password = random.choices(string.digits, k=1)
+                password = ''.join(initial_password + body_password + tail_password)
+                gp_organisation.operating_system_salt_and_encrypted_password = password
+                gp_organisation.operating_system_username = 'medidata_access'
             gp_organisation.save()
             generate_gp_permission(gp_organisation)
             return redirect('onboarding:emis_setup', practice_code=gp_organisation.practcode)
