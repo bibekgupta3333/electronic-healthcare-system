@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.template import loader
 from django.core.mail import send_mail
 from django.conf import settings
@@ -144,11 +144,13 @@ def emr_setup_stage_2(request, practice_code=None):
                     html_message=html_message,
                 )
             messages.success(request, 'Create User Successful!')
+            login_link = request.build_absolute_uri(reverse('login',))
             welcome_message1 = 'Onboarding Successful!'
-            welcome_message2 = 'Welcome to Emr System'
+            welcome_message2 = 'Welcome to the eMR System'
             return render(request, 'onboarding/emr_message.html', {
                 'welcome_message1': welcome_message1,
-                'welcome_message2': welcome_message2
+                'welcome_message2': welcome_message2,
+                'login_link': login_link,
             })
 
     return render(request, 'onboarding/emr_setup_stage_2.html', {
