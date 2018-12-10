@@ -77,6 +77,14 @@ def access_user_management(func, perm):
     return check_and_call
 
 
+def access_template(func):
+    def check_and_call(request, *args, **kwargs):
+        if not hasattr(request.user.userprofilebase, 'clientuser'):
+            return redirect('instructions:view_pipeline')
+        return func(request, *args, **kwargs)
+    return check_and_call
+
+
 def generate_gp_permission(organisation):
     for role_choices in GeneralPracticeUser.ROLE_CHOICES:
         role, label = role_choices

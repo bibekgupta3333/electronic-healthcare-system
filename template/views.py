@@ -7,6 +7,7 @@ from instructions.forms import TemplateInstructionForm
 from common.functions import multi_getattr
 from .models import TemplateInstruction, TemplateAdditionalQuestion, TemplateConditionsOfInterest
 from .forms import TemplateAdditionalQuestionForm, TemplateAdditionalQuestionFormset
+from permissions.functions import access_template
 from snomedct.models import SnomedConcept
 
 from itertools import chain
@@ -48,6 +49,7 @@ def create_or_update_snomed_relations(temp_instruction, condition_of_interests):
             TemplateConditionsOfInterest.objects.create(template_instruction=temp_instruction, snomedct=snomedct)
 
 
+@access_template
 def template_create_or_update(request, temp_instruction=None):
     if request.is_ajax():
         raw_common_condition = request.POST.getlist('common_condition[]')
@@ -87,6 +89,7 @@ def template_create_or_update(request, temp_instruction=None):
         return JsonResponse({'state': 'success'})
 
 
+@access_template
 def template_views(request):
     header_title = "View Templates"
     templates = TemplateInstruction.objects.filter(created_by=request.user.userprofilebase.clientuser)
@@ -97,6 +100,7 @@ def template_views(request):
     })
 
 
+@access_template
 def template_new(request):
     header_title = "New Template"
     template_form = TemplateInstructionForm()
@@ -112,6 +116,7 @@ def template_new(request):
     })
 
 
+@access_template
 def template_edit(request, template_id):
     header_title = "Edit Template"
     template_instruction = TemplateInstruction.objects.get(pk=template_id)
