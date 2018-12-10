@@ -23,7 +23,7 @@ class InstructionPatientForm(forms.ModelForm):
     patient_address_line2 = forms.CharField(max_length=255, required=False)
     patient_address_line3 = forms.CharField(max_length=255, required=False)
     patient_city = forms.CharField(max_length=255, required=True)
-    patient_country = forms.CharField(max_length=255, required=True)
+    patient_country = forms.CharField(max_length=255, required=True, label="Patient county")
 
     class Meta:
         model = InstructionPatient
