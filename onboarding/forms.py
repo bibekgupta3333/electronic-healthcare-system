@@ -40,7 +40,6 @@ class SurgeryForm(forms.Form):
 
     def save(self):
         accept_policy = True if self.data.get('accept_policy') == 'on' else False
-        live = True if self.cleaned_data.get('operating_system') == 'EMISWeb' and accept_policy else False
         gp_organisation = OrganisationGeneralPractice.objects.update_or_create(
             practcode=self.cleaned_data.get('practice_code'),
             defaults={
@@ -55,11 +54,17 @@ class SurgeryForm(forms.Form):
                 'phone_office': self.cleaned_data.get('contact_num'),
                 'operating_system_organisation_code': self.cleaned_data.get('emis_org_code'),
                 'gp_operating_system': self.cleaned_data.get('operating_system'),
-                'live': live,
             }
         )
 
         return gp_organisation[0]
+
+
+class SurgeryUpdateForm(forms.Form):
+    surgery_name = forms.CharField(max_length=255, label='', disabled=True, required=False)
+    surgery_code = forms.CharField(max_length=20, label='', disabled=True, required=False)
+    emis_org_code = forms.CharField(max_length=20, label='')
+    operating_system = forms.ChoiceField(choices=OrganisationGeneralPractice.GP_OP_SYS_CHOICES, label='')
 
 
 class SurgeryEmrSetUpStage2Form(forms.Form):

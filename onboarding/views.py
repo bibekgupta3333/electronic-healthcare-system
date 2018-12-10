@@ -72,11 +72,27 @@ def sign_up(request):
 def emis_setup(request, practice_code):
     header_title = "Sign up: eMR with EMISweb"
     gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
+
+    if request.method == "POST":
+        surgery_update_form = SurgeryUpdateForm(request.POST)
+        if surgery_update_form.is_valid():
+            gp_organisation.operating_system_organisation_code = surgery_update_form.cleaned_data['emis_org_code']
+            gp_organisation.gp_operating_system = surgery_update_form.cleaned_data['operating_system']
+            gp_organisation.save()
+
+    surgery_update_form = SurgeryUpdateForm(initial={
+        'surgery_name': gp_organisation.name,
+        'surgery_code': gp_organisation.practcode,
+        'emis_org_code': gp_organisation.operating_system_organisation_code,
+        'operating_system': gp_organisation.gp_operating_system
+    })
+
     return render(request, 'onboarding/emis_setup.html', {
         'header_title': header_title,
         'organisation_code': gp_organisation.operating_system_organisation_code,
         'practice_code': gp_organisation.practcode,
         'practice_password': gp_organisation.operating_system_salt_and_encrypted_password,
+        'surgery_update_form': surgery_update_form
     })
 
 
