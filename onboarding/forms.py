@@ -28,7 +28,8 @@ class SurgeryForm(forms.Form):
         practice_code = self.cleaned_data.get('practice_code')
         gp_onboarding = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
         if gp_onboarding and gp_onboarding.generalpracticeuser_set.first():
-            raise forms.ValidationError('GP Surgery with this practice code already Onboarding')
+            raise forms.ValidationError('A GP Surgery with this practice code already exists. '
+                                        'Please contact Medidata for more information, or discuss within your Surgery')
         return practice_code
 
     def validate_operating_system(self):
