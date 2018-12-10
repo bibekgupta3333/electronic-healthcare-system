@@ -400,6 +400,7 @@ def new_instruction(request):
             'consent_form_data': consent_form_data,
             'instruction_id': instruction_id,
             'patient_postcode': patient_instruction.patient_postcode,
+            'selected_pat_adr_num': patient_instruction.patient_address_number,
             'selected_gp_adr_line1': patient_instruction.patient_address_line1,
             'selected_gp_adr_line2': patient_instruction.patient_address_line2,
             'selected_gp_adr_line3': patient_instruction.patient_address_line3,
