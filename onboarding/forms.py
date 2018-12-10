@@ -64,7 +64,7 @@ class SurgeryForm(forms.Form):
 class SurgeryEmrSetUpStage2Form(forms.Form):
     surgery_name = forms.CharField(max_length=255, label='', disabled=True)
     surgery_code = forms.CharField(max_length=20, label='', disabled=True)
-    address = forms.CharField(max_length=20, label='', disabled=True)
+    address = forms.CharField(max_length=255, label='', disabled=True, widget=forms.Textarea(attrs={'rows': '4'}))
     postcode = forms.CharField(max_length=20, label='', disabled=True)
     surgery_tel_number = forms.CharField(max_length=20, label='', disabled=True)
     surgery_email = forms.CharField(max_length=255, label='', disabled=True)

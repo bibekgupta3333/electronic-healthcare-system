@@ -82,9 +82,14 @@ def emis_setup(request, practice_code):
 
 def emr_setup_stage_2(request, practice_code=None):
     gp_organisation = get_object_or_404(OrganisationGeneralPractice, pk=practice_code)
-    address = ''
-    if gp_organisation.billing_address_street:
-        address += gp_organisation.billing_address_street
+    address = ' '.join([
+        gp_organisation.billing_address_street,
+        gp_organisation.billing_address_line_2,
+        gp_organisation.billing_address_line_3,
+        gp_organisation.billing_address_city,
+        gp_organisation.billing_address_state
+    ])
+
     surgery_form = SurgeryEmrSetUpStage2Form(initial={
         'surgery_name': gp_organisation.name,
         'surgery_code': gp_organisation.practcode,
