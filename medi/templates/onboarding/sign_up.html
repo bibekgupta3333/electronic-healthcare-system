@@ -278,6 +278,15 @@
                 "{% url 'organisations:sign_up_autocomplete' %}"
             );
 
+            $('#id_emis_org_code').prop('required', true);
+            $('#id_operating_system').change(function () {
+                if($(this).val() != 'EMISWeb'){
+                     $('#id_emis_org_code').prop('required', false);
+                } else {
+                    $('#id_emis_org_code').prop('required', true);
+                }
+            });
+
             let csrf_token = '{{ csrf_token }}';
             $('#acceptPolicy').click(function() {
               $('#accept-policy').attr("checked", true);

@@ -17,7 +17,7 @@ class SurgeryForm(forms.Form):
     city = forms.CharField(max_length=20, label='', widget=forms.TextInput())
     country = forms.CharField(max_length=20, label='', widget=forms.TextInput())
     contact_num = forms.CharField(max_length=20, label='', widget=forms.TextInput())
-    emis_org_code = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+    emis_org_code = forms.CharField(max_length=20, label='', widget=forms.TextInput(), required=False)
     operating_system = forms.ChoiceField(choices=OrganisationGeneralPractice.GP_OP_SYS_CHOICES, label='')
 
     def __init__(self, *args, **kwargs):

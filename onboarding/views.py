@@ -31,13 +31,13 @@ def sign_up(request):
             gp_organisation = surgery_form.save()
             pm_form.save__with_gp(gp_organisation=gp_organisation)
             if not surgery_form.cleaned_data.get('operating_system') == 'EMISWeb':
-                message1 ='Thank you for completing part one of the eMR registration process. It’s great to have you \
-                on board. We will be in touch with you shortly to complete the set up process so that you can process ' \
-                'SARs in seconds.'
-                message2 = 'We look forward to working with you in the very near future. eMR Support Team'
+                message_1 = 'Thank you for completing part one of the eMR registration process. It’s great to have you on board.'
+                message_2 = 'We will be in touch with you shortly to complete the set up process so that you can process SARs in seconds.'
+                message_3 = 'We look forward to working with you in the very near future. eMR Support Team'
                 return render(request, 'onboarding/emr_message.html', context={
-                    'messages_1': message1,
-                    'messages_2': message2,
+                    'message_1': message_1,
+                    'message_2': message_2,
+                    'message_3': message_3
                 })
             if gp_organisation.practcode[:4] == 'TEST':
                 gp_organisation.operating_system_username = 'michaeljtbrooks'
@@ -216,3 +216,4 @@ def send_email_pm(request, emr):
     to_list = [emr.pm_email]
     html_message = loader.render_to_string('onboarding/emr_email_PM.html')
     send_mail('Completely eMR', '', from_email, to_list, fail_silently=True, html_message=html_message)
+
