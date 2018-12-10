@@ -108,9 +108,9 @@ class BankDetailsEmrSetUpStage2Form(forms.Form):
     level_2_payments = level_1_payments*0.90
     level_3_payments = level_2_payments*0.84
 
-    bank_account_name = forms.CharField(max_length=255, label='')
-    bank_account_number = forms.CharField(max_length=50, label='')
-    bank_account_sort_code = forms.CharField(max_length=50, label='')
+    bank_account_name = forms.CharField(max_length=255, label='', required=False)
+    bank_account_number = forms.CharField(max_length=50, label='', required=False)
+    bank_account_sort_code = forms.CharField(max_length=50, label='', required=False)
     received_within_3_days = forms.DecimalField(
         initial=60.00, max_value=80, min_value=60, max_digits=4, label='',
         widget=forms.NumberInput(attrs={'id': 'min_fee_payments'})

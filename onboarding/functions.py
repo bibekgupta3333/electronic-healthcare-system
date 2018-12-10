@@ -76,3 +76,14 @@ def create_gp_payments_fee(bank_details_form: BankDetailsEmrSetUpStage2Form, gp_
     )
 
     return organisation_fee[0]
+
+
+def update_gp_organisation_bank_details(bank_details_form: BankDetailsEmrSetUpStage2Form, gp_organisation: OrganisationGeneralPractice) -> OrganisationGeneralPractice:
+    gp_organisation.payment_bank_holder_name = bank_details_form.cleaned_data['bank_account_name']
+    gp_organisation.payment_bank_account_number = bank_details_form.cleaned_data['bank_account_number']
+    gp_organisation.payment_bank_sort_code = bank_details_form.cleaned_data['bank_account_sort_code']
+    gp_organisation.onboarding_by = bank_details_form.cleaned_data['completed_by']
+    gp_organisation.onboarding_job_title = bank_details_form.cleaned_data['onboarding_job_title']
+    gp_organisation.save()
+
+    return gp_organisation

@@ -109,10 +109,11 @@ def emr_setup_stage_2(request, practice_code=None):
         bank_details_form = BankDetailsEmrSetUpStage2Form(request.POST)
         surgery_email_form = SurgeryEmailForm(request.POST, instance=gp_organisation)
         if user_formset.is_valid() and bank_details_form.is_valid() and surgery_email_form.is_valid():
-            surgery_email = surgery_email_form.save()
-            gp_payments_fee = create_gp_payments_fee(bank_details_form, gp_organisation)
             created_user_list = []
-            created_manager_user_dict = create_gp_user(gp_organisation)
+            surgery_email = surgery_email_form.save()
+            create_gp_payments_fee(bank_details_form, gp_organisation)
+            update_gp_organisation_bank_details(bank_details_form, gp_organisation)
+            create_gp_user(gp_organisation)
             if surgery_email.organisation_email:
                 html_message = loader.render_to_string('onboarding/surgery_email.html')
                 send_mail(
