@@ -129,7 +129,7 @@ def emr_setup_stage_2(request, practice_code=None):
         'surgery_email': gp_organisation.organisation_email
     })
 
-    UserEmrSetUpStage2Formset = formset_factory(UserEmrSetUpStage2Form, min_num=2, validate_min=True, extra=2)
+    UserEmrSetUpStage2Formset = formset_factory(UserEmrSetUpStage2Form, validate_min=True, extra=4)
     user_formset = UserEmrSetUpStage2Formset()
     bank_details_form = BankDetailsEmrSetUpStage2Form()
     surgery_email_form = SurgeryEmailForm(instance=gp_organisation)
