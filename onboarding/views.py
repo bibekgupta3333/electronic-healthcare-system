@@ -5,6 +5,8 @@ from django.conf import settings
 from django.forms import formset_factory
 from django.http import JsonResponse
 from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
 from .functions import *
 from .forms import *
 from accounts.models import GpPractices
@@ -50,7 +52,12 @@ def sign_up(request):
                 gp_organisation.operating_system_salt_and_encrypted_password = password
                 gp_organisation.operating_system_username = 'medidata_access'
             gp_organisation.save()
-            generate_gp_permission(gp_organisation)
+
+            new_pm_user = authenticate(
+                email=pm_form.cleaned_data['email1'],
+                password=pm_form.cleaned_data['password1'],
+            )
+            login(request, new_pm_user)
             return redirect('onboarding:emis_setup', practice_code=gp_organisation.practcode)
 
         return render(request, 'onboarding/sign_up.html', {
@@ -69,9 +76,13 @@ def sign_up(request):
     })
 
 
+@login_required(login_url='/accounts/login')
 def emis_setup(request, practice_code):
     header_title = "Sign up: eMR with EMISweb"
     gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
+    if request.user.get_my_organisation() != gp_organisation:
+        return redirect('login')
+
 
     if request.method == "POST":
         surgery_update_form = SurgeryUpdateForm(request.POST)
@@ -96,8 +107,11 @@ def emis_setup(request, practice_code):
     })
 
 
+@login_required(login_url='/accounts/login')
 def emr_setup_stage_2(request, practice_code=None):
     gp_organisation = get_object_or_404(OrganisationGeneralPractice, pk=practice_code)
+    if request.user.get_my_organisation() != gp_organisation:
+        return redirect('login')
     address = ' '.join([
         gp_organisation.billing_address_street,
         gp_organisation.billing_address_line_2,
@@ -159,6 +173,11 @@ def emr_setup_stage_2(request, practice_code=None):
                     fail_silently=True,
                     html_message=html_message,
                 )
+            if gp_organisation.gp_operating_system == 'EMISWeb' and gp_organisation.accept_policy:
+                gp_organisation.live =True
+                gp_organisation.save()
+            generate_gp_permission(gp_organisation)
+
             messages.success(request, 'Create User Successful!')
             login_link = request.build_absolute_uri(reverse('login',))
             welcome_message1 = 'Onboarding Successful!'

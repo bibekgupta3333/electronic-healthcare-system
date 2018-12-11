@@ -159,3 +159,6 @@ class OrganisationGeneralPractice(models.Model):
         set_operating_system_salt_and_encrypted_password
     )
 
+    def is_active(self):
+        return self.live and self.accept_policy
+

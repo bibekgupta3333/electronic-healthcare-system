@@ -128,6 +128,17 @@ class User(AbstractUser):
         else:
             return 'Patient User'
 
+    def get_my_organisation(self):
+        if self.type == CLIENT_USER:
+            organisation = self.userprofilebase.clientuser.organisation
+        elif self.type == GENERAL_PRACTICE_USER:
+            organisation = self.userprofilebase.generalpracticeuser.organisation
+        elif self.type == MEDIDATA_USER:
+            organisation = self.userprofilebase.medidatauser.organisation
+        else:
+            organisation = None
+        return organisation
+
     def __str__(self):
         title = ''
         if hasattr(self, 'userprofilebase'):
@@ -187,6 +198,7 @@ class MedidataUser(UserProfileBase):
 
     def update_permission(self):
         self.set_permission(MEDI_PERMISSIONS)
+
 
 class ClientUser(UserProfileBase):
     CLIENT_ADMIN = 0

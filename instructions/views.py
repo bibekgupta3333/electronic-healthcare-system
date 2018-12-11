@@ -141,6 +141,11 @@ def instruction_pipeline_view(request):
     header_title = "Instructions Pipeline"
     user = request.user
 
+    if user.type == GENERAL_PRACTICE_USER:
+        gp_practice = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation', default=None)
+        if gp_practice and not gp_practice.is_active():
+            return redirect('onboarding:emis_setup', practice_code=gp_practice.pk)
+
     if 'status' in request.GET:
         filter_type = request.GET.get('type', '')
         filter_status = request.GET.get('status', -1)
