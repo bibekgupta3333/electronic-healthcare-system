@@ -48,16 +48,10 @@
         <form action="{% url 'accounts:manage_user' %}" method="POST" id="tableForm" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="row">
-                <div class="col-md-2">
-                    <select class="form-control">
-                        <option>Bulk Action</option>
-                        <option>Tiny Action</option>
-                    </select>
+                <div class="col-md-3">
+                    &nbsp;
                 </div>
-                <div class="col-md-2">
-                    {% bootstrap_button 'Apply' button_type="button" button_class="btn-primary"%}
-                </div>
-                <div class="col-md-2">
+                <div class="col-md-3">
                     {% if perms.organisations.change_user_management %}
                         {% if user_type == "gp" %}
                             <select class="form-control" id="userRoleSelect">
@@ -102,7 +96,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-12   ">
+                <div class="col-md-12">
                     {% render_table table 'django_tables2/bootstrap.html' %}
                     {% bootstrap_pagination  page=table.page pages_to_show=10 size='small' %}
                 </div>
