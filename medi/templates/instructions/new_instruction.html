@@ -522,13 +522,8 @@
                 })
             });
 
-            if ('{{patient_postcode}}'){
-                var option = new Option("{{patient_postcode}}", "{{patient_postcode}}", true, true);
-                $('#id_patient_postcode').append(option).trigger('change');
-            }
-
-            if ('{{selected_pat_code}}' != '') {
-                var option = new Option("{{selected_pat_code}}", "{{selected_pat_code}}", true, true);
+            if ('{{patient_form.instance.patient_postcode}}' != '') {
+                var option = new Option("{{patient_form.instance.patient_postcode}}", "{{patient_form.instance.patient_postcode}}", true, true);
                 $('#id_patient_postcode').append(option).trigger('change');
             }
 

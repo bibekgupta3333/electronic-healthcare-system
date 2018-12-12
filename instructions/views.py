@@ -314,7 +314,7 @@ def new_instruction(request):
             )
             messages.success(request, 'Form submission successful')
             if instruction.type == SARS_TYPE and request.user.type == GENERAL_PRACTICE_USER:
-                return redirect('medicalreport:edit_report', instruction_id=instruction.id)
+                return redirect('instructions:review_instruction', instruction_id=instruction.id)
             else:
                 return redirect('instructions:view_pipeline')
         else:
@@ -349,8 +349,10 @@ def new_instruction(request):
         patient_form = InstructionPatientForm(
             instance=patient_instruction,
             initial={
-                'first_name': patient_instruction.patient_first_name, 'last_name': patient_instruction.patient_last_name,
-                'address_postcode': patient_instruction.patient_postcode, 'edit_patient': True
+                'first_name': patient_instruction.patient_first_name,
+                'last_name': patient_instruction.patient_last_name,
+                'address_postcode': patient_instruction.patient_postcode,
+                'edit_patient': True
             }
         )
         # Initial GP/NHS Organisation Form
@@ -412,7 +414,6 @@ def new_instruction(request):
             'selected_gp_adr_country': patient_instruction.patient_country,
             'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
         })
-
     return render(request, 'instructions/new_instruction.html', {
         'header_title': header_title,
         'patient_form': patient_form,
