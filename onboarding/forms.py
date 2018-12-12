@@ -80,7 +80,7 @@ class UserEmrSetUpStage2Form(forms.Form):
     title = forms.ChoiceField(choices=accounts_models.TITLE_CHOICE, label='')
     first_name = forms.CharField(max_length=255, label='')
     last_name = forms.CharField(max_length=255, label='')
-    email = forms.EmailField(max_length=255, label='')
+    email = forms.EmailField(max_length=255, label='', widget=forms.EmailInput(attrs={'class': 'form-control user-email'}))
     role = forms.ChoiceField(choices=accounts_models.GeneralPracticeUser.ROLE_CHOICES, label='')
     gp_code = forms.CharField(max_length=255, required=False, label='')
 
