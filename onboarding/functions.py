@@ -34,28 +34,31 @@ def create_gp_user(gp_organisation: OrganisationGeneralPractice, user_form: dict
             }
     elif gp_organisation:
         if not User.objects.filter(email=gp_organisation.practicemanager_email).exists():
-            gp_manager_first_name = gp_organisation.practicemanagername_c.split(' ')[0]
-            gp_manager_last_name = gp_organisation.practicemanagername_c.split(' ')[1]
-            gp_manager_user = User.objects._create_user(
-                email=gp_organisation.practicemanager_email,
-                username=''.join(random.choices(string.ascii_letters, k=10)),
-                password=password,
-                first_name=gp_manager_first_name,
-                last_name=gp_manager_last_name,
-                type=GENERAL_PRACTICE_USER,
-                is_staff=True,
-            )
+            if gp_organisation.practicemanagername_c:
+                gp_manager_first_name = gp_organisation.practicemanagername_c.split(' ')[0]
+                gp_manager_last_name = gp_organisation.practicemanagername_c.split(' ')[1]
+                gp_manager_user = User.objects._create_user(
+                    email=gp_organisation.practicemanager_email,
+                    username=''.join(random.choices(string.ascii_letters, k=10)),
+                    password=password,
+                    first_name=gp_manager_first_name,
+                    last_name=gp_manager_last_name,
+                    type=GENERAL_PRACTICE_USER,
+                    is_staff=True,
+                )
 
-            general_pratice_user = GeneralPracticeUser.objects.create(
-                user=gp_manager_user,
-                role=GeneralPracticeUser.PRACTICE_MANAGER,
-                organisation=gp_organisation,
-            )
+                general_pratice_user = GeneralPracticeUser.objects.create(
+                    user=gp_manager_user,
+                    role=GeneralPracticeUser.PRACTICE_MANAGER,
+                    organisation=gp_organisation,
+                )
 
-            return {
-                'general_pratice_user': general_pratice_user,
-                'password': password
-            }
+                return {
+                    'general_pratice_user': general_pratice_user,
+                    'password': password
+                }
+            else:
+                return {}
     else:
         return {}
 

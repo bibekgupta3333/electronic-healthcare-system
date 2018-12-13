@@ -198,7 +198,8 @@ def create_or_update_patient_user(patient_information, patient_emis_number) -> P
         patient.save()
 
         user = patient.user
-        user.email = patient_information.patient_email
+        if not User.objects.filter(email=patient_information.patient_email).exists():
+            user.email = patient_information.patient_email
         user.first_name = patient_information.patient_first_name
         user.last_name = patient_information.patient_last_name
         user.save()
