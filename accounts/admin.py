@@ -50,6 +50,9 @@ class UserAdmin(BaseUserAdmin):
     list_display = ('email', 'first_name', 'last_name', 'type', 'is_staff')
     list_filter = ('type',)
 
+    class Media():
+        js = ('js/custom_admin/add_user.js', )
+
     def get_queryset(self, request):
         if hasattr(request.user, 'userprofilebase'):
             queryset = request.user.get_query_set_within_organisation()
@@ -61,7 +64,9 @@ class UserAdmin(BaseUserAdmin):
         GeneralPracticeProfileInline.readonly_fields = []
         ClientProfileInline.readonly_fields = []
         if not obj:
-            return list()
+            self.inlines.append(ClientProfileInline)
+            self.inlines.append(GeneralPracticeProfileInline)
+            self.inlines.append(MedidataProfileInline)
         else:
             if request.user.type != MEDIDATA_USER and not request.user.is_superuser:
                 GeneralPracticeProfileInline.readonly_fields = ['organisation']
@@ -98,8 +103,7 @@ class UserAdmin(BaseUserAdmin):
             self.add_fieldsets = (
                 (None, {
                     'classes': ('wide',),
-                    'fields': ('email', 'username', 'password1', 'password2', 'first_name', 'last_name', 'type'),
-                }),
+                    'fields': ('email', 'username', 'password1', 'password2', 'first_name', 'last_name', 'type')}),
             )
 
         if not obj:

@@ -26,14 +26,26 @@ function enable_submit_button(){
 function subMitMedicalReport(event){
     if(event == "draft"){
         $('#event_flag').val('draft');
+        $('#medicalReportForm').submit();
     } else {
-        if(!$('#accept_disclaimer').is(':checked')){
+        $('#confirmSubmitModal').modal('show');
+    }
+}
+
+function submitConfirmReport( event ) {
+    if( event == "confirm" ) {
+        if( !$('#accept_disclaimer').is(':checked')) {
+            $('#confirmSubmitModal').modal('hide');
             create_alert('Please accept the Medidata Exchange Ltd disclaimer.', 'error');
             return false;
         }
         $('#event_flag').val('submit');
+        $('#medicalReportForm').submit();
+    } else {
+        $('#confirmSubmitModal').modal('hide');
+        create_alert('Invalid action. Please contact admin.', 'error');
+        return false;
     }
-    $('#medicalReportForm').submit();
 }
 
 function saveReport(inst = false){
