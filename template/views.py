@@ -23,13 +23,15 @@ def create_template_instruction(request):
     return temp_instruction
 
 
-def create_or_update_addition_question(temp_instruction, addition_question_formset):
+def create_or_update_addition_question(temp_instruction, addition_question_formset, request):
     TemplateAdditionalQuestion.objects.filter(template_instruction=temp_instruction).delete()
     for form in addition_question_formset:
-        if form.is_valid():
-            addition_question = form.save(commit=False)
-            addition_question.template_instruction = temp_instruction
-            addition_question.save()
+        form.full_clean()
+        if form.cleaned_data['question'] != '':
+            TemplateAdditionalQuestion.objects.create(
+                template_instruction=temp_instruction,
+                question=form.cleaned_data['question']
+            )
 
 
 def create_or_update_addition_question_ajax(temp_instruction, request):
@@ -84,7 +86,7 @@ def template_create_or_update(request, temp_instruction=None):
         # create relations of instruction with snomed code
         create_or_update_snomed_relations(temp_instruction, condition_of_interests)
         # create addition question
-        create_or_update_addition_question(temp_instruction, addition_question_formset)
+        create_or_update_addition_question(temp_instruction, addition_question_formset, request)
         messages.success(request, 'Template successfully saved.')
         return JsonResponse({'state': 'success'})
 
