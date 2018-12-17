@@ -65,63 +65,77 @@
                     <div class="card-header"><h5>Consent and contact information</h5></div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-4">
-                                <div class="row offset-md-1 col-md-10">
-                                    <h6>SARS Request</h6>
-                                </div>
-                                <div class="row offset-md-1 col-md-10 mt-4">
-                                    <h6>Required if initiated via third party</h6>
-                                </div>
-                                <div class="row mt-2">
-                                <div class="offset-md-1 col-md-10 mt-4">
-                                        <div class="form-group">
-                                            <div class="file-loading">
-                                                <input type="hidden" name="sars_consent_loaded" id="id_sars_consent_loaded" />
-                                                {% bootstrap_field sars_consent_form.sars_consent show_label=false %}
+                            <div class="col-8">
+                                <div class="row">
+                                    <div class="col-md-6 mt-2">
+                                        <div class="col-12">
+                                            <h6><strong>SARS Request</strong></h6>
+                                        </div>
+                                        <div class="col-12">&nbsp;</div>
+                                        <div class="col-12 pt-4">
+                                            <h6>Required if initiated via third party</h6>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mt-2">
+                                        <div class="col-12">
+                                            <h6><strong>MDX Dual Consent</strong></h6>
+                                        </div>
+                                        <div class="col-12">&nbsp;</div>
+                                        <div class="col-12">
+                                            <button class="btn btn-primary btn-lg btn-block" type="button" id="downloadBtn">
+                                                Print Pre-Populated <br> Consent Form
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">&nbsp;</div>
+
+                                    <!-- SARS Request Form Upload -->
+                                    <div class="col-6">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <div class="file-loading">
+                                                    <input type="hidden" name="sars_consent_loaded" id="id_sars_consent_loaded" />
+                                                    {% bootstrap_field sars_consent_form.sars_consent show_label=false %}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="row offset-md-1 col-md-10">
-                                    <h6>MDX Dual Consent</h6>
-                                </div>
-                                <div class="row offset-md-1 col-md-10 mt-1">
-                                    <button class="btn btn-primary btn-lg w-100" id="downloadBtn">
-                                        Print Pre-Populated Consent Form
-                                    </button>
-                                </div>
-                                <div class="row mt-4">
-                                    <div class="offset-md-1 col-md-10 mt-1">
-                                        <div class="form-group">
-                                            <div class="file-loading">
-                                                <input type="hidden" name="mdx_consent_loaded" id="id_mdx_consent_loaded" />
-                                                {% bootstrap_field mdx_consent_form.mdx_consent show_label=false %}
+
+                                    <!-- MDX Dual Consent Form Upload -->
+                                    <div class="col-6">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <div class="file-loading">
+                                                    <input type="hidden" name="mdx_consent_loaded" id="id_mdx_consent_loaded" />
+                                                    {% bootstrap_field mdx_consent_form.mdx_consent show_label=false %}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-4">
                                 <div class="row offset-md-1 col-md-10">
                                     <h6>Contact information</h6>
                                 </div>
                                 <div class="row mt-4">
-                                    <div class="col-md-3 rowTitle">Email</div>
+                                    <div class="col-md-4 rowTitle">Email</div>
                                     {% bootstrap_field patient_form.patient_email size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
                                 </div>
                                 <div class="row mt-4">
-                                    <div class="col-md-3 rowTitle">Confirm Email</div>
+                                    <div class="col-md-4 rowTitle">Confirm Email</div>
                                     <div class="col-md-8"><input type="email" id="confirm_email" class="form-control form-control-sm" /></div>
                                 </div>
                                 <div class="row mt-4">
-                                    <div class="col-md-3 rowTitle">Mobile Phone</div>
+                                    <div class="col-md-4 rowTitle">Mobile Phone</div>
                                     {% bootstrap_field patient_form.patient_telephone_mobile size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
                                     {% bootstrap_field patient_form.patient_telephone_code %}
                                 </div>
                                 <div class="row mt-4">
-                                    <div class="col-md-3 rowTitle">Alternate Phone(optional)</div>
+                                    <div class="col-md-4">
+                                    <label for="id_patient_alternate_phone" class="col-form-label">Alternate Phone <br> (optional)</label>
+                                    </div>
                                     {% bootstrap_field patient_form.patient_alternate_phone size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
                                     {% bootstrap_field patient_form.patient_alternate_code %}
                                 </div>
