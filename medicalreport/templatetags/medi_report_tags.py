@@ -136,6 +136,10 @@ def redaction_checkbox_with_list(model, redaction, header='', dict_data='', map_
     if redaction.re_redacted_codes:
         matched_sensitive_conditions.filter(~Q(snome_code__in=redaction.re_redacted_codes))
     matched_sensitive_conditions = matched_sensitive_conditions.values_list('snome_code')
+    sensitive_conditions = []
+    for sensitive_tuple in list(matched_sensitive_conditions):
+        sensitive_conditions = [sensitive_code for sensitive_code in sensitive_tuple]
+
     xpaths = model.xpaths()
     if redaction.redacted(xpaths) is True:
         checked = "checked"
@@ -147,7 +151,7 @@ def redaction_checkbox_with_list(model, redaction, header='', dict_data='', map_
         'header': header,
         'dict_data': dict_data,
         'label': label,
-        'sensitive_conditions': list(matched_sensitive_conditions)
+        'sensitive_conditions': sensitive_conditions
     }
 
 

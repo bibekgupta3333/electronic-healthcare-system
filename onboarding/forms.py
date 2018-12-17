@@ -17,7 +17,7 @@ class SurgeryForm(forms.Form):
     city = forms.CharField(max_length=20, label='', widget=forms.TextInput())
     country = forms.CharField(max_length=20, label='', widget=forms.TextInput())
     contact_num = forms.CharField(max_length=20, label='', widget=forms.TextInput())
-    emis_org_code = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+    emis_org_code = forms.CharField(max_length=20, label='', widget=forms.TextInput(), required=False)
     operating_system = forms.ChoiceField(choices=OrganisationGeneralPractice.GP_OP_SYS_CHOICES, label='')
 
     def __init__(self, *args, **kwargs):
@@ -28,7 +28,8 @@ class SurgeryForm(forms.Form):
         practice_code = self.cleaned_data.get('practice_code')
         gp_onboarding = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
         if gp_onboarding and gp_onboarding.generalpracticeuser_set.first():
-            raise forms.ValidationError('GP Surgery with this practice code already Onboarding')
+            raise forms.ValidationError('A GP Surgery with this practice code already exists. '
+                                        'Please contact Medidata for more information, or discuss within your Surgery')
         return practice_code
 
     def validate_operating_system(self):
@@ -39,7 +40,6 @@ class SurgeryForm(forms.Form):
 
     def save(self):
         accept_policy = True if self.data.get('accept_policy') == 'on' else False
-        live = True if self.cleaned_data.get('operating_system') == 'EMISWeb' and accept_policy else False
         gp_organisation = OrganisationGeneralPractice.objects.update_or_create(
             practcode=self.cleaned_data.get('practice_code'),
             defaults={
@@ -54,17 +54,23 @@ class SurgeryForm(forms.Form):
                 'phone_office': self.cleaned_data.get('contact_num'),
                 'operating_system_organisation_code': self.cleaned_data.get('emis_org_code'),
                 'gp_operating_system': self.cleaned_data.get('operating_system'),
-                'live': live,
             }
         )
 
         return gp_organisation[0]
 
 
+class SurgeryUpdateForm(forms.Form):
+    surgery_name = forms.CharField(max_length=255, label='', disabled=True, required=False)
+    surgery_code = forms.CharField(max_length=20, label='', disabled=True, required=False)
+    emis_org_code = forms.CharField(max_length=20, label='')
+    operating_system = forms.ChoiceField(choices=OrganisationGeneralPractice.GP_OP_SYS_CHOICES, label='')
+
+
 class SurgeryEmrSetUpStage2Form(forms.Form):
     surgery_name = forms.CharField(max_length=255, label='', disabled=True)
     surgery_code = forms.CharField(max_length=20, label='', disabled=True)
-    address = forms.CharField(max_length=20, label='', disabled=True)
+    address = forms.CharField(max_length=255, label='', disabled=True, widget=forms.Textarea(attrs={'rows': '4'}))
     postcode = forms.CharField(max_length=20, label='', disabled=True)
     surgery_tel_number = forms.CharField(max_length=20, label='', disabled=True)
     surgery_email = forms.CharField(max_length=255, label='', disabled=True)
@@ -74,7 +80,7 @@ class UserEmrSetUpStage2Form(forms.Form):
     title = forms.ChoiceField(choices=accounts_models.TITLE_CHOICE, label='')
     first_name = forms.CharField(max_length=255, label='')
     last_name = forms.CharField(max_length=255, label='')
-    email = forms.EmailField(max_length=255, label='')
+    email = forms.EmailField(max_length=255, label='', widget=forms.EmailInput(attrs={'class': 'form-control user-email'}))
     role = forms.ChoiceField(choices=accounts_models.GeneralPracticeUser.ROLE_CHOICES, label='')
     gp_code = forms.CharField(max_length=255, required=False, label='')
 
@@ -108,9 +114,9 @@ class BankDetailsEmrSetUpStage2Form(forms.Form):
     level_2_payments = level_1_payments*0.90
     level_3_payments = level_2_payments*0.84
 
-    bank_account_name = forms.CharField(max_length=255, label='')
-    bank_account_number = forms.CharField(max_length=50, label='')
-    bank_account_sort_code = forms.CharField(max_length=50, label='')
+    bank_account_name = forms.CharField(max_length=255, label='', required=False)
+    bank_account_number = forms.CharField(max_length=50, label='', required=False)
+    bank_account_sort_code = forms.CharField(max_length=50, label='', required=False)
     received_within_3_days = forms.DecimalField(
         initial=60.00, max_value=80, min_value=60, max_digits=4, label='',
         widget=forms.NumberInput(attrs={'id': 'min_fee_payments'})

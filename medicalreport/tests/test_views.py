@@ -103,7 +103,10 @@ class RejectRequestTest(EmisAPITestCase):
 
     def test_view_redirects_to_correct_url(self):
         response = self.client.post('/medicalreport/4/reject-request/')
-        self.assertRedirects(response, '/instruction/view-pipeline/?status=%s&type=allType'%INSTRUCTION_STATUS_REJECT)
+        self.assertRedirects(
+            response, '/instruction/view-pipeline/?status=%s&type=allType' % INSTRUCTION_STATUS_REJECT,
+            status_code=302, target_status_code=302
+        )
 
 
 class SelectPatientTest(EmisAPITestCase):

@@ -125,6 +125,8 @@ class OrganisationGeneralPractice(models.Model):
     payment_bank_account_number = models.CharField(max_length=255, blank=True)
     payment_preference = models.CharField(max_length=255, blank=True)
 
+    onboarding_by = models.CharField(max_length=255, blank=True)
+    onboarding_job_title = models.CharField(max_length=255, blank=True)
     accept_policy = models.BooleanField(default=False)
     live = models.BooleanField(default=False)
 
@@ -156,4 +158,7 @@ class OrganisationGeneralPractice(models.Model):
         get_operating_system_salt_and_encrypted_password,
         set_operating_system_salt_and_encrypted_password
     )
+
+    def is_active(self):
+        return self.live and self.accept_policy
 

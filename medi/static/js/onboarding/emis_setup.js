@@ -24,7 +24,6 @@ function copyToClipboard(text, el) {
 
 
 function pollingEmis(url) {
-    $( "input" ).prop( "disabled", true );
     $("#checkingEmisButton").addClass("pendingCheck");
     $("#checkingEmisButton").html(
         "<img src='/static/images/emis_setup/Spin-1s-40px.gif' style='height: 50px; width: 50px;'/> Checking..."
@@ -33,13 +32,14 @@ function pollingEmis(url) {
         $.ajax({
             url: url,
             success: function (data) {
-                if(data["status"] == 200){
+                if(data["status"] == 400){
                     $(".btn-checkSetup").hide();
                     $(".emisSetupSuccess").removeClass("d-none");
                     setTimeout(function () {
                         document.location.href = "/onboarding/emr-setup-stage-2/" + data["practice_code"]
                     }, 2000)
                 } else {
+                    $('#checkingEmisButton').prop("disabled", false);
                     $("#checkingEmisButton").removeClass("pendingCheck");
                     $("#checkingEmisButton").html("<i class='fas fa-question'></i>&nbsp; Check Setup");
                     $("#failSetupEmisModal").modal({
@@ -48,5 +48,5 @@ function pollingEmis(url) {
                 }
             },
         });
-    }, 2000)
+    }, 2000);
 }

@@ -12,35 +12,37 @@
             </div>
         </div>
         <ul class="mainmenu">
-            {% if perms.instructions.add_instruction %}
-                <li class="{% if request.resolver_match.url_name == 'new_instruction' %}active{% endif %}">
-                    <a href="{% url 'instructions:new_instruction' %}">New Instructions</a>
-                </li>
-            {% endif %}
-            {% if perms.instructions.view_instruction %}
-                <li class="{% if request.resolver_match.url_name == 'view_pipeline' %}active{% endif %}">
-                    <a href="{% url 'instructions:view_pipeline' %}" >Instructions</a>
-                </li>
-            {% endif %}
-            {% if perms.organisations.view_user_management %}
-                <li class="{% if request.resolver_match.url_name == 'view_users' %}active{% endif %}">
-                    <a href="{% url 'accounts:view_users' %}">User Management</a>
-                </li>
-            {% endif %}
-            {% if user.type == 'MEDI' %}
-                <li>
-                    <a href="#" >Income</a>
-                </li>
-            {% endif %}
-            {% if perms.organisations.view_user_management %}
-                <li class="{% if request.resolver_match.url_name == 'view_templates' %}active{% endif %}">
-                    <a href="{% url 'template:view_templates' %}">Templates</a>
-                </li>
-            {% endif %}
-            {% if perms.payment.view_organisationfee %}
-                <li class="{% if request.resolver_match.url_name == 'view_account' %}active{% endif %}">
-                    <a href="{% url 'accounts:view_account' %}" >Account</a>
-                </li>
+            {% if user.type == 'GP' and user.userprofilebase.generalpracticeuser.organisation.is_active or user.type == 'CLT' %}
+                {% if perms.instructions.add_instruction %}
+                    <li class="{% if request.resolver_match.url_name == 'new_instruction' %}active{% endif %}">
+                        <a href="{% url 'instructions:new_instruction' %}">New Instructions</a>
+                    </li>
+                {% endif %}
+                {% if perms.instructions.view_instruction %}
+                    <li class="{% if request.resolver_match.url_name == 'view_pipeline' %}active{% endif %}">
+                        <a href="{% url 'instructions:view_pipeline' %}" >Instructions</a>
+                    </li>
+                {% endif %}
+                {% if perms.organisations.view_user_management %}
+                    <li class="{% if request.resolver_match.url_name == 'view_users' %}active{% endif %}">
+                        <a href="{% url 'accounts:view_users' %}">User Management</a>
+                    </li>
+                {% endif %}
+                {% if user.type == 'MEDI' %}
+                    <li>
+                        <a href="#" >Income</a>
+                    </li>
+                {% endif %}
+                {% if perms.organisations.view_user_management %}
+                    <li class="{% if request.resolver_match.url_name == 'view_templates' %}active{% endif %}">
+                        <a href="{% url 'template:view_templates' %}">Templates</a>
+                    </li>
+                {% endif %}
+                {% if perms.payment.view_organisationfee %}
+                    <li class="{% if request.resolver_match.url_name == 'view_account' %}active{% endif %}">
+                        <a href="{% url 'accounts:view_account' %}" >Account</a>
+                    </li>
+                {% endif %}
             {% endif %}
         </ul>
     </nav>

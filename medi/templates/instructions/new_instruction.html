@@ -57,7 +57,7 @@
                               {% bootstrap_field patient_form.patient_city size='small' form_group_class='form-group col-md-5' placeholder='' %}
                         </div>
                         <div class="row" >
-                              {% bootstrap_field patient_form.patient_country size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' %}
+                              {% bootstrap_field patient_form.patient_country size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' placeholder='' %}
                         </div>
                         <div class="row">
                             <div class="col-md-2 rowTitle">NHS #:</div>
@@ -222,6 +222,7 @@
     <script>
         $(document).ready(function () {
             var template_data = null;
+            var patient_addr_num = '';
             function reset_template_attrs(){
                 $('#questions_block').find('tbody').find('.dynamic-form').remove();
             }
@@ -503,33 +504,43 @@
                                 $('#id_patient_address_line3').val(selectedData[2]);
                                 $('#id_patient_city').val(selectedData[5]);
                                 $('#id_patient_country').val(selectedData[6]);
-                                if ("{{selected_gp_adr_line1}}") {
-                                    $('#id_patient_address_line1').val("{{selected_gp_adr_line1}}");
-                                }
-                                if ("{{selected_gp_adr_line2}}") {
-                                    $('#id_patient_address_line2').val("{{selected_gp_adr_line2}}");
-                                }
-                                if ("{{selected_gp_adr_line3}}") {
-                                    $('#id_patient_address_line3').val("{{selected_gp_adr_line3}}");
-                                }
-                                if ("{{selected_gp_adr_country}}") {
-                                    $('#id_patient_country').val("{{selected_gp_adr_country}}");
-                                }
                             });
-                            $('#id_patient_address_number').trigger({
-                                type: 'select2:select',
-                                params: {
-                                    data: {text: "{{selected_pat_adr_num}}" != '' ? "{{selected_pat_adr_num}}" : data.addresses[0]}
-                                }
-                            });
+
+                            if (patient_addr_num) {
+                                $('#id_patient_address_number').select2('val', [patient_addr_num]);
+                                patient_addr_num = '';
+                            } else {
+                                $('#id_patient_address_number').trigger({
+                                    type: 'select2:select',
+                                    params: {
+                                        data: {text: data.addresses[0]}
+                                    }
+                                });
+                            }
 
                         }
                 })
             });
 
-            if ('{{selected_pat_code}}' != '') {
-                var option = new Option("{{selected_pat_code}}", "{{selected_pat_code}}", true, true);
+            if ('{{patient_form.instance.patient_postcode}}' != '') {
+                var option = new Option("{{patient_form.instance.patient_postcode}}", "{{patient_form.instance.patient_postcode}}", true, true);
                 $('#id_patient_postcode').append(option).trigger('change');
+            }
+
+            if ("{{selected_gp_adr_line1}}") {
+                $('#id_patient_address_line1').val("{{selected_gp_adr_line1}}");
+            }
+            if ("{{selected_gp_adr_line2}}") {
+                $('#id_patient_address_line2').val("{{selected_gp_adr_line2}}");
+            }
+            if ("{{selected_gp_adr_line3}}") {
+                $('#id_patient_address_line3').val("{{selected_gp_adr_line3}}");
+            }
+            if ("{{selected_gp_adr_country}}") {
+                $('#id_patient_country').val("{{selected_gp_adr_country}}");
+            }
+            if ("{{selected_pat_adr_num}}") {
+                patient_addr_num = "{{selected_pat_adr_num}}";
             }
 
             $('.instructionType').on('change', function () {

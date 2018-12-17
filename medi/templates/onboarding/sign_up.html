@@ -5,6 +5,8 @@
 {% bootstrap_javascript jquery='full' %}
 {% bootstrap_messages %}
 
+
+
 {% block ExtraHead %}
     <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/onboarding/sign_up.css' %}" rel="stylesheet"/>
@@ -25,10 +27,14 @@
                 </div>
                 <div class="card-body">
                     <div class="row subheader">
-                        To be completed by an authorised member of the practice
+                        <div class="col-12">
+                            To be completed by an authorised member of the practice
+                        </div>
                     </div>
                     <div class="row form-group">
-                        <h5>Surgery details</h5>
+                        <div class="col-12">
+                            <h5>Surgery details</h5>
+                        </div>
                     </div>
                     <div class="row form-group">
                         <div class="col-md-6">
@@ -47,7 +53,7 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-4 title-pos">Postcode<span class="red">*</span></div>
+                                <div class="col-md-4 title-pos">Postcode <span class="red">*</span></div>
                                 {% bootstrap_field surgery_form.postcode show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
@@ -61,7 +67,7 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-4 title-pos">Address Line 1<span class="red">*</span></div>
+                                <div class="col-md-4 title-pos">Address Line 1 <span class="red">*</span></div>
                                 {% bootstrap_field surgery_form.address_line1 show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
@@ -81,7 +87,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-4 title-pos">City<span class="red">*</span></div>
+                                <div class="col-md-4 title-pos">City <span class="red">*</span></div>
                                 {% bootstrap_field surgery_form.city show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
@@ -89,13 +95,13 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-4 title-pos">Country<span class="red">*</span></div>
+                                <div class="col-md-4 title-pos">Country <span class="red">*</span></div>
                                 {% bootstrap_field surgery_form.country show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-4 title-pos">Contact Number<span class="red">*</span></div>
+                                <div class="col-md-4 title-pos">Contact Number <span class="red">*</span></div>
                                 {% bootstrap_field surgery_form.contact_num show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
@@ -103,13 +109,15 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-4 title-pos">EMIS Organisation Code<span class="red">*</span></div>
+                                <div class="col-md-4">EMIS Organisation Code <span class="red">*</span></div>
                                 {% bootstrap_field surgery_form.emis_org_code show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
                          <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-4 title-pos">Primary Care record system<span class="red">*</span></div>
+                                <div class="col-md-4">
+                                    <label for="id_operating_system" class="col-form-label">Primary Care record system <span class="red">*</span></label>
+                                </div>
                                 {% bootstrap_field surgery_form.operating_system show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
@@ -126,18 +134,20 @@
                 </div>
                 <div class="card-body">
                     <div class="row form-group">
-                        <h6>Please create your account to continue your Surgery Registration</h6>
+                        <div class="col-12">
+                            <h6>Please create your account to continue your Surgery Registration</h6>
+                        </div>
                     </div>
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-4 title-pos">First Name<span class="red">*</span></div>
+                                <div class="col-md-4 title-pos">First Name <span class="red">*</span></div>
                                 {% bootstrap_field pm_form.first_name show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-4 title-pos">Surname<span class="red">*</span></div>
+                                <div class="col-md-4 title-pos">Surname <span class="red">*</span></div>
                                 {% bootstrap_field pm_form.surname show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
@@ -145,7 +155,7 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row" id="email_form">
-                                <div class="col-md-4 title-pos">Email address<span class="red">*</span></div>
+                                <div class="col-md-4 title-pos">Email address <span class="red">*</span></div>
                                 {% bootstrap_field pm_form.email1 show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                             <div id="email_error" class="offset-md-3"></div>
@@ -154,7 +164,7 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-4 title-pos">Confirm email<span class="red">*</span></div>
+                                <div class="col-md-4 title-pos">Confirm email <span class="red">*</span></div>
                                 {% bootstrap_field pm_form.email2 show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
@@ -162,19 +172,21 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row" id="password_form">
-                                <div class="col-md-4 title-pos">Choose password<span class="red">*</span></div>
+                                <div class="col-md-4 title-pos">Choose password <span class="red">*</span></div>
                                 {% bootstrap_field pm_form.password1 show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                             <div id="password_error" class="offset-md-3"></div>
                         </div>
                     </div>
                     <div class="row form-group">
-                        <span>Your password must be at least 8 characters long and contain letters and numbers</span>
+                        <div class="col-12">
+                            <span>Your password must be at least 8 characters long and contain letters and numbers</span>
+                        </div>
                     </div>
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-4 title-pos">Confirm password<span class="red">*</span></div>
+                                <div class="col-md-4 title-pos">Confirm password <span class="red">*</span></div>
                                 {% bootstrap_field pm_form.password2 show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
@@ -266,6 +278,15 @@
                 "{% url 'organisations:sign_up_autocomplete' %}"
             );
 
+            $('#id_emis_org_code').prop('required', true);
+            $('#id_operating_system').change(function () {
+                if($(this).val() != 'EMISWeb'){
+                     $('#id_emis_org_code').prop('required', false);
+                } else {
+                    $('#id_emis_org_code').prop('required', true);
+                }
+            });
+
             let csrf_token = '{{ csrf_token }}';
             $('#acceptPolicy').click(function() {
               $('#accept-policy').attr("checked", true);
@@ -342,6 +363,8 @@
                 })
             });
 
+
+
             $('#id_password1').change(function() {
                 $.ajax({
                     url: "{% url 'accounts:verify_password' %}",
@@ -366,25 +389,24 @@
                     }
                 });
             });
-
             $('#id_email1').change(function() {
-                $.ajax({
-                    url: "{% url 'accounts:check_email' %}",
-                    type: "POST",
-                    dataType: "json",
-                    data:{
-                        "email": $(this).val() ,
-                        "csrfmiddlewaretoken": csrf_token
-                    },
-                    success:function(data) {
-                        $('#id_email1').removeClass("is-invalid");
-                        $('#email_form').find('.invalid-feedback').remove();
-                        if (data.exists){
-                            $('#id_email1').addClass("is-invalid");
-                            $('#id_email1').after('<div class="invalid-feedback">This email address has already been used to register.</div>');
-                        }
+              $.ajax({
+                  url: "{% url 'accounts:check_email' %}",
+                  type: "POST",
+                  dataType: "json",
+                  data:{
+                      "email": $(this).val() ,
+                      "csrfmiddlewaretoken": csrf_token
+                  },
+                  success:function(data) {
+                    $('#id_email1').removeClass("is-invalid");
+                    $('#email_form').find('.invalid-feedback').remove();
+                    if (data.exists){
+                      $('#id_email1').addClass("is-invalid");
+                      $('#id_email1').after('<div class="invalid-feedback">This email address has already been used to register.</div>');
                     }
-                });
+                  }
+              });
             });
 
             $('#id_practice_code').change(function () {
@@ -416,7 +438,7 @@
                     $('#id_postcode').trigger('change');
                 }
             });
-
+            $('#id_postcode').trigger('change');
             $(document).on({
                 mouseover: function(){
                     $.ajax({

@@ -106,6 +106,9 @@ def create_or_update_instruction(request, patient_instruction, scope_form=None, 
         instruction.gp_title_from_client = request.POST.get('gp_title')
         instruction.gp_initial_from_client = request.POST.get('initial')
         instruction.gp_last_name_from_client = request.POST.get('gp_last_name')
+        instruction.date_range_from = scope_form.cleaned_data['date_range_from']
+        instruction.date_range_to = scope_form.cleaned_data['date_range_to']
+
     else:
         instruction.type = SARS_TYPE
         instruction.gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
@@ -137,6 +140,11 @@ def create_snomed_relations(instruction, condition_of_interests):
 def instruction_pipeline_view(request):
     header_title = "Instructions Pipeline"
     user = request.user
+
+    if user.type == GENERAL_PRACTICE_USER:
+        gp_practice = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation', default=None)
+        if gp_practice and not gp_practice.is_active():
+            return redirect('onboarding:emis_setup', practice_code=gp_practice.pk)
 
     if 'status' in request.GET:
         filter_type = request.GET.get('type', '')
@@ -221,6 +229,7 @@ def new_instruction(request):
         selected_gp_adr_line3 = request.POST.get('patient_address_line3', '')
         selected_gp_adr_country = request.POST.get('patient_country', '')
         patient_form = InstructionPatientForm(InstructionPatientForm.change_request_date(request.POST))
+
         i = 0
         while i < len(selected_add_cond):
             selected_add_cond[i] = int(selected_add_cond[i])
@@ -305,7 +314,7 @@ def new_instruction(request):
             )
             messages.success(request, 'Form submission successful')
             if instruction.type == SARS_TYPE and request.user.type == GENERAL_PRACTICE_USER:
-                return redirect('medicalreport:edit_report', instruction_id=instruction.id)
+                return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction.id)
             else:
                 return redirect('instructions:view_pipeline')
         else:
@@ -340,8 +349,10 @@ def new_instruction(request):
         patient_form = InstructionPatientForm(
             instance=patient_instruction,
             initial={
-                'first_name': patient_instruction.patient_first_name, 'last_name': patient_instruction.patient_last_name,
-                'address_postcode': patient_instruction.patient_postcode, 'edit_patient': True
+                'first_name': patient_instruction.patient_first_name,
+                'last_name': patient_instruction.patient_last_name,
+                'address_postcode': patient_instruction.patient_postcode,
+                'edit_patient': True
             }
         )
         # Initial GP/NHS Organisation Form
@@ -395,9 +406,14 @@ def new_instruction(request):
             'condition_of_interest': condition_of_interest,
             'consent_form_data': consent_form_data,
             'instruction_id': instruction_id,
+            'patient_postcode': patient_instruction.patient_postcode,
+            'selected_pat_adr_num': patient_instruction.patient_address_number,
+            'selected_gp_adr_line1': patient_instruction.patient_address_line1,
+            'selected_gp_adr_line2': patient_instruction.patient_address_line2,
+            'selected_gp_adr_line3': patient_instruction.patient_address_line3,
+            'selected_gp_adr_country': patient_instruction.patient_country,
             'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
         })
-
     return render(request, 'instructions/new_instruction.html', {
         'header_title': header_title,
         'patient_form': patient_form,
@@ -435,6 +451,7 @@ def review_instruction(request, instruction_id):
     header_title = "Instruction Reviewing"
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     patient_instruction = instruction.patient_information
+    date_format = patient_instruction.patient_dob.strftime("%d/%m/%Y")
     # Initial Patient Form
     patient_form = InstructionPatientForm(
         instance=patient_instruction,
@@ -444,6 +461,7 @@ def review_instruction(request, instruction_id):
             'patient_last_name': patient_instruction.patient_last_name,
             'patient_postcode': patient_instruction.patient_postcode,
             'patient_address_number': patient_instruction.patient_address_number,
+            'patient_dob': date_format
         }
     )
     gp_practice_code = instruction.gp_practice.pk

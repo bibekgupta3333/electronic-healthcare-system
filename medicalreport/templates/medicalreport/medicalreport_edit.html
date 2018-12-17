@@ -121,6 +121,32 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Modal for confirm before submit. -->
+                        <div class="modal fade" id="confirmSubmitModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-body">
+                                        <div class="container">
+                                            <div class="col-12 text-center">
+                                                <h5><strong>Are you sure you wish to submit the report ?</strong></h5>
+                                                <label>Once submitted the report cannot be edited</label>
+                                            </div>
+                                            <div class="col-12">&nbsp;</div>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <button type="button" class="btn btn-primary btn-block" id="submitConfirmButton" onclick="submitConfirmReport('confirm')">Proceed</button>
+                                                </div>
+                                                <div class="col-6">
+                                                    <button type="button" class="btn btn-secondary btn-block" data-dismiss="modal">Go Back</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
