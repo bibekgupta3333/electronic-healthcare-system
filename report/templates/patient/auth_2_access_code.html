@@ -23,8 +23,8 @@
                 <div class="input-group mb-3">
                     {{ form.as_p }}
                 </div>
-                <input type="submit" name='button' value="Access Report" class="btn btn-outline-primary">
-                <input type="submit" name='button' value="Request New Code" class="btn btn-primary">
+                <input id="access_report" type="submit" name='button' value="Access Report" class="btn btn-outline-primary">
+                <input id="request_report" type="submit" name='button' value="Request New Code" class="btn btn-primary">
             </form>
 
             <h4>{% if message %} {{ message }} {% endif %}</h4>
@@ -35,10 +35,12 @@
 {% block Script %}
     <script>
 
-    $('#access_code_form').on('submit', function(e) {
-        if($('#id_access_code').val().length == 0) {
-            e.preventDefault();
-        }
+    $('#access_report').on('click', function(e) {
+      if($('#id_access_code').val().length == 0) {
+          e.preventDefault();
+      }else{
+        $('#access_code_form').submit();
+      }
     });
 
 </script>
