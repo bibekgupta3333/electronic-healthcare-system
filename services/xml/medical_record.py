@@ -16,12 +16,13 @@ from .xml_base import XMLBase, XMLModelBase
 
 from typing import List
 
-
 class MedicalRecord(XMLBase):
     XPATH = './/MedicalRecord'
     SAR_PROFILE_EVENT_TYPES = [
         'height', 'weight', 'bmi', 'smoking', 'alcohol',
-        'systolic_blood_pressure', 'diastolic_blood_pressure'
+        'systolic_blood_pressure', 'diastolic_blood_pressure',
+        'spirometry', 'peak_flow', 'cervical_smear_test',
+        'illicit_drug_use'
     ]
     AMRA__PROFILE_EVENT_TYPES = [
         'height', 'weight', 'bmi', 'smoking', 'alcohol',

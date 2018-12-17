@@ -191,6 +191,9 @@ class Instruction(TimeStampedModel, models.Model):
     def is_amra(self):
         return self.type == AMRA_TYPE
 
+    def get_type(self):
+        return self.type
+
 
 class InstructionAdditionQuestion(models.Model):
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE, related_name='addition_questions')
