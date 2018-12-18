@@ -589,7 +589,8 @@ def consent_contact(request, instruction_id, patient_emis_number):
 
     if request.method == "POST":
         if request.POST.get('sars_consent_loaded') == 'loaded' and not instruction.sars_consent:
-            instruction.sars_consent = request.FILES['sars_consent']
+            if request.FILES.get('sars_consent'):
+                instruction.sars_consent = request.FILES['sars_consent']
         elif request.POST.get('sars_consent_loaded') != 'loaded':
             instruction.sars_consent.delete()
         if request.POST.get('mdx_consent_loaded') == 'loaded' and not instruction.mdx_consent:
@@ -646,9 +647,9 @@ def consent_contact(request, instruction_id, patient_emis_number):
     consent_type = 'pdf'
     consent_extension = ''
     consent_path = ''
-    if instruction.sars_consent:
-        consent_extension = (instruction.sars_consent.url).split('.')[1]
-        consent_path = instruction.sars_consent.url
+    if instruction.consent_form:
+        consent_extension = (instruction.consent_form.url).split('.')[1]
+        consent_path = instruction.consent_form.url
     if consent_extension in ['jpeg', 'png', 'gif']:
         consent_type = 'image'
     sars_consent_form_data = {
