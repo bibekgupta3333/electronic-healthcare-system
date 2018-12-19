@@ -131,6 +131,7 @@ class InstructionAdmin(CustomExport, admin.ModelAdmin):
     change_status = False
     list_display = ('gp_practice', 'client', 'status', 'created', 'type', 'days_since_created')
     list_filter = ('type', DaysSinceFilter, ClientOrgFilter, GPOrgFilter)
+    readonly_fields = ('medi_ref',)
     search_fields = [
         'type'
     ]

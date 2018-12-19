@@ -9,7 +9,7 @@ from django_tables2 import RequestConfig
 from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest, Setting, InstructionPatient
 from .tables import InstructionTable
 from .model_choices import *
-from .forms import ScopeInstructionForm, AdditionQuestionFormset, SarsConsentForm, MdxConsentForm
+from .forms import ScopeInstructionForm, AdditionQuestionFormset, SarsConsentForm, MdxConsentForm, ReferenceForm
 from accounts.models import User, GeneralPracticeUser, PracticePreferences
 from accounts.models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from accounts.forms import InstructionPatientForm, GPForm
@@ -206,6 +206,7 @@ def new_instruction(request):
 
     gp_form = GPForm()
     nhs_form = GeneralPracticeForm()
+    reference_form = ReferenceForm()
 
     if request.method == "POST":
         request.POST._mutable = True
@@ -256,6 +257,9 @@ def new_instruction(request):
                 scope_form=scope_form, gp_practice=gp_practice,
                 instruction_id=instruction_id
             )
+            reference_form = ReferenceForm(request.POST, instance=instruction)
+            if reference_form.is_valid():
+                reference_form.save()
             practice_preferences = PracticePreferences.objects.get_or_create(gp_organisation=gp_practice)
             if practice_preferences[0].notification == 'NEW':
                 send_mail(
@@ -324,6 +328,7 @@ def new_instruction(request):
                 'nhs_form': nhs_form,
                 'gp_form': gp_form,
                 'scope_form': scope_form,
+                'reference_form': reference_form,
                 'addition_question_formset': addition_question_formset,
                 'selected_pat_code': selected_pat_code,
                 'selected_pat_adr_num': selected_pat_adr_num,
@@ -334,8 +339,7 @@ def new_instruction(request):
                 'selected_gp_adr_line1': selected_gp_adr_line1,
                 'selected_gp_adr_line2': selected_gp_adr_line2,
                 'selected_gp_adr_line3': selected_gp_adr_line3,
-                'selected_gp_adr_country': selected_gp_adr_country,
-                'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
+                'selected_gp_adr_country': selected_gp_adr_country
             })
     patient_form = InstructionPatientForm()
     addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.none())
@@ -406,13 +410,13 @@ def new_instruction(request):
             'condition_of_interest': condition_of_interest,
             'consent_form_data': consent_form_data,
             'instruction_id': instruction_id,
+            'reference_form': reference_form,
             'patient_postcode': patient_instruction.patient_postcode,
             'selected_pat_adr_num': patient_instruction.patient_address_number,
             'selected_gp_adr_line1': patient_instruction.patient_address_line1,
             'selected_gp_adr_line2': patient_instruction.patient_address_line2,
             'selected_gp_adr_line3': patient_instruction.patient_address_line3,
-            'selected_gp_adr_country': patient_instruction.patient_country,
-            'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
+            'selected_gp_adr_country': patient_instruction.patient_country
         })
     return render(request, 'instructions/new_instruction.html', {
         'header_title': header_title,
@@ -420,8 +424,8 @@ def new_instruction(request):
         'nhs_form': nhs_form,
         'gp_form': gp_form,
         'scope_form': scope_form,
-        'addition_question_formset': addition_question_formset,
-        'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
+        'reference_form': reference_form,
+        'addition_question_formset': addition_question_formset
     })
 
 
@@ -468,6 +472,7 @@ def review_instruction(request, instruction_id):
     gp_practice_request = HttpRequest()
     gp_practice_request.GET['code'] = gp_practice_code
     gp_organisation_address = get_gporganisation_data(gp_practice_request, need_dict=True)['address']
+    reference_form = ReferenceForm(instance=instruction)
     nhs_form = GeneralPracticeForm(
         initial={
             'gp_practice': instruction.gp_practice
@@ -506,6 +511,7 @@ def review_instruction(request, instruction_id):
         'nhs_form': nhs_form,
         'gp_form': gp_form,
         'scope_form': scope_form,
+        'reference_form': reference_form,
         'addition_question_formset': addition_question_formset,
         'nhs_address': gp_organisation_address,
         'condition_of_interest': condition_of_interest,
@@ -550,6 +556,7 @@ def view_reject(request, instruction_id):
     )
     # Initial Scope/Consent Form
     scope_form = ScopeInstructionForm(user=request.user, initial={'type': instruction.type, })
+    reference_form = ReferenceForm(instance=instruction)
 
     consent_type = 'pdf'
     consent_extension = ''
@@ -572,6 +579,7 @@ def view_reject(request, instruction_id):
         'nhs_form': nhs_form,
         'gp_form': gp_form,
         'scope_form': scope_form,
+        'reference_form': reference_form,
         'addition_question_formset': addition_question_formset,
         'nhs_address': nhs_address,
         'condition_of_interest': condition_of_interest,

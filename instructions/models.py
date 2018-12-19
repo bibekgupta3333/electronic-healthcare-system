@@ -89,6 +89,8 @@ class Instruction(TimeStampedModel, models.Model):
     mdx_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
     medical_report = models.FileField(upload_to='medical_reports', null=True, blank=True)
     saved = models.BooleanField(default=False)
+    medi_ref = models.IntegerField(null=True, blank=True)
+    your_ref = models.CharField(max_length=80, null=True, blank=True)
 
     class Meta:
         verbose_name = "Instruction"
@@ -108,6 +110,12 @@ class Instruction(TimeStampedModel, models.Model):
 
     def __str__(self):
         return 'Instruction #{pk}'.format(pk=self.pk)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if not self.medi_ref:
+            self.medi_ref = settings.MEDI_REF_NUMBER + self.pk
+            self.save()
 
     def in_progress(self, context):
         self.status = INSTRUCTION_STATUS_PROGRESS
