@@ -4,7 +4,7 @@ from permissions.models import InstructionPermission
 from .models import AmendmentsForRecord
 from instructions.models import Instruction
 from instructions.model_choices import AMRA_TYPE
-from accounts.models import User, GeneralPracticeUser
+from accounts.models import User, GeneralPracticeUser, UserProfileBase
 from accounts import models
 
 
@@ -82,10 +82,12 @@ class AllocateInstructionForm(forms.Form):
         super().__init__(*args, **kwargs)
         if user and user.type == models.GENERAL_PRACTICE_USER:
             organisation = user.userprofilebase.generalpracticeuser.organisation
+            profiles = UserProfileBase.all_objects.all()
             role = []
             if instruction_id:
                 role = self.set_role_can_precess(instruction_id, organisation)
             queryset = User.objects.filter(
+                userprofilebase__in=profiles.alive(),
                 userprofilebase__generalpracticeuser__organisation=organisation,
                 userprofilebase__generalpracticeuser__role__in=role,
             )
