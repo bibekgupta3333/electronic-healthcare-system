@@ -8,6 +8,24 @@ from datetime import timedelta
 from instructions.models import Instruction
 from django.db.models import Q
 from organisations.models import OrganisationGeneralPractice
+from instructions.forms import ClientNoteForm
+
+
+class InstructionClientNote(admin.TabularInline):
+    model = models.InstructionClientNote
+    readonly_fields = ('created_date', 'created_by')
+    form = ClientNoteForm
+    extra = 0
+
+
+class InstructionInternalNote(admin.TabularInline):
+    model = models.InstructionInternalNote
+    readonly_fields = ('created_date', 'created_by')
+    fields = ['note', 'created_date', 'created_by']
+    extra = 0
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class InstructionConditionsInline(admin.TabularInline):
@@ -117,6 +135,8 @@ class InstructionAdmin(CustomExport, admin.ModelAdmin):
         'type'
     ]
     inlines = [
+        InstructionClientNote,
+        InstructionInternalNote,
         InstructionConditionsInline,
         InstructionAdditionQuestionInline
     ]
@@ -156,8 +176,18 @@ class InstructionAdmin(CustomExport, admin.ModelAdmin):
                 else:
                     instruction.send_reject_email([instruction.gp_user.user.email])
 
+    def save_formset(self, request, form, formset, change):
+        if formset.model == models.InstructionInternalNote or formset.model == models.InstructionClientNote:
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance.created_by = request.user
+                instance.save()
+            formset.save_m2m()
+        super(InstructionAdmin, self).save_formset(request, form, formset, change)
+
 
 admin.site.register(models.Instruction, InstructionAdmin)
 admin.site.register(models.InstructionAdditionQuestion)
 admin.site.register(models.Setting)
+admin.site.register(models.ClientNote)
 admin.site.register(models.InstructionPatient)

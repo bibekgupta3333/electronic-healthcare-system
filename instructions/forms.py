@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 
 from instructions.model_choices import AMRA_TYPE, SARS_TYPE
-from .models import InstructionAdditionQuestion, Instruction
+from .models import InstructionAdditionQuestion, Instruction, InstructionClientNote, ClientNote
 from template.models import TemplateInstruction
 from common.functions import multi_getattr
 from snomedct.models import CommonSnomedConcepts
@@ -127,6 +127,20 @@ AdditionQuestionFormset = modelformset_factory(
         'question': forms.TextInput(attrs={'class': 'form-control questions_inputs'}, ),
     },
 )
+
+
+class ClientNoteForm(forms.ModelForm):
+    class Meta:
+        model = InstructionClientNote
+        fields = ('__all__')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        choices = []
+        if self.instance:
+            choices += [(self.instance.note, self.instance.note)]
+        choices += [(obj.note, obj.note) for obj in ClientNote.objects.all()]
+        self.fields['note'] = forms.ChoiceField(choices=choices)
 
 
 class SarsConsentForm(forms.Form):

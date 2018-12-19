@@ -242,3 +242,36 @@ class Setting(models.Model):
             return cls.objects.get()
         except cls.DoesNotExist:
             return cls()
+
+
+class ClientNote(models.Model):
+    note = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.note
+
+
+class InstructionClientNote(models.Model):
+    instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE, related_name='client_notes')
+    note = models.CharField(max_length=255)
+    created_date = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Instruction Client Note"
+
+    def __str__(self):
+        return self.note
+
+
+class InstructionInternalNote(models.Model):
+    instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE, related_name='internal_notes')
+    note = models.TextField()
+    created_date = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Instruction Internal Note"
+
+    def __str__(self):
+        return self.note
