@@ -177,7 +177,7 @@ def instruction_pipeline_view(request):
 
     if request.user.type == GENERAL_PRACTICE_USER:
         gp_role = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.role')
-        if gp_role == GeneralPracticeUser.PRACTICE_MANAGER:
+        if gp_role == GeneralPracticeUser.PRACTICE_MANAGER or request.user.has_perm('instructions.process_sars'):
             instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
         else:
             instruction_query_set = instruction_query_set.filter(Q(gp_user__user_id=request.user.id) |

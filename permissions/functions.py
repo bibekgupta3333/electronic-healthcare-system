@@ -37,12 +37,15 @@ def check_permission(func):
         gp_user = instruction.gp_user
         patient = instruction.patient
         gp_practice = instruction.gp_practice
+        instruction_type = instruction.get_type()
         is_valid = False
         if client_user and user.pk == client_user.user.pk:
             is_valid = True
         elif gp_user and user.pk == gp_user.user.pk:
             is_valid = True
         elif patient and user.pk == patient.user.pk:
+            is_valid = True
+        elif instruction_type == 'SARS' and request.user.has_perm('instructions.process_sars'):
             is_valid = True
 
         if hasattr(user.userprofilebase, "generalpracticeuser") and\
