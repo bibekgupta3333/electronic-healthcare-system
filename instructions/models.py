@@ -89,6 +89,8 @@ class Instruction(TimeStampedModel, models.Model):
     mdx_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
     medical_report = models.FileField(upload_to='medical_reports', null=True, blank=True)
     saved = models.BooleanField(default=False)
+    medi_ref = models.IntegerField(null=True, blank=True)
+    your_ref = models.CharField(max_length=80, null=True, blank=True)
 
     class Meta:
         verbose_name = "Instruction"
@@ -108,6 +110,12 @@ class Instruction(TimeStampedModel, models.Model):
 
     def __str__(self):
         return 'Instruction #{pk}'.format(pk=self.pk)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if not self.medi_ref:
+            self.medi_ref = settings.MEDI_REF_NUMBER + self.pk
+            self.save()
 
     def in_progress(self, context):
         self.status = INSTRUCTION_STATUS_PROGRESS
@@ -242,3 +250,36 @@ class Setting(models.Model):
             return cls.objects.get()
         except cls.DoesNotExist:
             return cls()
+
+
+class ClientNote(models.Model):
+    note = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.note
+
+
+class InstructionClientNote(models.Model):
+    instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE, related_name='client_notes')
+    note = models.CharField(max_length=255)
+    created_date = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Instruction Client Note"
+
+    def __str__(self):
+        return self.note
+
+
+class InstructionInternalNote(models.Model):
+    instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE, related_name='internal_notes')
+    note = models.TextField()
+    created_date = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Instruction Internal Note"
+
+    def __str__(self):
+        return self.note

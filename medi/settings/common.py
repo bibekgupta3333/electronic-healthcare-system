@@ -216,3 +216,6 @@ CHECKMOBI_SECRET_KEY = '4591B789-9143-42DD-B5CF-CBE99F9A262A'
 
 # mdx dual consent form template
 MDXCONSENT_DIR = os.path.join(BASE_DIR, 'templates/instructions/mdx_dual_consent.html')
+
+#MEDI ref number
+MEDI_REF_NUMBER = 10000000
