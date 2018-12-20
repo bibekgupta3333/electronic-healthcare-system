@@ -11,6 +11,18 @@ from organisations.models import OrganisationGeneralPractice
 from instructions.forms import ClientNoteForm
 
 
+class InstructionReminder(admin.TabularInline):
+    model = models.InstructionReminder
+    readonly_fields = ('note', 'created_date', 'reminder_day')
+    extra = 0
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request):
+        return False
+
+
 class InstructionClientNote(admin.TabularInline):
     model = models.InstructionClientNote
     readonly_fields = ('created_date', 'created_by')
@@ -136,6 +148,7 @@ class InstructionAdmin(CustomExport, admin.ModelAdmin):
         'type'
     ]
     inlines = [
+        InstructionReminder,
         InstructionClientNote,
         InstructionInternalNote,
         InstructionConditionsInline,
