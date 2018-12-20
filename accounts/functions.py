@@ -4,8 +4,8 @@ from django.db.models import Q
 from django.core.mail import send_mail
 from .forms import NewGPForm, NewClientForm
 from .tables import UserTable
-from .models import User
-from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER, PATIENT_USER, Patient
+from .models import User, GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER, PATIENT_USER,\
+        Patient, GeneralPracticeUser, ClientUser, UserProfileBase
 
 DEFAULT_FROM = settings.DEFAULT_FROM
 
@@ -225,3 +225,35 @@ def create_or_update_patient_user(patient_information, patient_emis_number) -> P
             )
 
     return patient
+
+
+def notify_admins(func):
+    def wrapper(request, *args, **kwargs):
+        user = User.objects.get(pk=request.user.pk)
+        to_emails = []
+        profiles = UserProfileBase.all_objects.all()
+        if hasattr(user, 'userprofilebase'):
+            if hasattr(user.userprofilebase, 'clientuser'):
+                organisation = user.userprofilebase.clientuser.organisation
+                to_emails = [ client.email for client in User.objects.filter(
+                    userprofilebase__in=profiles.alive(),
+                    userprofilebase__clientuser__organisation=organisation,
+                    userprofilebase__clientuser__role=ClientUser.CLIENT_ADMIN)
+                ]
+            elif hasattr(user.userprofilebase, 'generalpracticeuser'):
+                organisation = user.userprofilebase.generalpracticeuser.organisation
+                to_emails = [ client.email for client in User.objects.filter(
+                    userprofilebase__in=profiles.alive(),
+                    userprofilebase__generalpracticeuser__organisation=organisation,
+                    userprofilebase__generalpracticeuser__role=GeneralPracticeUser.PRACTICE_MANAGER)
+                ]
+        if to_emails:
+            send_mail(
+                'Change password',
+                'FYI %s has reset their password'%user.get_full_name(),
+                'MediData',
+                to_emails,
+                fail_silently=True,
+            )
+        return func(request, *args, **kwargs)
+    return wrapper
