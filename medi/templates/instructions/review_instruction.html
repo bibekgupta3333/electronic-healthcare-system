@@ -103,6 +103,19 @@
         </div>
         <div class="col-md-12 mt-4">
             <div class="card">
+                <div class="card-header"><h5>References</h5></div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2">Your reference:</div>
+                        {% bootstrap_field reference_form.your_ref size='small' form_group_class='form-group col-md-4' show_label=False placeholder='' %}
+                        <div class="col-md-2">MediRef:</div>
+                        {% bootstrap_field reference_form.medi_ref size='small' form_group_class='form-group col-md-4' show_label=False %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 mt-4">
+            <div class="card">
                 <div class="card-header"><h5>Consent and Patient Copy</h5></div>
                 <div class="card-body">
                     <div class="row">

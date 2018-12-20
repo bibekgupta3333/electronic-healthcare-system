@@ -2,7 +2,6 @@ import uuid
 from datetime import datetime
 
 from django.contrib import messages
-from django.conf import settings
 from django.core.mail import send_mail
 from django.template import loader
 from django.utils.html import format_html
@@ -219,8 +218,8 @@ def delete_additional_allergies_records(request):
         AdditionalAllergies.objects.filter(id__in=additional_allergies_records_delete).delete()
 
 
-def send_patient_mail(instruction,  unique_url):
-    link = ''.join(settings.SITE_NAME) + 'report/' + str(instruction.pk) + '/' + unique_url
+def send_patient_mail(request, instruction,  unique_url):
+    link = request.get_host() + '/report/' + str(instruction.pk) + '/' + unique_url
     send_mail(
         'Completely eMR',
         'Your instruction has been submitted',
@@ -249,8 +248,8 @@ def send_surgery_email(instruction):
                                              }
                                              ))
 
-def create_patient_report(instruction):
+def create_patient_report(request, instruction):
     unique_url = uuid.uuid4().hex
     PatientReportAuth.objects.create(patient_id=instruction.patient_id, instruction=instruction, url=unique_url)
-    send_patient_mail(instruction, unique_url)
+    send_patient_mail(request, instruction, unique_url)
     send_surgery_email(instruction)

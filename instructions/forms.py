@@ -21,6 +21,23 @@ class MyMultipleChoiceField(forms.MultipleChoiceField):
             raise ValidationError(self.error_messages['required'], code='required')
 
 
+class ReferenceForm(forms.ModelForm):
+    medi_ref = forms.IntegerField(widget=forms.TextInput(attrs={'readonly':'readonly'}))
+    class Meta:
+        model = Instruction
+        fields = ('your_ref',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['medi_ref'].initial = self.instance.medi_ref
+        else:
+            next_number = 1
+            if Instruction.objects.all().exists():
+                next_number = Instruction.objects.order_by('pk').last().pk + 1
+            self.fields['medi_ref'].initial = settings.MEDI_REF_NUMBER + next_number
+
+
 class ScopeInstructionForm(forms.Form):
     type = forms.ChoiceField(choices=[], widget=forms.RadioSelect(attrs={'class': 'd-inline instructionType'}))
     template = forms.ModelChoiceField(queryset=TemplateInstruction.objects.none(), required=False)

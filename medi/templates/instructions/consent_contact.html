@@ -145,16 +145,21 @@
                 </div>
             </div>
         </form>
-   </div>
-   <div id="emailDialog1" class="emailModal well">
-       <h5><i class="fas fa-exclamation-triangle"></i>Warning</h5>
-       <p>That doesn't look like a valid email address</p>
-       <button class="emailDialog1_close rightBtn btn btn-sm btn-default">Close</button>
-   </div>
-   <div id="emailDialog2" class="emailModal well">
+    </div>
+    <div id="emailDialog1" class="emailModal well">
+        <h5><i class="fas fa-exclamation-triangle"></i>Warning</h5>
+        <p>That doesn't look like a valid email address</p>
+        <button class="emailDialog1_close rightBtn btn btn-sm btn-default">Close</button>
+    </div>
+    <div id="emailDialog2" class="emailModal well">
         <h5><i class="fas fa-exclamation-triangle"></i>Warning</h5>
         <p>Those email addresses don't match</p>
         <button class="emailDialog2_close rightBtn btn btn-sm btn-default">Close</button>
+    </div>
+    <div id="confirmDialog" class="emailModal well">
+        <h5><i class="fas fa-exclamation-triangle"></i>Warning</h5>
+        <p>You must confirm email address</p>
+        <button class="confirmDialog_close rightBtn btn btn-sm btn-default">Close</button>
     </div>
     <div class="row ml-1 mt-4 ">
         <div class="col-md-12">
@@ -249,6 +254,41 @@
         var validations ={
             email: [/^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/, 'Please enter a valid email address']
         };
+        $(".emailModal").popup({
+            transition: 'all 0.3s',
+            scrolllock: true,
+            onclose: function() {
+                isPopup = false;
+            }
+        });
+        $("#noSarsConsent").popup({
+            transition: 'all 0.3s',
+            scrolllock: true
+        });
+        $("#noMdxConsent").popup({
+            transition: 'all 0.3s',
+            scrolllock: true
+        });
+        $("#noEmailAddress").popup({
+            transition: 'all 0.3s',
+            scrolllock: true
+        });
+        function proceedAction() {
+            $('#id_next_step').val('proceed');
+            $('#id_patient_telephone_code').val($('#id_patient_telephone_mobile').parent().find('.selected-flag')[0].title.split('+')[1]);
+            $('#id_patient_alternate_code').val($('#id_patient_alternate_phone').parent().find('.selected-flag')[0].title.split('+')[1]);
+            if ($('#confirm_email').val() !='' && $('#confirm_email').val() != $('#id_patient_email').val() && !isPopup){
+                isPopup = true;
+                // If the validation fails then we show the custom error message
+                setTimeout(function(){$("#emailDialog2").popup('show')}, 300);
+            }
+            else if($('#id_patient_email').val() !='' && $('#confirm_email').val() =='') {
+                setTimeout(function(){$("#confirmDialog").popup('show')}, 300);
+            }
+            else {
+                $('#consentContactForm').submit();
+            }
+        }
         var inputPhone = document.querySelector("#id_patient_telephone_mobile");
         var inputAlternatePhone = document.querySelector("#id_patient_alternate_phone");
         intlTelInput(inputPhone, {
@@ -290,25 +330,6 @@
           $('#id_patient_alternate_code').parent().find('.selected-flag .iti-flag').addClass(countryCode);
           $('#id_patient_alternate_code').parent().find('.selected-flag .selected-dial-code').html('+' + phoneCode);
         });
-        $(".emailModal").popup({
-            transition: 'all 0.3s',
-            scrolllock: true,
-            onclose: function() {
-                isPopup = false;
-            }
-        });
-        $("#noSarsConsent").popup({
-            transition: 'all 0.3s',
-            scrolllock: true
-        });
-        $("#noMdxConsent").popup({
-            transition: 'all 0.3s',
-            scrolllock: true
-        });
-        $("#noEmailAddress").popup({
-            transition: 'all 0.3s',
-            scrolllock: true
-        });
         $('.InstructionPatientForm input').attr('readonly', true);
         $("#id_sars_consent").fileinput({
             theme: 'fas',
@@ -349,14 +370,14 @@
             if ($('#id_patient_email').val() !='' && !validation.test(this.value) && !isPopup){
                 isPopup = true;
                 // If the validation fails then we show the custom error message
-                setTimeout(function(){$("#emailDialog1").popup('show')}, 500);
+                setTimeout(function(){$("#emailDialog1").popup('show')}, 300);
             }
         });
         $('#confirm_email').blur(function(){
             if ($('#confirm_email').val() !='' && $('#confirm_email').val() != $('#id_patient_email').val() && !isPopup){
                 isPopup = true;
                 // If the validation fails then we show the custom error message
-                setTimeout(function(){$("#emailDialog2").popup('show')}, 500)
+                setTimeout(function(){$("#emailDialog2").popup('show')}, 300);
             }
         });
         $('#backButton').click(function(){
@@ -373,16 +394,12 @@
             }
             else{
                 $('#id_next_step').val('proceed');
-                $('#id_patient_telephone_code').val($('#id_patient_telephone_mobile').parent().find('.selected-flag')[0].title.split('+')[1]);
-                $('#id_patient_alternate_code').val($('#id_patient_alternate_phone').parent().find('.selected-flag')[0].title.split('+')[1]);
-                $('#consentContactForm').submit();
+                proceedAction();
             }
         });
         $('#emailProceed').click(function(){
             $('#id_next_step').val('proceed');
-            $('#id_patient_telephone_code').val($('#id_patient_telephone_mobile').parent().find('.selected-flag')[0].title.split('+')[1]);
-            $('#id_patient_alternate_code').val($('#id_patient_alternate_phone').parent().find('.selected-flag')[0].title.split('+')[1]);
-            $('#consentContactForm').submit();
+            proceedAction();
         });
         $('#proceedBtn').click(function(){
             $('#proceedBtn').blur();
@@ -399,9 +416,7 @@
                 $('#id_sars_consent_loaded').val('loaded');
                 $('#id_mdx_consent_loaded').val('loaded');
                 $('#id_next_step').val('proceed');
-                $('#id_patient_telephone_code').val($('#id_patient_telephone_mobile').parent().find('.selected-flag')[0].title.split('+')[1]);
-                $('#id_patient_alternate_code').val($('#id_patient_alternate_phone').parent().find('.selected-flag')[0].title.split('+')[1]);
-                $('#consentContactForm').submit();
+                proceedAction();
             }
         });
         $('#id_sars_consent').on('change', function(){
@@ -429,10 +444,8 @@
             } else {
                 $('#id_mdx_consent_loaded').val('');
             }
-            $('#id_next_step').val('view_pipeline'); 
-            $('#id_patient_telephone_code').val($('#id_patient_telephone_mobile').parent().find('.selected-flag')[0].title.split('+')[1]);
-            $('#id_patient_alternate_code').val($('#id_patient_alternate_phone').parent().find('.selected-flag')[0].title.split('+')[1]);
-            $('#consentContactForm').submit();
+            $('#id_next_step').val('view_pipeline');
+            proceedAction();
         });
         $('.enterEmailBtn').click(function(){
             $('#id_patient_email').focus();
