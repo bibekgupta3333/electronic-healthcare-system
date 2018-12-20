@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS
-from accounts.models import User, PracticePreferences
+from accounts.models import User, PracticePreferences, GeneralPracticeUser
 from common.functions import get_env_variable
 
 from smtplib import SMTPException
@@ -24,18 +24,29 @@ def instruction_notification_email_job():
         if diff_date.days == 3 or diff_date.days == 7 or diff_date.days >= 14:
             gp_managers = User.objects.filter(
                 userprofilebase__generalpracticeuser__organisation=instruction.gp_practice_id,
-                is_staff=True
+                userprofilebase__generalpracticeuser__role=GeneralPracticeUser.PRACTICE_MANAGER
             ).values('email')
             try:
                 send_mail(
-                    'New Instruction',
-                    ' You have a pending or not started instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
+                    'Pending Instruction',
+                    'You have a pending or not started instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
                     'MediData',
                     [gp['email'] for gp in gp_managers],
                     fail_silently=True,
                     auth_user=settings.EMAIL_HOST_USER,
                     auth_password=settings.EMAIL_HOST_PASSWORD,
                 )
+                if instruction.gp_practice and instruction.gp_practice.organisation_email:
+                    send_mail(
+                        'Pending Instruction',
+                        'You have a pending or not started instruction.',
+                        'MediData',
+                        [instruction.gp_practice.organisation_email],
+                        fail_silently=True,
+                        auth_user=settings.EMAIL_HOST_USER,
+                        auth_password=settings.EMAIL_HOST_PASSWORD,
+                    )
+
             except SMTPException:
                 logging.error('Send mail FAILED to send message')
 
@@ -47,7 +58,7 @@ def send_email_to_practice_job():
         practice_preferences = PracticePreferences.objects.get(gp_organisation=gp_practice)
         if practice_preferences.notification == 'DIGEST':
             send_mail(
-                'New Instruction',
+                'Unstarted Instruction',
                 'You have unstarted instructions. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
                 'MediData',
                 [gp_practice.organisation_email],
