@@ -91,6 +91,17 @@ def emis_setup(request, practice_code):
             gp_organisation.gp_operating_system = surgery_update_form.cleaned_data['operating_system']
             gp_organisation.save()
 
+            #   If User selected the another os. Will redirect to thank you Page.
+            if not gp_organisation.gp_operating_system == 'EMISWeb':
+                message_1 = 'Thank you for completing part one of the eMR registration process. It’s great to have you on board.'
+                message_2 = 'We will be in touch with you shortly to complete the set up process so that you can process SARs in seconds.'
+                message_3 = 'We look forward to working with you in the very near future. eMR Support Team'
+                return render(request, 'onboarding/emr_message.html', context={
+                    'message_1': message_1,
+                    'message_2': message_2,
+                    'message_3': message_3
+                })
+
     surgery_update_form = SurgeryUpdateForm(initial={
         'surgery_name': gp_organisation.name,
         'surgery_code': gp_organisation.practcode,
