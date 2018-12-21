@@ -654,7 +654,10 @@ def consent_contact(request, instruction_id, patient_emis_number):
     consent_type = 'pdf'
     consent_extension = ''
     consent_path = ''
-    if instruction.sars_consent:
+    if instruction.consent_form:
+        consent_extension = (instruction.consent_form.url).split('.')[1]
+        consent_path = instruction.consent_form.url
+    elif instruction.sars_consent:
         consent_extension = (instruction.sars_consent.url).split('.')[1]
         consent_path = instruction.sars_consent.url
     if consent_extension in ['jpeg', 'png', 'gif']:
