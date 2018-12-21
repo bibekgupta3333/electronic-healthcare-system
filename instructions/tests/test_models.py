@@ -8,11 +8,41 @@ from instructions.models import (
     Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest,
     InstructionPatient
 )
+import datetime
 from accounts.models import User, ClientUser, Patient, GeneralPracticeUser
 from snomedct.models import SnomedConcept
 from instructions.model_choices import *
+from instructions.cron.notification_mail import instruction_notification_email_job
 from django.core import mail
+from django.contrib.contenttypes.models import ContentType
 from snomedct.models import SnomedConcept
+
+
+class InstructionReminderTest(TestCase):
+    def setUp(self):
+        self.now = timezone.now()
+        content_type = ContentType.objects.get(model='organisationgeneralpractice')
+        self.instruction = mommy.make(
+            Instruction, gp_practice_type=content_type,
+        )
+
+    def test_reminder_3_days(self):
+        self.instruction.created=self.now-datetime.timedelta(days=3)
+        self.instruction.save()
+        instruction_notification_email_job()
+        self.assertEqual(3, self.instruction.reminders.filter(reminder_day=3).first().reminder_day)
+
+    def test_reminder_7_days(self):
+        self.instruction.created=self.now-datetime.timedelta(days=7)
+        self.instruction.save()
+        instruction_notification_email_job()
+        self.assertEqual(7, self.instruction.reminders.filter(reminder_day=7).first().reminder_day)
+
+    def test_reminder_14_days(self):
+        self.instruction.created=self.now-datetime.timedelta(days=14)
+        self.instruction.save()
+        instruction_notification_email_job()
+        self.assertEqual(14, self.instruction.reminders.filter(reminder_day=14).first().reminder_day)
 
 
 class InstructionPatientTest(TestCase):
