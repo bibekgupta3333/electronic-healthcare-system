@@ -644,6 +644,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
             'patient_postcode': patient_instruction.patient_postcode,
             'patient_address_number': patient_instruction.patient_address_number,
             'patient_email': patient_email,
+            'confirm_email' : patient_email,
             'patient_telephone_mobile': patient_telephone_mobile,
             'patient_alternate_phone': patient_alternate_phone
         }
