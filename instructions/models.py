@@ -272,6 +272,19 @@ class InstructionClientNote(models.Model):
         return self.note
 
 
+class InstructionReminder(models.Model):
+    instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE, related_name='reminders')
+    note = models.CharField(max_length=255)
+    created_date = models.DateTimeField(auto_now_add=True)
+    reminder_day = models.IntegerField()
+
+    class Meta:
+        verbose_name = "Instruction Reminder"
+
+    def __str__(self):
+        return self.note
+
+
 class InstructionInternalNote(models.Model):
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE, related_name='internal_notes')
     note = models.TextField()

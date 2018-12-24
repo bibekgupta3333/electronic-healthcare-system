@@ -274,7 +274,6 @@
             scrolllock: true
         });
         function proceedAction() {
-            $('#id_next_step').val('proceed');
             $('#id_patient_telephone_code').val($('#id_patient_telephone_mobile').parent().find('.selected-flag')[0].title.split('+')[1]);
             $('#id_patient_alternate_code').val($('#id_patient_alternate_phone').parent().find('.selected-flag')[0].title.split('+')[1]);
             if ($('#confirm_email').val() !='' && $('#confirm_email').val() != $('#id_patient_email').val() && !isPopup){
@@ -407,11 +406,15 @@
             var mdx_loaded = $('.file-caption-name').last().attr('title');
             if(!mdx_loaded) {
                 $('#noMdxConsent').popup('show');
-                $('#id_sars_consent_loaded').val('');
+                $('#id_mdx_consent_loaded').val('');
             } else if(!sars_loaded) {
                 $('#noSarsConsent').popup('show');
                 $('#id_sars_consent_loaded').val('');
                 $('#id_mdx_consent_loaded').val('loaded');
+            } else if($('#id_patient_email').val() == ''){
+                $('#id_mdx_consent_loaded').val('loaded');
+                $('#id_sars_consent_loaded').val('loaded');
+                $('#noEmailAddress').popup('show');
             } else {
                 $('#id_sars_consent_loaded').val('loaded');
                 $('#id_mdx_consent_loaded').val('loaded');

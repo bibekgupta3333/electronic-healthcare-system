@@ -1,7 +1,7 @@
 from django.core.mail import send_mail
 from django.utils import timezone
 
-from instructions.models import Instruction
+from instructions.models import Instruction, InstructionReminder
 from instructions.model_choices import INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS
 from accounts.models import User, PracticePreferences, GeneralPracticeUser
 from common.functions import get_env_variable
@@ -46,7 +46,11 @@ def instruction_notification_email_job():
                         auth_user=settings.EMAIL_HOST_USER,
                         auth_password=settings.EMAIL_HOST_PASSWORD,
                     )
-
+                InstructionReminder.objects.create(
+                    instruction_id=instruction.id,
+                    note="note added to instruction for %s day reminder"%diff_date.days,
+                    reminder_day=diff_date.days
+                )
             except SMTPException:
                 logging.error('Send mail FAILED to send message')
 
