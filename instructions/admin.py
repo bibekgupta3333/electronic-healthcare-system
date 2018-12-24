@@ -129,7 +129,8 @@ class GPOrgFilter(admin.SimpleListFilter):
         organisations = set()
         for data in Instruction.objects.filter(gp_practice_id__isnull=False, gp_practice_type__isnull=False):
             organisation = data.gp_practice
-            organisations.add((organisation.pk, organisation.name))
+            if organisation:
+                organisations.add((organisation.pk, organisation.name))
         return organisations
 
     def queryset(self, request, queryset):
