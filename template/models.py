@@ -2,7 +2,7 @@ from django.db import models
 
 from organisations.models import OrganisationClient
 from instructions.model_choices import INSTRUCTION_TYPE_CHOICES
-from snomedct.models import SnomedConcept
+from snomedct.models import SnomedConcept, CommonSnomedConcepts
 from accounts.models import ClientUser
 from organisations.models import OrganisationClient
 from common.models import TimeStampedModel
@@ -49,6 +49,29 @@ class TemplateConditionsOfInterest(models.Model):
 
     class Meta:
         verbose_name = "Template Conditions Of Interest"
+
+    def __str__(self) -> str:
+        return "{} ({})".format(self.snomedct.fsn_description, self.snomedct.external_id)
+
+
+class TemplateCommonCondition(models.Model):
+
+    template_instruction = models.ForeignKey(TemplateInstruction, on_delete=models.CASCADE)
+    common_condition = models.ForeignKey(CommonSnomedConcepts, on_delete=models.CASCADE, null=True)
+
+    class Meta:
+        verbose_name = "Template Common Conditions"
+
+    def __str__(self) -> str:
+        return "{}".format(self.common_condition.common_name)
+
+
+class TemplateAdditionCondition(models.Model):
+    template_instruction = models.ForeignKey(TemplateInstruction, on_delete=models.CASCADE)
+    snomedct = models.ForeignKey(SnomedConcept, on_delete=models.CASCADE, null=True)
+
+    class Meta:
+        verbose_name = "Template Additional Conditions"
 
     def __str__(self) -> str:
         return "{} ({})".format(self.snomedct.fsn_description, self.snomedct.external_id)

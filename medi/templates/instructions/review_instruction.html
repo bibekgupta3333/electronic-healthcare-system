@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load bootstrap4 %}
 {% load static %}
+{% load instruction_templatetags %}
 {% bootstrap_css %}
 {% bootstrap_javascript jquery='full' %}
 {% bootstrap_messages %}
@@ -19,9 +20,14 @@
 {% endblock %}
 
 {% block Content %}
+    {% for note in instruction.client_notes.all %}
+        <div class="alert alert-warning" role="alert">
+            <span>Noted by <label class="text-bold">{{note.created_by.get_full_name}}</label> at {{note.created_date|format_date}} for reason: {{note.note}}</span>
+        </div>
+    {% endfor %}
     <div class="alert alert-info" role="alert">
       <h5>Instruction</h5>
-      <span>Allocated to <label class="text-bold">{{instruction.gp_user}}</label> at {{instruction.created}} <label class="reject-reason"></label></span>
+      <span>Allocated to <label class="text-bold">{{instruction.gp_user}}</label> at {{instruction.created|format_date}} <label class="reject-reason"></label></span>
     </div>
     <div class="card-deck instruction">
         <div class="pr-0 col-md-6">

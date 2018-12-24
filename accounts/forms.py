@@ -12,7 +12,7 @@ DATE_INPUT_FORMATS = settings.DATE_INPUT_FORMATS
 
 
 class InstructionPatientForm(forms.ModelForm):
-    email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), required=False)
+    confirm_email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': '', 'id' : 'confirm_email'}), required=False)
     patient_dob = forms.DateField(show_hidden_initial=True, input_formats=DATE_INPUT_FORMATS)
     patient_dob_day = forms.ChoiceField(choices=((str(x), x) for x in range(1, 32)), label='Day')
     patient_dob_month = forms.ChoiceField(choices=((str(x), x) for x in range(1, 13)), label='Month')
@@ -51,9 +51,9 @@ class InstructionPatientForm(forms.ModelForm):
 
                 self.fields['patient_title'] = forms.CharField(max_length=255, label='Title*')
 
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if User.objects.filter(email=self.cleaned_data.get('email')).exclude(type=PATIENT_USER).exists():
+    def clean_patient_email(self):
+        email = self.cleaned_data.get('patient_email')
+        if User.objects.filter(email= email).exclude(type=PATIENT_USER).exists():
             raise forms.ValidationError('{email} already used by user that is not Patient'.format(email=email))
         return email
 

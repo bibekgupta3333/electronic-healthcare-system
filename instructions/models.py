@@ -267,6 +267,7 @@ class InstructionClientNote(models.Model):
 
     class Meta:
         verbose_name = "Instruction Client Note"
+        ordering = ("-created_date",)
 
     def __str__(self):
         return self.note
