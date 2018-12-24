@@ -52,8 +52,8 @@ class InstructionPatientForm(forms.ModelForm):
                 self.fields['patient_title'] = forms.CharField(max_length=255, label='Title*')
 
     def clean_patient_email(self):
-        email = self.cleaned_data.get('email')
-        if User.objects.filter(email=self.cleaned_data.get('email')).exclude(type=PATIENT_USER).exists():
+        email = self.cleaned_data.get('patient_email')
+        if User.objects.filter(email= email).exclude(type=PATIENT_USER).exists():
             raise forms.ValidationError('{email} already used by user that is not Patient'.format(email=email))
         return email
 
