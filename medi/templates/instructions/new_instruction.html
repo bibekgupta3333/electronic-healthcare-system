@@ -376,16 +376,15 @@
                     $('#id_type').find("input[name=type][value=AMRA]").prop('checked', true);
                     $('.instructionType').trigger('change');
                     template_data.conditions.forEach(function(element, index) {
-                        if(element['is_common_condition']){
+                        if(element['is_common_condition'] == "True"){
                             $('#id_common_condition').find("input[name=common_condition]").each(function () {
-                                var common_id = '['+parseInt(element["id"])+']';
+                                var common_id = element["id"];
                                 if($(this).val()==common_id){
                                     $(this).prop('checked', true);
                                 }
                             })
                         } else {
-                            $('#id_addition_condition').append(new Option(element["text"], element["id"]));
-                            $('#id_addition_condition').select2('val', [element["id"]]);
+                            $('#id_addition_condition').append(new Option(element["text"], element["id"], true, true)).trigger('change');
                         }
 
                     });
