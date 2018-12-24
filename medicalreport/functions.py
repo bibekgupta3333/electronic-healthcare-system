@@ -221,7 +221,7 @@ def delete_additional_allergies_records(request):
 def send_patient_mail(request, instruction,  unique_url):
     link = request.get_host() + '/report/' + str(instruction.pk) + '/' + unique_url
     send_mail(
-        'Completely eMR',
+        'Medidata eMR: Your medical report is ready',
         'Your instruction has been submitted',
         'MediData',
         [instruction.patient_information.patient_email],
@@ -236,7 +236,7 @@ def send_patient_mail(request, instruction,  unique_url):
 
 def send_surgery_email(instruction):
     send_mail(
-        'Completely eMR',
+        'Medidata eMR: Your medical report is ready',
         'Your instruction has been submitted',
         'MediData',
         [instruction.gp_practice.organisation_email],
