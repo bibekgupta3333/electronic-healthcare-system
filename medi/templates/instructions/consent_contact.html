@@ -125,7 +125,7 @@
                                 </div>
                                 <div class="row mt-4">
                                     <div class="col-md-4 rowTitle">Confirm Email</div>
-                                    {% bootstrap_field patient_form.patient_email size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
+                                    <div class="col-md-8"><input type="email" id="confirm_email" class="form-control form-control-sm" /></div>
                                 </div>
                                 <div class="row mt-4">
                                     <div class="col-md-4 rowTitle">Mobile Phone</div>
@@ -248,6 +248,11 @@
     <script src="{% static 'js/csrf_safe.js' %}"></script>
     <script>
     $(document).ready(function () {
+
+        {% if atient_form.patient_email != '' %}
+            $('#confirm_email').val( $('#id_patient_email').val() );
+        {% endif %}
+        
         var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
         var isPopup = false;
         var isErrorPopup = false;
