@@ -8,8 +8,9 @@
                 <li><strong>Sex: </strong>{{ medical_record.registration.sex }}</li>
                 <li><strong>NHS number: </strong>{{ medical_record.registration.nhs_number }}</li>
                 <li><strong>Address: </strong>{{ medical_record.registration.address_lines|join:", " }}</li>
-                <li><strong>Address: </strong>{{ medical_record.registration.re|join:", " }}</li>
-
+                {% if medical_record.registration.re %}
+                    <li><strong>Address: </strong>{{ medical_record.registration.re|join:", " }}</li>
+                {% endif %}
             </ul>
         </div>
         {% if instruction.type == 'AMRA' %}
