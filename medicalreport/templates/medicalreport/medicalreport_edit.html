@@ -167,6 +167,9 @@
         $("#form-modal").modal({
             backdrop: 'static'
         });
+        setInterval(function() {
+          $("#alert-message").fadeOut('slow');
+        }, 3000);
         $('#id_gp_practitioner').removeAttr('required');
 
         $('#id_prepared_and_signed_0').on('click', function () {
