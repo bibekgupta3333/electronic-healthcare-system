@@ -66,7 +66,7 @@ class ScopeInstructionForm(forms.Form):
             ]
 
             SCOPE_COMMON_CONDITION_CHOICES = [
-                [[snomed.external_id for snomed in common_snomed.snomed_concept_code.all()], common_snomed.common_name] for common_snomed in CommonSnomedConcepts.objects.all()
+                [common_snomed.pk, common_snomed.common_name] for common_snomed in CommonSnomedConcepts.objects.all()
             ]
 
             self.fields['common_condition'] = forms.MultipleChoiceField(choices=SCOPE_COMMON_CONDITION_CHOICES, widget=forms.CheckboxSelectMultiple(), required=False)
@@ -116,7 +116,7 @@ class TemplateInstructionForm(forms.Form):
         ]
 
         SCOPE_COMMON_CONDITION_CHOICES = [
-            [[snomed.external_id for snomed in common_snomed.snomed_concept_code.all()], common_snomed.common_name] for common_snomed in CommonSnomedConcepts.objects.all()
+            [common_snomed.pk, common_snomed.common_name] for common_snomed in CommonSnomedConcepts.objects.all()
         ]
 
         self.fields['common_condition'] = forms.MultipleChoiceField(choices=SCOPE_COMMON_CONDITION_CHOICES, widget=forms.CheckboxSelectMultiple(), required=False)
