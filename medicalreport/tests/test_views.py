@@ -269,12 +269,12 @@ class UpdateReportTest(EmisAPITestCase):
         self.assertEqual(404, response.status_code)
 
     def test_view_redirects_to_correct_url_if_not_valid(self):
-        response = self.client.get('/medicalreport/1/update/')
+        response = self.client.post('/medicalreport/1/update/', {'event_flag': 'submit'})
         self.assertEqual(response.url, '/medicalreport/1/edit/')
 
     def test_view_redirects_to_correct_url_if_event_flag_is_not_submit(self):
-        response = self.client.get('/medicalreport/1/update/')
-        self.assertEqual(response.url, '/medicalreport/1/edit/')
+        response = self.client.post('/medicalreport/1/update/', {'event_flag': 'draft'})
+        self.assertEqual(response.url, '/instruction/view-pipeline/')
 
     def test_view_redirects_to_correct_url_if_event_flag_is_submit_and_is_valid(self):
         response = self.client.post('/medicalreport/1/update/', {

@@ -166,8 +166,9 @@ def update_report(request, instruction_id):
             messages.error(request, "You do not have a mdx consent")
         else:
             is_valid = create_or_update_redaction_record(request, instruction)
-            if request.POST.get('event_flag') == 'submit' and is_valid:
-                create_patient_report(request, instruction)
+            if is_valid:
+                if request.POST.get('event_flag') == 'submit':
+                    create_patient_report(request, instruction)
                 return redirect('instructions:view_pipeline')
 
         return redirect('medicalreport:edit_report', instruction_id=instruction_id)
