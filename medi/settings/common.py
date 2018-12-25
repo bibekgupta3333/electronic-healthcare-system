@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
 
     # third party
     'import_export',
@@ -200,12 +201,6 @@ CRONJOBS = [
     ('0 11,16 * * *', 'instructions.cron.notification_mail.send_email_to_practice_job'),
 ]
 
-PIPELINE_INSTRUCTION_LINK = 'http://medi.mohub.co/instruction/view-pipeline/'
-ACCOUNT_LINK = 'http://medi.mohub.co/accounts/view-account/'
-
-DUMMY_EMAIL_LIST = ['ben.blomerley@gmail.com', 'lontharn@gmail.com', 'mooauii.lazy@gmail.com']
-
-SITE_NAME = 'http://medi.mohub.co/'
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
 
 # getaddress.io API KEY
@@ -219,3 +214,5 @@ MDXCONSENT_DIR = os.path.join(BASE_DIR, 'templates/instructions/mdx_dual_consent
 
 #MEDI ref number
 MEDI_REF_NUMBER = 10000000
+
+SITE_ID = 1
