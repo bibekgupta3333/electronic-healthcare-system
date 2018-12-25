@@ -263,8 +263,6 @@ class GeneralPracticeUser(UserProfileBase):
     payment_bank_holder_name = models.CharField(max_length=255, blank=True)
     payment_bank_account_number = models.CharField(max_length=255, blank=True)
     payment_bank_sort_code = models.CharField(max_length=255, blank=True)
-    can_complete_amra = models.BooleanField(default=False)
-    can_complete_sars = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = 'General Practice User'
