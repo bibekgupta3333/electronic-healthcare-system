@@ -1,16 +1,18 @@
 from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sites.models import Site
 from django.utils import timezone
 from django.core.mail import send_mail
 from common.models import TimeStampedModel
+from common.functions import get_url_page
 from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser, User
 from accounts import models as account_models
 from snomedct.models import SnomedConcept
 from .model_choices import *
 from django.conf import settings
 from typing import Set
-PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
+PIPELINE_INSTRUCTION_LINK = get_url_page('instruction_pipeline')
 TITLE_CHOICE = account_models.TITLE_CHOICE
 
 

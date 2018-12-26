@@ -141,6 +141,11 @@ def redaction_checkbox_with_list(model, redaction, header='', dict_data='', map_
         sensitive_conditions = [sensitive_code for sensitive_code in sensitive_tuple]
 
     xpaths = model.xpaths()
+    is_sensitive_consultation = False
+    for code in map_code:
+        if code in sensitive_conditions:
+            checked = "checked"
+            is_sensitive_consultation = True
     if redaction.redacted(xpaths) is True:
         checked = "checked"
     return {
@@ -151,20 +156,36 @@ def redaction_checkbox_with_list(model, redaction, header='', dict_data='', map_
         'header': header,
         'dict_data': dict_data,
         'label': label,
-        'sensitive_conditions': sensitive_conditions
+        'sensitive_conditions': sensitive_conditions,
+        'is_sensitive_consultation': is_sensitive_consultation
     }
 
 
 @register.inclusion_tag('medicalreport/inclusiontags/redaction_checkbox_with_body.html')
-def problem_redaction_checkboxes(model, redaction, problem_linked_lists, header=''):
+def problem_redaction_checkboxes(model, redaction, problem_linked_lists, map_code, header=''):
     checked = ""
+    matched_sensitive_conditions = NhsSensitiveConditions.objects.filter(snome_code__in=map_code)
+    if redaction.re_redacted_codes:
+        matched_sensitive_conditions.filter(~Q(snome_code__in=redaction.re_redacted_codes))
+    matched_sensitive_conditions = matched_sensitive_conditions.values_list('snome_code')
+    sensitive_conditions = []
+    for sensitive_tuple in list(matched_sensitive_conditions):
+        sensitive_conditions = [sensitive_code for sensitive_code in sensitive_tuple]
+
+    is_sensitive_consultation = False
+    for code in map_code:
+        if code in sensitive_conditions:
+            checked = "checked"
+            is_sensitive_consultation = True
+
     xpaths = problem_xpaths(model, problem_linked_lists)
     if redaction.redacted(xpaths) is True:
         checked = "checked"
     return {
         'checked': checked,
         'xpaths': xpaths,
-        'header': header
+        'header': header,
+        'is_sensitive_consultation': is_sensitive_consultation
     }
 
 

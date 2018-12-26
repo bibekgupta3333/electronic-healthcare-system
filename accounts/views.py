@@ -23,7 +23,6 @@ from organisations.models import OrganisationGeneralPractice
 
 from django.conf import settings
 DEFAULT_FROM = settings.DEFAULT_FROM
-ACCOUNT_LINK = settings.ACCOUNT_LINK
 
 from .functions import change_role, remove_user, get_table_data,\
         get_post_new_user_data, get_user_type_form, reset_password

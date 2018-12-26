@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.sites.models import Site
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.utils.dateparse import parse_datetime
@@ -19,6 +20,7 @@ from organisations.models import OrganisationGeneralPractice
 from organisations.views import get_gporganisation_data
 from medicalreport.views import get_matched_patient
 from common.functions import multi_getattr
+from common.functions import get_url_page
 from snomedct.models import SnomedConcept
 from permissions.functions import check_permission
 from .print_consents import MDXDualConsent
@@ -30,9 +32,7 @@ import requests
 import json
 
 from django.conf import settings
-PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
-DUMMY_EMAIL_LIST = settings.DUMMY_EMAIL_LIST
-SITE_NAME = settings.SITE_NAME
+PIPELINE_INSTRUCTION_LINK = get_url_page('instruction_pipeline')
 
 
 def count_instructions(user, gp_practice_code, client_organisation):

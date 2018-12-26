@@ -22,9 +22,6 @@
                                  readonly type="checkbox" class="redaction-checkbox__input">
                             <span class="redaction-checkbox__icon float-right fas fa-check-circle"></span>
                             <span class="redaction-checkbox__text"><strong>{{ key }}: </strong>{{value}}</span>
-                            {% if item.map_code|first in sensitive_conditions %}
-                                <span class="badge badge-warning">Sensitive Condition</span>
-                            {% endif %}
                         {% endif %}
                     </label>
                 {% endfor %}
@@ -34,6 +31,9 @@
                 <li>
                     <h5><span class="badge badge-warning">{{ label }}</span></h5>
                 </li>
+            {% endif %}
+            {% if is_sensitive_consultation %}
+                <span class="badge badge-warning">Sensitive Condition</span>
             {% endif %}
         </ul>
     </label>
