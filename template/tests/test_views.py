@@ -7,7 +7,7 @@ from instructions.model_choices import INSTRUCTION_TYPE_CHOICES
 from organisations.models import OrganisationClient
 from snomedct.models import SnomedConcept
 from template.models import (
-    TemplateInstruction, TemplateAdditionalQuestion, TemplateConditionsOfInterest
+    TemplateInstruction, TemplateAdditionalQuestion, TemplateAdditionalCondition
 )
 import os
 from contextlib import suppress
@@ -18,20 +18,20 @@ class TemplateTestCase(TestCase):
         organisation = mommy.make(OrganisationClient, trading_name="client_organisation")
         client_user = mommy.make(ClientUser, user=user)
         self.template_instruction1 = mommy.make(
-            TemplateInstruction, template_title="template001", 
-            type="AMRA", organisation=organisation
+            TemplateInstruction, template_title="template001",
+            organisation=organisation
         )
         self.template_instruction2 = mommy.make(
-            TemplateInstruction, template_title="template002", 
-            type="AMRA", organisation=organisation
+            TemplateInstruction, template_title="template002",
+            organisation=organisation
         )
         self.template_addition_question1=mommy.make(
-            TemplateAdditionalQuestion, 
+            TemplateAdditionalQuestion,
             template_instruction=self.template_instruction1,
             question="questions_001"
         )
         self.template_addition_question2=mommy.make(
-            TemplateAdditionalQuestion, 
+            TemplateAdditionalQuestion,
             template_instruction=self.template_instruction2,
             question="questions_002"
         )
@@ -41,11 +41,11 @@ class TemplateTestCase(TestCase):
         )
         self.snomedct_external_ids = [111111,222222]
         self.template_conditions_of_interest = mommy.make(
-            TemplateConditionsOfInterest,
+            TemplateAdditionalCondition,
             template_instruction=self.template_instruction1,
             snomedct=self.snomedct
         )
-    
+
     def tearDown(self):
         with suppress(FileNotFoundError, AttributeError, ValueError):
             os.remove(self.instruction.consent_form.path)
@@ -53,7 +53,7 @@ class TemplateTestCase(TestCase):
 class CreateTemplateInstructionTest(TemplateTestCase):
     def test_create_template_instruction(self):
         self.assertEqual(
-            str(self.template_instruction1), 
+            str(self.template_instruction1),
             self.template_instruction1.template_title
         )
 
@@ -63,7 +63,7 @@ class CreateOrUpdateAdditionQuestionTest(TemplateTestCase):
         existing_question = self.template_addition_question2
         existing_question.delete()
         addition_question = mommy.make(
-            TemplateAdditionalQuestion, 
+            TemplateAdditionalQuestion,
             template_instruction=self.template_instruction1,
             question="question_001"
         )
@@ -76,12 +76,12 @@ class CreateOrUpdateSnomedRelationsTest(TemplateTestCase):
         condition_code = 111111
         if condition_code in self.snomedct_external_ids:
             conditionofinterest = mommy.make(
-                TemplateConditionsOfInterest,
+                TemplateAdditionalCondition,
                 template_instruction=self.template_instruction1,
                 snomedct=self.snomedct
             )
             self.assertEqual(
-                'fsn_description (11111)', 
+                'fsn_description (11111)',
                 "{} ({})".format(self.snomedct.fsn_description, self.snomedct.external_id)
             )
 
@@ -90,7 +90,7 @@ class TemplateCreateOrUpdate(TemplateTestCase):
     def test_view_url(self):
         response = self.client.get('/create/')
         self.assertEqual(404, response.status_code)
-        
+
 
 class TemplateViewsTest(TemplateTestCase):
     def test_view_url(self):
@@ -112,11 +112,11 @@ class TemplateEditTest(TemplateTestCase):
     def test_view_url(self):
         response = self.client.get('/edit-template/1/')
         self.assertEqual(404, response.status_code)
-    
+
     def test_view_uses_correct_template(self):
         response = self.client.get('/edit-template/1/')
         self.assertEqual(404, response.status_code)
-    
+
     def test_view_returns_404_if_template_does_not_exist(self):
         response = self.client.get('/edit-template/2/')
         self.assertEqual(404, response.status_code)
