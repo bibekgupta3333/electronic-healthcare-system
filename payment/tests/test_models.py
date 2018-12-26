@@ -5,11 +5,11 @@ from organisations.models import OrganisationGeneralPractice, OrganisationClient
 
 
 class OrganisationFeeModelTest(TestCase):
+
     def setUp(self):
         self.gp_practice = mommy.make(
             OrganisationGeneralPractice,
             name="Test Trading Name GP Organisation"
-
         )
 
         self.organisation_fee = mommy.make(
@@ -18,7 +18,7 @@ class OrganisationFeeModelTest(TestCase):
             max_day_lvl_1=3,
             max_day_lvl_2=6,
             max_day_lvl_3=8,
-            max_day_lvl_4=10,
+            max_day_lvl_4=9,
             amount_rate_lvl_1=70,
             amount_rate_lvl_2=50,
             amount_rate_lvl_3=30,
@@ -34,8 +34,19 @@ class OrganisationFeeModelTest(TestCase):
     def test_verbose_name_plural(self):
         self.assertEqual(str(OrganisationFee._meta.verbose_name_plural), "GP Organisation Fee Structures")
 
+    def test_get_fee_rate_method(self):
+        fee_rate_1 = self.organisation_fee.get_fee_rate(2)
+        fee_rate_2 = self.organisation_fee.get_fee_rate(5)
+        fee_rate_3 = self.organisation_fee.get_fee_rate(7)
+        fee_rate_4 = self.organisation_fee.get_fee_rate(9)
 
-class InstructionVolumeFeeModelTest(TestCase):
+        self.assertEqual(fee_rate_1, 70)
+        self.assertEqual(fee_rate_2, 50)
+        self.assertEqual(fee_rate_3, 30)
+        self.assertEqual(fee_rate_4, 20)
+
+
+class InstructionVolumeFeeClientModelTest(TestCase):
 
     def setUp(self):
         self.client_organisation = mommy.make(
@@ -60,7 +71,18 @@ class InstructionVolumeFeeModelTest(TestCase):
         self.assertEqual(str(self.instruction_volume_fee), "Fee Structure: {}".format(self.client_organisation))
 
     def test_verbose_name(self):
-        self.assertEqual(str(InstructionVolumeFee._meta.verbose_name), "Client Organisation Fee structure")
+        self.assertEqual(str(InstructionVolumeFee._meta.verbose_name), "Client Instruction Volume Fee structure")
 
     def test_verbose_name_plural(self):
-        self.assertEqual(str(InstructionVolumeFee._meta.verbose_name_plural), "Client Organisation Fee structures")
+        self.assertEqual(str(InstructionVolumeFee._meta.verbose_name_plural), "Client Instruction Volume Fee structures")
+
+    def test_get_fee_rate_method(self):
+        fee_rate_1 = self.instruction_volume_fee.get_fee_rate(5000)
+        fee_rate_2 = self.instruction_volume_fee.get_fee_rate(15000)
+        fee_rate_3 = self.instruction_volume_fee.get_fee_rate(45000)
+        fee_rate_4 = self.instruction_volume_fee.get_fee_rate(80000)
+
+        self.assertEqual(fee_rate_1, 20)
+        self.assertEqual(fee_rate_2, 18)
+        self.assertEqual(fee_rate_3, 15)
+        self.assertEqual(fee_rate_4, 10)

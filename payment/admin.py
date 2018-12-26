@@ -15,10 +15,15 @@ class OrganisationFeeAdmin(admin.ModelAdmin):
         obj.hard_delete()
 
 
-class InstructionVolumeFeeAdmin(admin.ModelAdmin):
+class InstructionVolumeFeeClientAdmin(admin.ModelAdmin):
     form = InstructionVolumeFeeForm
     raw_id_fields = ('client_organisation', )
+    fields = (
+        'client_organisation', 'max_volume_band_lowest', 'max_volume_band_low', 'max_volume_band_medium', 'max_volume_band_top',
+        'fee_rate_lowest', 'fee_rate_low', 'fee_rate_medium', 'fee_rate_top', 'vat'
+    )
 
 
 admin.site.register(OrganisationFee, OrganisationFeeAdmin)
-admin.site.register(InstructionVolumeFee, InstructionVolumeFeeAdmin)
+admin.site.register(InstructionVolumeFee, InstructionVolumeFeeClientAdmin)
+
