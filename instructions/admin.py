@@ -1,7 +1,7 @@
 from django.contrib import admin
 from . import models
 from django.shortcuts import get_object_or_404
-from common.import_export import CustomExport
+from common.import_export import CustomImportExport
 from instructions.model_choices import INSTRUCTION_STATUS_REJECT
 from django.utils import timezone
 from datetime import timedelta
@@ -140,11 +140,12 @@ class GPOrgFilter(admin.SimpleListFilter):
         return queryset
 
 
-class InstructionAdmin(CustomExport, admin.ModelAdmin):
+class InstructionAdmin(CustomImportExport, admin.ModelAdmin):
     change_status = False
     list_display = ('gp_practice', 'client', 'status', 'created', 'type', 'days_since_created')
     list_filter = ('type', DaysSinceFilter, ClientOrgFilter, GPOrgFilter)
     readonly_fields = ('medi_ref',)
+    actions = ['export_status_report_as_csv', 'export_payment_as_csv']
     search_fields = [
         'type'
     ]
