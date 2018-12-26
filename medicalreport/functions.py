@@ -231,7 +231,7 @@ def send_patient_mail(request, instruction,  unique_url):
         html_message=loader.render_to_string('medicalreport/patient_email.html',
                                              {
                                                  'name': instruction.patient.user.first_name,
-                                                 'gp': instruction.gp_user.user.first_name,
+                                                 'gp': instruction.gp_practice,
                                                  'link': link
                                              }
                                              ))
