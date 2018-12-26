@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.template import loader
 from django.utils.html import format_html
+from django.utils import timezone
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from snomedct.models import SnomedConcept
 from services.emisapiservices import services
@@ -85,6 +86,7 @@ def create_or_update_redaction_record(request, instruction):
 
             if status == 'submit':
                 instruction.status = models.INSTRUCTION_STATUS_COMPLETE
+                instruction.completed_signed_off_timestamp = timezone.now()
                 messages.success(request, 'Completed Medical Report')
 
             instruction.save()

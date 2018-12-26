@@ -65,6 +65,7 @@ class InstructionVolumeFeeFormTest(TestCase):
                 'fee_rate_low': 18,
                 'fee_rate_medium': 15,
                 'fee_rate_top': 10,
+                'vat': 20
             },
         )
         self.assertTrue(form.is_valid())
@@ -126,6 +127,7 @@ class InstructionVolumeFeeFormTest(TestCase):
                     'fee_rate_low': 18,
                     'fee_rate_medium': 15,
                     'fee_rate_top': 10,
+                    'vat': 20,
                 }
             )
             self.assertFalse(form.is_valid())

@@ -21,6 +21,7 @@ from accounts.models import GeneralPracticeUser, User
 from accounts.functions import create_or_update_patient_user
 from .forms import AllocateInstructionForm
 from permissions.functions import check_permission
+from payment.functions import calculate_instruction_fee
 from typing import List
 
 
@@ -168,6 +169,8 @@ def update_report(request, instruction_id):
             is_valid = create_or_update_redaction_record(request, instruction)
             if is_valid:
                 if request.POST.get('event_flag') == 'submit':
+                    if instruction.client_user:
+                        calculate_instruction_fee(instruction)
                     create_patient_report(request, instruction)
                 return redirect('instructions:view_pipeline')
 
