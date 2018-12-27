@@ -2,7 +2,7 @@ from django import forms
 from django.forms.models import modelformset_factory
 from django.core.exceptions import ValidationError
 from django.conf import settings
-
+from django.db.models import Q
 from instructions.model_choices import AMRA_TYPE, SARS_TYPE
 from .models import InstructionAdditionQuestion, Instruction, InstructionClientNote, ClientNote
 from template.models import TemplateInstruction
@@ -40,7 +40,7 @@ class ReferenceForm(forms.ModelForm):
 
 class ScopeInstructionForm(forms.Form):
     type = forms.ChoiceField(choices=[], widget=forms.RadioSelect(attrs={'class': 'd-inline instructionType'}))
-    template = forms.ModelChoiceField(queryset=TemplateInstruction.objects.none(), required=False)
+    template = forms.ModelChoiceField(queryset=TemplateInstruction.objects.filter(organisation__isnull=True), required=False)
     common_condition = forms.MultipleChoiceField(choices=[], widget=forms.CheckboxSelectMultiple(), required=False)
     addition_condition = MyMultipleChoiceField(required=False)
     addition_condition_title = forms.CharField(required=False, widget=forms.HiddenInput())
@@ -66,7 +66,7 @@ class ScopeInstructionForm(forms.Form):
             ]
 
             SCOPE_COMMON_CONDITION_CHOICES = [
-                [common_snomed.pk, common_snomed.common_name] for common_snomed in CommonSnomedConcepts.objects.all()
+                [[snomed.external_id for snomed in common_snomed.snomed_concept_code.all()], common_snomed.common_name] for common_snomed in CommonSnomedConcepts.objects.all()
             ]
 
             self.fields['common_condition'] = forms.MultipleChoiceField(choices=SCOPE_COMMON_CONDITION_CHOICES, widget=forms.CheckboxSelectMultiple(), required=False)
@@ -80,6 +80,10 @@ class ScopeInstructionForm(forms.Form):
                     del FORM_INSTRUCTION_TYPE_CHOICES[0]
                 elif not client_organisation.can_create_sars:
                     del FORM_INSTRUCTION_TYPE_CHOICES[2]
+                self.fields['template'] = forms.ModelChoiceField(
+                        queryset=TemplateInstruction.objects.filter(
+                            Q(organisation=client_organisation) | Q(organisation__isnull=True)),
+                        required=False)
 
             gp_organisation = multi_getattr(user, 'userprofilebase.generalpracticeuser.organisation', default=None)
             if gp_organisation:
@@ -99,34 +103,6 @@ class ScopeInstructionForm(forms.Form):
             raise ValidationError(
                 "You must supply a valid consent form, or the patient's e-mail address when creating an AMRA instruction!")
         return self.cleaned_data
-
-
-class TemplateInstructionForm(forms.Form):
-    template_title = forms.CharField(max_length=225, required=True, widget=forms.TextInput())
-    type = forms.ChoiceField(choices=[], widget=forms.RadioSelect(attrs={'class': 'd-inline instructionType'}))
-    common_condition = forms.MultipleChoiceField(choices=[], widget=forms.CheckboxSelectMultiple(), required=False)
-    addition_condition = MyMultipleChoiceField(required=False)
-
-    def __init__(self, *args, **kwargs):
-        fields = ('')
-        super().__init__(*args, **kwargs)
-        FORM_INSTRUCTION_TYPE_CHOICES = [
-            (AMRA_TYPE, 'Underwriting(AMRA)'),
-            (AMRA_TYPE, 'Claim(AMRA)')
-        ]
-
-        SCOPE_COMMON_CONDITION_CHOICES = [
-            [common_snomed.pk, common_snomed.common_name] for common_snomed in CommonSnomedConcepts.objects.all()
-        ]
-
-        self.fields['common_condition'] = forms.MultipleChoiceField(choices=SCOPE_COMMON_CONDITION_CHOICES, widget=forms.CheckboxSelectMultiple(), required=False)
-
-        self.fields['type'] = forms.ChoiceField(
-            choices=FORM_INSTRUCTION_TYPE_CHOICES,
-            widget=forms.RadioSelect(
-                attrs={'class': 'd-inline instructionType'}
-            )
-        )
 
 
 class AdditionQuestionForm(forms.ModelForm):

@@ -3,11 +3,10 @@ from . import views
 
 app_name = 'template'
 urlpatterns = (
-    path('create/', views.template_create_or_update, name='create_template'),
-    path('view-templates/', views.template_views, name='view_templates'),
-    path('template-autocomplete/', views.template_autocomplete, name='template_autocomplete'),
-    path('get-template-data/', views.get_template_data, name='template_data'),
-    path('new-template/', views.template_new, name='new_template'),
-    path('edit-template/<int:template_id>/', views.template_edit, name='edit_template'),
-    path('remove-template/', views.template_remove, name='remove_template')
+    path('create-template/', views.create_template, name='create_template'),
+    path('get-template-data/<int:template_id>', views.get_template_data, name='get_template_data'),
+    path('remove-template/<int:template_id>', views.remove_template, name='remove_template'),
+    path('change-template/<int:template_id>', views.change_template, name='change_template'),
+    path('new-template/', views.new_template, name='new_template'),
+    path('view-templates/', views.view_templates, name='view_templates')
 )

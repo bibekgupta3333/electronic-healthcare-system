@@ -28,9 +28,9 @@ class MedicalReportFinaliseSubmitForm(forms.Form):
                 self.fields['prepared_and_signed'].choices = submit_options
             record_type = kwargs.get('initial').get('record_type')
             if record_type and record_type == 'AMRA':
-                queryset = queryset.filter(can_complete_amra=True)
+                queryset = queryset.filter(user__groups__permissions__codename='sign_off_amra')
             if record_type and record_type == 'SARS':
-                queryset = queryset.filter(can_complete_sars=True)
+                queryset = queryset.filter(user__groups__permissions__codename='sign_off_sars')
         if user:
             self.fields['gp_practitioner'] = forms.ModelChoiceField(queryset=user.get_query_set_within_organisation(),
                                                                     required=False)

@@ -1,15 +1,11 @@
 from django.contrib import admin
-from .models import OrganisationFee
-from .forms import OrganisationFeeForm
+from .models import OrganisationFee, InstructionVolumeFee
+from .forms import OrganisationFeeForm, InstructionVolumeFeeForm
 
 
 class OrganisationFeeAdmin(admin.ModelAdmin):
     form = OrganisationFeeForm
-    fields = (
-        'gp_practice',
-        'max_day_lvl_1', 'max_day_lvl_2', 'max_day_lvl_3', 'max_day_lvl_4',
-        'amount_rate_lvl_1', 'amount_rate_lvl_2', 'amount_rate_lvl_3', 'amount_rate_lvl_4',
-    )
+    raw_id_fields = ('gp_practice', )
 
     class Media:
         js = ('js/custom_admin/payment_fee_admin.js', )
@@ -18,4 +14,16 @@ class OrganisationFeeAdmin(admin.ModelAdmin):
         super().delete_model(request, obj)
         obj.hard_delete()
 
+
+class InstructionVolumeFeeClientAdmin(admin.ModelAdmin):
+    form = InstructionVolumeFeeForm
+    raw_id_fields = ('client_organisation', )
+    fields = (
+        'client_organisation', 'max_volume_band_lowest', 'max_volume_band_low', 'max_volume_band_medium', 'max_volume_band_top',
+        'fee_rate_lowest', 'fee_rate_low', 'fee_rate_medium', 'fee_rate_top', 'vat'
+    )
+
+
 admin.site.register(OrganisationFee, OrganisationFeeAdmin)
+admin.site.register(InstructionVolumeFee, InstructionVolumeFeeClientAdmin)
+

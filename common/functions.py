@@ -87,3 +87,30 @@ def aes_with_salt_decryption(encrypted_with_salt: str, initial_vector: str) -> s
             return password.decode('utf-8')
         except ValueError:
             logger.error("Key incorrect or message corrupted")
+
+
+def get_url_page(page: str, obj_id: int = None) -> str:
+    """
+        get url page following by this list:
+            - 'home'
+            - 'instruction_pipeline'
+        TODO: implement more page url
+    :param page:
+    :return:
+    """
+    from django.contrib.sites.models import Site  # prevent load module before Secret had set in common setting
+
+    try:
+        domain_name = Site.objects.get_current().domain
+    except:
+        domain_name = 'localhost'
+
+    if page == 'instruction_pipeline':
+        return domain_name + '/instruction/view-pipeline/'
+    elif page == 'admin_gp_payment_fee_edit':
+        if obj_id:
+            return domain_name + '/admin/payment/organisationfee/{id}/change/'.format(id=obj_id)
+        else:
+            return domain_name
+    elif page == 'home':
+        return domain_name

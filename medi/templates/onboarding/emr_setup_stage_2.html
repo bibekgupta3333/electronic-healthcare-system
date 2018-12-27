@@ -234,15 +234,16 @@
             }
         });
         
-        $(".user-email").change(function () {
+        let user_email_list = [];
+        $(".input-email").change(function () {
             let user_email_input_id = $(this).attr("id");
-            let user_email_list = [];
-            $(".user-email").each(function () {
+            $(".input-email").each(function () {
                 if(user_email_input_id != $(this).attr("id")){
                     user_email_list.push($(this).val());
                 }
             });
             if (user_email_list.indexOf($(this).val()) >= 0){
+                user_email_list = [];
                 $(this).val("");
                 $("#warningEmailModal").modal();
             }

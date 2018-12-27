@@ -4,13 +4,12 @@ from django.utils import timezone
 from instructions.models import Instruction, InstructionReminder
 from instructions.model_choices import INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS
 from accounts.models import User, PracticePreferences, GeneralPracticeUser
-from common.functions import get_env_variable
+from common.functions import get_url_page
 
 from smtplib import SMTPException
 import logging
 
 from django.conf import settings
-PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
 
 
 def instruction_notification_email_job():
@@ -29,7 +28,9 @@ def instruction_notification_email_job():
             try:
                 send_mail(
                     'Pending Instruction',
-                    'You have a pending or not started instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
+                    'You have a pending or not started instruction. Click here {link} to see it.'.format(
+                        link=get_url_page('instruction_pipeline')
+                    ),
                     'MediData',
                     [gp['email'] for gp in gp_managers],
                     fail_silently=True,
@@ -63,7 +64,7 @@ def send_email_to_practice_job():
         if practice_preferences.notification == 'DIGEST':
             send_mail(
                 'Unstarted Instruction',
-                'You have unstarted instructions. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
+                'You have unstarted instructions. Click here {link} to see it.'.format(link=get_url_page('instruction_pipeline')),
                 'MediData',
                 [gp_practice.organisation_email],
                 fail_silently=True,

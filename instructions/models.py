@@ -1,16 +1,18 @@
 from django.db import models
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sites.models import Site
 from django.utils import timezone
 from django.core.mail import send_mail
 from common.models import TimeStampedModel
+from common.functions import get_url_page
 from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser, User
 from accounts import models as account_models
 from snomedct.models import SnomedConcept
 from .model_choices import *
 from django.conf import settings
 from typing import Set
-PIPELINE_INSTRUCTION_LINK = settings.PIPELINE_INSTRUCTION_LINK
+PIPELINE_INSTRUCTION_LINK = get_url_page('instruction_pipeline')
 TITLE_CHOICE = account_models.TITLE_CHOICE
 
 
@@ -71,7 +73,8 @@ class Instruction(TimeStampedModel, models.Model):
     rejected_reason = models.IntegerField(choices=INSTRUCTION_REJECT_TYPE, null=True, blank=True)
     type = models.CharField(max_length=4, choices=INSTRUCTION_TYPE_CHOICES)
     final_report_date = models.TextField(blank=True)
-    initial_monetary_value = models.FloatField(null=True, blank=True, verbose_name='Value £')
+    gp_earns = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    medi_earns = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     status = models.IntegerField(choices=INSTRUCTION_STATUS_CHOICES, default=INSTRUCTION_STATUS_NEW)
     consent_form = models.FileField(upload_to='consent_forms', null=True, blank=True)
     patient_information = models.OneToOneField(InstructionPatient, on_delete=models.CASCADE, verbose_name='Patient')

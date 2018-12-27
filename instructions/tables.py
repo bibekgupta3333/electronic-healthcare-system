@@ -8,6 +8,7 @@ from permissions.templatetags.get_permissions import view_complete_report
 
 class InstructionTable(tables.Table):
     checkbox = tables.CheckBoxColumn(attrs={'id': 'check_all'})
+    cost = tables.Column(empty_values=(), verbose_name='Cost £')
     patient_information = tables.Column()
     status = tables.Column()
     user = None
@@ -18,7 +19,7 @@ class InstructionTable(tables.Table):
             'id': 'instructionsTable'
         }
         model = Instruction
-        fields = ('checkbox', 'client_user', 'gp_practice', 'type', 'patient_information', 'gp_user', 'initial_monetary_value', 'created', 'status')
+        fields = ('checkbox', 'client_user', 'gp_practice', 'type', 'patient_information', 'gp_user', 'cost', 'created', 'status')
         template_name = 'django_tables2/semantic.html'
         row_attrs = {
             'data-id': lambda record: record.pk
@@ -43,6 +44,13 @@ class InstructionTable(tables.Table):
         return format_html(
             '{} {} {} <br><b>NHS: </b>{}', value.get_patient_title_display(), value.patient_first_name, value.patient_last_name, value.patient_nhs_number
         )
+
+    def render_cost(self, record):
+        if self.user.type == models.CLIENT_USER or self.user.type == models.MEDIDATA_USER:
+            return record.gp_earns + record.medi_earns
+        elif self.user.type == models.GENERAL_PRACTICE_USER:
+            # NOT IMPLEMENTED
+            pass
 
     def render_status(self, value, record):
         STATUS_DICT = {

@@ -1,219 +1,204 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from django.db.models import Q, Count
-from instructions.forms import TemplateInstructionForm
-from common.functions import multi_getattr
-from .models import TemplateInstruction, TemplateAdditionalQuestion, TemplateConditionsOfInterest, \
-                    TemplateCommonCondition, TemplateAdditionCondition
-from .forms import TemplateAdditionalQuestionForm, TemplateAdditionalQuestionFormset
-from permissions.functions import access_template
-from snomedct.models import SnomedConcept, CommonSnomedConcepts
-
-from itertools import chain
+from template.forms import TemplateInstructionForm, TemplateQuestionForm,\
+        TemplateConditionForm
+from template.functions import get_common_with_snomed, create_question, create_condition
+from template.models import TemplateInstruction, TemplateAdditionalQuestion,\
+        TemplateAdditionalCondition
+from template.tables import TemplateTable
+from django.forms.models import modelformset_factory
+from django_tables2 import RequestConfig
+import json
 import ast
 
 
-def create_template_instruction(request):
-    temp_instruction = TemplateInstruction()
-    temp_instruction.template_title = request.POST.get('template_title')
-    temp_instruction.type = request.POST.get('type')
-    temp_instruction.description = request.POST.get('description')
-    temp_instruction.save()
-    return temp_instruction
-
-
-def create_or_update_addition_question(temp_instruction, addition_question_formset, request):
-    TemplateAdditionalQuestion.objects.filter(template_instruction=temp_instruction).delete()
-    for form in addition_question_formset:
-        form.full_clean()
-        if form.cleaned_data['question'] != '':
-            TemplateAdditionalQuestion.objects.create(
-                template_instruction=temp_instruction,
-                question=form.cleaned_data['question']
-            )
-
-
-def create_or_update_addition_question_ajax(temp_instruction, request):
-    TemplateAdditionalQuestion.objects.filter(template_instruction=temp_instruction).delete()
+def create_template(request):
+    snomed_concepts = request.POST.getlist('common_condition[]')
     questions = request.POST.getlist('questions[]')
-    for question in questions:
-        if question:
-            TemplateAdditionalQuestion.objects.create(template_instruction=temp_instruction, question=question)
+    conditions = request.POST.getlist('addition_condition[]')
+    common_ids = []
+    if snomed_concepts:
 
+        for snomed in snomed_concepts:
+            snomed = ast.literal_eval(snomed)
+            common = get_common_with_snomed([snomed])
 
-def create_or_update_snomed_relations(temp_instruction, common_condition_list, addition_condition_list):
-    TemplateCommonCondition.objects.filter(template_instruction=temp_instruction).delete()
-    TemplateAdditionCondition.objects.filter(template_instruction=temp_instruction).delete()
-    for common_condition_id in common_condition_list:
-        common_condition = CommonSnomedConcepts.objects.get(pk=common_condition_id)
-        TemplateCommonCondition.objects.create(template_instruction=temp_instruction, common_condition=common_condition)
-    for condition_code in addition_condition_list:
-        snomedct = SnomedConcept.objects.filter(external_id=condition_code)
-        if snomedct.exists():
-            snomedct = snomedct.first()
-            TemplateAdditionCondition.objects.create(template_instruction=temp_instruction, snomedct=snomedct)
+            if common and common not in common_ids:
+                common_ids.append(common)
 
-
-@access_template
-def template_create_or_update(request, temp_instruction=None):
-    if request.is_ajax():
-        common_condition_list = request.POST.getlist('common_condition[]')
-        addition_condition_list = request.POST.getlist('addition_condition[]')
-
-        # create or update template
-        if temp_instruction is None:
-            temp_instruction = create_template_instruction(request)
-            temp_instruction.organisation = request.user.userprofilebase.clientuser.organisation
-            temp_instruction.save()
-        # create or update relations of instruction with snomed code
-        create_or_update_snomed_relations(temp_instruction, common_condition_list, addition_condition_list)
-        # create or update addition question
-        create_or_update_addition_question_ajax(temp_instruction, request)
-        return JsonResponse({'state': 'success'})
-    
-    template_form = TemplateInstructionForm(request.POST)
+    data = {
+        'template_title': request.POST.get('template_title'),
+        'description': request.POST.get('description'),
+        'common_snomed_concepts': common_ids
+    }
+    template_form = TemplateInstructionForm(data)
     if template_form.is_valid():
-        addition_question_formset = TemplateAdditionalQuestionFormset(request.POST)
-        common_condition_list = request.POST.getlist('common_condition')
-        addition_condition_list = request.POST.getlist('addition_condition')
-        # create template
-        if temp_instruction is None:
-            temp_instruction = create_template_instruction(request)
-            temp_instruction.created_by = request.user.userprofilebase.clientuser
-            temp_instruction.save()
-        # create relations of instruction with snomed code
-        create_or_update_snomed_relations(temp_instruction, common_condition_list, addition_condition_list)
-        # create addition question
-        create_or_update_addition_question(temp_instruction, addition_question_formset, request)
-        messages.success(request, 'Template successfully saved.')
-        return JsonResponse({'state': 'success'})
+        template = template_form.save()
+
+        if questions:
+            create_question(template, questions)
+
+        if conditions:
+            create_condition(template, conditions)
+
+        if hasattr(request.user, 'userprofilebase') and\
+                hasattr(request.user.userprofilebase, 'clientuser'):
+            client_user = request.user.userprofilebase.clientuser
+            template.created_by = client_user
+            template.organisation = client_user.organisation
+            template.save()
+
+        return JsonResponse({
+            'error': False,
+            'message': 'Template has been created successfully.'
+        })
+    return JsonResponse({'error': True, 'message': template_form.errors.as_text()})
 
 
-@access_template
-def template_views(request):
-    header_title = "View Templates"
-    templates = TemplateInstruction.objects.filter(created_by=request.user.userprofilebase.clientuser)
+def get_template_data(request, template_id=None):
+    if not template_id:
+        JsonResponse(status=404)
 
-    return render(request, 'template/template_list.html', {
-        'header_title': header_title,
-        'templates': templates
+    data = {'questions': [], 'conditions': [], 'snomed_concepts': []}
+    template = TemplateInstruction.objects.get(pk=template_id)
+
+    for addition in template.questions.all():
+        data['questions'].append(addition.question)
+
+    for snomed in template.common_snomed_concepts.all():
+        data['snomed_concepts'].append(snomed.common_name)
+
+    for condition in template.conditions.all():
+        data['conditions'].append({
+            'text': condition.snomedct.fsn_description,
+            'id': condition.snomedct.external_id
+        })
+
+    return JsonResponse(data, status=200)
+
+
+def view_templates(request):
+    header_title = "Templates"
+    try:
+        organisation = request.user.userprofilebase.clientuser.organisation
+        query = TemplateInstruction.objects.filter(organisation=organisation)
+    except:
+        query = TemplateInstruction.objects.none()
+
+    table = TemplateTable(TemplateInstruction.objects.filter(organisation=organisation))
+    RequestConfig(request, paginate={'per_page': 10}).configure(table)
+
+    return render(request, 'template/view_templates.html', {
+        'table': table,
+        'header_title': header_title
     })
 
 
-@access_template
-def template_new(request):
+def remove_template(request, template_id):
+    if template_id:
+       TemplateInstruction.objects.get(pk=template_id).delete()
+    return redirect('template:view_templates')
+
+
+def change_template(request, template_id):
+    header_title = "Change Template"
+    template = TemplateInstruction.objects.get(pk=template_id)
+    conditions = template.conditions.all().values_list('snomedct_id', 'snomedct__fsn_description')
+    conditions = [cond for cond in conditions]
+
+    if request.method == "POST":
+        template_form = TemplateInstructionForm(request.POST, instance=template)
+        question_set = modelformset_factory(TemplateAdditionalQuestion, TemplateQuestionForm, extra=0)
+        question_formset = question_set(request.POST, form_kwargs={'empty_permitted': False})
+
+        if template_form.is_valid():
+            question_ids = []
+
+            for form in question_formset.forms:
+
+                if form.is_valid():
+                    form.save()
+                    question_ids.append(form.instance.pk)
+                elif not form.instance.pk and form.cleaned_data.get('question'):
+                    question = TemplateAdditionalQuestion.objects.create(
+                        question=form.cleaned_data.get('question'),
+                        template_instruction=template
+                    )
+                    question_ids.append(question.id)
+
+            TemplateAdditionalQuestion.objects.filter(template_instruction=template).exclude(id__in=question_ids).delete()
+            if template_form.cleaned_data.get('addition_condition'):
+                commons = template_form.cleaned_data.get('addition_condition')
+                common_ids = []
+
+                for common in commons:
+                    common_snomed, created = TemplateAdditionalCondition.objects.get_or_create(
+                        snomedct_id=int(common),
+                        template_instruction=template
+                    )
+                    common_ids.append(common_snomed.id)
+
+                TemplateAdditionalCondition.objects.filter(template_instruction=template).exclude(id__in=common_ids).delete()
+
+            template_form.save()
+            return redirect('template:view_templates')
+
+
+    template_form = TemplateInstructionForm(instance=template)
+    question_set = modelformset_factory(TemplateAdditionalQuestion, TemplateQuestionForm, extra=1)
+    question_formset = question_set(queryset=TemplateAdditionalQuestion.objects.filter(template_instruction=template))
+    return render(request, 'template/new_template.html', {
+        'template_form': template_form,
+        'question_formset': question_formset,
+        'conditions': json.dumps(conditions),
+        'header_title': header_title
+    })
+
+
+def new_template(request):
     header_title = "New Template"
     template_form = TemplateInstructionForm()
-    addition_question_formset = TemplateAdditionalQuestionFormset(queryset=TemplateAdditionalQuestion.objects.none())
-    if request.method == 'POST':
-        template_create_or_update(request)
-        return redirect('template:view_templates')
-
-    return render(request, 'template/template_new.html', {
-        'header_title': header_title,
-        'template_form': template_form,
-        'addition_question_formset': addition_question_formset
-    })
-
-
-@access_template
-def template_edit(request, template_id):
-    header_title = "Edit Template"
-    template_instruction = TemplateInstruction.objects.get(pk=template_id)
+    question_set = modelformset_factory(TemplateAdditionalQuestion, TemplateQuestionForm, extra=1)
+    question_formset = question_set(queryset=TemplateAdditionalQuestion.objects.none())
 
     if request.method == "POST":
-        template_create_or_update(request, template_instruction)
-        return redirect('template:view_templates')
-    
-    template_questions = TemplateAdditionalQuestion.objects.filter(template_instruction=template_instruction)
-    template_common_conditions = TemplateCommonCondition.objects.filter(template_instruction=template_instruction)
-    template_addition_conditions = TemplateAdditionCondition.objects.filter(template_instruction=template_instruction)
+        template_form = TemplateInstructionForm(request.POST)
+        question_set = modelformset_factory(TemplateAdditionalQuestion, TemplateQuestionForm, extra=0)
+        question_formset = question_set(request.POST, form_kwargs={'empty_permitted': False})
 
-    conditions = []
-    for template_common_condition in template_common_conditions:
-        conditions.append({
-            "id": str(template_common_condition.common_condition.pk),
-            "text": template_common_condition.common_condition.common_name,
-            "is_common_condition": "True"
-        })
-    for template_addition_condition in template_addition_conditions:
-        conditions.append({
-            "id": str(template_addition_condition.snomedct.pk),
-            "text": template_addition_condition.snomedct.fsn_description,
-            "is_common_condition": "False"
-        })
+        if template_form.is_valid():
+            template = template_form.save()
 
-    template_form = TemplateInstructionForm(initial={
-        "template_title": template_instruction.template_title,
-        "type": template_instruction.type
-    })
-    addition_question_formset = TemplateAdditionalQuestionFormset(queryset=template_questions)
+            if hasattr(request.user, 'userprofilebase') and\
+                    hasattr(request.user.userprofilebase, 'clientuser'):
+                client_user = request.user.userprofilebase.clientuser
+                template.organisation = client_user.organisation
+                template.created_by = client_user
+                template.save()
 
-    return render(request, 'template/template_edit.html', {
-        'header_title': header_title,
+            for form in question_formset.forms:
+                form.is_valid()
+
+                if form.cleaned_data.get('question'):
+                    TemplateAdditionalQuestion.objects.create(
+                        question=form.cleaned_data.get('question'),
+                        template_instruction=template
+                    )
+
+            if template_form.cleaned_data.get('addition_condition'):
+                commons = template_form.cleaned_data.get('addition_condition')
+
+                for common in commons:
+                    common_snomed, created = TemplateAdditionalCondition.objects.get_or_create(
+                        snomedct_id=int(common),
+                        template_instruction=template
+                    )
+
+            return redirect('template:view_templates')
+
+    return render(request, 'template/new_template.html', {
         'template_form': template_form,
-        'template_id': template_id,
-        'conditions': conditions,
-        'addition_question_formset': addition_question_formset
+        'question_formset': question_formset,
+        'conditions': [],
+        'header_title': header_title
     })
-
-
-def template_remove(request):
-    if request.method == "POST":
-        template_id = request.POST.get('template_id', None)
-        template_instruction = TemplateInstruction.objects.get(pk=template_id)
-        template_instruction.delete()
-        messages.success(request, 'Template successfully deleted.')
-        return JsonResponse({'state': 'success'})
-
-
-def template_autocomplete(request):
-    search_param = request.GET.get('search', None)
-    author = request.user.userprofilebase.clientuser
-    query = TemplateInstruction.objects.filter(Q(created_by=author) | Q(organisation=author.organisation))
-    if search_param:
-        query = query.filter(template_title__icontains=search_param)
-
-    response = []
-    templates = query.values('pk', 'template_title')
-
-    for template in templates:
-        response.append({
-            'id': template['pk'],
-            'text': template['template_title']
-        })
-    return JsonResponse(response, status=200, safe=False)
-
-
-def get_template_data(request):
-    template_title = request.GET.get('template_title')
-    response = {'questions': [], 'conditions': []}
-    if template_title:
-        template_instruction = TemplateInstruction.objects.get(template_title=template_title)
-        template_questions = TemplateAdditionalQuestion.objects.filter(template_instruction=template_instruction)
-        template_common_conditions = TemplateCommonCondition.objects.filter(template_instruction=template_instruction)
-        template_addition_conditions = TemplateAdditionCondition.objects.filter(template_instruction=template_instruction)
-        
-        for question in template_questions:
-            response['questions'].append({
-                "id": question.pk,
-                "text": question.question
-            })
-        
-        for template_common_condition in template_common_conditions:
-            response['conditions'].append({
-                "id": str(template_common_condition.common_condition.pk),
-                "text": template_common_condition.common_condition.common_name,
-                "is_common_condition": "True"
-            })
-
-        for template_addition_condition in template_addition_conditions:
-            response['conditions'].append({
-                "id": str(template_addition_condition.snomedct.pk),
-                "text": template_addition_condition.snomedct.fsn_description,
-                "is_common_condition": "False"
-            })
-        
-        return JsonResponse(response, status=200, safe=False)
