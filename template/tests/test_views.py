@@ -19,11 +19,11 @@ class TemplateTestCase(TestCase):
         client_user = mommy.make(ClientUser, user=user)
         self.template_instruction1 = mommy.make(
             TemplateInstruction, template_title="template001",
-            organisation=organisation
+            organisation=organisation, pk=1
         )
         self.template_instruction2 = mommy.make(
             TemplateInstruction, template_title="template002",
-            organisation=organisation
+            organisation=organisation, pk=2
         )
         self.template_addition_question1=mommy.make(
             TemplateAdditionalQuestion,
@@ -86,80 +86,37 @@ class CreateOrUpdateSnomedRelationsTest(TemplateTestCase):
             )
 
 
-class TemplateCreateOrUpdate(TemplateTestCase):
-    def test_view_url(self):
-        response = self.client.get('/create/')
-        self.assertEqual(404, response.status_code)
-
-
 class TemplateViewsTest(TemplateTestCase):
-    def test_view_url(self):
-        response = self.client.get('/view-templates/')
+    def test_view_template(self):
+        response = self.client.get('/template/view-templates/')
+        self.assertEqual(200, response.status_code)
+
+    def test_new_template(self):
+        response = self.client.get('/template/new-template/')
+        self.assertEqual(200, response.status_code)
+
+    def test_edit_template(self):
+        response = self.client.get('/template/edit-template/1')
+        self.assertEqual(200, response.status_code)
+
+    def test_edit_returns_404_if_template_does_not_exist(self):
+        response = self.client.get('/template/edit-template/3')
         self.assertEqual(404, response.status_code)
 
-
-class TemplateNewTest(TemplateTestCase):
-    def test_view_url(self):
-        response = self.client.get('/new-template/')
-        self.assertEqual(404, response.status_code)
-
-    def test_view_uses_correct_template(self):
-        response = self.client.get('/new-template/')
-        self.assertEqual(404, response.status_code)
-
-
-class TemplateEditTest(TemplateTestCase):
-    def test_view_url(self):
-        response = self.client.get('/edit-template/1/')
-        self.assertEqual(404, response.status_code)
-
-    def test_view_uses_correct_template(self):
-        response = self.client.get('/edit-template/1/')
-        self.assertEqual(404, response.status_code)
+    def test_remove_template(self):
+        response = self.client.get('/template/remove-template/2')
+        self.assertEqual(302, response.status_code)
 
     def test_view_returns_404_if_template_does_not_exist(self):
-        response = self.client.get('/edit-template/2/')
-        self.assertEqual(404, response.status_code)
-
-
-class TemplateRemoveTest(TemplateTestCase):
-    def test_view_url(self):
-        response = self.client.get('/remove-template/')
-        self.assertEqual(404, response.status_code)
-
-    def test_view_returns_404_if_template_does_not_exist(self):
-        response = self.client.get('/remove-template/')
-        self.assertEqual(404, response.status_code)
-
-
-class AutoCompleteTest(TemplateTestCase):
-    def test_view_autocomplete(self):
-        template = self.template_instruction1
-
-        result = {
-            'id': template.pk,
-            'text': template.template_title
-        }
-        response = self.client.get('/template-autocomplete/')
+        response = self.client.get('/template/remove-template/3')
         self.assertEqual(404, response.status_code)
 
 
 class GetTemplateDataTest(TemplateTestCase):
-    def test_view_get_template_data(self):
-        title = 'template0001'
-        res = {'questions': [], 'conditions': []}
-        if title:
-            question = self.template_addition_question1
-            condition = self.template_conditions_of_interest
-            res['questions'] = {
-                "id": question.pk,
-                "text": question.question
-            }
+    def test_get_template_data(self):
+        response = self.client.get('/template/get-template-data/1')
+        self.assertEqual(200, response.status_code)
 
-            res['conditions'] = {
-                "id": str(condition.snomedct.pk),
-                "text": condition.snomedct.fsn_description,
-                "is_common_condition": bool(condition.snomedct.commonsnomedconcepts_set.count())
-            }
-            response = self.client.get('/get-template-data/')
-            self.assertEqual(404, response.status_code)
+    def test_get_template_returns_404_if_template_does_not_exist(self):
+        response = self.client.get('/template/get-template-data/3')
+        self.assertEqual(404, response.status_code)
