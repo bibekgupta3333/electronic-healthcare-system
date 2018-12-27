@@ -104,7 +104,6 @@
                             <div class="row">
                                 <div class="col-md-2 rowTitle">Set from Template?</div>
                                 {% bootstrap_field scope_form.template size='small' form_group_class='form-group col-md-6 px-0' show_label=False %}
-                                {% bootstrap_button 'Set conditions' button_type="button" extra_classes='btn-xs' id='save_from_template_btn' %}
                             </div>
                             <div class="row" id="date_range">
                                 <div class="col-md-2 rowTitle">Medical reports date range</div>
@@ -114,9 +113,6 @@
                             <div class="conditions d-none">
                                 <div class="row">
                                     <div class="col-md-2 rowTitle" >Common Conditions of Interest*:</div>
-                                    {% for checkbox in scope_form.common_condition %}
-
-                                    {% endfor %}
                                     {% bootstrap_field scope_form.common_condition size='small' form_group_class='form-group col-md-10 p-0 commonConditions' show_label=False %}
                                 </div>
                                 <div class="row">
@@ -234,7 +230,6 @@
     <script src="{% static 'js/jquery.formset.js' %}"></script>
     <script>
         $(document).ready(function () {
-            var template_data = null;
             var patient_addr_num = '';
             function reset_template_attrs(){
                 $('#questions_block').find('tbody').find('.dynamic-form').remove();
@@ -319,76 +314,49 @@
                 }
             });
 
-            $('#id_template').select2({
-                ajax: {
-                    delay: 500,
-                    url: "{% url 'template:template_autocomplete' %}",
-                    data: function (params) {
-                        let query = {
-                            search: params.term,
-                        };
-                        return query;
-                    },
-                    processResults: function (data) {
-                        return {
-                            results: data
-                        }
-                    }
-                }
-            });
+            $('#id_template').select2();
             
-            //load template into the form
             $('#id_template').on('change', function () {
                 $.ajax({
-                    url: "{% url 'template:template_data' %}",
+                  url: "{% url 'template:get_template_data' template_id=0 %}".replace('0',$(this).val()),
                     type: "GET",
-                    data: {
-                        "template_title": $("#id_template").children("option:selected").text()
-                    },
                     dataType: 'json',
                     success: function (data) {
-                        template_data = data;
+                      $('#id_common_condition input[type=checkbox]').prop("checked", false);
+                      $('.dynamic-form').remove();
+                      $('#id_addition_condition option').remove();
+                      if(data.questions){
+                          $('#id_form-TOTAL_FORMS').val(data.questions.length);
+                          question_form_html = '';
+                          data.questions.forEach(function(question, index) {
+                              question_form_html += `
+                                  <tr class="dynamic-form">
+                                      <td>
+                                          <input type="text" value="` + question + `" name="form-`+ index + `-question" class="form-control questions_inputs" maxlength="255" id="id_form-`+ index + `-question">
+                                      </td>
+                                      <td><a class="btn btn-danger" href="javascript:void(0)">X remove</a></td>
+                                  </tr>
+                              `;
+                          });
+                          $('#questions_block').find('tbody').prepend(question_form_html);
+                      };
+                      if(data.snomed_concepts){
+                          data.snomed_concepts.forEach(function(snomed, index) {
+                            $("label:contains('" + snomed + "') input[type=checkbox]").prop( "checked", true );
+                          });
+                      };
+                      if(data.conditions){
+                          $('#id_type').find("input[name=type][value=AMRA]").prop('checked', true);
+                          $('.instructionType').trigger('change');
+                          data.conditions.forEach(function(condition, index) {
+                              $('#id_addition_condition').append(new Option(condition["text"], condition["id"], true, true)).trigger('change');
+                          });
+                      };
                     },
                     error: function (errors) {
                         create_alert('Unable to load a template.', 'error');
                     }
                 })
-            });
-
-            $('#save_from_template_btn').on('click', function () {
-                reset_template_attrs();
-                if(template_data.questions){
-                    question_form_html = '';
-                    template_data.questions.forEach(function(element, index) {
-                        question_form_html += `
-                            <tr class="dynamic-form">
-                                <td>
-                                    <input type="text" value="` + element["text"] + `" name="form-`+ index + `-question" class="form-control questions_inputs" maxlength="255" id="id_form-`+ index + `-question">
-                                </td>
-                                <td><a class="btn btn-danger" href="javascript:void(0)">X remove</a></td>
-                            </tr>
-                        `;
-                    });
-                    $('#questions_block').find('tbody').prepend(question_form_html);
-                };
-
-                if(template_data.conditions){
-                    $('#id_type').find("input[name=type][value=AMRA]").prop('checked', true);
-                    $('.instructionType').trigger('change');
-                    template_data.conditions.forEach(function(element, index) {
-                        if(element['is_common_condition'] == "True"){
-                            $('#id_common_condition').find("input[name=common_condition]").each(function () {
-                                var common_id = element["id"];
-                                if($(this).val()==common_id){
-                                    $(this).prop('checked', true);
-                                }
-                            })
-                        } else {
-                            $('#id_addition_condition').append(new Option(element["text"], element["id"], true, true)).trigger('change');
-                        }
-
-                    });
-                };
             });
 
             $('#id_addition_condition').select2({
@@ -615,12 +583,17 @@
                     'addition_condition': addition_conditions,
                     'csrfmiddlewaretoken': '{{csrf_token}}'
                 };
+
                 $.ajax({
                     url: "{% url 'template:create_template' %}",
                     data: data,
                     method: 'post',
-                    success: function () {
-                        create_alert('Template has been created successfully.', 'success');
+                    success: function (data) {
+                        if(data.error){
+                          create_alert(data.message, 'error');
+                        }else{
+                          create_alert(data.message, 'success');
+                        }
                         $('#create_template_modal').modal('toggle');
                     },
                     error: function (errors) {
