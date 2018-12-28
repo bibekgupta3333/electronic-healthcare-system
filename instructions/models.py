@@ -83,8 +83,8 @@ class Instruction(TimeStampedModel, models.Model):
     gp_initial_from_client = models.CharField(max_length=20, blank=True)
     gp_last_name_from_client = models.CharField(max_length=255, blank=True)
 
-    date_range_from = models.DateField(null=True)
-    date_range_to = models.DateField(null=True)
+    date_range_from = models.DateField(null=True, blank=True)
+    date_range_to = models.DateField(null=True, blank=True)
 
     gp_practice_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     gp_practice_id = models.CharField(max_length=255)

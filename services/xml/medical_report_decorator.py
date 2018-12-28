@@ -61,7 +61,7 @@ class MedicalReportDecorator(MedicalRecord):
         ret_xml = chronological_redactable_elements(super().referrals())
         if self.instruction.type == model_choices.AMRA_TYPE:
             ret_xml = chronological_redactable_elements(
-                auto_redact_referrals(super().referrals())
+                auto_redact_referrals(super().referrals(), self.instruction)
             )
         return ret_xml
 
@@ -69,7 +69,7 @@ class MedicalReportDecorator(MedicalRecord):
         ret_xml = chronological_redactable_elements(super().attachments())
         if self.instruction.type == model_choices.AMRA_TYPE:
             ret_xml = chronological_redactable_elements(
-                auto_redact_attachments(super().attachments())
+                auto_redact_attachments(super().attachments(), self.instruction)
             )
         return ret_xml
 
@@ -77,7 +77,7 @@ class MedicalReportDecorator(MedicalRecord):
         ret_xml = chronological_redactable_elements(super().acute_medications())
         if self.instruction.type == model_choices.AMRA_TYPE:
             ret_xml = chronological_redactable_elements(
-                auto_redact_medications(super().acute_medications())
+                auto_redact_medications(super().acute_medications(), self.instruction)
             )
         return ret_xml
 
@@ -85,7 +85,7 @@ class MedicalReportDecorator(MedicalRecord):
         ret_xml = chronological_redactable_elements(super().repeat_medications())
         if self.instruction.type == model_choices.AMRA_TYPE:
             ret_xml = chronological_redactable_elements(
-                auto_redact_medications(super().repeat_medications())
+                auto_redact_medications(super().repeat_medications(), self.instruction)
             )
         return ret_xml
 
@@ -96,7 +96,7 @@ class MedicalReportDecorator(MedicalRecord):
         ret_xml = chronological_redactable_elements(super().acute_medications())
         # if self.instruction.type == model_choices.AMRA_TYPE:
         ret_xml = chronological_redactable_elements(
-                auto_redact_profile_events(super().profile_event(event_type))
+                auto_redact_profile_events(super().profile_event(event_type), self.instruction)
             )
 
         return (self.__table_elements(self.__redact_elements(ret_xml)))
