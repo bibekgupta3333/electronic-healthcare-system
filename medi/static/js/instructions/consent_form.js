@@ -10,6 +10,18 @@ function onSelect(element){
   }
 }
 
+function renderType(selectType){
+  $('.card-body').hide();
+  $('.buttons').hide();
+  $('#id_' + selectType).show();
+  $('#btn_' + selectType).show();
+  if (selectType === "accept"){
+      $("#id_consent_form").removeAttr("required");
+  }else if (selectType === "upload"){
+      $("#id_consent_form").attr("required", "true");
+  }
+}
+
 function updateRejectType(element){
     var rejectID = $(element).attr('id').replace('rejected_reason-', '');
     $('#rejected_reason').val(rejectID);

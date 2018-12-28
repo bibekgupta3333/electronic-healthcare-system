@@ -652,3 +652,6 @@ header {
   padding: 0 15px;
 }
 
+.invalid-feedback {
+  display: block !important;
+}

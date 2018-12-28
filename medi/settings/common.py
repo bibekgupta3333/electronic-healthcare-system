@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_select2',
     'django_crontab',
+    'django_clamd',
 
     # app
     'accounts',
@@ -220,3 +221,12 @@ SITE_ID = 1
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 600 # 10 Minutes
 SESSION_SAVE_EVERY_REQUEST = True
+
+#Clam AV setting
+CLAMD_SOCKET = '/var/run/clamav/clamd.ctl'
+CLAMD_USE_TCP = False
+CLAMD_TCP_SOCKET = 3310
+CLAMD_TCP_ADDR = '127.0.0.1'
+
+#Remove comment for disable virus scanning for development
+#CLAMD_ENABLED = False

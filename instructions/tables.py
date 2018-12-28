@@ -49,8 +49,7 @@ class InstructionTable(tables.Table):
         if self.user.type == models.CLIENT_USER or self.user.type == models.MEDIDATA_USER:
             return record.gp_earns + record.medi_earns
         elif self.user.type == models.GENERAL_PRACTICE_USER:
-            # NOT IMPLEMENTED
-            pass
+            return record.gp_earns
 
     def render_status(self, value, record):
         STATUS_DICT = {
