@@ -30,7 +30,12 @@ def check_status_with_url(is_valid, path, status):
 
 def check_permission(func):
     def check_and_call(request, *args, **kwargs):
-        instruction_id = kwargs["instruction_id"]
+        instruction_id = kwargs.get("instruction_id")
+        if not instruction_id:
+            if request.method == "GET" and not request.GET.get('instruction_id'):
+                return func(request, *args, **kwargs)
+            else:
+                instruction_id = request.GET.get('instruction_id')
         user = User.objects.get(pk=request.user.pk)
         instruction = get_object_or_404(Instruction, pk=instruction_id)
         client_user = instruction.client_user

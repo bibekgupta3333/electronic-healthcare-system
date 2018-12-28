@@ -201,6 +201,7 @@ def instruction_pipeline_view(request):
 
 
 @login_required(login_url='/accounts/login')
+@check_permission
 def new_instruction(request):
     header_title = "Add New Instruction"
 
