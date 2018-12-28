@@ -10,7 +10,8 @@ from django_tables2 import RequestConfig
 from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest, Setting, InstructionPatient
 from .tables import InstructionTable
 from .model_choices import *
-from .forms import ScopeInstructionForm, AdditionQuestionFormset, SarsConsentForm, MdxConsentForm, ReferenceForm
+from .forms import ScopeInstructionForm, AdditionQuestionFormset, SarsConsentForm, MdxConsentForm,\
+        ReferenceForm, ConsentForm
 from accounts.models import User, GeneralPracticeUser, PracticePreferences
 from accounts.models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from accounts.forms import InstructionPatientForm, GPForm
@@ -433,20 +434,27 @@ def new_instruction(request):
 def upload_consent(request, instruction_id):
     setting = Setting.objects.all().first()
     instruction = get_object_or_404(Instruction, pk=instruction_id)
+    consent_form = ConsentForm()
     uploaded = False
+    select_type = ''
     if instruction.status != INSTRUCTION_STATUS_NEW:
         uploaded = True
     if request.method == "POST" and setting:
         if request.POST.get('select_type') == 'accept':
             instruction.consent_form = setting.consent_form
+            select_type = 'accept'
         else:
-            instruction.consent_form = request.FILES.get('consent_form')
-        instruction.save()
-        uploaded = True
+            consent_form = ConsentForm(request.POST, request.FILES, instance=instruction)
+            if consent_form.is_valid():
+                consent_form.save()
+                uploaded = True
+            select_type = 'upload'
     return render(request, 'instructions/upload_consent.html',{
             'instruction': instruction,
+            'consent_form': consent_form,
             'setting': setting,
             'uploaded': uploaded,
+            'select_type': select_type
         })
 
 
@@ -595,41 +603,52 @@ def view_reject(request, instruction_id):
 def consent_contact(request, instruction_id, patient_emis_number):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     patient_instruction = instruction.patient_information
-
-    if request.method == "POST":
-        if request.POST.get('sars_consent_loaded') == 'loaded' and request.FILES.get('sars_consent'):
-            instruction.sars_consent = request.FILES.get('sars_consent')
-        elif request.POST.get('sars_consent_loaded') != 'loaded':
-            instruction.sars_consent.delete()
-        if request.POST.get('mdx_consent_loaded') == 'loaded' and request.FILES.get('mdx_consent'):
-            instruction.mdx_consent = request.FILES.get('mdx_consent')
-        elif request.POST.get('mdx_consent_loaded') != 'loaded':
-            instruction.mdx_consent.delete()
-
-        patient_instruction.patient_email = request.POST.get('patient_email', '')
-        patient_instruction.patient_telephone_mobile = request.POST.get('patient_telephone_mobile', '')
-        patient_instruction.patient_telephone_code = request.POST.get('patient_telephone_code', '')
-        patient_instruction.patient_alternate_phone = request.POST.get('patient_alternate_phone', '')
-        patient_instruction.patient_alternate_code = request.POST.get('patient_alternate_code', '')
-        patient_instruction.save()
-        patient_user = create_or_update_patient_user(patient_instruction, patient_emis_number)
-        instruction.patient = patient_user
-        instruction.save()
-        next_step = request.POST.get('next_step', '')
-        if next_step == 'view_pipeline':
-            instruction.saved = True
-            patient_instruction.patient_emis_number = patient_emis_number
-            patient_instruction.save()
-            gp_user = get_object_or_404(GeneralPracticeUser, user_id=request.user.id)
-            instruction.in_progress(context={'gp_user': gp_user})
-            return redirect('instructions:view_pipeline')
-        elif next_step == 'proceed':
-            return redirect('medicalreport:select_patient', instruction_id=instruction_id, patient_emis_number=patient_emis_number)
+    sars_consent_form = SarsConsentForm()
+    mdx_consent_form = MdxConsentForm()
 
     patient_email = patient_instruction.patient_email
     patient_telephone_mobile = patient_instruction.patient_telephone_mobile
     patient_alternate_phone = patient_instruction.patient_alternate_phone
     patient_list = get_matched_patient(patient_instruction)
+
+    if request.method == "POST":
+        sars_consent_form = SarsConsentForm(request.POST, request.FILES, instance=instruction)
+        mdx_consent_form = MdxConsentForm(request.POST, request.FILES, instance=instruction)
+        if request.POST.get('sars_consent_loaded') == 'loaded' and sars_consent_form.is_valid():
+            sars_consent_form.save()
+        elif request.POST.get('sars_consent_loaded') != 'loaded':
+            instruction.sars_consent.delete()
+        if request.POST.get('mdx_consent_loaded') == 'loaded' and mdx_consent_form.is_valid():
+            mdx_consent_form.save()
+        elif request.POST.get('mdx_consent_loaded') != 'loaded':
+            instruction.mdx_consent.delete()
+
+        patient_email = request.POST.get('patient_email', '')
+        patient_telephone_mobile = request.POST.get('patient_telephone_mobile', '')
+        patient_alternate_phone = request.POST.get('patient_alternate_phone', '')
+
+        if (request.POST.get('sars_consent_loaded') != 'loaded' or sars_consent_form.is_valid())\
+                and (request.POST.get('mdx_consent_loaded') != 'loaded' or mdx_consent_form.is_valid()):
+            patient_instruction.patient_email = patient_email
+            patient_instruction.patient_telephone_mobile = patient_telephone_mobile
+            patient_instruction.patient_telephone_code = request.POST.get('patient_telephone_code', '')
+            patient_instruction.patient_alternate_phone = patient_alternate_phone
+            patient_instruction.patient_alternate_code = request.POST.get('patient_alternate_code', '')
+            patient_instruction.save()
+            patient_user = create_or_update_patient_user(patient_instruction, patient_emis_number)
+            instruction.patient = patient_user
+            instruction.save()
+            next_step = request.POST.get('next_step', '')
+            if next_step == 'view_pipeline':
+                instruction.saved = True
+                patient_instruction.patient_emis_number = patient_emis_number
+                patient_instruction.save()
+                gp_user = get_object_or_404(GeneralPracticeUser, user_id=request.user.id)
+                instruction.in_progress(context={'gp_user': gp_user})
+                return redirect('instructions:view_pipeline')
+            elif next_step == 'proceed':
+                return redirect('medicalreport:select_patient', instruction_id=instruction_id, patient_emis_number=patient_emis_number)
+
     for patient in patient_list:
         if patient_emis_number == patient.ref_id:
             patient_email = patient_instruction.patient_email
@@ -650,9 +669,6 @@ def consent_contact(request, instruction_id, patient_emis_number):
             'patient_alternate_phone': patient_alternate_phone
         }
     )
-    sars_consent_form = SarsConsentForm()
-    mdx_consent_form = MdxConsentForm()
-
     consent_type = 'pdf'
     consent_extension = ''
     consent_path = ''

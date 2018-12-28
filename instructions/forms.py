@@ -3,6 +3,7 @@ from django.forms.models import modelformset_factory
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.db.models import Q
+from django_clamd.validators import validate_file_infection
 from instructions.model_choices import AMRA_TYPE, SARS_TYPE
 from .models import InstructionAdditionQuestion, Instruction, InstructionClientNote, ClientNote
 from template.models import TemplateInstruction
@@ -44,7 +45,7 @@ class ScopeInstructionForm(forms.Form):
     common_condition = forms.MultipleChoiceField(choices=[], widget=forms.CheckboxSelectMultiple(), required=False)
     addition_condition = MyMultipleChoiceField(required=False)
     addition_condition_title = forms.CharField(required=False, widget=forms.HiddenInput())
-    consent_form = forms.FileField(required=False)
+    consent_form = forms.FileField(required=False, validators=[validate_file_infection])
     send_to_patient = forms.BooleanField(widget=forms.CheckboxInput(), label='Send copy of medical report to patient?', required=False)
 
     def __init__(self, user=None, patient_email=None, *args, **kwargs):
@@ -99,7 +100,7 @@ class ScopeInstructionForm(forms.Form):
 
     def clean(self):
         super().clean()
-        if self.cleaned_data.get('type') == "AMRA" and not self.patient_email and not self.cleaned_data['consent_form']:
+        if not self.errors and self.cleaned_data.get('type') == "AMRA" and not self.patient_email and not self.cleaned_data['consent_form']:
             raise ValidationError(
                 "You must supply a valid consent form, or the patient's e-mail address when creating an AMRA instruction!")
         return self.cleaned_data
@@ -136,15 +137,25 @@ class ClientNoteForm(forms.ModelForm):
         self.fields['note'] = forms.ChoiceField(choices=choices)
 
 
-class SarsConsentForm(forms.Form):
-    sars_consent = forms.FileField(required=False, label="Select a File")
+class ConsentForm(forms.ModelForm):
+    consent_form = forms.FileField(required=False, label="Select a File", validators=[validate_file_infection])
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    class Meta:
+        model = Instruction
+        fields = ('consent_form',)
 
 
-class MdxConsentForm(forms.Form):
-    mdx_consent = forms.FileField(required=False)
+class SarsConsentForm(forms.ModelForm):
+    sars_consent = forms.FileField(required=False, label="Select a File", validators=[validate_file_infection])
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    class Meta:
+        model = Instruction
+        fields = ('sars_consent',)
+
+
+class MdxConsentForm(forms.ModelForm):
+    mdx_consent = forms.FileField(required=False, validators=[validate_file_infection])
+
+    class Meta:
+        model = Instruction
+        fields = ('mdx_consent',)
