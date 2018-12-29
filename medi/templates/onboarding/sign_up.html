@@ -290,9 +290,11 @@
             let csrf_token = '{{ csrf_token }}';
             $('#acceptPolicy').click(function() {
               $('#accept-policy').attr("checked", true);
+              $('#accept-policy').trigger('change');
             });
             $('#goBack').click(function() {
               $('#accept-policy').attr("checked", false);
+              $('#accept-policy').trigger('change');
             });
             $('#signup_form').submit(function(event) {
                 var $form = this;
@@ -363,8 +365,6 @@
                 })
             });
 
-
-
             $('#id_password1').change(function() {
                 $.ajax({
                     url: "{% url 'accounts:verify_password' %}",
@@ -422,6 +422,14 @@
                 if($('#id_postcode').data('postcode')){
                     $('#id_postcode').trigger('change');
                 }
+            });
+
+            $('#accept-policy').change(function () {
+               if($('#accept-policy').is(':checked') == true ){
+                   $('#BtnSignUp').prop('disabled', false);
+               } else {
+                   $('#BtnSignUp').prop('disabled', true);
+               }
             });
 
             $('#id_surgery_name').change(function () {
