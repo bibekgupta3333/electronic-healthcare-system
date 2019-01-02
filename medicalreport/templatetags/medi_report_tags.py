@@ -44,7 +44,8 @@ def form_consultations(context):
 @register.inclusion_tag('medicalreport/inclusiontags/form_profile.html', takes_context=True)
 def form_profile(context):
     return {
-        'profile_events': context['medical_record'].profile_events_by_type
+        'profile_events': context['medical_record'].profile_events_by_type,
+        'profile_sex': context['medical_record'].registration().sex()
     }
 
 
