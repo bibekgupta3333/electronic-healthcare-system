@@ -234,16 +234,16 @@
             }
         });
         
-        let user_email_list = [];
+        let email_list = [];
         $(".input-email").change(function () {
-            let user_email_input_id = $(this).attr("id");
+            let email_input_id = $(this).attr("id");
             $(".input-email").each(function () {
-                if(user_email_input_id != $(this).attr("id")){
-                    user_email_list.push($(this).val());
+                if(email_input_id != $(this).attr("id")){
+                    email_list.push($(this).val());
                 }
             });
-            if (user_email_list.indexOf($(this).val()) >= 0){
-                user_email_list = [];
+            if (email_list.indexOf($(this).val()) >= 0){
+                email_list = [];
                 $(this).val("");
                 $("#warningEmailModal").modal();
             }
