@@ -1,7 +1,7 @@
 from django.contrib import admin
 from . import models
 from django.shortcuts import get_object_or_404
-from common.import_export import CustomImportExport
+from common.import_export import CustomImportExportModelAdmin
 from instructions.model_choices import INSTRUCTION_STATUS_REJECT
 from django.utils import timezone
 from datetime import timedelta
@@ -123,11 +123,11 @@ class ClientOrgFilter(admin.SimpleListFilter):
 
 class GPOrgFilter(admin.SimpleListFilter):
     title = 'GP Practice'
-    parameter_name = 'gp_pratice'
+    parameter_name = 'gp_practice'
 
     def lookups(self, request, model_admin):
         organisations = set()
-        for data in Instruction.objects.filter(gp_practice_id__isnull=False, gp_practice_type__isnull=False):
+        for data in Instruction.objects.filter(gp_practice__isnull=False):
             organisation = data.gp_practice
             if organisation:
                 organisations.add((organisation.pk, organisation.name))
@@ -136,16 +136,16 @@ class GPOrgFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         organisation_pk = self.value()
         if organisation_pk:
-            return queryset.filter(gp_practice_id__isnull=False, gp_practice_id=organisation_pk)
+            return queryset.filter(gp_practice__isnull=False)
         return queryset
 
 
-class InstructionAdmin(CustomImportExport, admin.ModelAdmin):
+class InstructionAdmin(CustomImportExportModelAdmin):
     change_status = False
     list_display = ('gp_practice', 'client', 'status', 'created', 'type', 'days_since_created')
     list_filter = ('type', DaysSinceFilter, ClientOrgFilter, GPOrgFilter)
     readonly_fields = ('medi_ref',)
-    actions = ['export_status_report_as_csv', 'export_payment_as_csv']
+    actions = ['export_status_report_as_csv', 'export_payment_as_csv', 'export_client_payment_as_csv']
     search_fields = [
         'type'
     ]
@@ -161,7 +161,7 @@ class InstructionAdmin(CustomImportExport, admin.ModelAdmin):
         gp_organisations = [gp_org.pk for gp_org in OrganisationGeneralPractice.objects.filter(name__icontains=search_term)]
         queryset = queryset.filter(
             Q(type__icontains=search_term) |
-            Q(gp_practice_id__in=gp_organisations) |
+            Q(gp_practice__pk__in=gp_organisations) |
             Q(client_user__organisation__trading_name__icontains=search_term)
         )
         return queryset, False

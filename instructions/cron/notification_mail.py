@@ -15,14 +15,14 @@ from django.conf import settings
 def instruction_notification_email_job():
     now = timezone.now()
     new_or_pending_instructions = Instruction.objects.filter(
-        status__in=(INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS), gp_practice_type__model='organisationgeneralpractice'
+        status__in=(INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS)
     )
 
     for instruction in new_or_pending_instructions:
         diff_date = now - instruction.created
         if diff_date.days == 3 or diff_date.days == 7 or diff_date.days >= 14:
             gp_managers = User.objects.filter(
-                userprofilebase__generalpracticeuser__organisation=instruction.gp_practice_id,
+                userprofilebase__generalpracticeuser__organisation=instruction.gp_practice.pk,
                 userprofilebase__generalpracticeuser__role=GeneralPracticeUser.PRACTICE_MANAGER
             ).values('email')
             try:
@@ -57,7 +57,7 @@ def instruction_notification_email_job():
 
 
 def send_email_to_practice_job():
-    unstarted_instructions = Instruction.objects.filter(status=INSTRUCTION_STATUS_NEW, gp_practice_type__model='organisationgeneralpractice')
+    unstarted_instructions = Instruction.objects.filter(status=INSTRUCTION_STATUS_NEW)
     for instruction in unstarted_instructions:
         gp_practice = instruction.gp_practice
         practice_preferences = PracticePreferences.objects.get(gp_organisation=gp_practice)
