@@ -23,9 +23,9 @@ class DateRedactor:
 
     def case_date_range(self, parsed_date):
         flag = True
-        if self.from_date and parsed_date < self.from_date:
+        if self.from_date and parsed_date and parsed_date < self.from_date:
             flag = False
-        if self.to_date and parsed_date > self.to_date:
+        if self.to_date and parsed_date and parsed_date > self.to_date:
             flag = False
         return flag
 

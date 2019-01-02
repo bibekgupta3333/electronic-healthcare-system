@@ -30,7 +30,12 @@ def check_status_with_url(is_valid, path, status):
 
 def check_permission(func):
     def check_and_call(request, *args, **kwargs):
-        instruction_id = kwargs["instruction_id"]
+        instruction_id = kwargs.get("instruction_id")
+        if not instruction_id:
+            if request.method == "GET" and request.GET.get('instruction_id'):
+                instruction_id = request.GET.get('instruction_id')
+            else:
+                return func(request, *args, **kwargs)
         user = User.objects.get(pk=request.user.pk)
         instruction = get_object_or_404(Instruction, pk=instruction_id)
         client_user = instruction.client_user
@@ -110,3 +115,12 @@ def set_default_gp_perm(group):
         perm = Permission.objects.get(codename=codename)
         group.permissions.add(perm)
     group.save()
+
+
+@decorator_with_arguments
+def check_user_type(func, user_type):
+    def check_and_call(request, *args, **kwargs):
+        if request.user.type != user_type:
+            return redirect('instructions:view_pipeline')
+        return func(request, *args, **kwargs)
+    return check_and_call

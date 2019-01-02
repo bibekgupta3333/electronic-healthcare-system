@@ -19,8 +19,8 @@ class TemplateTable(tables.Table):
 
     def render_btn_action(self, record):
         return format_html(
-            "<a href='" + reverse('template:change_template', args=[record.pk]) +\
-            "' id='changeBtn-" + str(record.pk) + "' class='btn btn-primary'>Change</a>\
+            "<a href='" + reverse('template:edit_template', args=[record.pk]) +\
+            "' id='changeBtn-" + str(record.pk) + "' class='btn btn-primary'>Edit</a>\
             <a href='" + reverse('template:remove_template', args=[record.pk]) +\
             "' id='removeBtn-" + str(record.pk) + "' class='btn btn-danger'>Remove</a>"
         )

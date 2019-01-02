@@ -646,6 +646,25 @@
         </Link>
       </ProblemLinkList>
     </Referral>
+    <Referral>
+      <GUID>3487623</GUID>
+      <AssignedDate>07/11/2017</AssignedDate>
+      <DisplayTerm>Orthopaedic referral</DisplayTerm>
+      <Provider>
+        <RefID>5604</RefID>
+      </Provider>
+      <ProblemLinkList>
+        <Link>
+          <Target>
+            <DBID>137</DBID>
+            <RefID>137</RefID>
+            <GUID>23423</GUID>
+            <FileStatus>0</FileStatus>
+          </Target>
+          <LinkType>0</LinkType>
+        </Link>
+      </ProblemLinkList>
+    </Referral>
   </ReferralList>
   <AllergyList>
     <Allergy>

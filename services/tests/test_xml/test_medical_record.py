@@ -43,12 +43,12 @@ class MedicalRecordTest(XMLTestCase):
 
     def test_referrals_gets_all_referrals(self):
         referrals = self.medical_record.referrals()
-        self.assertEqual(2, len(referrals))
+        self.assertEqual(3, len(referrals))
 
     def test_referrals_gets_correct_types(self):
         referrals = self.medical_record.referrals()
         self.assertIsInstance(referrals[0], Referral)
-        self.assertIsInstance(referrals[1], ReferralEvent)
+        self.assertIsInstance(referrals[2], ReferralEvent)
 
     def test_attachments(self):
         self.assertEqual(3, len(self.medical_record.attachments()))
@@ -75,7 +75,7 @@ class MedicalRecordTest(XMLTestCase):
         self.assertIsInstance(self.medical_record.locations()[0], Location)
 
     def test_problem_linked_lists_gets_all_problem_linked_lists(self):
-        self.assertEqual(1, len(self.medical_record.problem_linked_lists()))
+        self.assertEqual(2, len(self.medical_record.problem_linked_lists()))
 
     def test_problem_linked_lists_gets_correct_type(self):
         self.assertIsInstance(

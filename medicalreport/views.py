@@ -17,10 +17,10 @@ from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTR
     INSTRUCTION_STATUS_COMPLETE
 from .functions import create_or_update_redaction_record, create_patient_report
 from medicalreport.reports import MedicalReport
-from accounts.models import GeneralPracticeUser, User
+from accounts.models import GeneralPracticeUser, User, GENERAL_PRACTICE_USER
 from accounts.functions import create_or_update_patient_user
 from .forms import AllocateInstructionForm
-from permissions.functions import check_permission
+from permissions.functions import check_permission, check_user_type
 from payment.functions import calculate_instruction_fee
 from typing import List
 
@@ -53,6 +53,7 @@ def get_patient_record(patient_number):
 
 
 @login_required(login_url='/accounts/login')
+@check_user_type(GENERAL_PRACTICE_USER)
 def reject_request(request, instruction_id):
     instruction = Instruction.objects.get(id=instruction_id)
     instruction.reject(request, request.POST)
@@ -60,6 +61,7 @@ def reject_request(request, instruction_id):
 
 
 @login_required(login_url='/accounts/login')
+@check_user_type(GENERAL_PRACTICE_USER)
 def select_patient(request, instruction_id, patient_emis_number):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     if request.method == 'POST':
@@ -96,6 +98,7 @@ def select_patient(request, instruction_id, patient_emis_number):
 
 @login_required(login_url='/accounts/login')
 @check_permission
+@check_user_type(GENERAL_PRACTICE_USER)
 def set_patient_emis_number(request, instruction_id):
     instruction = Instruction.objects.get(id=instruction_id)
     dummy_instruction = DummyInstruction(instruction)
@@ -114,8 +117,10 @@ def set_patient_emis_number(request, instruction_id):
 
 @login_required(login_url='/accounts/login')
 @check_permission
+@check_user_type(GENERAL_PRACTICE_USER)
 def edit_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
+
     try:
         redaction = AmendmentsForRecord.objects.get(instruction=instruction_id)
     except AmendmentsForRecord.DoesNotExist:
@@ -154,6 +159,7 @@ def edit_report(request, instruction_id):
 
 
 @login_required(login_url='/accounts/login')
+@check_user_type(GENERAL_PRACTICE_USER)
 def update_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
 

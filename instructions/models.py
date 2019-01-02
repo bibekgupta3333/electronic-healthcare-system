@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.utils import timezone
 from django.core.mail import send_mail
+from django_clamd.validators import validate_file_infection
 from common.models import TimeStampedModel
 from common.functions import get_url_page
 from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser, User
@@ -76,21 +77,21 @@ class Instruction(TimeStampedModel, models.Model):
     gp_earns = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     medi_earns = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     status = models.IntegerField(choices=INSTRUCTION_STATUS_CHOICES, default=INSTRUCTION_STATUS_NEW)
-    consent_form = models.FileField(upload_to='consent_forms', null=True, blank=True)
+    consent_form = models.FileField(upload_to='consent_forms', null=True, blank=True, validators=[validate_file_infection])
     patient_information = models.OneToOneField(InstructionPatient, on_delete=models.CASCADE, verbose_name='Patient')
     gp_title_from_client = models.CharField(max_length=5, choices=TITLE_CHOICE, blank=True)
     gp_initial_from_client = models.CharField(max_length=20, blank=True)
     gp_last_name_from_client = models.CharField(max_length=255, blank=True)
 
-    date_range_from = models.DateField(null=True)
-    date_range_to = models.DateField(null=True)
+    date_range_from = models.DateField(null=True, blank=True)
+    date_range_to = models.DateField(null=True, blank=True)
 
     gp_practice_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     gp_practice_id = models.CharField(max_length=255)
     gp_practice = GenericForeignKey('gp_practice_type', 'gp_practice_id')
-    sars_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
-    mdx_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
-    medical_report = models.FileField(upload_to='medical_reports', null=True, blank=True)
+    sars_consent = models.FileField(upload_to='consent_forms', null=True, blank=True, validators=[validate_file_infection])
+    mdx_consent = models.FileField(upload_to='consent_forms', null=True, blank=True, validators=[validate_file_infection])
+    medical_report = models.FileField(upload_to='medical_reports', null=True, blank=True, validators=[validate_file_infection])
     saved = models.BooleanField(default=False)
     medi_ref = models.IntegerField(null=True, blank=True)
     your_ref = models.CharField(max_length=80, null=True, blank=True)
@@ -241,7 +242,7 @@ class InstructionConditionsOfInterest(models.Model):
 
 
 class Setting(models.Model):
-    consent_form = models.FileField(upload_to='consent_forms', null=True, blank=True)
+    consent_form = models.FileField(upload_to='consent_forms', null=True, blank=True, validators=[validate_file_infection])
 
     def save(self, *args, **kwargs):
         self.__class__.objects.exclude(id=self.id).delete()

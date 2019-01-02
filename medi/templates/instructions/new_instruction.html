@@ -230,6 +230,22 @@
     <script src="{% static 'js/jquery.formset.js' %}"></script>
     <script>
         $(document).ready(function () {
+
+            // Function for checking required date field. When one date_range has value, another date_range will be required
+            $('#id_date_range_from').change(function() { 
+                $('#id_date_range_to').prop('required', true);
+                if( $('#id_date_range_from').val() == '' ){
+                    $('#id_date_range_to').prop('required', false);
+                }
+            });
+            $('#id_date_range_to').change(function() { 
+                $('#id_date_range_from').prop('required', true);
+                if( $('#id_date_range_to').val() == '' ){
+                    $('#id_date_range_from').prop('required', false);
+                }
+            });
+
+            var template_data = null;
             var patient_addr_num = '';
             function reset_template_attrs(){
                 $('#questions_block').find('tbody').find('.dynamic-form').remove();
