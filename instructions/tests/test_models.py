@@ -13,6 +13,7 @@ from accounts.models import User, ClientUser, Patient, GeneralPracticeUser
 from snomedct.models import SnomedConcept
 from instructions.model_choices import *
 from instructions.cron.notification_mail import instruction_notification_email_job
+from organisations.models import OrganisationGeneralPractice
 from django.core import mail
 from django.contrib.contenttypes.models import ContentType
 from snomedct.models import SnomedConcept
@@ -21,9 +22,9 @@ from snomedct.models import SnomedConcept
 class InstructionReminderTest(TestCase):
     def setUp(self):
         self.now = timezone.now()
-        content_type = ContentType.objects.get(model='organisationgeneralpractice')
+        self.gp_practice = mommy.make(OrganisationGeneralPractice, name='Test GP Practice', practcode='TEST0001')
         self.instruction = mommy.make(
-            Instruction, gp_practice_type=content_type,
+            Instruction, gp_practice=self.gp_practice
         )
 
     def test_reminder_3_days(self):

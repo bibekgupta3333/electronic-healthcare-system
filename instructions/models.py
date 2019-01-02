@@ -8,6 +8,7 @@ from django_clamd.validators import validate_file_infection
 from common.models import TimeStampedModel
 from common.functions import get_url_page
 from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser, User
+from organisations.models import OrganisationGeneralPractice
 from accounts import models as account_models
 from snomedct.models import SnomedConcept
 from .model_choices import *
@@ -86,15 +87,15 @@ class Instruction(TimeStampedModel, models.Model):
     date_range_from = models.DateField(null=True, blank=True)
     date_range_to = models.DateField(null=True, blank=True)
 
-    gp_practice_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    gp_practice_id = models.CharField(max_length=255)
-    gp_practice = GenericForeignKey('gp_practice_type', 'gp_practice_id')
-    sars_consent = models.FileField(upload_to='consent_forms', null=True, blank=True, validators=[validate_file_infection])
-    mdx_consent = models.FileField(upload_to='consent_forms', null=True, blank=True, validators=[validate_file_infection])
-    medical_report = models.FileField(upload_to='medical_reports', null=True, blank=True, validators=[validate_file_infection])
+    gp_practice = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE)
+    sars_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
+    mdx_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
+    medical_report = models.FileField(upload_to='medical_reports', null=True, blank=True)
     saved = models.BooleanField(default=False)
     medi_ref = models.IntegerField(null=True, blank=True)
     your_ref = models.CharField(max_length=80, null=True, blank=True)
+    client_payment_reference = models.CharField(max_length=255, blank=True)
+    gp_payment_reference = models.CharField(max_length=255, blank=True)
 
     class Meta:
         verbose_name = "Instruction"

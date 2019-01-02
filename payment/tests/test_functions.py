@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 
-class CalculateInstructionFeeTest(TestCase):
+class CalculateInstructionFeeBaseTest(TestCase):
 
     def setUp(self):
         self.client_organisation = mommy.make(
@@ -20,7 +20,10 @@ class CalculateInstructionFeeTest(TestCase):
             role=ClientUser.CLIENT_ADMIN,
         )
         self.gp_practice = mommy.make(
-            OrganisationGeneralPractice, name='Test Name GP Organisation'
+            OrganisationGeneralPractice,
+            name='Test Name GP Organisation',
+            payment_bank_sort_code='12-34-56',
+            payment_bank_account_number='12345678'
         )
         self.amra_instruction = mommy.make(
             Instruction, type=model_choices.AMRA_TYPE,
@@ -63,6 +66,9 @@ class CalculateInstructionFeeTest(TestCase):
             fee_rate_top=10,
             vat=20
         )
+
+
+class CalculateInstructionFeeTest(CalculateInstructionFeeBaseTest):
 
     def test_calculate_fee_amra(self):
         calculate_instruction_fee(self.amra_instruction)
