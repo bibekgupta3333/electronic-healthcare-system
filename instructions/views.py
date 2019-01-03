@@ -51,14 +51,14 @@ def count_instructions(user, gp_practice_code, client_organisation):
     all_count = Instruction.objects.filter(query_condition).count()
     new_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_NEW).count()
     progress_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_PROGRESS).count()
-    overdue_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_OVERDUE).count()
+    paid_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_PAID).count()
     complete_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_COMPLETE).count()
     rejected_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_REJECT).count()
     overall_instructions_number = {
         'All': all_count,
         'New': new_count,
         'In Progress': progress_count,
-        'Overdue': overdue_count,
+        'Paid': paid_count,
         'Completed': complete_count,
         'Rejected': rejected_count
     }
@@ -178,11 +178,13 @@ def instruction_pipeline_view(request):
 
     if request.user.type == GENERAL_PRACTICE_USER:
         gp_role = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.role')
-        if gp_role == GeneralPracticeUser.PRACTICE_MANAGER or request.user.has_perm('instructions.process_sars'):
+        if gp_role == GeneralPracticeUser.PRACTICE_MANAGER:
             instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
-        else:
-            instruction_query_set = instruction_query_set.filter(Q(gp_user__user_id=request.user.id) |
-                                                                 Q(gp_user__isnull=True), gp_practice_id=gp_practice_code)
+        elif request.user.has_perm('instructions.process_sars'):
+            instruction_query_set = instruction_query_set.filter(
+                Q(gp_user=user.userprofilebase.generalpracticeuser) | Q(gp_user__isnull=True),
+                gp_practice_id=gp_practice_code
+            )
 
     table = InstructionTable(instruction_query_set)
     table.order_by = request.GET.get('sort', '-created')

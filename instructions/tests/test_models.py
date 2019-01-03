@@ -103,7 +103,7 @@ class InstructionTest(TestCase):
         self.instruction.rejected_by = self.user_3
         self.instruction.rejected_timestamp = timezone.now()
         self.instruction.status = INSTRUCTION_STATUS_REJECT
-        self.assertEqual(4, self.instruction.status)
+        self.assertEqual(3, self.instruction.status)
 
     def test_send_no_reject_email_to_patient_or_client(self):
         self.assertEqual(len(mail.outbox), 0)

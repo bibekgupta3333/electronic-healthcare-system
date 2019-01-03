@@ -17,7 +17,7 @@ class TestCountInstructions(TestCase):
         all_count = 1
         new_count = 1
         progress_count = 1
-        overdue_count = 1
+        paid_count = 1
         complete_count = 1
         rejected_count = 1
         self.assertEqual(1, all_count)
@@ -25,8 +25,8 @@ class TestCountInstructions(TestCase):
         self.assertEqual(1, new_count)
         status = INSTRUCTION_STATUS_PROGRESS
         self.assertEqual(1, progress_count)
-        status = INSTRUCTION_STATUS_OVERDUE
-        self.assertEqual(1, overdue_count)
+        status = INSTRUCTION_STATUS_PAID
+        self.assertEqual(1, paid_count)
         status = INSTRUCTION_STATUS_COMPLETE
         self.assertEqual(1, complete_count)
         status = INSTRUCTION_STATUS_REJECT

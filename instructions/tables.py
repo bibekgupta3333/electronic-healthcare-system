@@ -55,9 +55,9 @@ class InstructionTable(tables.Table):
         STATUS_DICT = {
             'New': 'badge-primary',
             'In Progress': 'badge-warning',
-            'Overdue': 'badge-info',
+            'Paid': 'badge-info',
             'Completed': 'badge-success',
-            'Rejected': 'badge-danger'
+            'Rejected': 'badge-info'
         }
         url = 'instructions:review_instruction'
         view_report = view_complete_report(self.user.id, record.pk)

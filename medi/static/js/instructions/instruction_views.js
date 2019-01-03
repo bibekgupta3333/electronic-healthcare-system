@@ -4,9 +4,9 @@ var clientuser_roleDict = {}, medidatauser_roleDict = {};
 inst_statusDict["All"] = -1;
 inst_statusDict["New"] = 0;
 inst_statusDict["In Progress"] = 1;
-inst_statusDict["Overdue"] = 2;
-inst_statusDict["Completed"] = 3;
-inst_statusDict["Rejected"] = 4;
+inst_statusDict["Completed"] = 2;
+inst_statusDict["Rejected"] = 3;
+inst_statusDict["Paid"] = 4;
 
 gpuser_roleDict["All"] = -1;
 gpuser_roleDict["Manager"] = 0;
