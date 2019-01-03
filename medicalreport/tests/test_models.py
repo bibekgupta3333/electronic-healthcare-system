@@ -6,14 +6,15 @@ from medicalreport.models import (
     AmendmentsForRecord, AdditionalMedicationRecords, AdditionalAllergies
 )
 from instructions.models import Instruction
+from instructions import model_choices
 from accounts.models import User, Patient
 
 
 class AmendmentsForRecordTest(TestCase):
     def setUp(self):
         patient = mommy.make(Patient, emis_number='12345')
-        self.instruction_1 = mommy.make(Instruction, status=3, patient=patient)
-        self.instruction_2 = mommy.make(Instruction, status=1)
+        self.instruction_1 = mommy.make(Instruction, status=model_choices.INSTRUCTION_STATUS_COMPLETE, patient=patient)
+        self.instruction_2 = mommy.make(Instruction, status=model_choices.INSTRUCTION_STATUS_PROGRESS)
         user = mommy.make(User, first_name='pete', last_name='john')
         self.amendments_1 = mommy.make(
             AmendmentsForRecord, instruction=self.instruction_1,

@@ -11,7 +11,7 @@ from .models import Instruction, InstructionAdditionQuestion, InstructionConditi
 from .tables import InstructionTable
 from .model_choices import *
 from .forms import ScopeInstructionForm, AdditionQuestionFormset, SarsConsentForm, MdxConsentForm,\
-        ReferenceForm, ConsentForm
+        ReferenceForm, ConsentForm, InstructionDateRangeForm
 from accounts.models import User, GeneralPracticeUser, PracticePreferences
 from accounts.models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from accounts.forms import InstructionPatientForm, GPForm
@@ -51,14 +51,14 @@ def count_instructions(user, gp_practice_code, client_organisation):
     all_count = Instruction.objects.filter(query_condition).count()
     new_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_NEW).count()
     progress_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_PROGRESS).count()
-    overdue_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_OVERDUE).count()
+    paid_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_PAID).count()
     complete_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_COMPLETE).count()
     rejected_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_REJECT).count()
     overall_instructions_number = {
         'All': all_count,
         'New': new_count,
         'In Progress': progress_count,
-        'Overdue': overdue_count,
+        'Paid': paid_count,
         'Completed': complete_count,
         'Rejected': rejected_count
     }
@@ -94,7 +94,7 @@ def calculate_next_prev(page=None, **kwargs):
 
 
 @login_required(login_url='/accounts/login')
-def create_or_update_instruction(request, patient_instruction, scope_form=None, gp_practice=None, instruction_id=None) -> Instruction:
+def create_or_update_instruction(request, patient_instruction, scope_form=None, date_range_form=None, gp_practice=None, instruction_id=None) -> Instruction:
     if instruction_id:
         instruction = get_object_or_404(Instruction, pk=instruction_id)
     else:
@@ -114,6 +114,8 @@ def create_or_update_instruction(request, patient_instruction, scope_form=None, 
         instruction.type = SARS_TYPE
         instruction.gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
         instruction.gp_user = request.user.userprofilebase.generalpracticeuser
+        instruction.date_range_from = date_range_form.cleaned_data['date_range_from']
+        instruction.date_range_to = date_range_form.cleaned_data['date_range_to']
 
     instruction.patient_information_id = patient_instruction.id
     instruction.save()
@@ -178,11 +180,13 @@ def instruction_pipeline_view(request):
 
     if request.user.type == GENERAL_PRACTICE_USER:
         gp_role = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.role')
-        if gp_role == GeneralPracticeUser.PRACTICE_MANAGER or request.user.has_perm('instructions.process_sars'):
+        if gp_role == GeneralPracticeUser.PRACTICE_MANAGER:
             instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
-        else:
-            instruction_query_set = instruction_query_set.filter(Q(gp_user__user_id=request.user.id) |
-                                                                 Q(gp_user__isnull=True), gp_practice_id=gp_practice_code)
+        elif request.user.has_perm('instructions.process_sars'):
+            instruction_query_set = instruction_query_set.filter(
+                Q(gp_user=user.userprofilebase.generalpracticeuser) | Q(gp_user__isnull=True),
+                gp_practice_id=gp_practice_code
+            )
 
     table = InstructionTable(instruction_query_set)
     table.order_by = request.GET.get('sort', '-created')
@@ -209,6 +213,7 @@ def new_instruction(request):
     gp_form = GPForm()
     nhs_form = GeneralPracticeForm()
     reference_form = ReferenceForm()
+    date_range_form = InstructionDateRangeForm()
 
     if request.method == "POST":
         request.POST._mutable = True
@@ -232,6 +237,7 @@ def new_instruction(request):
         selected_gp_adr_line3 = request.POST.get('patient_address_line3', '')
         selected_gp_adr_country = request.POST.get('patient_country', '')
         patient_form = InstructionPatientForm(InstructionPatientForm.change_request_date(request.POST))
+        date_range_form = InstructionDateRangeForm(request.POST)
 
         i = 0
         while i < len(selected_add_cond):
@@ -244,7 +250,8 @@ def new_instruction(request):
             gp_practice_code = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.pk', default=None)
         gp_practice = OrganisationGeneralPractice.objects.filter(practcode=gp_practice_code).first()
         if (patient_form.is_valid() and scope_form.is_valid() and gp_practice) or\
-                (request.user.type == GENERAL_PRACTICE_USER and patient_form.is_valid()):
+                (request.user.type == GENERAL_PRACTICE_USER and patient_form.is_valid()\
+                and date_range_form.is_valid()):
             if instruction_id:
                 prev_instruction = get_object_or_404(Instruction, pk=instruction_id)
                 patient_instruction = get_object_or_404(InstructionPatient, instruction=prev_instruction)
@@ -256,8 +263,8 @@ def new_instruction(request):
             # create instruction
             instruction = create_or_update_instruction(
                 request=request, patient_instruction=patient_instruction,
-                scope_form=scope_form, gp_practice=gp_practice,
-                instruction_id=instruction_id
+                scope_form=scope_form, date_range_form=date_range_form,
+                gp_practice=gp_practice, instruction_id=instruction_id
             )
             reference_form = ReferenceForm(request.POST, instance=instruction)
             if reference_form.is_valid():
@@ -330,6 +337,7 @@ def new_instruction(request):
                 'nhs_form': nhs_form,
                 'gp_form': gp_form,
                 'scope_form': scope_form,
+                'date_range_form': date_range_form,
                 'reference_form': reference_form,
                 'addition_question_formset': addition_question_formset,
                 'selected_pat_code': selected_pat_code,
@@ -407,6 +415,7 @@ def new_instruction(request):
             'nhs_form': nhs_form,
             'gp_form': gp_form,
             'scope_form': scope_form,
+            'date_range_form': date_range_form,
             'addition_question_formset': addition_question_formset,
             'nhs_address': nhs_address,
             'condition_of_interest': condition_of_interest,
@@ -426,6 +435,7 @@ def new_instruction(request):
         'nhs_form': nhs_form,
         'gp_form': gp_form,
         'scope_form': scope_form,
+        'date_range_form': date_range_form,
         'reference_form': reference_form,
         'addition_question_formset': addition_question_formset
     })
@@ -465,6 +475,8 @@ def review_instruction(request, instruction_id):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     patient_instruction = instruction.patient_information
     date_format = patient_instruction.patient_dob.strftime("%d/%m/%Y")
+    date_range_form = InstructionDateRangeForm(instance=instruction)
+
     # Initial Patient Form
     patient_form = InstructionPatientForm(
         instance=patient_instruction,
@@ -520,6 +532,7 @@ def review_instruction(request, instruction_id):
         'nhs_form': nhs_form,
         'gp_form': gp_form,
         'scope_form': scope_form,
+        'date_range_form': date_range_form,
         'reference_form': reference_form,
         'addition_question_formset': addition_question_formset,
         'nhs_address': gp_organisation_address,

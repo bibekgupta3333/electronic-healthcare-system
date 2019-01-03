@@ -137,6 +137,15 @@ class ClientNoteForm(forms.ModelForm):
         self.fields['note'] = forms.ChoiceField(choices=choices)
 
 
+class InstructionDateRangeForm(forms.ModelForm):
+    date_range_from = forms.DateField(required=False, label="From")
+    date_range_to = forms.DateField(required=False, label="To")
+
+    class Meta:
+        model = Instruction
+        fields = ('date_range_from', 'date_range_to')
+
+
 class ConsentForm(forms.ModelForm):
     consent_form = forms.FileField(required=False, label="Select a File", validators=[validate_file_infection])
 

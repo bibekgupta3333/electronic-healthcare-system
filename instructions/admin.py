@@ -2,14 +2,14 @@ from django.contrib import admin
 from . import models
 from django.shortcuts import get_object_or_404
 from common.import_export import CustomImportExportModelAdmin
-from instructions.model_choices import INSTRUCTION_STATUS_REJECT
+from instructions import model_choices
 from django.utils import timezone
 from datetime import timedelta
 from instructions.models import Instruction
 from django.db.models import Q
 from organisations.models import OrganisationGeneralPractice
 from instructions.forms import ClientNoteForm
-
+from import_export import resources
 
 class InstructionReminder(admin.TabularInline):
     model = models.InstructionReminder
@@ -140,15 +140,69 @@ class GPOrgFilter(admin.SimpleListFilter):
         return queryset
 
 
+class InstructionResource(resources.ModelResource):
+    class Meta:
+        model = Instruction
+        fields = ('id', 'medi_ref', 'status', 'client_payment_reference', 'gp_payment_reference')
+
+    def before_import(self, dataset, using_transactions, dry_run, **kwargs):
+        columns = []
+        for column in dataset.headers:
+            columns.append(column.lower())
+        dataset.headers = columns
+
+    def before_import_row(self, row, **kwargs):
+        instuction_staus_mapping = {
+            'New': model_choices.INSTRUCTION_STATUS_NEW,
+            'In Progress': model_choices.INSTRUCTION_STATUS_PROGRESS,
+            'Paid': model_choices.INSTRUCTION_STATUS_PAID,
+            'Completed': model_choices.INSTRUCTION_STATUS_COMPLETE,
+            'Rejected': model_choices.INSTRUCTION_STATUS_REJECT
+        }
+        row['status'] = instuction_staus_mapping[row['status']]
+
+
 class InstructionAdmin(CustomImportExportModelAdmin):
     change_status = False
     list_display = ('gp_practice', 'client', 'status', 'created', 'type', 'days_since_created')
     list_filter = ('type', DaysSinceFilter, ClientOrgFilter, GPOrgFilter)
-    readonly_fields = ('medi_ref',)
+    resource_class = InstructionResource
+    raw_id_fields = ('gp_practice', )
+    readonly_fields = ('medi_ref', )
     actions = ['export_status_report_as_csv', 'export_payment_as_csv', 'export_client_payment_as_csv']
     search_fields = [
         'type'
     ]
+
+    fieldsets = (
+        ('Instruction Information', {
+            'fields': (
+                'client_user', 'gp_user', 'patient_information', 'type', 'gp_practice', 'date_range_from', 'date_range_to', 'your_ref', 'medi_ref',
+                'gp_title_from_client', 'gp_initial_from_client', 'gp_last_name_from_client'
+            )
+        }),
+        ('Rejected Information', {
+            'fields': (
+                'rejected_timestamp', 'rejected_by', 'rejected_note', 'rejected_reason'
+            )
+        }),
+        ('Final report Information', {
+            'fields': (
+                'completed_signed_off_timestamp', 'final_report_date', 'medical_report'
+            )
+        }),
+        ('Consents Information', {
+            'fields': (
+                'consent_form', 'sars_consent', 'mdx_consent'
+            )
+        }),
+        ('Payment Information', {
+            'fields': (
+                'gp_earns', 'medi_earns', 'client_payment_reference', 'gp_payment_reference'
+            )
+        })
+    )
+
     inlines = [
         InstructionReminder,
         InstructionClientNote,
@@ -186,7 +240,7 @@ class InstructionAdmin(CustomImportExportModelAdmin):
         if self.change_status:
             pk = form.instance.id
             instruction = get_object_or_404(models.Instruction, pk=pk)
-            if instruction.status == INSTRUCTION_STATUS_REJECT:
+            if instruction.status == model_choices.INSTRUCTION_STATUS_REJECT:
                 if instruction.client_user:
                     instruction.send_reject_email([instruction.client_user.user.email, instruction.gp_user.user.email])
                 else:

@@ -54,13 +54,10 @@ psycopg2==2.7.5
 psycopg2-binary==2.7.5
 pyasn1==0.4.4
 pycparser==2.18
-pycrypto==2.6.1
 pycryptodome==3.7.0
 pydotplus==2.0.2
 pyparsing==2.2.0
 python-dateutil==2.7.3
-python-keyczar==0.716
-python3-keyczar==0.71rc0
 pytz==2018.5
 PyYAML==3.13
 raven==6.9.0

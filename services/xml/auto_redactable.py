@@ -30,6 +30,8 @@ def auto_redact_by_date(
         from_date=None,
         to_date=None,
 ) -> List[XMLModelBase]:
+    if from_date:
+        start_date=from_date
     redactor = DateRedactor(start_date=start_date, from_date=from_date, to_date=to_date)
     return [m for m in models if not redactor.is_redact(m)]
 

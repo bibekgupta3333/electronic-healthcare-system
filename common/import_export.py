@@ -21,10 +21,7 @@ import zipfile
 
 
 class CustomImportMixin(ImportMixin):
-
-    def import_csv(self, request, *args, **kwargs):
-        # TODO: importing update instruction status csv file
-        pass
+    import_template_name = 'admin/csv_form.html'
 
 
 class CustomExportMixin(ExportMixin):
@@ -127,7 +124,7 @@ class CustomExportMixin(ExportMixin):
             csv_data_payment = io.StringIO()
             writer = csv.writer(csv_data_payment, delimiter=',')
             writer.writerow(['Sort Code', 'Account number', 'GP Surgery', 'Amount', 'VAT', 'Reference'])
-            total_earns_for_each_gp_practice = Instruction.objects.filter(status=3)\
+            total_earns_for_each_gp_practice = Instruction.objects.filter(status=model_choices.INSTRUCTION_STATUS_COMPLETE)\
                                                 .values('gp_practice')\
                                                 .annotate(Sum('gp_earns'))\
                                                 .order_by('gp_practice')

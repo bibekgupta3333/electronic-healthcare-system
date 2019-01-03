@@ -182,6 +182,19 @@
                         </div>
                     </div>
                 </div>
+            {% else %}
+                <div class="col-md-12 mt-4">
+                    <div class="card">
+                        <div class="card-header"><h5>Scope</h5></div>
+                        <div class="card-body">
+                            <div class="row" id="date_range">
+                                <div class="col-md-3 rowTitle">Medical reports date range</div>
+                                {% bootstrap_field date_range_form.date_range_from size='small' form_group_class='form-group col-md-2 p-0 input-group dob' show_label=False %}
+                                {% bootstrap_field date_range_form.date_range_to size='small'  form_group_class='form-group col-md-2 input-group dob' show_label=False %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             {% endif %}
         </div>
             <div class="col-md-4 mt-4">
