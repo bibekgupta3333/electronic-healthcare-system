@@ -141,7 +141,7 @@ class AutoRedactableTest(XMLTestCase):
         test_date = date(2019, 1, 1)
         self.assertEqual(3, len(attachments))
         self.assertEqual(
-            0,
+            1,
             len(auto_redact_attachments(attachments, self.instruction_with_range, test_date))
         )
 

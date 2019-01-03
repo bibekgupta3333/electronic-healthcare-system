@@ -104,6 +104,12 @@
 
                         </div>
                     </div>
+                    <div class="row" id="date_range">
+                        <div class="col-md-2 rowTitle">Medical reports date range</div>
+                        {% bootstrap_field date_range_form.date_range_from size='small' form_group_class='form-group col-md-2' show_label=False placeholder='' %}
+                        <p>To </p>
+                        {% bootstrap_field date_range_form.date_range_to size='small'  form_group_class='form-group col-md-2' show_label=False placeholder='' %}
+                    </div>
                 </div>
             </div>
         </div>

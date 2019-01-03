@@ -1,4 +1,4 @@
-import datetime
+from datetime import date, datetime
 
 from django.test import TestCase
 from django.http import JsonResponse
@@ -185,7 +185,7 @@ class EditReportTest(EmisAPITestCase):
             Instruction, pk=2, consent_form=consent_form,
             patient=self.patient, gp_user=self.gp_user,
             gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_PROGRESS, type='SARS',
-            **{'date_range_from': datetime.datetime(1995, 10, 10), 'date_range_to': datetime.datetime(2015, 10, 10)}
+            **{'date_range_from': datetime(1995, 10, 10), 'date_range_to': datetime(2015, 10, 10)}
         )
         self.snomed_concept = mommy.make(SnomedConcept, external_id=365981007)
         self.snomed_concept = mommy.make(SnomedConcept, external_id=228273003)
@@ -234,14 +234,14 @@ class EditReportTest(EmisAPITestCase):
     def test_date_range_for_records(self):
         response = self.client.get('/medicalreport/2/edit/')
         medical_record = response.context.get('medical_record')
-        medical_record.instruction.date_range_to = datetime.datetime(2015, 10, 10)
-        medical_record.instruction.date_range_from = datetime.datetime(1995, 10, 10)
+        medical_record.instruction.date_range_to = date(2015, 10, 10)
+        medical_record.instruction.date_range_from = date(1995, 10, 10)
         test_data = medical_record.consultations()
         for item in test_data:
             is_valid = True
             if medical_record.instruction.id == 2 and\
-                    item.parsed_date() < medical_record.instruction.date_range_from.date() or \
-                    item.parsed_date() > medical_record.instruction.date_range_to.date():
+                    item.parsed_date() < medical_record.instruction.date_range_from or \
+                    item.parsed_date() > medical_record.instruction.date_range_to:
                     is_valid = False
             self.assertTrue(is_valid)
 
