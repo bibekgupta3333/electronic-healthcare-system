@@ -49,7 +49,7 @@ class SurgeryForm(forms.Form):
                 'billing_address_line_2': self.cleaned_data.get('address_line2'),
                 'billing_address_line_3': self.cleaned_data.get('address_line3'),
                 'billing_address_city': self.cleaned_data.get('city'),
-                'billing_address_state': self.cleaned_data.get('country'),
+                'billing_address_state': self.cleaned_data.get('county'),
                 'billing_address_postalcode': self.cleaned_data.get('postcode'),
                 'phone_office': self.cleaned_data.get('contact_num'),
                 'operating_system_organisation_code': self.cleaned_data.get('emis_org_code'),
