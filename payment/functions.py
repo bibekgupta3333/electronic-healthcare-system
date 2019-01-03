@@ -9,7 +9,7 @@ def calculate_instruction_fee(instruction):
     time_delta = instruction.completed_signed_off_timestamp - instruction.created
     organisation_fee = OrganisationFee.objects.filter(gp_practice=gp_practice).first()
     organisation_fee_rate = organisation_fee.get_fee_rate(time_delta.days)
-    client_organisation = instruction.client_user.organisation
+    client_organisation = instruction.client_user.organisation if instruction.client_user else None
     instruction_volume_fee = InstructionVolumeFee.objects.filter(client_organisation=client_organisation).first()
     if instruction_volume_fee:
         instruction_fee_rate = instruction_volume_fee.get_fee_rate(

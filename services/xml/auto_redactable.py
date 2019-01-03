@@ -41,17 +41,17 @@ def auto_redact_consultations(consultations, instruction, current_date=date.toda
     )
 
 
-def auto_redact_medications(medications, current_date=date.today()):
-    return auto_redact_by_date(medications, start_date=years_ago(2, current_date))
+def auto_redact_medications (medications, instruction, current_date=date.today()):
+    return auto_redact_by_date(medications, start_date=years_ago(2, current_date), from_date=instruction.date_range_from, to_date=instruction.date_range_to )
 
 
-def auto_redact_referrals(referrals, current_date=date.today()):
-    return auto_redact_by_date(referrals, start_date=years_ago(5, current_date))
+def auto_redact_referrals(referrals, instruction, current_date=date.today()):
+    return auto_redact_by_date(referrals, start_date=years_ago(5, current_date), from_date=instruction.date_range_from, to_date=instruction.date_range_to )
 
 
-def auto_redact_attachments(attachments, current_date=date.today()):
-    return auto_redact_by_date(attachments, start_date=years_ago(2, current_date))
+def auto_redact_attachments(attachments, instruction, current_date=date.today()):
+    return auto_redact_by_date(attachments, start_date=years_ago(2, current_date), from_date=instruction.date_range_from, to_date=instruction.date_range_to )
 
 
-def auto_redact_profile_events(events, current_date=date.today()):
-    return auto_redact_by_date(events, start_date=years_ago(5, current_date))
+def auto_redact_profile_events(events, instruction, current_date=date.today()):
+    return auto_redact_by_date(events, start_date=years_ago(5, current_date), from_date=instruction.date_range_from, to_date=instruction.date_range_to )
