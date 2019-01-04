@@ -185,7 +185,7 @@ class TestNewInstruction(TestCase):
             'patient_title': 'MR',
             'patient_first_name': 'patient1',
             'patient_postcode': 'N10 1AE',
-            'patient_country': 'Country'
+            'patient_county': 'County'
         })
         self.assertEqual(302, response.status_code)
 
@@ -194,7 +194,7 @@ class TestNewInstruction(TestCase):
             'patient_title': 'MR',
             'patient_first_name': 'patient1',
             'patient_postcode': 'N10 1AE',
-            'patient_country': 'Country',
+            'patient_county': 'County',
             'gp_practice': '1234',
             'gp_practice_name': 'Gp organisation',
             'gp_title': 'MR',
@@ -210,7 +210,7 @@ class TestNewInstruction(TestCase):
             'patient_last_name': 'bbb',
             'patient_postcode': 'N10 1AG',
             'patient_city': 'London',
-            'patient_country': '',
+            'patient_county': '',
             'patient_email': '',
             'gp_practice': '12345',
             'gp_practice_name': 'GP Organisation',

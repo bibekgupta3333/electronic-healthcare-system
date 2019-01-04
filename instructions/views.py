@@ -235,7 +235,7 @@ def new_instruction(request):
         selected_gp_adr_line1 = request.POST.get('patient_address_line1', '')
         selected_gp_adr_line2 = request.POST.get('patient_address_line2', '')
         selected_gp_adr_line3 = request.POST.get('patient_address_line3', '')
-        selected_gp_adr_country = request.POST.get('patient_country', '')
+        selected_gp_adr_county = request.POST.get('patient_county', '')
         patient_form = InstructionPatientForm(InstructionPatientForm.change_request_date(request.POST))
         date_range_form = InstructionDateRangeForm(request.POST)
 
@@ -331,6 +331,10 @@ def new_instruction(request):
             else:
                 return redirect('instructions:view_pipeline')
         else:
+            messages.error(
+                request,
+                "You must supply a valid consent form, or the patient's e-mail address when creating an AMRA instruction!"
+            )
             return render(request, 'instructions/new_instruction.html', {
                 'header_title': header_title,
                 'patient_form': patient_form,
@@ -349,7 +353,7 @@ def new_instruction(request):
                 'selected_gp_adr_line1': selected_gp_adr_line1,
                 'selected_gp_adr_line2': selected_gp_adr_line2,
                 'selected_gp_adr_line3': selected_gp_adr_line3,
-                'selected_gp_adr_country': selected_gp_adr_country
+                'selected_gp_adr_county': selected_gp_adr_county
             })
     patient_form = InstructionPatientForm()
     addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.none())
@@ -427,7 +431,7 @@ def new_instruction(request):
             'selected_gp_adr_line1': patient_instruction.patient_address_line1,
             'selected_gp_adr_line2': patient_instruction.patient_address_line2,
             'selected_gp_adr_line3': patient_instruction.patient_address_line3,
-            'selected_gp_adr_country': patient_instruction.patient_country
+            'selected_gp_adr_county': patient_instruction.patient_county
         })
     return render(request, 'instructions/new_instruction.html', {
         'header_title': header_title,

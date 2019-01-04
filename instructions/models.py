@@ -33,7 +33,7 @@ class InstructionPatient(models.Model):
     patient_address_line2 = models.CharField(max_length=255, blank=True)
     patient_address_line3 = models.CharField(max_length=255, blank=True)
     patient_city = models.CharField(max_length=255)
-    patient_country = models.CharField(max_length=255)
+    patient_county = models.CharField(max_length=255)
     patient_nhs_number = models.CharField(max_length=10, blank=True)
     patient_email = models.EmailField(max_length=255, blank=True)
     patient_telephone_code = models.CharField(max_length=10, blank=True)
