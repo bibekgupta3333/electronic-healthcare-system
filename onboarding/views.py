@@ -119,7 +119,7 @@ def emis_setup(request, practice_code):
 
 
 @login_required(login_url='/accounts/login')
-def emr_setup_stage_2(request, practice_code=None):
+def emr_setup_final(request, practice_code=None):
     gp_organisation = get_object_or_404(OrganisationGeneralPractice, pk=practice_code)
     if request.user.get_my_organisation() != gp_organisation:
         return redirect('login')
@@ -199,7 +199,7 @@ def emr_setup_stage_2(request, practice_code=None):
                 'login_link': login_link,
             })
 
-    return render(request, 'onboarding/emr_setup_stage_2.html', {
+    return render(request, 'onboarding/emr_setup_final.html', {
         'surgery_form': surgery_form,
         'user_formset': user_formset,
         'bank_details_form': bank_details_form,
@@ -254,7 +254,7 @@ def send_email_emr(request, emr):
     from_email = settings.DEFAULT_FROM
     to_list = [emr.pm_email]
     html_message = loader.render_to_string('onboarding/emr_email.html',{
-        'link': '{}/onboarding/emr-setup-stage-2/{}'.format(request.get_host(), emr.id)
+        'link': '{}/onboarding/emr-setup-final/{}'.format(request.get_host(), emr.id)
     })
     send_mail('Completely eMR', '', from_email, to_list, fail_silently=True, html_message=html_message)
 

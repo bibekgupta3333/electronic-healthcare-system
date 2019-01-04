@@ -23,9 +23,9 @@ class OnboardingHackingURLTestCase(TestCase):
         self.assertEqual('/accounts/login/', response.url)
         self.client.logout()
 
-    def test_logged_in_hacking_emr_setup_stage_2_views(self):
+    def test_logged_in_hacking_emr_setup_final_views(self):
         self.client.force_login(self.active_user)
-        response = self.client.get('/onboarding/emr-setup-stage-2/GP0001')
+        response = self.client.get('/onboarding/emr-setup-final/GP0001')
         self.assertEqual(302, response.status_code)
         self.assertEqual('/accounts/login/', response.url)
         self.client.logout()
@@ -35,10 +35,10 @@ class OnboardingHackingURLTestCase(TestCase):
         self.assertEqual(302, response.status_code)
         self.assertEqual('/accounts/login?next=/onboarding/emis-setup/GP0001', response.url)
 
-    def test_non_logged_in_hacking_emr_setup_stage_2_views(self):
-        response = self.client.get('/onboarding/emr-setup-stage-2/GP0001')
+    def test_non_logged_in_hacking_emr_setup_final_views(self):
+        response = self.client.get('/onboarding/emr-setup-final/GP0001')
         self.assertEqual(302, response.status_code)
-        self.assertEqual('/accounts/login?next=/onboarding/emr-setup-stage-2/GP0001', response.url)
+        self.assertEqual('/accounts/login?next=/onboarding/emr-setup-final/GP0001', response.url)
 
     def test_non_active_user_redirect_from_pipeline_views_to_emis_setup(self):
         self.client.force_login(self.inactive_user)
@@ -53,8 +53,8 @@ class OnboardingHackingURLTestCase(TestCase):
         self.assertEqual(200, response.status_code)
         self.client.logout()
 
-    def test_success_access_emr_setup_stage_2_views(self):
+    def test_success_access_emr_setup_final_views(self):
         self.client.force_login(self.inactive_user)
-        response = self.client.get('/onboarding/emr-setup-stage-2/GP0001')
+        response = self.client.get('/onboarding/emr-setup-final/GP0001')
         self.assertEqual(200, response.status_code)
         self.client.logout()
