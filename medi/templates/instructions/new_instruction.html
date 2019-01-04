@@ -57,7 +57,7 @@
                               {% bootstrap_field patient_form.patient_city size='small' form_group_class='form-group col-md-5' placeholder='' %}
                         </div>
                         <div class="row" >
-                              {% bootstrap_field patient_form.patient_country size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' placeholder='' %}
+                              {% bootstrap_field patient_form.patient_county size='small' form_group_class='form-group col-md-5 offset-md-2 p-0' placeholder='' %}
                         </div>
                         <div class="row">
                             <div class="col-md-2 rowTitle">NHS #:</div>
@@ -512,7 +512,7 @@
                                 $('#id_patient_address_line2').val(selectedData[1]);
                                 $('#id_patient_address_line3').val(selectedData[2]);
                                 $('#id_patient_city').val(selectedData[5]);
-                                $('#id_patient_country').val(selectedData[6]);
+                                $('#id_patient_county').val(selectedData[6]);
                             });
 
                             if (patient_addr_num) {
@@ -545,8 +545,8 @@
             if ("{{selected_gp_adr_line3}}") {
                 $('#id_patient_address_line3').val("{{selected_gp_adr_line3}}");
             }
-            if ("{{selected_gp_adr_country}}") {
-                $('#id_patient_country').val("{{selected_gp_adr_country}}");
+            if ("{{selected_gp_adr_county}}") {
+                $('#id_patient_county').val("{{selected_gp_adr_county}}");
             }
             if ("{{selected_pat_adr_num}}") {
                 patient_addr_num = "{{selected_pat_adr_num}}";
