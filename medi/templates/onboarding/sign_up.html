@@ -154,6 +154,7 @@
                     </div>
                     <div class="row form-group">
                         <div class="col-md-6">
+                            <p class="text-secondary">Your email address will be your username when you log into eMR.</p>
                             <div class="row" id="email_form">
                                 <div class="col-md-4 title-pos">Email address <span class="red">*</span></div>
                                 {% bootstrap_field pm_form.email1 show_label=False form_group_class='col-md-7' placeholder='' %}
@@ -180,7 +181,7 @@
                     </div>
                     <div class="row form-group">
                         <div class="col-12">
-                            <span>Your password must be at least 8 characters long and contain letters and numbers</span>
+                            <span class="text-secondary">Your password must be at least 8 characters long and must not contain common words or be related to your username</span>
                         </div>
                     </div>
                     <div class="row form-group">
@@ -192,20 +193,22 @@
                         </div>
                     </div>
                     <div class="row form-group">
-                        <div class="col-md-7">
+                        <div class="col-md-8">
                             <div class="row form-group">
                                 <div class="col-md-12">
-                                    <input type="checkbox" class="accept-policy" name="accept_policy" id="accept-policy" disabled>I accept all T&Cs, End User Licence and data policy. View all documents </input>
-                                    <a href="#" class="active-a" data-toggle="modal" data-target="#acceptTCs">here</a>
+                                    <input type="checkbox" class="accept-policy" name="accept_policy" id="accept-policy" disabled>
+                                        Click  <a href="#" class="active-a" data-toggle="modal" data-target="#acceptTCs">here</a> to view and accept all T&Cs, End User Licence and data policy.
+                                        <p class="mt-2 ml-4 text-secondary">These will appear in a pop-up, so please make sure any pop-up blockers are disabled temporarily to enable this.</p>
+                                    </input>
                                 </div>
                             </div>
                             <div class="row form-group">
                                 <div class="col-md-12">
-                                    <input type="checkbox" id="consent" class="consent" name="consented">I consent to MediData Exchange contacting the surgery regarding eMR.</input>
+                                    <input type="checkbox" id="consent" class="consent" name="consented">I consent to MediData Exchange contacting the surgery regarding our services.</input>
                                 </div>
                             </div>
                         </div>
-                        <div class="offset-md-1 col-md-4">
+                        <div class="offset-md-1 col-md-3">
                             <div class="row">
                                 <button id="BtnSignUp" class="btn btn-primary btn-lg" type="submit" disabled>Sign Up</button>
                             </div>
