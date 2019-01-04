@@ -28,7 +28,8 @@
                 <div class="card-body">
                     <div class="row subheader">
                         <div class="col-12">
-                            To be completed by an authorised member of the practice
+                            <p>To be completed by an authorised member of the practice</p>
+                            <p class="mb-0">You can use your Practice Code or Surgery name to search for your Surgery, but if any information is incorrect please feel free to overwrite with the correct details.</p>
                         </div>
                     </div>
                     <div class="row form-group">
@@ -39,14 +40,14 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-4 title-pos">Surgery Name <span class="red">*</span></div>
-                                {% bootstrap_field surgery_form.surgery_name show_label=False form_group_class='col-md-7' placeholder='' %}
+                                <div class="col-md-4 title-pos font-weight-bold">Practice Code <span class="red">*</span></div>
+                                {% bootstrap_field surgery_form.practice_code show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-4 title-pos">Practice Code <span class="red">*</span></div>
-                                {% bootstrap_field surgery_form.practice_code show_label=False form_group_class='col-md-7' placeholder='' %}
+                                <div class="col-md-4 title-pos">Surgery Name <span class="red">*</span></div>
+                                {% bootstrap_field surgery_form.surgery_name show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
                     </div>
@@ -109,16 +110,16 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
-                                <div class="col-md-4">EMIS Organisation Code <span class="red">*</span></div>
-                                {% bootstrap_field surgery_form.emis_org_code show_label=False form_group_class='col-md-7' placeholder='' %}
-                            </div>
-                        </div>
-                         <div class="col-md-6">
-                            <div class="row">
                                 <div class="col-md-4">
-                                    <label for="id_operating_system" class="col-form-label">Primary Care record system <span class="red">*</span></label>
+                                    <label for="id_operating_system" class="col-form-label">Primary Care system<span class="red">*</span></label>
                                 </div>
                                 {% bootstrap_field surgery_form.operating_system show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4">Clinical System Code<span class="red">*</span></div>
+                                {% bootstrap_field surgery_form.emis_org_code show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
                     </div>
@@ -422,7 +423,7 @@
                 );
 
                 init_select2_postcode([$('#id_postcode').data('post-code')]);
-                if($('#id_postcode').data('postcode')){
+                if($('#id_postcode').data('post-code')){
                     $('#id_postcode').trigger('change');
                 }
             });
