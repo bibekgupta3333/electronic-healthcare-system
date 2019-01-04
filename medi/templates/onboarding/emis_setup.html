@@ -282,7 +282,7 @@
                     We'll redirect you to where you can set up access to eMR for your GPs.
                 </p>
                 <p>
-                    <a href="{% url 'onboarding:emr_setup_stage_2' practice_code %}" style="color: #33aea0; font-size: 18px"><strong>Click here</strong></a> if nothing happens.
+                    <a href="{% url 'onboarding:emr_setup_final' practice_code %}" style="color: #33aea0; font-size: 18px"><strong>Click here</strong></a> if nothing happens.
                 </p>
             </div>
             <button class="btn btn-checkSetup" onclick="this.disabled=true; pollingEmis('{% url "onboarding:emis_polling" practice_code %}')" type="button" id="checkingEmisButton">

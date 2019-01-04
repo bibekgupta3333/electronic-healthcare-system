@@ -6,7 +6,7 @@
 {% bootstrap_messages %}
 
 {% block ExtraHead %}
-    <link rel="stylesheet" href="{% static 'css/onboarding/emr_setup_stage_2.css' %}">
+    <link rel="stylesheet" href="{% static 'css/onboarding/emr_setup_final.css' %}">
 {% endblock %}
 
 {% block Content %}
@@ -106,52 +106,6 @@
                         {% bootstrap_field surgery_email_form.confirm_email placeholder='' %}
                     </div>
                 </div>
-            </div>
-            <div class="col-md-12 mt-5">
-                <h4 class="mb-4"><b>Bank Details for Fee Payments</b></h4>
-                 <div class="row">
-                    <div class="col-md-3">Bank Account Name</div>
-                    <div class="col-md-6">
-                        {% bootstrap_field bank_details_form.bank_account_name placeholder='' %}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3">Bank Account Number</div>
-                    <div class="col-md-4">
-                        {% bootstrap_field bank_details_form.bank_account_number placeholder='' %}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3">Bank Account Sort Code</div>
-                    <div class="col-md-4">
-                        {% bootstrap_field bank_details_form.bank_account_sort_code placeholder='' %}
-                    </div>
-                </div>
-                <h5>Your fee per medical report</h5>
-                <div class="row">
-                    <div class="col-md-3"><b>Received within 3 days</b></div>
-                    <div class="col-md-3">
-                        {% bootstrap_field bank_details_form.received_within_3_days form_group_class='form-group input-group' placeholder='' %}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3"><b>Received within 4-6 days</b></div>
-                    <div class="col-md-3">
-                        {% bootstrap_field bank_details_form.received_within_4_to_6_days form_group_class='form-group input-group' placeholder='' %}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3"><b>Received within 7-10 days</b></div>
-                    <div class="col-md-3">
-                        {% bootstrap_field bank_details_form.received_within_7_to_10_days form_group_class='form-group input-group' placeholder='' %}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3"><b>Received after 10 days</b></div>
-                    <div class="col-md-3">
-                        {% bootstrap_field bank_details_form.received_after_10_days form_group_class='form-group input-group' placeholder='' %}
-                    </div>
-                </div>
                 <div class="row">
                     <div class="col-md-3"><b>Name of person completing this form</b></div>
                     <div class="col-md-4">
@@ -183,6 +137,54 @@
                         {% bootstrap_button content='Submit' button_type='submit' size='medium' button_class='btn btn-primary'  %}
                     </div>
                 </div>
+            </div>
+            <div class="col-md-12 mt-5">
+                <span class="invisible">
+                    <h4 class="mb-4"><b>Bank Details for Fee Payments</b></h4>
+                     <div class="row">
+                        <div class="col-md-3">Bank Account Name</div>
+                        <div class="col-md-6">
+                            {% bootstrap_field bank_details_form.bank_account_name placeholder='' %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">Bank Account Number</div>
+                        <div class="col-md-4">
+                            {% bootstrap_field bank_details_form.bank_account_number placeholder='' %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">Bank Account Sort Code</div>
+                        <div class="col-md-4">
+                            {% bootstrap_field bank_details_form.bank_account_sort_code placeholder='' %}
+                        </div>
+                    </div>
+                    <h5>Your fee per medical report</h5>
+                    <div class="row">
+                        <div class="col-md-3"><b>Received within 3 days</b></div>
+                        <div class="col-md-3">
+                            {% bootstrap_field bank_details_form.received_within_3_days form_group_class='form-group input-group' placeholder='' %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3"><b>Received within 4-6 days</b></div>
+                        <div class="col-md-3">
+                            {% bootstrap_field bank_details_form.received_within_4_to_6_days form_group_class='form-group input-group' placeholder='' %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3"><b>Received within 7-10 days</b></div>
+                        <div class="col-md-3">
+                            {% bootstrap_field bank_details_form.received_within_7_to_10_days form_group_class='form-group input-group' placeholder='' %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3"><b>Received after 10 days</b></div>
+                        <div class="col-md-3">
+                            {% bootstrap_field bank_details_form.received_after_10_days form_group_class='form-group input-group' placeholder='' %}
+                        </div>
+                    </div>
+                </span>
             </div>
         </form>
     </div>

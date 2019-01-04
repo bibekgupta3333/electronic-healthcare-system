@@ -7,6 +7,32 @@ from common.fields import MyChoiceField
 
 
 class SurgeryForm(forms.Form):
+    GP_OP_SYS_CHOICES = (
+        (
+            'EMIS Health', (
+                ('EMISWeb', 'EMIS Web'),
+                ('LV', 'EMIS LV'),
+                ('PCS', 'EMIS PCS')
+            )
+        ),
+        (
+            'Microtest Health', (
+                ('MT', 'Evolution'),
+            )
+        ),
+        (
+            'TPP', (
+                ('SystmOne', 'SystmOne'),
+            )
+        ),
+        (
+            'Vision Health', (
+                ('Vision 3', 'Vision 3'),
+                ('VA', 'Vision Anywhere(web)')
+            )
+        )
+    )
+
     surgery_name = MyChoiceField(choices=[])
     practice_code = MyChoiceField(choices=[])
     postcode = MyChoiceField(choices=[])
@@ -18,7 +44,7 @@ class SurgeryForm(forms.Form):
     county = forms.CharField(max_length=20, label='', widget=forms.TextInput())
     contact_num = forms.CharField(max_length=20, label='', widget=forms.TextInput())
     emis_org_code = forms.CharField(max_length=20, label='', widget=forms.TextInput(), required=False)
-    operating_system = forms.ChoiceField(choices=OrganisationGeneralPractice.GP_OP_SYS_CHOICES, label='')
+    operating_system = forms.ChoiceField(choices=GP_OP_SYS_CHOICES, label='')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
