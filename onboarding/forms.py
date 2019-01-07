@@ -41,7 +41,7 @@ class SurgeryForm(forms.Form):
     address_line2 = forms.CharField(max_length=255, label='', widget=forms.TextInput(), required=False)
     address_line3 = forms.CharField(max_length=255, label='', widget=forms.TextInput(), required=False)
     city = forms.CharField(max_length=20, label='', widget=forms.TextInput())
-    county = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+    county = forms.CharField(max_length=20, label='', widget=forms.TextInput(), required=False)
     contact_num = forms.CharField(max_length=20, label='', widget=forms.TextInput())
     emis_org_code = forms.CharField(max_length=20, label='', widget=forms.TextInput(), required=False)
     operating_system = forms.ChoiceField(choices=GP_OP_SYS_CHOICES, label='')
