@@ -29,5 +29,5 @@ INSTRUCTION_REJECT_TYPE = (
     (PATIENT_NOT_FOUND, 'No suitable patient can be found'),
     (PATIENT_NO_LONGER_REGISTERED, 'The patient is no longer registered at this practice'),
     (CONSENT_INVALID, 'The consent form is invalid'),
-    (INAPPROPRIATE_SAR, 'Inappropriate purpose for Subject Access Request')
+    (INAPPROPRIATE_SAR, 'Inappropriate instruction for Subject Access Request')
 )
