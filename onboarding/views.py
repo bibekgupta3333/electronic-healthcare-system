@@ -77,7 +77,7 @@ def sign_up(request):
 
 @login_required(login_url='/accounts/login')
 def emis_setup(request, practice_code):
-    header_title = "Sign up: eMR with EMISweb"
+    header_title = "Sign up: eMR with EMISweb - please make sure to only minimise this browser tab, do not close this screen "
     gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
     if request.user.get_my_organisation() != gp_organisation:
         return redirect('login')

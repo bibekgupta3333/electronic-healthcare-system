@@ -26,7 +26,7 @@ function copyToClipboard(text, el) {
 function pollingEmis(url) {
     $("#checkingEmisButton").addClass("pendingCheck");
     $("#checkingEmisButton").html(
-        "<img src='/static/images/emis_setup/Spin-1s-40px.gif' style='height: 50px; width: 50px;'/> Checking..."
+        "<img src='/static/images/emis_setup/Spin-1s-40px.gif' style='height: 50px; width: 50px;'/> Authenticating..."
     );
     setTimeout(function () {
         $.ajax({
