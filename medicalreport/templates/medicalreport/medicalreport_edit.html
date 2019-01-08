@@ -201,7 +201,7 @@
         });
 
         var t_id = null;
-        $('#medicalReportForm').find('input, textarea').on('change', function () {
+        $('#medicalReportForm').find('input, textarea').not('.form-input').on('change', function () {
             let form_save_delay = 10000;
             // remove previews timeout
             if(t_id){

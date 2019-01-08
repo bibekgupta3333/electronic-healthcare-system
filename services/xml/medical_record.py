@@ -16,6 +16,7 @@ from .xml_base import XMLBase, XMLModelBase
 
 from typing import List
 
+
 class MedicalRecord(XMLBase):
     XPATH = './/MedicalRecord'
     SAR_PROFILE_EVENT_TYPES = [

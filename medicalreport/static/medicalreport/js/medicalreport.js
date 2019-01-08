@@ -27,8 +27,14 @@ function subMitMedicalReport(event){
     if(event == "draft"){
         $('#event_flag').val('draft');
         $('#medicalReportForm').submit();
+    }
+    else if(event == "add-medication"){
+        $('#id_prepared_by').removeAttr("required");
+        $('#addMedicationButton').prop("disabled", true);
+        $('#event_flag').val("add-medication");
+        $('#medicalReportForm').submit();
     } else {
-        $('#confirmSubmitModal').modal('show');
+        $('#confirmSubmitModal').modal("show");
     }
 }
 

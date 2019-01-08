@@ -28,9 +28,9 @@ def create_or_update_redaction_record(request, instruction):
 
     get_redaction_xpaths(request, amendments_for_record)
     get_redaction_notes(request, amendments_for_record)
-    get_additional_medication(request, amendments_for_record)
     get_additional_allergies(request, amendments_for_record)
     get_redaction_conditions(request, amendments_for_record)
+    success = get_additional_medication(request, amendments_for_record)
 
     delete_additional_medication_records(request)
     delete_additional_allergies_records(request)
@@ -73,7 +73,8 @@ def create_or_update_redaction_record(request, instruction):
             amendments_for_record.status = AmendmentsForRecord.REDACTION_STATUS_NEW
 
         if submit_form.is_valid(post_data=request.POST):
-            amendments_for_record.instruction_checked = submit_form.cleaned_data['instruction_checked']
+            if not status:
+                amendments_for_record.instruction_checked = submit_form.cleaned_data['instruction_checked']
             amendments_for_record.review_by = submit_form.cleaned_data['gp_practitioner']
             amendments_for_record.submit_choice = submit_form.cleaned_data.get('prepared_and_signed')
             if submit_form.cleaned_data.get('prepared_and_signed') == AmendmentsForRecord.PREPARED_AND_SIGNED:
@@ -93,6 +94,13 @@ def create_or_update_redaction_record(request, instruction):
             amendments_for_record.save()
             if status == 'submit':
                 save_medical_report(request, instruction, amendments_for_record)
+
+            if status == 'add-medication':
+                if success:
+                    messages.success(request, 'Add Medication Successfully')
+                else:
+                    messages.error(request, 'Missing Medication required field')
+                return False
 
             return True
         else:
@@ -181,7 +189,7 @@ def get_additional_medication(request, amendments_for_record):
     additional_medication_prescribed_to = request.POST.get('additional_medication_prescribed_to')
     additional_medication_notes = request.POST.get('additional_medication_notes')
 
-    if (additional_medication_type and additional_medication_drug and additional_medication_snomedct
+    if (additional_medication_type and additional_medication_drug
             and additional_medication_dose and additional_medication_frequency):
         record = AdditionalMedicationRecords()
         if additional_medication_type == "acute":
@@ -189,10 +197,11 @@ def get_additional_medication(request, amendments_for_record):
         else:
             record.repeat = True
 
-        try:
-            record.snomed_concept = SnomedConcept.objects.get(pk=additional_medication_snomedct)
-        except SnomedConcept.DoesNotExist:
-            pass
+        if additional_medication_snomedct:
+            try:
+                record.snomed_concept = SnomedConcept.objects.get(pk=additional_medication_snomedct)
+            except SnomedConcept.DoesNotExist:
+                pass
         record.dose = additional_medication_dose
         record.drug = additional_medication_drug
         record.frequency = additional_medication_frequency
@@ -206,6 +215,9 @@ def get_additional_medication(request, amendments_for_record):
 
         record.amendments_for_record = amendments_for_record
         record.save()
+        return True
+    else:
+        return False
 
 
 def delete_additional_medication_records(request):

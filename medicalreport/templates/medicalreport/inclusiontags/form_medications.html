@@ -33,6 +33,7 @@
                     <textarea placeholder="Further information related to this section of the report" 
                             name="redaction_acute_prescription_notes" 
                             id="redaction_acute_prescription_notes">{{ redaction.acute_prescription_notes|default:"" }}</textarea>
+                    <button type="submit" class="btn btn-primary float-right update_report_btn">Update Report</button>
                 </div>
                 <div class="tab-pane fade" id="nav-repeat-medications" role="tabpanel" aria-labelledby="nav-repeat-medications-tab">
                     {% for model in repeat_medications%}
@@ -48,12 +49,16 @@
                     <textarea placeholder="Further information related to this section of the report" 
                             name="redaction_repeat_prescription_notes" 
                             id="redaction_repeat_prescription_notes">{{ redaction.repeat_prescription_notes|default:"" }}</textarea>
+                    <button type="submit" class="btn btn-primary float-right update_report_btn">Update Report</button>
                 </div>
                 <div class="tab-pane fade" id="nav-add-medications" role="tabpanel" aria-labelledby="nav-add-medications-tab">
                     {% form_new_additional_medications instruction %}
+                    <button type="submit"
+                            id="addMedicationButton"
+                            class="btn btn-primary float-right"
+                            onclick="subMitMedicalReport('add-medication')">Add Medication</button>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary float-right update_report_btn">Update Report</button>
         </div>
     </div>
 </div>
