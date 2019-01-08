@@ -46,7 +46,9 @@ function submitConfirmReport( event ) {
             return false;
         }
         $('#event_flag').val('submit');
+        $('#overlay').show();
         $('#medicalReportForm').submit();
+        $('#confirmSubmitModal').modal('hide');
     } else {
         $('#confirmSubmitModal').modal('hide');
         create_alert('Invalid action. Please contact admin.', 'error');

@@ -41,7 +41,7 @@ class AmendmentsForRecordTest(TestCase):
         self.assertEqual('', self.amendments_2.get_gp_name())
 
     def test_get_gp_name_when_instruction_status_is_complete(self):
-        self.assertEqual('test doctor', self.amendments_1.get_gp_name())
+        self.assertEqual('pete john', self.amendments_1.get_gp_name())
 
     def test_get_gp_name_when_prepared_by_is_blank(self):
         self.amendments_1.prepared_by = ''

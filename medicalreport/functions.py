@@ -75,8 +75,8 @@ def create_or_update_redaction_record(request, instruction):
         if submit_form.is_valid(post_data=request.POST):
             if not status:
                 amendments_for_record.instruction_checked = submit_form.cleaned_data['instruction_checked']
-            amendments_for_record.review_by = submit_form.cleaned_data['gp_practitioner']
             amendments_for_record.submit_choice = submit_form.cleaned_data.get('prepared_and_signed')
+            amendments_for_record.review_by = request.user
             if submit_form.cleaned_data.get('prepared_and_signed') == AmendmentsForRecord.PREPARED_AND_SIGNED:
                 prepared_by = request.user.get_full_name()
                 if hasattr(request.user, 'userprofilebase'):
