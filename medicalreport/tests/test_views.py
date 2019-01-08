@@ -279,7 +279,6 @@ class UpdateReportTest(EmisAPITestCase):
     def test_view_redirects_to_correct_url_if_event_flag_is_submit_and_is_valid(self):
         response = self.client.post('/medicalreport/1/update/', {
             'event_flag': 'submit',
-            'gp_practitioner': self.gp_user.user.get_query_set_within_organisation()[0].id,
             'prepared_and_signed': 'PREPARED_AND_REVIEWED',
             'prepared_by': 'test_reviewer'
         })
