@@ -33,7 +33,6 @@ urlpatterns = [
     path('medicalreport/', include('medicalreport.urls')),
     path('snomedct/', include('snomedct.urls')),
     path('admin/', admin.site.urls),
-    path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('instruction/', include('instructions.urls', namespace='instructions')),
     path('onboarding/', include('onboarding.urls', namespace='onboarding')),

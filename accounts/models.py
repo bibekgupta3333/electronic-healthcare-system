@@ -160,6 +160,7 @@ class UserProfileBase(TimeStampedModel, models.Model):
     address_country = models.CharField(max_length=255, blank=True)
     telephone_home = models.CharField(max_length=255, blank=True)
     telephone_mobile = models.CharField(max_length=255, blank=True)
+    telephone_code = models.CharField(max_length=10, blank=True)
     sex = models.CharField(max_length=1, choices=SEX_CHOICES, blank=True)
 
     class Meta:
@@ -168,6 +169,15 @@ class UserProfileBase(TimeStampedModel, models.Model):
 
     def __str__(self):
         return self.user.email + "User Profile"
+
+    def get_telephone_e164(self):
+        phone = self.get_phone_without_zero(self.telephone_mobile)
+        return "+%s%s"%(self.telephone_code, phone)
+
+    def get_phone_without_zero(self, phone):
+        if phone and phone[0] == '0':
+            phone = phone[1:]
+        return phone
 
     def remove_permission(self):
         for permission in self.user.user_permissions.all():

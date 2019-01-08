@@ -80,7 +80,7 @@ def emis_setup(request, practice_code):
     header_title = "Sign up: eMR with EMISweb - please make sure to only minimise this browser tab, do not close this screen "
     gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
     if request.user.get_my_organisation() != gp_organisation:
-        return redirect('login')
+        return redirect('accounts:login')
 
 
     if request.method == "POST":
@@ -121,7 +121,7 @@ def emis_setup(request, practice_code):
 def emr_setup_final(request, practice_code=None):
     gp_organisation = get_object_or_404(OrganisationGeneralPractice, pk=practice_code)
     if request.user.get_my_organisation() != gp_organisation:
-        return redirect('login')
+        return redirect('accounts:login')
     address = ' '.join([
         gp_organisation.billing_address_street,
         gp_organisation.billing_address_line_2,
@@ -189,7 +189,7 @@ def emr_setup_final(request, practice_code=None):
             generate_gp_permission(gp_organisation)
 
             messages.success(request, 'Create User Successful!')
-            login_link = request.build_absolute_uri(reverse('login',))
+            login_link = request.build_absolute_uri(reverse('accounts:login',))
             welcome_message1 = 'Onboarding Successful!'
             welcome_message2 = 'Welcome to the eMR System'
             return render(request, 'onboarding/emr_message.html', {
