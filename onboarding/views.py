@@ -9,7 +9,6 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from .functions import *
 from .forms import *
-from accounts.models import GpPractices
 from accounts.forms import PMForm
 from services.emisapiservices.services import GetEmisStatusCode
 from organisations.models import OrganisationGeneralPractice
@@ -78,7 +77,7 @@ def sign_up(request):
 
 @login_required(login_url='/accounts/login')
 def emis_setup(request, practice_code):
-    header_title = "Sign up: eMR with EMISweb"
+    header_title = "Sign up: eMR with EMISweb - please make sure to only minimise this browser tab, do not close this screen "
     gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
     if request.user.get_my_organisation() != gp_organisation:
         return redirect('login')
@@ -136,7 +135,7 @@ def emr_setup_final(request, practice_code=None):
         'surgery_code': gp_organisation.practcode,
         'address': address,
         'postcode': gp_organisation.billing_address_postalcode,
-        'surgery_tel_number': gp_organisation.phone_office,
+        'surgery_tel_number': gp_organisation.phone_onboarding_setup,
         'surgery_email': gp_organisation.organisation_email
     })
 
@@ -205,35 +204,6 @@ def emr_setup_final(request, practice_code=None):
         'bank_details_form': bank_details_form,
         'surgery_email_form': surgery_email_form
     })
-
-
-def get_code_autocomplete(request):
-    data = list()
-    search = request.GET.get('search', '')
-    if search:
-        code_gps = GpPractices.objects.filter(sitenumber_c__startswith=search)
-    else:
-        code_gps = GpPractices.objects.all()[:10]
-
-    if code_gps.exists():
-        for code_gp in code_gps:
-            data.append(code_gp.sitenumber_c)
-    return JsonResponse(data, safe=False)
-
-
-def get_name_autocomplete(request):
-    data = list()
-    search = request.GET.get('search', '')
-    if search:
-        name_gps = GpPractices.objects.filter(name__startswith=search)
-    else:
-        name_gps = GpPractices.objects.all()[:10]
-
-    if name_gps.exists():
-        for name_gp in name_gps:
-            data.append(name_gp.name)
-
-    return JsonResponse(data, safe=False)
 
 
 def ajax_emis_polling(request, practice_code):
