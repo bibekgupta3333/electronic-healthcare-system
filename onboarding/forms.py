@@ -77,7 +77,7 @@ class SurgeryForm(forms.Form):
                 'billing_address_city': self.cleaned_data.get('city'),
                 'billing_address_state': self.cleaned_data.get('county'),
                 'billing_address_postalcode': self.cleaned_data.get('postcode'),
-                'phone_office': self.cleaned_data.get('contact_num'),
+                'phone_onboarding_setup': self.cleaned_data.get('contact_num'),
                 'operating_system_organisation_code': self.cleaned_data.get('emis_org_code'),
                 'gp_operating_system': self.cleaned_data.get('operating_system'),
             }

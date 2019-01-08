@@ -41,7 +41,7 @@ class OrganisationGeneralPracticeAdmin(CustomImportExportModelAdmin):
             )
         }),
         ('Contact Information', {
-            'fields': ('phone_office', 'phone_alternate', 'organisation_email', 'fax', 'website')
+            'fields': ('phone_office', 'phone_alternate', 'phone_onboarding_setup', 'organisation_email', 'fax', 'website')
         }),
         ('Systmem Information', {
             'fields': (
