@@ -120,7 +120,7 @@ class OrganisationGeneralPractice(models.Model):
     operating_system_salt_and_encrypted_iv = models.CharField(max_length=255, blank=True)
     operating_system_auth_token = models.CharField(max_length=255, blank=True)
 
-    payment_timing = models.CharField(max_length=2, choices=PAYMENT_TIMING_CHOICES, blank=True)
+    payment_timing = models.CharField(max_length=2, choices=PAYMENT_TIMING_CHOICES, default = 'AR', blank=True)
     payment_bank_holder_name = models.CharField(max_length=255, blank=True)
     payment_bank_sort_code = models.CharField(max_length=255, blank=True)
     payment_bank_account_number = models.CharField(max_length=255, blank=True)

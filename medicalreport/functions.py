@@ -12,7 +12,8 @@ from services.emisapiservices import services
 from instructions import models
 from .dummy_models import (DummyInstruction)
 from .forms import MedicalReportFinaliseSubmitForm
-from .models import AdditionalMedicationRecords, AdditionalAllergies, AmendmentsForRecord
+from .models import AdditionalMedicationRecords, AdditionalAllergies, AmendmentsForRecord,\
+        ReferencePhrases
 from medicalreport.reports import MedicalReport
 from report.models import PatientReportAuth
 
@@ -120,8 +121,10 @@ def save_medical_report(request, instruction, amendments_for_record):
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     dummy_instruction = DummyInstruction(instruction)
     gp_name = amendments_for_record.get_gp_name()
+    pattern = '|'.join(ref_phrase.name for ref_phrase in ReferencePhrases.objects.all())
     params = {
         'medical_record': medical_record_decorator,
+        'pattern': pattern,
         'redaction': amendments_for_record,
         'instruction': instruction,
         'gp_name': gp_name,

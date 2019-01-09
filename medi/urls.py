@@ -22,6 +22,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from instructions.views import instruction_pipeline_view
 from accounts.functions import notify_password_changed
 from django.contrib.auth import views as auth_views
+from accounts import views as account_views
 
 admin.site.site_header = 'MediData administration'
 admin.site.site_title = 'MediData administration'
@@ -40,7 +41,11 @@ urlpatterns = [
     path('template/', include('template.urls', namespace='template')),
     path('report/', include('report.urls', namespace='report')),
     path('select2/', include('django_select2.urls')),
+    path('login/', account_views.login, name='login'),
     path('password_change/done/', notify_password_changed(auth_views.PasswordChangeDoneView.as_view()), name='password_change_done'),
+    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete')
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += staticfiles_urlpatterns()

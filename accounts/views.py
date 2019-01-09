@@ -465,15 +465,8 @@ def login(request):
             password = request.POST['password']
             user = authenticate(request, username=username, password=password)
             if user is not None and settings.TWO_FACTOR_ENABLED and not check_ip_from_n3_hscn(request):
-                form = TwoFactorForm(initial={
-                    'user': user,
-                    'username': username,
-                    'password': password
-                })
-                return render(request, 'registration/two_factor.html',{
-                    'form': form,
-                    'user': user
-                })
+                request.session['post_data'] = request.POST
+                return redirect(reverse('accounts:two_factor'))
             elif user is not None:
                 customlogin(request, user)
                 return redirect(reverse('instructions:view_pipeline'))
@@ -493,8 +486,19 @@ def two_factor(request):
         if form.is_valid():
             customlogin(request, user)
             return redirect(reverse('instructions:view_pipeline'))
-        return render(request, 'registration/two_factor.html',{
-            'form': form,
-            'user': user
+    else:
+        post_data = request.session.get('post_data')
+        if not post_data:
+            return redirect(reverse('accounts:login'))
+        username = post_data['username']
+        password = post_data['password']
+        user = authenticate(request, username=username, password=password)
+        form = TwoFactorForm(initial={
+            'user': user,
+            'username': username,
+            'password': password
         })
-    return redirect(reverse('accounts:login'))
+    return render(request, 'registration/two_factor.html',{
+        'form': form,
+        'user': user
+    })
