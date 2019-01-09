@@ -32,7 +32,6 @@ class MedicalReportDecorator(MedicalRecord):
         self.instruction = instruction
 
     def consultations(self) -> List[Consultation]:
-        ret_xml = chronological_redactable_elements(super().consultations())
         if self.instruction.type == model_choices.AMRA_TYPE:
             ret_xml = chronological_redactable_elements(
                 auto_redact_consultations(

@@ -120,13 +120,22 @@ def form_new_additional_allergies():
 def redaction_checkbox_with_body(model, redaction, header='', body=''):
     checked = ""
     xpaths = model.xpaths()
+    snomed_codes = model.snomed_concepts()
+    is_sensitive = False
+    matched_sensitive_conditions = NhsSensitiveConditions.objects.values_list('snome_code').filter(snome_code__in=snomed_codes)
+    if matched_sensitive_conditions:
+        checked = "checked"
+        is_sensitive = True
+
     if redaction.redacted(xpaths) is True:
         checked = "checked"
+
     return {
         'checked': checked,
         'xpaths': xpaths,
         'header': header,
-        'body': body
+        'body': body,
+        'is_sensitive': is_sensitive
     }
 
 
@@ -173,11 +182,11 @@ def problem_redaction_checkboxes(model, redaction, problem_linked_lists, map_cod
     for sensitive_tuple in list(matched_sensitive_conditions):
         sensitive_conditions = [sensitive_code for sensitive_code in sensitive_tuple]
 
-    is_sensitive_consultation = False
+    is_sensitive = False
     for code in map_code:
         if code in sensitive_conditions:
             checked = "checked"
-            is_sensitive_consultation = True
+            is_sensitive = True
 
     xpaths = problem_xpaths(model, problem_linked_lists)
     if redaction.redacted(xpaths) is True:
@@ -186,7 +195,7 @@ def problem_redaction_checkboxes(model, redaction, problem_linked_lists, map_cod
         'checked': checked,
         'xpaths': xpaths,
         'header': header,
-        'is_sensitive_consultation': is_sensitive_consultation
+        'is_sensitive': is_sensitive
     }
 
 
