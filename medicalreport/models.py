@@ -100,3 +100,10 @@ class AdditionalAllergies(models.Model):
 class NhsSensitiveConditions(models.Model):
     group = models.CharField(max_length=128)
     snome_code = models.CharField(max_length=128)
+
+
+class ReferencePhrases(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name

@@ -10,7 +10,7 @@ from services.xml.patient_list import PatientList
 from services.xml.registration import Registration
 from .dummy_models import (DummyInstruction)
 from medicalreport.forms import MedicalReportFinaliseSubmitForm
-from .models import AmendmentsForRecord
+from .models import AmendmentsForRecord, ReferencePhrases
 from medicalreport.reports import AttachmentReport
 from instructions.models import Instruction, InstructionPatient
 from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT,\
@@ -145,6 +145,7 @@ def edit_report(request, instruction_id):
         },
         user=request.user)
 
+    pattern = '|'.join(ref_phrase.name for ref_phrase in ReferencePhrases.objects.all())
     inst_gp_user = User.objects.get(username=instruction.gp_user.user.username)
     cur_user = User.objects.get(username=request.user.username)
     return render(request, 'medicalreport/medicalreport_edit.html', {
@@ -154,6 +155,7 @@ def edit_report(request, instruction_id):
         'instruction': instruction,
         'finalise_submit_form': finalise_submit_form,
         'questions': questions,
+        'pattern': pattern,
         'show_alert': True if inst_gp_user == cur_user else False
     })
 
@@ -189,6 +191,7 @@ def view_report(request, instruction_id):
     if instruction.status != INSTRUCTION_STATUS_COMPLETE:
         redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
+        pattern = '|'.join(ref_phrase.name for ref_phrase in ReferencePhrases.objects.all())
         raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
         medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
         dummy_instruction = DummyInstruction(instruction)
@@ -197,6 +200,7 @@ def view_report(request, instruction_id):
         params = {
             'medical_record': medical_record_decorator,
             'redaction': redaction,
+            'pattern': pattern,
             'instruction': instruction,
             'gp_name': gp_name,
             'dummy_instruction': dummy_instruction
@@ -214,6 +218,7 @@ def final_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
+    pattern = '|'.join(ref_phrase.name for ref_phrase in ReferencePhrases.objects.all())
     patient_emis_number = instruction.patient.emis_number
     raw_xml = services.GetMedicalRecord(patient_emis_number).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
@@ -222,6 +227,7 @@ def final_report(request, instruction_id):
     return render(request, 'medicalreport/final_report.html', {
         'header_title': header_title,
         'attachments': attachments,
+        'pattern': pattern,
         'redaction': redaction,
         'instruction': instruction
     })

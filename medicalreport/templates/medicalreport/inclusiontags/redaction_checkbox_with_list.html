@@ -21,7 +21,7 @@
                                  data-redaction_xpaths="{{item|hash:'xpath'|first }}" value="{{item|hash:'xpath'|first }}"
                                  readonly type="checkbox" class="redaction-checkbox__input">
                             <span class="redaction-checkbox__icon float-right fas fa-check-circle"></span>
-                            <span class="redaction-checkbox__text"><strong>{{ key }}: </strong>{{value}}</span>
+                            <span class="redaction-checkbox__text"><strong>{{ key }}: </strong>{{pattern|replace_ref_phrases:value}}</span>
                         {% endif %}
                     </label>
                 {% endfor %}
