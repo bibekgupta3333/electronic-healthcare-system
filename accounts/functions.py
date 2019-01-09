@@ -6,7 +6,8 @@ from .forms import NewGPForm, NewClientForm
 from .tables import UserTable
 from .models import User, GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER, PATIENT_USER,\
         Patient, GeneralPracticeUser, ClientUser, UserProfileBase
-
+from accounts.n3_hscn_ips import IPS, NET_ADDRS
+from netaddr import IPNetwork, IPAddress
 DEFAULT_FROM = settings.DEFAULT_FROM
 
 
@@ -262,3 +263,31 @@ def notify_password_changed(func):
         notify_admins(request)
         return func(request, *args, **kwargs)
     return wrapper
+
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
+def convert_ipv4(ip):
+    return tuple(int(n) for n in ip.split('.'))
+
+
+def check_ipv4_in(addr, start, end):
+    return convert_ipv4(start) < convert_ipv4(addr) < convert_ipv4(end)
+
+
+def check_ip_from_n3_hscn(request):
+    client_ip = get_client_ip(request)
+    for addr in NET_ADDRS:
+        if IPAddress(client_ip) in IPNetwork(addr):
+            return True
+    for start, end in IPS:
+        if check_ipv4_in(client_ip, start, end):
+            return True
+    return False

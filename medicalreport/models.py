@@ -52,9 +52,7 @@ class AmendmentsForRecord(models.Model):
     def get_gp_name(self) -> str:
         gp_name = ''
         if self.instruction.status == INSTRUCTION_STATUS_COMPLETE:
-            if self.prepared_by:
-                gp_name = self.prepared_by
-            elif self.review_by:
+            if self.review_by:
                 gp_name = self.review_by.get_full_name()
                 if hasattr(self.review_by, 'userprofilebase'):
                     gp_name = "%s %s"%(self.review_by.userprofilebase.get_title_display(), gp_name)

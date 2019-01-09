@@ -12,7 +12,6 @@ class MedicalReportFinaliseSubmitForm(forms.Form):
     prepared_by = forms.ModelChoiceField(
         queryset=GeneralPracticeUser.objects.all()
     )
-    gp_practitioner = forms.ModelChoiceField(queryset=None, required=False)
     instruction_checked = forms.BooleanField(required=False, initial=False, label='')
     prepared_and_signed = forms.ChoiceField(choices=AmendmentsForRecord.SUBMIT_OPTION_CHOICES,
                                             widget=forms.RadioSelect(attrs={'class': 'finaliseChoice'}),
@@ -32,8 +31,6 @@ class MedicalReportFinaliseSubmitForm(forms.Form):
             if record_type and record_type == 'SARS':
                 queryset = queryset.filter(user__groups__permissions__codename='sign_off_sars')
         if user:
-            self.fields['gp_practitioner'] = forms.ModelChoiceField(queryset=user.get_query_set_within_organisation(),
-                                                                    required=False)
             queryset = queryset.filter(organisation=user.userprofilebase.generalpracticeuser.organisation)
         self.fields['prepared_by'].queryset = queryset
 

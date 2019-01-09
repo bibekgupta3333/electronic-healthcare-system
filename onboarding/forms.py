@@ -7,6 +7,32 @@ from common.fields import MyChoiceField
 
 
 class SurgeryForm(forms.Form):
+    GP_OP_SYS_CHOICES = (
+        (
+            'EMIS Health', (
+                ('EMISWeb', 'EMIS Web'),
+                ('LV', 'EMIS LV'),
+                ('PCS', 'EMIS PCS')
+            )
+        ),
+        (
+            'Microtest Health', (
+                ('MT', 'Evolution'),
+            )
+        ),
+        (
+            'TPP', (
+                ('SystmOne', 'SystmOne'),
+            )
+        ),
+        (
+            'Vision Health', (
+                ('Vision 3', 'Vision 3'),
+                ('VA', 'Vision Anywhere(web)')
+            )
+        )
+    )
+
     surgery_name = MyChoiceField(choices=[])
     practice_code = MyChoiceField(choices=[])
     postcode = MyChoiceField(choices=[])
@@ -15,10 +41,10 @@ class SurgeryForm(forms.Form):
     address_line2 = forms.CharField(max_length=255, label='', widget=forms.TextInput(), required=False)
     address_line3 = forms.CharField(max_length=255, label='', widget=forms.TextInput(), required=False)
     city = forms.CharField(max_length=20, label='', widget=forms.TextInput())
-    country = forms.CharField(max_length=20, label='', widget=forms.TextInput())
+    county = forms.CharField(max_length=20, label='', widget=forms.TextInput(), required=False)
     contact_num = forms.CharField(max_length=20, label='', widget=forms.TextInput())
     emis_org_code = forms.CharField(max_length=20, label='', widget=forms.TextInput(), required=False)
-    operating_system = forms.ChoiceField(choices=OrganisationGeneralPractice.GP_OP_SYS_CHOICES, label='')
+    operating_system = forms.ChoiceField(choices=GP_OP_SYS_CHOICES, label='')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -49,9 +75,9 @@ class SurgeryForm(forms.Form):
                 'billing_address_line_2': self.cleaned_data.get('address_line2'),
                 'billing_address_line_3': self.cleaned_data.get('address_line3'),
                 'billing_address_city': self.cleaned_data.get('city'),
-                'billing_address_state': self.cleaned_data.get('country'),
+                'billing_address_state': self.cleaned_data.get('county'),
                 'billing_address_postalcode': self.cleaned_data.get('postcode'),
-                'phone_office': self.cleaned_data.get('contact_num'),
+                'phone_onboarding_setup': self.cleaned_data.get('contact_num'),
                 'operating_system_organisation_code': self.cleaned_data.get('emis_org_code'),
                 'gp_operating_system': self.cleaned_data.get('operating_system'),
             }

@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.models import Group
@@ -7,6 +8,8 @@ from django.db.models import Q
 from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.forms import modelformset_factory
+from django.contrib.auth import authenticate, login as customlogin
+from django.contrib.auth.forms import AuthenticationForm as LoginForm
 
 from permissions.forms import InstructionPermissionForm, GroupPermissionForm
 from permissions.models import InstructionPermission
@@ -17,7 +20,7 @@ from accounts.forms import AllUserForm, NewGPForm, NewClientForm, NewMediForm
 
 from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
-from .forms import PracticePreferencesForm
+from .forms import PracticePreferencesForm, TwoFactorForm
 from permissions.functions import access_user_management
 from organisations.models import OrganisationGeneralPractice
 
@@ -25,7 +28,8 @@ from django.conf import settings
 DEFAULT_FROM = settings.DEFAULT_FROM
 
 from .functions import change_role, remove_user, get_table_data,\
-        get_post_new_user_data, get_user_type_form, reset_password
+        get_post_new_user_data, get_user_type_form, reset_password,\
+        check_ip_from_n3_hscn
 
 
 @login_required(login_url='/accounts/login')
@@ -451,3 +455,46 @@ def check_email(request):
     email = request.POST.get('email')
     exists = User.objects.filter(email=email).exists()
     return JsonResponse({'exists': exists})
+
+
+def login(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST, request.POST)
+        if form.is_valid():
+            username = request.POST['username']
+            password = request.POST['password']
+            user = authenticate(request, username=username, password=password)
+            if user is not None and settings.TWO_FACTOR_ENABLED and not check_ip_from_n3_hscn(request):
+                form = TwoFactorForm(initial={
+                    'user': user,
+                    'username': username,
+                    'password': password
+                })
+                return render(request, 'registration/two_factor.html',{
+                    'form': form,
+                    'user': user
+                })
+            elif user is not None:
+                customlogin(request, user)
+                return redirect(reverse('instructions:view_pipeline'))
+    else:
+        form = LoginForm()
+    return render(request, 'registration/login.html',{
+        'form': form
+    })
+
+
+def two_factor(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        form = TwoFactorForm(request.POST)
+        if form.is_valid():
+            customlogin(request, user)
+            return redirect(reverse('instructions:view_pipeline'))
+        return render(request, 'registration/two_factor.html',{
+            'form': form,
+            'user': user
+        })
+    return redirect(reverse('accounts:login'))

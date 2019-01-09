@@ -32,7 +32,6 @@ class MedicalReportDecorator(MedicalRecord):
         self.instruction = instruction
 
     def consultations(self) -> List[Consultation]:
-        ret_xml = chronological_redactable_elements(super().consultations())
         if self.instruction.type == model_choices.AMRA_TYPE:
             ret_xml = chronological_redactable_elements(
                 auto_redact_consultations(
@@ -58,47 +57,36 @@ class MedicalReportDecorator(MedicalRecord):
         )
 
     def referrals(self) -> List[Referral]:
-        ret_xml = chronological_redactable_elements(super().referrals())
-        if self.instruction.type == model_choices.AMRA_TYPE:
-            ret_xml = chronological_redactable_elements(
-                auto_redact_referrals(super().referrals(), self.instruction)
-            )
+        ret_xml = chronological_redactable_elements(
+            auto_redact_referrals(super().referrals(), self.instruction)
+        )
         return ret_xml
 
     def attachments(self) -> List[Attachment]:
-        ret_xml = chronological_redactable_elements(super().attachments())
-        if self.instruction.type == model_choices.AMRA_TYPE:
-            ret_xml = chronological_redactable_elements(
-                auto_redact_attachments(super().attachments(), self.instruction)
-            )
+        ret_xml = chronological_redactable_elements(
+            auto_redact_attachments(super().attachments(), self.instruction)
+        )
         return ret_xml
 
     def acute_medications(self) -> List[Medication]:
-        ret_xml = chronological_redactable_elements(super().acute_medications())
-        if self.instruction.type == model_choices.AMRA_TYPE:
-            ret_xml = chronological_redactable_elements(
-                auto_redact_medications(super().acute_medications(), self.instruction)
-            )
+        ret_xml = chronological_redactable_elements(
+            auto_redact_medications(super().acute_medications(), self.instruction)
+        )
         return ret_xml
 
     def repeat_medications(self) -> List[Medication]:
-        ret_xml = chronological_redactable_elements(super().repeat_medications())
-        if self.instruction.type == model_choices.AMRA_TYPE:
-            ret_xml = chronological_redactable_elements(
-                auto_redact_medications(super().repeat_medications(), self.instruction)
-            )
+        ret_xml = chronological_redactable_elements(
+            auto_redact_medications(super().repeat_medications(), self.instruction)
+        )
         return ret_xml
 
     def all_allergies(self) -> List[XMLModelBase]:
         return chronological_redactable_elements(super().all_allergies())
 
     def profile_events_for(self, event_type: str) -> List[XMLModelBase]:
-        ret_xml = chronological_redactable_elements(super().acute_medications())
-        # if self.instruction.type == model_choices.AMRA_TYPE:
         ret_xml = chronological_redactable_elements(
-                auto_redact_profile_events(super().profile_event(event_type), self.instruction)
-            )
-
+            auto_redact_profile_events(super().profile_event(event_type), self.instruction)
+        )
         return (self.__table_elements(self.__redact_elements(ret_xml)))
 
     def profile_events_by_type(self) -> Dict[str, List[XMLModelBase]]:

@@ -891,7 +891,7 @@
                     }
                 },
                 fileActionSettings: {
-                    showRemove: true,
+                    showRemove: false,
                     showUpload: true,
                     showDownload: true,
                     showZoom: true,
@@ -3030,7 +3030,7 @@
             }
         },
         _setFileDropZoneTitle: function () {
-            var self = this, $zone = self.$container.find('.file-drop-zone'), title = self.dropZoneTitle, strFiles;
+            var self = this, $zone = self.$container.find('.file-drop-zone'), title = self.dropZoneTitle, detail = self.dropZoneDetail, strFiles;
             if (self.isClickable) {
                 strFiles = $h.isEmpty(self.$element.attr('multiple')) ? self.fileSingle : self.filePlural;
                 title += self.dropZoneClickTitle.replace('{files}', strFiles);
@@ -3041,7 +3041,8 @@
                 return;
             }
             if ($zone.find($h.FRAMES).length === 0 && $h.isEmpty(self.defaultPreviewContent)) {
-                $zone.prepend('<div class="' + self.dropZoneTitleClass + '">' + title + '</div>');
+                var detailClass = '<h6 class="mt-2">' + detail +'</h6>';
+                $zone.prepend('<div class="' + self.dropZoneTitleClass + '">' + title + '<br>' + detailClass +'</div>');
             }
             self.$container.removeClass('file-input-new');
             $h.addCss(self.$container, 'file-input-ajax-new');
@@ -4374,7 +4375,7 @@
         errorCloseButton: $h.closeButton('kv-error-close'),
         slugCallback: null,
         dropZoneEnabled: true,
-        dropZoneTitleClass: 'file-drop-zone-title',
+        dropZoneTitleClass: 'file-drop-zone-title pt-3',
         fileActionSettings: {},
         otherActionButtons: '',
         textEncoding: 'UTF-8',
@@ -4452,6 +4453,7 @@
             uploadExtra: 'form data upload'
         },
         dropZoneTitle: 'Drag & drop files here &hellip;',
+        dropZoneDetail: 'Warning: It is the Surgery’s responsibility to ensure that all consent forms are signed correctly by the patient and the Surgery, where appropriate.',
         dropZoneClickTitle: '<br>(or click to select {files})',
         previewZoomButtonTitles: {
             prev: 'View previous file',

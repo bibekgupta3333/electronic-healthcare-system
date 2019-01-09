@@ -7,7 +7,9 @@ from .models import GeneralPracticeUser, ClientUser, TITLE_CHOICE, User,\
         MedidataUser, NOTIFICATIONS, PracticePreferences
 from instructions.models import InstructionPatient
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
+from report.mobile import AuthMobile
 from common.fields import MyChoiceField
+import json
 DATE_INPUT_FORMATS = settings.DATE_INPUT_FORMATS
 
 
@@ -23,7 +25,7 @@ class InstructionPatientForm(forms.ModelForm):
     patient_address_line2 = forms.CharField(max_length=255, required=False)
     patient_address_line3 = forms.CharField(max_length=255, required=False)
     patient_city = forms.CharField(max_length=255, required=True)
-    patient_country = forms.CharField(max_length=255, required=False, label="Patient country")
+    patient_county = forms.CharField(max_length=255, required=False, label="Patient county")
 
     class Meta:
         model = InstructionPatient
@@ -253,3 +255,32 @@ class AllUserForm(forms.Form):
             queryset=OrganisationMedidata.objects.all(), required=False,
             label='', widget=forms.Select(attrs={'class': 'organisations'})
     )
+
+
+class TwoFactorForm(forms.Form):
+    username = forms.CharField(widget=forms.HiddenInput())
+    password = forms.CharField(widget=forms.HiddenInput())
+    opt_id = forms.CharField(max_length=255, widget=forms.HiddenInput())
+    pin = forms.CharField(max_length=10, label="")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if kwargs.get('initial'):
+            user = kwargs['initial'].get('user')
+            if user and hasattr(user, 'userprofilebase'):
+                response = AuthMobile(number=user.userprofilebase.get_telephone_e164()).request()
+                if response.status_code == 200:
+                    response_results_dict = json.loads(response.text)
+                    self.fields['opt_id'].initial = response_results_dict['id']
+
+    def is_valid(self):
+        valid = super().is_valid()
+        if valid:
+            data = self.cleaned_data
+            response = AuthMobile(mobi_id=data['opt_id'], pin=data['pin']).verify()
+            if response.status_code == 200:
+                response_results_dict = json.loads(response.text)
+                if not response_results_dict['validated']:
+                    self._errors = {"__all__": ["OPT isn't valid."]}
+                    return False
+        return valid

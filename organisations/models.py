@@ -98,6 +98,7 @@ class OrganisationGeneralPractice(models.Model):
     billing_address_postalcode = models.CharField(max_length=8, blank=True)
     phone_office = models.CharField(max_length=28, blank=True)
     phone_alternate = models.CharField(max_length=20, blank=True)
+    phone_onboarding_setup = models.CharField(max_length=28, blank=True, verbose_name='Set-Up Contact Number')
     organisation_email = models.CharField(max_length=255, blank=True)
     practicemanagername_c = models.CharField(max_length=34, blank=True)
     practicemanager_job_title = models.CharField(max_length=47, blank=True)
@@ -119,7 +120,7 @@ class OrganisationGeneralPractice(models.Model):
     operating_system_salt_and_encrypted_iv = models.CharField(max_length=255, blank=True)
     operating_system_auth_token = models.CharField(max_length=255, blank=True)
 
-    payment_timing = models.CharField(max_length=2, choices=PAYMENT_TIMING_CHOICES, blank=True)
+    payment_timing = models.CharField(max_length=2, choices=PAYMENT_TIMING_CHOICES, default = 'AR', blank=True)
     payment_bank_holder_name = models.CharField(max_length=255, blank=True)
     payment_bank_sort_code = models.CharField(max_length=255, blank=True)
     payment_bank_account_number = models.CharField(max_length=255, blank=True)

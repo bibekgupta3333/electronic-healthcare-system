@@ -66,7 +66,13 @@
             <div class="modal-content failSetupEmisModal alert-warning">
                 <div class="row p-3">
                     <div class="col-md-12">
-                        <h2>Oh dear!</h2>
+                        <h2>
+                            Oh dear!
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </h2>
+
                         <p class="failSetupEmisMessage">
                             Something's not quite right. We can't seem to reach your EMISweb surgery profile.
                             Please double-check the above steps and your EMIS organisation code (top of EMISweb):
@@ -147,6 +153,7 @@
                     <button type="button" class="btn btn-default btn-copy js-tooltip js-copy" data-toggle="tooltip" data-placement="bottom" data-copy="{{ practice_password }}" title="Copy to clipboard">
                         <i class="fas fa-copy fa-2x"></i>
                     </button>
+                    Click icon to copy the password
                 </p>
             </div>
         </div>
@@ -282,7 +289,7 @@
                     We'll redirect you to where you can set up access to eMR for your GPs.
                 </p>
                 <p>
-                    <a href="{% url 'onboarding:emr_setup_stage_2' practice_code %}" style="color: #33aea0; font-size: 18px"><strong>Click here</strong></a> if nothing happens.
+                    <a href="{% url 'onboarding:emr_setup_final' practice_code %}" style="color: #33aea0; font-size: 18px"><strong>Click here</strong></a> if nothing happens.
                 </p>
             </div>
             <button class="btn btn-checkSetup" onclick="this.disabled=true; pollingEmis('{% url "onboarding:emis_polling" practice_code %}')" type="button" id="checkingEmisButton">

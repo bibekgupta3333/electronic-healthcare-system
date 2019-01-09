@@ -62,29 +62,32 @@
             <div class="col-md-12 mt-4">
                 <input type="hidden" name="next_step" id="id_next_step" value="" />
                 <div class="card">
-                    <div class="card-header"><h5>Consent and contact information</h5></div>
+                    <div class="card-header"><h5>Patient consent(s) and contact information (mandatory)</h5></div>
                     <div class="card-body">
                         <div class="row">
                             <div class="col-8">
                                 <div class="row">
                                     <div class="col-md-6 mt-2">
-                                        <div class="col-12">
-                                            <h6><strong>SARS Request</strong></h6>
+                                        <div class="col-12 text-center">
+                                            <h6><strong>SAR Patient Request</strong></h6>
                                         </div>
                                         <div class="col-12">&nbsp;</div>
-                                        <div class="col-12 pt-4">
-                                            <h6>Required if initiated via third party</h6>
+                                        <div class="col-12 pt-5 text-center">
+                                            <h6>Uploading consent is required if initiated by third party (solicitor)</h6>
                                         </div>
                                     </div>
                                     <div class="col-md-6 mt-2">
-                                        <div class="col-12">
-                                            <h6><strong>MDX Dual Consent</strong></h6>
+                                        <div class="col-12 text-center">
+                                            <h6><strong>SAR dual consent</strong></h6>
                                         </div>
                                         <div class="col-12">&nbsp;</div>
                                         <div class="col-12">
                                             <button class="btn btn-primary btn-lg btn-block" type="button" id="downloadBtn">
-                                                Print Pre-Populated <br> Consent Form
+                                                Print Pre-Populated Consent Form
                                             </button>
+                                            <div class="col-12">&nbsp;</div>
+                                            Once printed off and signed, 
+                                            scan document to a folder on your system, and upload the document to this screen by using the ‘browse’ button below.
                                         </div>
                                     </div>
                                     <div class="col-12">&nbsp;</div>
@@ -115,9 +118,9 @@
 
                                 </div>
                             </div>
-                            <div class="col-4">
-                                <div class="row offset-md-1 col-md-10">
-                                    <h6>Contact information</h6>
+                            <div class="col-4 mt-2">
+                                <div class="col-12 text-center">
+                                    <h6><strong>Contact information</strong></h6>
                                 </div>
                                 <div class="row mt-4">
                                     <div class="col-md-4 rowTitle">Email</div>
@@ -134,10 +137,22 @@
                                 </div>
                                 <div class="row mt-4">
                                     <div class="col-md-4">
-                                    <label for="id_patient_alternate_phone" class="col-form-label">Alternate Phone <br> (optional)</label>
+                                        <label for="id_patient_alternate_phone" class="col-form-label">Alternate Phone <br> (optional)</label>
                                     </div>
                                     {% bootstrap_field patient_form.patient_alternate_phone size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
                                     {% bootstrap_field patient_form.patient_alternate_code %}
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <p>
+                                                In order for your patient to have secure access to a copy of their patient record, 
+                                                the above information fields need to be completed.
+                                                Without this information, your patient will not be provided secure online access to a copy of their record, 
+                                                but you will be able to print out a hard copy to provide to your patient directly. 
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

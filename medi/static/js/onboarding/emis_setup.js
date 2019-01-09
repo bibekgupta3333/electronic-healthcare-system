@@ -26,7 +26,7 @@ function copyToClipboard(text, el) {
 function pollingEmis(url) {
     $("#checkingEmisButton").addClass("pendingCheck");
     $("#checkingEmisButton").html(
-        "<img src='/static/images/emis_setup/Spin-1s-40px.gif' style='height: 50px; width: 50px;'/> Checking..."
+        "<img src='/static/images/emis_setup/Spin-1s-40px.gif' style='height: 50px; width: 50px;'/> Authenticating..."
     );
     setTimeout(function () {
         $.ajax({
@@ -36,7 +36,7 @@ function pollingEmis(url) {
                     $(".btn-checkSetup").hide();
                     $(".emisSetupSuccess").removeClass("d-none");
                     setTimeout(function () {
-                        document.location.href = "/onboarding/emr-setup-stage-2/" + data["practice_code"]
+                        document.location.href = "/onboarding/emr-setup-final/" + data["practice_code"]
                     }, 2000)
                 } else {
                     $('#checkingEmisButton').prop("disabled", false);

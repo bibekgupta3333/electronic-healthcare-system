@@ -10,6 +10,7 @@ class InstructionTable(tables.Table):
     checkbox = tables.CheckBoxColumn(attrs={'id': 'check_all'})
     cost = tables.Column(empty_values=(), verbose_name='Cost £')
     patient_information = tables.Column()
+    created = tables.DateTimeColumn( format = 'D j M Y' )
     status = tables.Column()
     user = None
 
@@ -55,7 +56,7 @@ class InstructionTable(tables.Table):
         STATUS_DICT = {
             'New': 'badge-primary',
             'In Progress': 'badge-warning',
-            'Overdue': 'badge-info',
+            'Paid': 'badge-info',
             'Completed': 'badge-success',
             'Rejected': 'badge-danger'
         }
