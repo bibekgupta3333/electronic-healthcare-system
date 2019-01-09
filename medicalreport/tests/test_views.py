@@ -14,9 +14,10 @@ from instructions.model_choices import INSTRUCTION_STATUS_REJECT, INSTRUCTION_ST
 from accounts.models import User, GeneralPracticeUser, Patient, GENERAL_PRACTICE_USER
 from services.models import EmisAPIConfig
 from snomedct.models import SnomedConcept
-from medicalreport.models import AmendmentsForRecord
+from medicalreport.models import AmendmentsForRecord, ReferencePhrases
 from medicalreport.views import get_matched_patient
 from organisations.models import OrganisationGeneralPractice
+from medicalreport.templatetags.custom_filters import replace_ref_phrases
 
 import os
 from contextlib import suppress
@@ -346,3 +347,16 @@ class FinalReportTest(EmisAPITestCase):
     def test_view_returns_404_if_instruction_does_not_exist(self):
         response = self.client.get('/medicalreport/5/final-report/')
         self.assertEqual(404, response.status_code)
+
+
+class RedactReferencePhraseTest(TestCase):
+    def setUp(self):
+        super().setUp()
+        ReferencePhrases.objects.create(name='father')
+        self.value = "Mr Chatterly's father had recently been diagnosed with lymphoma"
+        self.result = "Mr Chatterly's [UNSPECIFIED THIRD PARTY] had recently been diagnosed with lymphoma"
+        self.pattern = '|'.join(ref_phrase.name for ref_phrase in ReferencePhrases.objects.all())
+
+    def test_redact_with_father(self):
+        result = replace_ref_phrases(self.pattern, self.value)
+        self.assertEqual(self.result, result)

@@ -37,7 +37,8 @@ def form_consultations(context):
     return {
         'consultations': context['medical_record'].consultations,
         'people': context['medical_record'].people,
-        'redaction': context['redaction']
+        'redaction': context['redaction'],
+        'pattern': context['pattern']
     }
 
 
@@ -140,7 +141,7 @@ def redaction_checkbox_with_body(model, redaction, header='', body=''):
 
 
 @register.inclusion_tag('medicalreport/inclusiontags/redaction_checkbox_with_list.html')
-def redaction_checkbox_with_list(model, redaction, header='', dict_data='', map_code='', label=None):
+def redaction_checkbox_with_list(model, redaction, header='', dict_data='', map_code='', label=None, pattern=''):
     checked = ""
     matched_sensitive_conditions = NhsSensitiveConditions.objects.filter(snome_code__in=map_code)
     if redaction.re_redacted_codes:
@@ -162,6 +163,7 @@ def redaction_checkbox_with_list(model, redaction, header='', dict_data='', map_
         'redaction_checks': redaction.redacted_xpaths,
         're_redaced_codes': redaction.re_redacted_codes,
         'checked': checked,
+        'pattern': pattern,
         'xpaths': xpaths,
         'header': header,
         'dict_data': dict_data,

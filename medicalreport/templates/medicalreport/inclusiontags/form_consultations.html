@@ -14,7 +14,7 @@
             <div>
             {% for model in consultations %}
                 {% with header=model|consultation_header:people dict_data=model|consultation_element_list label=model|consultaion_sick_note map_code=model|map_code %}
-                {% redaction_checkbox_with_list model redaction header dict_data map_code label %}
+                {% redaction_checkbox_with_list model redaction header dict_data map_code label pattern %}
             {% endwith %}
             {% endfor %}
             </div>

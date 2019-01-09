@@ -16,7 +16,7 @@
                         {% for key, value in item.items %}
                             {% if key != 'xpath' and key != 'map_code' %}
                                 <tr>
-                                    <td><label style="font-weight:bold;">{{key}}</label>: {{value}}</td>
+                                    <td><label style="font-weight:bold;">{{key}}</label>: {{pattern|replace_ref_phrases:value}}</td>
                                 </tr>
                             {% endif %}
                         {% endfor %}

@@ -1,3 +1,5 @@
 from django.contrib import admin
+from medicalreport.models import ReferencePhrases
 
-# Register your models here.
+
+admin.site.register(ReferencePhrases)
