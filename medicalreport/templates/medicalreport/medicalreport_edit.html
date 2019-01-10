@@ -75,25 +75,40 @@
                 </div>
                 <div class="col-md-12 finalise-submit">
                     <div class="col-md-12">
-                        <p style="margin-top: 15px">
-                            I confirm that this medical report is an accurate reflection of the information in the electronic medical records for the requested conditions
-                            of interest at the time of preparation. This report does not include undisclosed to be disclosed symptoms, future conditions, information not
-                            relevant to the sought after conditions of interest, information which the patient has not consented to be disclosed, nor information absent from
-                            the patient's electronic medical records. Information provided in this report doest not guarantee any feature state of health ot illness.
-                        </p>
+                        <label style="margin-top: 15px"> I confirm that : </label>
+                        <ul>
+                            <li>this medical report relates to the correct patient (“Patient”);</li>
+                            <li>
+                                this medical report is an accurate reflection of the information contained in the electronic medical record of the Patient 
+                                at the date this medical report is submitted; the contents of this medical report are limited solely to the information 
+                                which relates to the requested conditions for the Patient, as listed in “Patient Info”;
+                            </li>
+                            <li>
+                                I have not willingly redacted, without good reason, 
+                                any information from the electronic medical record of the Patient which should be included in the medical report being submitted; 
+                                and
+                            </li>
+                            <li>
+                                I have reviewed the medical report and it does not contain reference to third parties or any Sensitive Conditions of the Patient. 
+                                I acknowledge that the “Sensitive Conditions” are those conditions listed in the following link 
+                                <a href="#">www.google.com</a>
+                            </li>
+                        </ul>
                     </div>
+                    <hr width="80%">
+                    <div class="col-12">&nbsp;</div>
                     <div class="row submit-panel">
                         <div class="col-md-12">
                             <div class="row ml-2">
                                 {% if request.user.id|sign_off_report:instruction.id %}
-                                    <div class="col-md-6">
-                                        {% bootstrap_field finalise_submit_form.prepared_and_signed  show_label=Fasle%}
+                                    <div class="col-md-12">
+                                        {% bootstrap_field finalise_submit_form.prepared_and_signed show_label=""%}
                                         <label class="agreement-checkbox" for="accept_disclaimer" style="font-size: large;">
                                             <input type="checkbox" id="accept_disclaimer" class="mt-2">
                                             <span>I accept that MediData Exchange Ltd cannot be held responsible for the content of this report as the data redaction process is approved by me, the Data Controller.</span>
                                         </label>
                                     </div>
-                                        {% bootstrap_field finalise_submit_form.prepared_by show_label=Fasle %}
+                                    {% bootstrap_field finalise_submit_form.prepared_by show_label="" %}
 
                                 {% endif %}
                             </div>
@@ -177,7 +192,6 @@
             $('#id_prepared_by').val('');
             $('#id_prepared_by').prop('readonly', true);
         });
-
         $('#id_prepared_and_signed_1').on('click', function () {
             $('#id_prepared_by').prop('readonly', false);
         });

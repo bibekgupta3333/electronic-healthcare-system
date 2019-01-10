@@ -126,48 +126,50 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-12 mt-4">
-            <div class="card">
-                <div class="card-header"><h5>Consent and Patient Copy</h5></div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-2 rowTitle">Upload consent form:</div>
-                        <div class="col-md-10">
-                            <div class="form-group">
-                                <div class="file-loading">
-                                    {% bootstrap_field scope_form.consent_form show_label=False %}
+        {% if not instruction.type == 'SARS'%}
+            <div class="col-md-12 mt-4" id="consent_main_block">
+                <div class="card">
+                    <div class="card-header"><h5>Consent and Patient Copy</h5></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-2 rowTitle">Upload consent form:</div>
+                            <div class="col-md-10">
+                                <div class="form-group">
+                                    <div class="file-loading">
+                                        {% bootstrap_field scope_form.consent_form show_label=False %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-12 mt-4">
-            <div class="card">
-                <div class="card-header"><h5>Addition Question</h5></div>
-                <div class="card-body">
-                    <div class="row" id="questions_block">
-                        {{ addition_question_formset.management_form }}
-                        <table border="0" cellpadding="10" cellspacing="0" class="table">
-                            <thead>
-                                <tr>
-                                    <th>Questions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for form in addition_question_formset.forms %}
-                                <tr>
-                                    <td>{{ form.question }}</td>
-                                    <td></td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+            <div class="col-md-12 mt-4" id="questions_main_block">
+                <div class="card">
+                    <div class="card-header"><h5>Addition Question</h5></div>
+                    <div class="card-body">
+                        <div class="row" id="questions_block">
+                            {{ addition_question_formset.management_form }}
+                            <table border="0" cellpadding="10" cellspacing="0" class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Questions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for form in addition_question_formset.forms %}
+                                    <tr>
+                                        <td>{{ form.question }}</td>
+                                        <td></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
     </div>
     {% if request.user.type == 'GP' %}
         <div class="row ml-1 mt-4 ">
