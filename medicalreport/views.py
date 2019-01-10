@@ -134,7 +134,7 @@ def edit_report(request, instruction_id):
             'record_type': redaction.instruction.type,
             'SUBMIT_OPTION_CHOICES': (
                     ('PREPARED_AND_SIGNED', 'Prepared and signed directly by {}'.format(request.user.first_name)),
-                    ('PREPARED_AND_REVIEWED', format_html('Prepared by <span id="preparer"></span> and reviewed by {}'
+                    ('PREPARED_AND_REVIEWED', format_html('Prepared by <span id="preparer" class="col-md-12"></span> and reviewed by {}'
                                                           .format(request.user.first_name)),
                      )
 
