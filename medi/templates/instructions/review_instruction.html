@@ -175,9 +175,11 @@
         <div class="row ml-1 mt-4 ">
             <div class="col-md-6">
                 <a href="{% url 'instructions:view_pipeline' %}" class="btn btn-primary btn-lg" id="backButton"><i class="fas fa-chevron-left"></i > Go back</a>
-                <a href="{% url 'medicalreport:set_patient_emis_number' instruction_id=instruction_id %}"
-                   class="btn btn-primary btn-lg" id="confirmPatientButton">Confirm patient <i class="fas fa-chevron-right"></i>
-                </a>
+                {% if can_process %}
+                    <a href="{% url 'medicalreport:set_patient_emis_number' instruction_id=instruction_id %}"
+                    class="btn btn-primary btn-lg" id="confirmPatientButton">Confirm patient <i class="fas fa-chevron-right"></i>
+                    </a>
+                {% endif %}
             </div>
         </div>
     {% endif %}
