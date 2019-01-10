@@ -1,4 +1,5 @@
 var status = -1;
+var cookieStatus;
 var inst_statusDict = {}, gpuser_roleDict = {};
 var clientuser_roleDict = {}, medidatauser_roleDict = {};
 inst_statusDict["All"] = -1;
