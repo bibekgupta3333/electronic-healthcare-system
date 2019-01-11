@@ -8,6 +8,7 @@ MANAGER_PERMISSIONS=[
     'view_instructionpermission',
     'add_instructionpermission',
     'change_instructionpermission',
+    'change_user',
     'delete_instructionpermission'
 ]
 
@@ -36,6 +37,7 @@ ADMIN_PERMISSIONS=[
     'delete_instruction',
     'change_instruction',
     'view_organisationfee',
+    'change_user',
     'view_templateinstruction'
 ]
 
@@ -49,6 +51,7 @@ MEDI_PERMISSIONS=[
     'view_instructionpermission',
     'add_instructionpermission',
     'change_instructionpermission',
+    'change_user',
     'delete_instructionpermission'
 ]
 

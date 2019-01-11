@@ -16,7 +16,8 @@ from permissions.models import InstructionPermission
 from common.functions import multi_getattr, verify_password as verify_pass
 from payment.models import OrganisationFee
 from django_tables2 import RequestConfig
-from accounts.forms import AllUserForm, NewGPForm, NewClientForm, NewMediForm
+from accounts.forms import AllUserForm, NewGPForm, NewClientForm, NewMediForm,\
+        UserProfileForm, UserProfileBaseForm
 
 from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
@@ -501,4 +502,25 @@ def two_factor(request):
     return render(request, 'registration/two_factor.html',{
         'form': form,
         'user': user
+    })
+
+
+@login_required(login_url='/accounts/login')
+def view_profile(request):
+    header_title = 'Profile'
+    user = User.objects.get(pk=request.user.pk)
+    if request.method == 'POST':
+        user_form = UserProfileForm(request.POST, instance=user)
+        profile_form = UserProfileBaseForm(request.POST, instance=user.userprofilebase)
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+        messages.success(request, 'Profile updated successfully.')
+    else:
+        user_form = UserProfileForm(instance=user)
+        profile_form = UserProfileBaseForm(instance=user.userprofilebase)
+    return render(request, 'accounts/accounts_profile.html', {
+        'header_title': header_title,
+        'user_form': user_form,
+        'profile_form': profile_form
     })

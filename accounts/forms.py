@@ -4,7 +4,7 @@ from django.utils.timezone import now
 from common.functions import verify_password
 from .models import GeneralPracticeUser, ClientUser, TITLE_CHOICE, User,\
         MEDIDATA_USER, CLIENT_USER, GENERAL_PRACTICE_USER, PATIENT_USER,\
-        MedidataUser, NOTIFICATIONS, PracticePreferences
+        MedidataUser, NOTIFICATIONS, PracticePreferences, UserProfileBase
 from instructions.models import InstructionPatient
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 from report.mobile import AuthMobile
@@ -284,3 +284,36 @@ class TwoFactorForm(forms.Form):
                     self._errors = {"__all__": ["OPT isn't valid."]}
                     return False
         return valid
+
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if kwargs.get('instance'):
+            user = kwargs['instance']
+            if not user.has_perm('accounts.change_user'):
+                self.fields['first_name'].widget.attrs['disabled'] = True
+                self.fields['last_name'].widget.attrs['disabled'] = True
+                self.fields['email'].widget.attrs['disabled'] = True
+
+
+
+class UserProfileBaseForm(forms.ModelForm):
+    class Meta:
+        model = UserProfileBase
+        fields = ('telephone_mobile', 'telephone_code')
+        widgets = {
+            'telephone_code': forms.HiddenInput(attrs={'placeholder': '', })
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if kwargs.get('instance'):
+            userprofile = kwargs['instance']
+            if userprofile.user and not userprofile.user.has_perm('accounts.change_user'):
+                self.fields['telephone_mobile'].widget.attrs['disabled'] = True
+                self.fields['telephone_code'].widget.attrs['disabled'] = True
