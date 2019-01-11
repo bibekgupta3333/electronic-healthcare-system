@@ -3,9 +3,9 @@
     <nav class="navbar navbar-expand-lg navbar-top">
         <a class="navbar-brand" href="#">{{ header_title }}</a>
 
-        {% if user.type %}
-            <div class="container-fluid float-right justify-content-end ">
-                <div class="dropdown">
+        <div class="container-fluid float-right justify-content-end ">
+        	{% if user.type %}
+        	<div class="dropdown">
                     <a data-toggle="dropdown" class="dropdown-toggle" href="#" data-toggle="dropdown">
                         <span class="username">{{ user.first_name }}  {{ user.last_name }}</span> <span class="caret"></span>
                     </a>
@@ -15,11 +15,11 @@
                         <a href="{% url 'accounts:password_change' %}" class="dropdown-item"><i class="fas fa-key"></i> Change Password</a>
                     </div>
                 </div>
+         	{% endif %}
 		<div>
                     <a href="{% url 'accounts:logout' %}" class="dropdown-item"><i class="fas fa-sign-out-alt"></i> Logout</a>
 		</div>
-            </div>
-         {% endif %}
+         </div>
     </nav>
 </header>
 <script>
