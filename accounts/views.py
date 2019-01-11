@@ -285,7 +285,7 @@ def create_user(request):
                 user.is_staff = new_user_data['is_staff']
                 user.set_password(newuser_form.cleaned_data['password'])
                 user.save()
-                
+
                 newuser = newuser_form.save(commit=False)
                 newuser.organisation = organisation
                 newuser.role = user_role

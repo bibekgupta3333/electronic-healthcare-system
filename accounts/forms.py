@@ -165,7 +165,9 @@ class NewGPForm(forms.ModelForm):
         fields = ('first_name', 'last_name', 'email', 'username', 'password', 'send_email', 'role', 'payment_bank_holder_name',
                     'payment_bank_account_number', 'payment_bank_sort_code')
         widgets = {
-            'payment_bank_sort_code': forms.HiddenInput(attrs={'placeholder': '', })
+            'payment_bank_sort_code': forms.HiddenInput(attrs={'placeholder': '', }),
+            'payment_bank_holder_name': forms.HiddenInput(),
+            'payment_bank_account_number': forms.HiddenInput()
         }
         labels = {
             'payment_bank_holder_name': '',

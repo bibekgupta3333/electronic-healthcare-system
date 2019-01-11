@@ -106,7 +106,7 @@
             {% endif %}
         </div>
         {% if user_type == "gp" %}
-        <div class="paragraph bottom-line">
+        <div class="paragraph bottom-line" style="display: none;">
             <div class="row banktitle"><label>Bank Details</label></div>
             <div class="row">
                 <div class="col-md-3 labelText"><label>Name of Bank</label></div>
@@ -125,11 +125,11 @@
                 <div class="col-md-4 inputDiv">
                     <div class="row">
                         {% bootstrap_field newuser_form.payment_bank_sort_code %}
-                        <div class="sortcode"><input id="sortcode1" type="text" class="form-control" required="true"></div>
+                        <div class="sortcode"><input id="sortcode1" type="text" class="form-control"></div>
                         <p class="cusline">-</p>
-                        <div class="sortcode"><input id="sortcode2" type="text" class="form-control" required="true"></div>
+                        <div class="sortcode"><input id="sortcode2" type="text" class="form-control"></div>
                         <p class="cusline">-</p>
-                        <div class="sortcode"><input id="sortcode3" type="text" class="form-control" required="true"></div>
+                        <div class="sortcode"><input id="sortcode3" type="text" class="form-control"></div>
                     </div>
                 </div>
             </div>
