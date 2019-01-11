@@ -58,7 +58,7 @@ def create_or_update_redaction_record(request, instruction):
                                                               ('PREPARED_AND_REVIEWED', format_html(
                                                                   'Prepared by <span id="preparer"></span> and reviewed by {}'
                                                                   .format(request.user.first_name)),
-                                                               )
+                                                               ),
 
                                                           ),
                                                       'prepared_by': amendments_for_record.prepared_by,
