@@ -44,8 +44,8 @@ class ImportExportTest(CalculateInstructionFeeBaseTest):
         )
         self.instruction_status_header = 'ID, MediRef, Surgery, Status'
         self.instruction_content = [
-            '3, 10000003, Test Name GP Organisation, Completed',
-            '4, 10000004, Test Name GP Organisation, Completed'
+            str(self.amra_instruction.id) + ', 10000003, Test Name GP Organisation, Completed',
+            str(self.sars_instruction.id) + ', 10000004, Test Name GP Organisation, Completed'
         ]
 
         for instruction in Instruction.objects.all():
@@ -95,7 +95,7 @@ class ImportExportTest(CalculateInstructionFeeBaseTest):
         body = list(client_payment_reader)
         client_payment_header = 'Client Id, Client Organisation, Amount, VAT, Reference'
         client_payment_content = [
-            '1, Test Trading Name Client Organisation, 110.00, 8.00, '
+            str(self.client_organisation.id) + ', Test Trading Name Client Organisation, 110.00, 8.00, '
         ]
         for i, row in enumerate(body):
             if i == 0:

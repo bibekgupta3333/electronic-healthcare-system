@@ -1,16 +1,8 @@
-import requests
-import secrets
 import json
 
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponse
-from medicalreport.models import AmendmentsForRecord
-from services.emisapiservices import services
-from medicalreport.reports import MedicalReport
-from services.xml.medical_report_decorator import MedicalReportDecorator
-from instructions.models import Instruction, Patient
-from medicalreport.dummy_models import DummyInstruction
+from instructions.models import Instruction
 from .models import PatientReportAuth
 from .forms import AccessCodeForm
 from report.mobile import AuthMobile
@@ -126,6 +118,7 @@ def get_report(request):
 def redirect_auth_limit(request):
     error_message = 'You exceeded the limit'
     return render(request, 'patient/auth_3_exceed_limit.html', {'message': error_message})
+
 
 def session_expired(request):
     return render(request, 'patient/session_expired.html')

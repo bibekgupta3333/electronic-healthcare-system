@@ -19,7 +19,7 @@ from accounts.functions import create_or_update_patient_user
 from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice
 from organisations.views import get_gporganisation_data
-from medicalreport.views import get_matched_patient
+from medicalreport.views import get_patient_registration
 from common.functions import multi_getattr
 from common.functions import get_url_page
 from snomedct.models import SnomedConcept
@@ -629,11 +629,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
     patient_instruction = instruction.patient_information
     sars_consent_form = SarsConsentForm()
     mdx_consent_form = MdxConsentForm()
-
-    patient_email = patient_instruction.patient_email
-    patient_telephone_mobile = patient_instruction.patient_telephone_mobile
-    patient_alternate_phone = patient_instruction.patient_alternate_phone
-    patient_list = get_matched_patient(patient_instruction)
+    patient_registration = get_patient_registration(str(patient_emis_number))
 
     if request.method == "POST":
         sars_consent_form = SarsConsentForm(request.POST, request.FILES, instance=instruction)
@@ -673,11 +669,9 @@ def consent_contact(request, instruction_id, patient_emis_number):
             elif next_step == 'proceed':
                 return redirect('medicalreport:select_patient', instruction_id=instruction_id, patient_emis_number=patient_emis_number)
 
-    for patient in patient_list:
-        if patient_emis_number == patient.ref_id:
-            patient_email = patient_instruction.patient_email
-            patient_telephone_mobile = patient.telephone_mobile
-            patient_alternate_phone = patient.alternate_phone
+    patient_email = patient_registration.email() if not patient_instruction.patient_email else patient_instruction.patient_email
+    patient_telephone_mobile = patient_registration.mobile_number() if not patient_instruction.patient_telephone_mobile else patient_instruction.patient_telephone_mobile
+    patient_alternate_phone = patient_registration.home_telephone() if not patient_instruction.patient_alternate_phone else patient_instruction.patient_alternate_phone
     # Initial Patient Form
     patient_form = InstructionPatientForm(
         instance=patient_instruction,

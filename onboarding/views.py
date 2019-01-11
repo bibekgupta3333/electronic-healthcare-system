@@ -82,7 +82,6 @@ def emis_setup(request, practice_code):
     if request.user.get_my_organisation() != gp_organisation:
         return redirect('accounts:login')
 
-
     if request.method == "POST":
         surgery_update_form = SurgeryUpdateForm(request.POST)
         if surgery_update_form.is_valid():
@@ -218,20 +217,4 @@ def ajax_emis_polling(request, practice_code):
         data['practice_code'] = gp_organisation.practcode
 
     return JsonResponse(data, safe=False)
-
-
-def send_email_emr(request, emr):
-    from_email = settings.DEFAULT_FROM
-    to_list = [emr.pm_email]
-    html_message = loader.render_to_string('onboarding/emr_email.html',{
-        'link': '{}/onboarding/emr-setup-final/{}'.format(request.get_host(), emr.id)
-    })
-    send_mail('Completely eMR', '', from_email, to_list, fail_silently=True, html_message=html_message)
-
-
-def send_email_pm(request, emr):
-    from_email = settings.DEFAULT_FROM
-    to_list = [emr.pm_email]
-    html_message = loader.render_to_string('onboarding/emr_email_PM.html')
-    send_mail('Completely eMR', '', from_email, to_list, fail_silently=True, html_message=html_message)
 

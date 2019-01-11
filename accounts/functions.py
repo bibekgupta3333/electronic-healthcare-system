@@ -62,14 +62,12 @@ def change_role(request):
             user.is_staff = True
         else:
             user.is_staff = False
-        user.save()
 
         if hasattr(cur_user.userprofilebase, 'generalpracticeuser'):
             user.userprofilebase.generalpracticeuser.role = role
-            user.userprofilebase.generalpracticeuser.save()
         elif hasattr(cur_user.userprofilebase, 'clientuser'):
             user.userprofilebase.clientuser.role = role
-            user.userprofilebase.clientuser.save()
+        user.save()
 
     if user_cnt == 1:
         messages.success(request, "The role of selected user has been changed.")

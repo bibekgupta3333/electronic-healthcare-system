@@ -128,7 +128,6 @@ def view_users(request):
         filter_status = int(request.COOKIES.get('status', -1))
         filter_user_type = request.COOKIES.get('user_type', None)
 
-
     if filter_type == '':
         filter_type = "active"
     user_types = [MEDIDATA_USER, CLIENT_USER, GENERAL_PRACTICE_USER]

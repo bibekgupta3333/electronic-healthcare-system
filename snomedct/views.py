@@ -35,14 +35,13 @@ def get_descendants(request) -> JsonResponse:
     external_id = request.GET.get('snomedct')
     if external_id:
         record = SnomedConcept.objects.get(external_id=external_id)
-        snomed_descendants = record.descendants()
+        snomed_descendants = record.descendants(ret_descendants=set())
 
     response = []
     for item in snomed_descendants:
         response.append({
-            "id": item.id,
+            "external_id": item.external_id,
             "fsn_description": item.fsn_description,
-            "external_id": item.external_id
         })
     return JsonResponse(response, safe=False)
 
@@ -70,7 +69,7 @@ def get_readcodes(request) -> JsonResponse:
     external_id = request.GET.get('snomedct')
     if external_id:
         record = SnomedConcept.objects.get(external_id=external_id)
-        readcodes = record.readcodes()
+        readcodes = record.readcode.all()
 
     response = []
     for item in readcodes:
