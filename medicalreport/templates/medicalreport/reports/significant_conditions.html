@@ -4,37 +4,49 @@
 <div style="display:flex;background-color:#235597;margin:0;">
     <label style="color:white;font-size:20px;">Significant Conditions</label>
 </div>
-<table style="width:100%;font-size:15px;margin-top:10px;">
-  <tr>
-      <td style="font-size:17px;font-weight:bold;">Active</td>
-  </tr>
-  {% for model in significant_active_problems %}
-      {% with header=model|active_problem_header:problem_linked_lists  %} 
-          {% with model|get_xpaths:problem_linked_lists as xpaths %}
-              {% with xpaths|get_redaction_problem_xpaths:redaction as redacted %}
-                  {% if not redacted %}
-                      <tr>
-                          <td>{{ header }}</td>
-                      </tr>
-                  {% endif %}
+<div></div>
+{% if significant_active_problems or significant_past_problems or redaction.significant_problem_notes|default:"" %}
+    <table style="width:100%;font-size:15px;margin-top:10px;">
+      {% if significant_active_problems %}
+          <tr>
+              <td style="font-size:17px;font-weight:bold;">Active</td>
+          </tr>
+          {% for model in significant_active_problems %}
+              {% with header=model|active_problem_header:problem_linked_lists  %} 
+                  {% with model|get_xpaths:problem_linked_lists as xpaths %}
+                      {% with xpaths|get_redaction_problem_xpaths:redaction as redacted %}
+                          {% if not redacted %}
+                              <tr>
+                                  <td>{{ header }}</td>
+                              </tr>
+                          {% endif %}
+                      {% endwith %}
+                  {% endwith %}
               {% endwith %}
-          {% endwith %}
-      {% endwith %}
-  {% endfor %}
-  <tr>
-      <td style="font-size:17px;font-weight:bold;">Past</td>
-  </tr>
-  {% for model in significant_past_problems %}
-      {% with header=model|past_problem_header  %} 
-          {% with model|get_xpaths:problem_linked_lists as xpaths %}
-              {% with xpaths|get_redaction_problem_xpaths:redaction as redacted %}
-                  {% if not redacted %}
-                      <tr>
-                          <td>{{ header }}</td>
-                      </tr>
-                  {% endif %}
+          {% endfor %}
+      {% endif %}
+      {% if significant_past_problems %}
+          <tr>
+              <td style="font-size:17px;font-weight:bold;">Past</td>
+          </tr>
+          {% for model in significant_past_problems %}
+              {% with header=model|past_problem_header  %} 
+                  {% with model|get_xpaths:problem_linked_lists as xpaths %}
+                      {% with xpaths|get_redaction_problem_xpaths:redaction as redacted %}
+                          {% if not redacted %}
+                              <tr>
+                                  <td>{{ header }}</td>
+                              </tr>
+                          {% endif %}
+                      {% endwith %}
+                  {% endwith %}
               {% endwith %}
-          {% endwith %}
-      {% endwith %}
-  {% endfor %}
-</table>
+          {% endfor %}
+      {% endif %}
+      {% if redaction.significant_problem_notes|default:"" %}
+          <tr>
+              <td><label style="font-weight:bold;">Additional contextual information</label> : {{redaction.significant_problem_notes}}</td>
+          </tr>
+      {% endif %}
+    </table>
+{% endif %}

@@ -3,8 +3,11 @@
 <div style="display:flex;background-color:#235597;margin:0;">
     <label style="color:white;font-size:20px;">Additional comments</label>
 </div>
-<table style="width:100%;font-size:15px;margin-top:10px;">
-    <tr>
-      <td>{{ comment_notes|default:"" }}</td>
-    </tr>
-</table>
+<div></div>
+{% if comment_notes|default:"" %}
+    <table style="width:100%;font-size:15px;margin-top:10px;">
+        <tr>
+          <td>{{ comment_notes }}</td>
+        </tr>
+    </table>
+{% endif %}
