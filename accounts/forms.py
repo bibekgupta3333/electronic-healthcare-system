@@ -156,7 +156,7 @@ class NewGPForm(forms.ModelForm):
     first_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
     last_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
     email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), label='', required=True)
-    username = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
+    username = forms.CharField(max_length=255, required=False, label='', widget=forms.TextInput())
     password = forms.CharField(required=True, widget=forms.HiddenInput())
     send_email = forms.BooleanField(required=False, initial=False)
 
@@ -179,7 +179,7 @@ class NewClientForm(forms.ModelForm):
     first_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
     last_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
     email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), label='', required=True)
-    username = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
+    username = forms.CharField(max_length=255, required=False, label='', widget=forms.TextInput())
     password = forms.CharField(required=True, widget=forms.HiddenInput())
     send_email = forms.BooleanField(required=False, initial=False)
 

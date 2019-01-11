@@ -137,7 +137,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-12 mt-4">
+                <div class="col-md-12 mt-4" id="consent_main_block">
                     <div class="card">
                         <div class="card-header"><h5>Consent and Patient Copy</h5></div>
                         <div class="card-body">
@@ -154,7 +154,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-12 mt-4">
+                <div class="col-md-12 mt-4" id="questions_main_block">
                     <div class="card">
                         <div class="card-header"><h5>Addition Question</h5></div>
                         <div class="card-body">
@@ -240,6 +240,20 @@
     <script src="{% static 'js/jquery.formset.js' %}"></script>
     <script>
         $(document).ready(function () {
+
+            // Function for hidden field if choose SARS type.
+            $("#id_type_2").click( function() {
+                $('#consent_main_block').hide();
+                $('#questions_main_block').hide();
+            });
+            $("#id_type_1").click( function() {
+                $('#consent_main_block').show();
+                $('#questions_main_block').show();
+            });
+            $("#id_type_0").click( function() {
+                $('#consent_main_block').show();
+                $('#questions_main_block').show();
+            });
 
             // Function for checking required date field. When one date_range has value, another date_range will be required
             $('#id_date_range_from').change(function() { 

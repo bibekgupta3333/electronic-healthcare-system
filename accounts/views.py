@@ -277,14 +277,14 @@ def create_user(request):
                 user = User.objects.create(
                     first_name=newuser_form.cleaned_data['first_name'],
                     last_name=newuser_form.cleaned_data['last_name'],
-                    username=newuser_form.cleaned_data['username'],
-                    email=newuser_form.cleaned_data['email']
+                    email=newuser_form.cleaned_data['email'],
+                    username=newuser_form.cleaned_data['email']
                 )
                 user.type = user_type
                 user.is_staff = new_user_data['is_staff']
-
                 user.set_password(newuser_form.cleaned_data['password'])
                 user.save()
+                
                 newuser = newuser_form.save(commit=False)
                 newuser.organisation = organisation
                 newuser.role = user_role

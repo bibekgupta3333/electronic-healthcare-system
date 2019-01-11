@@ -530,6 +530,12 @@ def review_instruction(request, instruction_id):
     condition_of_interest = [snomed.fsn_description for snomed in instruction.selected_snomed_concepts()]
     addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.filter(instruction=instruction))
 
+    can_process = False
+    if request.user.has_perm('instructions.process_sars') and instruction.type == 'SARS':
+        can_process = True
+    elif request.user.has_perm('instructions.process_amra') and instruction.type == 'AMRA':
+        can_process = True
+
     return render(request, 'instructions/review_instruction.html', {
         'header_title': header_title,
         'patient_form': patient_form,
@@ -543,7 +549,8 @@ def review_instruction(request, instruction_id):
         'condition_of_interest': condition_of_interest,
         'consent_form_data': consent_form_data,
         'instruction_id': instruction_id,
-        'instruction': instruction
+        'instruction': instruction,
+        'can_process': can_process
     })
 
 

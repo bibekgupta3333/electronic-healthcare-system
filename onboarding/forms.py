@@ -125,6 +125,13 @@ class SurgeryEmailForm(forms.ModelForm):
         model = OrganisationGeneralPractice
         fields = ('organisation_email',)
 
+    def clean_organisation_email( self ):
+        organisation_email = self.cleaned_data.get('organisation_email')
+        if accounts_models.User.objects.filter(email=organisation_email).exists():
+            raise forms.ValidationError('This email address has already been used to register.')
+        else:
+            return organisation_email
+
     def clean_confirm_email(self):
         confirm_email = self.cleaned_data.get('confirm_email')
         organisation_email = self.cleaned_data.get('organisation_email')

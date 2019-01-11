@@ -75,6 +75,7 @@
     <script src="{% static 'js/dataTables/jquery.dataTables.min.js' %}"></script>
     <script src="{% static 'js/dataTables/dataTables.bootstrap4.min.js' %}"></script>
     <script src="{% static 'js/instructions/instruction_views.js' %}"></script>
+    <script src="{% static 'js/js.cookie.js' %}"></script>
     <script>
         $(document).ready(function () {
             $('#instructionsTable').DataTable();
@@ -92,12 +93,20 @@
             } );
 
             $('.pager').hide();
-            if(getUrlParameter('status')){
-                status = getUrlParameter('status');
+
+            cookieStatus = Cookies.get('status');
+            if( cookieStatus != -1 ){
+                status = cookieStatus;
                 var key = getObjectKeyByValue(inst_statusDict, status);
                 $('#' + key.replace(' ', '')).css("background-color", "rgba(0, 0, 0, 0.1)");
             } else {
-                $('#All').css("background-color", "rgba(0, 0, 0, 0.1)");
+                if( getUrlParameter('status') ){
+                    status = getUrlParameter('status');
+                    var key = getObjectKeyByValue(inst_statusDict, status);
+                    $('#' + key.replace(' ', '')).css("background-color", "rgba(0, 0, 0, 0.1)");
+                } else {
+                    $('#All').css("background-color", "rgba(0, 0, 0, 0.1)");
+                }
             }
 
             if(getUrlParameter('type')){
