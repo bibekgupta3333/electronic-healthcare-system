@@ -1,3 +1,22 @@
+[run]
+include =
+    */admin.py
+    */forms.py
+    */functions.py
+    */models.py
+    */views.py
+    */medicalreport/*
+    services/*
+
+omit =
+    .venv/*
+    */migrations/*
+    */__init__.py
+    */urls.py
+    */settings/*
+    */tests/*
+    */apps.py
+
 [report]
 include =
     */admin.py

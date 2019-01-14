@@ -57,3 +57,12 @@ class Registration(XMLBase):
 
     def ref_id(self) -> str:
         return self.get_element_text('RefID')
+
+    def mobile_number(self) -> str:
+        return self.get_element_text('Mobile')
+
+    def home_telephone(self) -> str:
+        return self.get_element_text('HomeTelephone')
+
+    def email(self) -> str:
+        return self.get_element_text('Email')

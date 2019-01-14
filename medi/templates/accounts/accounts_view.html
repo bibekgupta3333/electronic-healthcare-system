@@ -71,13 +71,16 @@
                                 </div>
                             </div>
                         </div>
-                        {% for i in organisation_fee_data %}
+                        {% for data in organisation_fee_data %}
                             <div class="row FeeLevel">
-                                <div class="col-md-2 rowTitle">
-                                    Payment Level {{ forloop.counter }}
+                                <div class="col-md-3 rowTitle">
+                                  {{ data.label }}
                                 </div>
-                                <div class="col-md-10">
-                                    <input id="feeIdlvl-{{ forloop.counter }}" type="text" class="form-control feeData" value="{{ i }}" readonly="true">
+                                <div class="col-md-9">
+                                    <div class="row">
+                                      <input type="text" class="form-control currency display-inline" value="£" readonly="true">
+                                      <input type="text" class="form-control feeData display-inline" value="{{ data.amount }}" readonly="true">
+                                    </div>
                                 </div>
                             </div>
                         {% endfor %}

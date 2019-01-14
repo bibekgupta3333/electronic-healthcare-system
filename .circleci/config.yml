@@ -18,6 +18,13 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             pip install -r config/requirements.txt
+            sudo apt-get update
+            sudo apt-get install -y clamav clamav-daemon
+            sudo mkdir /var/run/clamav
+            sudo chmod 777 /var/run/clamav
+            sudo freshclam
+            sudo clamd
+            sudo /etc/init.d/clamav-daemon start
       - save_cache:
           key: medi-{{ checksum "config/requirements.txt" }}
           paths:

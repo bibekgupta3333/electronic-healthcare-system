@@ -3042,7 +3042,7 @@
             }
             if ($zone.find($h.FRAMES).length === 0 && $h.isEmpty(self.defaultPreviewContent)) {
                 var detailClass = '<h6 class="mt-2">' + detail +'</h6>';
-                $zone.prepend('<div class="' + self.dropZoneTitleClass + '">' + title + '<br>' + detailClass +'</div>');
+                $zone.prepend('<div class="' + self.dropZoneTitleClass + '" style="padding-top:3%">' + title + '<br>' + detailClass +'</div>');
             }
             self.$container.removeClass('file-input-new');
             $h.addCss(self.$container, 'file-input-ajax-new');
@@ -4375,7 +4375,7 @@
         errorCloseButton: $h.closeButton('kv-error-close'),
         slugCallback: null,
         dropZoneEnabled: true,
-        dropZoneTitleClass: 'file-drop-zone-title pt-3',
+        dropZoneTitleClass: 'file-drop-zone-title',
         fileActionSettings: {},
         otherActionButtons: '',
         textEncoding: 'UTF-8',

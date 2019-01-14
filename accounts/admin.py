@@ -1,8 +1,11 @@
 from django import forms
 from django.contrib import admin
+from django.contrib.messages import get_messages
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.shortcuts import redirect
+from django.urls import path
 
 from permissions.models import InstructionPermission
 from .models import *
@@ -49,9 +52,17 @@ class UserAdmin(BaseUserAdmin):
     add_form = CustomUserCreationForm
     list_display = ('email', 'first_name', 'last_name', 'type', 'is_staff')
     list_filter = ('type',)
+    change_list_template = "admin/accounts/change_list.html"
 
     class Media():
         js = ('js/custom_admin/add_user.js', )
+
+    def get_urls(self):
+        urls = super().get_urls()
+        my_urls = [
+            path('update-permissions/', self.update_permissions)
+        ]
+        return my_urls + urls
 
     def get_queryset(self, request):
         if hasattr(request.user, 'userprofilebase'):
@@ -128,6 +139,16 @@ class UserAdmin(BaseUserAdmin):
                     GeneralPracticeUser.objects.create(user=obj, organisation=organisation)
         else:
             super(UserAdmin, self).save_model(request, obj, form, change)
+
+    def update_permissions(self, request):
+        for client in ClientUser.objects.all():
+            client.update_permission()
+        for gp in GeneralPracticeUser.objects.all():
+            gp.update_permission()
+        for medi in MedidataUser.objects.all():
+            medi.update_permission()
+        self.message_user(request, "Update permissions successfully.")
+        return redirect('/admin/accounts/user/')
 
 
 admin.site.register(User, UserAdmin)

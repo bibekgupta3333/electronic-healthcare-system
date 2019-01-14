@@ -90,7 +90,7 @@ class SurgeryUpdateForm(forms.Form):
     surgery_name = forms.CharField(max_length=255, label='', disabled=True, required=False)
     surgery_code = forms.CharField(max_length=20, label='', disabled=True, required=False)
     emis_org_code = forms.CharField(max_length=20, label='')
-    operating_system = forms.ChoiceField(choices=OrganisationGeneralPractice.GP_OP_SYS_CHOICES, label='')
+    operating_system = forms.ChoiceField(choices=SurgeryForm.GP_OP_SYS_CHOICES, label='')
 
 
 class SurgeryEmrSetUpStage2Form(forms.Form):

@@ -6,6 +6,7 @@ app_name = 'accounts'
 urlpatterns = (
     path('view-account/', views.account_view, name='view_account'),
     path('view-users/', views.view_users, name='view_users'),
+    path('view-profile/', views.view_profile, name='view_profile'),
     path('create-user/', views.create_user, name='create_user'),
     path('medi-create-user/', views.medi_create_user, name='medi_create_user'),
     path('medi-change-user/<str:email>', views.medi_change_user, name='medi_change_user'),

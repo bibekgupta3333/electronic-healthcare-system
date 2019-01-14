@@ -16,7 +16,8 @@ from permissions.models import InstructionPermission
 from common.functions import multi_getattr, verify_password as verify_pass
 from payment.models import OrganisationFee
 from django_tables2 import RequestConfig
-from accounts.forms import AllUserForm, NewGPForm, NewClientForm, NewMediForm
+from accounts.forms import AllUserForm, NewGPForm, NewClientForm, NewMediForm,\
+        UserProfileForm, UserProfileBaseForm
 
 from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
@@ -53,30 +54,32 @@ def account_view(request):
             return JsonResponse({'message': 'Preferences have been saved.'})
 
     gp_preferences_form = PracticePreferencesForm(instance=practice_preferences)
-    
+
     organisation = multi_getattr(user, 'userprofilebase.generalpracticeuser.organisation', default=None)
     organisation_fee = OrganisationFee.objects.filter(gp_practice=organisation).first()
     organisation_fee_data = list()
 
     if organisation_fee:
-        organisation_fee_data.append('0-{max_day_level_1} days @ £{amount_rate_level_1}'.format(
-            max_day_level_1=organisation_fee.max_day_lvl_1,
-            amount_rate_level_1=organisation_fee.amount_rate_lvl_1)
-        )
-        organisation_fee_data.append('{min_day_level_2}-{max_day_level_2} days @ £{amount_rate_level_2}'.format(
-            min_day_level_2=organisation_fee.max_day_lvl_1+1,
-            max_day_level_2=organisation_fee.max_day_lvl_2,
-            amount_rate_level_2=organisation_fee.amount_rate_lvl_2)
-        )
-        organisation_fee_data.append('{min_day_level_3}-{max_day_level_3} days @ £{amount_rate_level_3}'.format(
-            min_day_level_3=organisation_fee.max_day_lvl_2 + 1,
-            max_day_level_3=organisation_fee.max_day_lvl_3,
-            amount_rate_level_3=organisation_fee.amount_rate_lvl_3)
-        )
-        organisation_fee_data.append('{max_day_level_4} days or more @ £{amount_rate_level_4}'.format(
-            max_day_level_4=organisation_fee.max_day_lvl_4,
-            amount_rate_level_4=organisation_fee.amount_rate_lvl_4)
-        )
+        organisation_fee_data.append({
+            'days': organisation_fee.max_day_lvl_1,
+            'amount': organisation_fee.amount_rate_lvl_1,
+            'label': 'Received within %s days'%organisation_fee.max_day_lvl_1
+        })
+        organisation_fee_data.append({
+            'days': organisation_fee.max_day_lvl_2,
+            'amount': organisation_fee.amount_rate_lvl_2,
+            'label': 'Received within %s-%s days'%(organisation_fee.max_day_lvl_1+1,organisation_fee.max_day_lvl_2)
+        })
+        organisation_fee_data.append({
+            'days': organisation_fee.max_day_lvl_3,
+            'amount': organisation_fee.amount_rate_lvl_3,
+            'label': 'Received within %s-%s days'%(organisation_fee.max_day_lvl_2+1,organisation_fee.max_day_lvl_3)
+        })
+        organisation_fee_data.append({
+            'days': organisation_fee.max_day_lvl_4,
+            'amount': organisation_fee.amount_rate_lvl_4,
+            'label': 'Received after %s days'%organisation_fee.max_day_lvl_3
+        })
 
     return render(request, 'accounts/accounts_view.html', {
         'header_title': header_title,
@@ -124,7 +127,6 @@ def view_users(request):
         filter_type = request.COOKIES.get('type')
         filter_status = int(request.COOKIES.get('status', -1))
         filter_user_type = request.COOKIES.get('user_type', None)
-
 
     if filter_type == '':
         filter_type = "active"
@@ -284,7 +286,7 @@ def create_user(request):
                 user.is_staff = new_user_data['is_staff']
                 user.set_password(newuser_form.cleaned_data['password'])
                 user.save()
-                
+
                 newuser = newuser_form.save(commit=False)
                 newuser.organisation = organisation
                 newuser.role = user_role
@@ -501,4 +503,25 @@ def two_factor(request):
     return render(request, 'registration/two_factor.html',{
         'form': form,
         'user': user
+    })
+
+
+@login_required(login_url='/accounts/login')
+def view_profile(request):
+    header_title = 'Profile'
+    user = User.objects.get(pk=request.user.pk)
+    if request.method == 'POST':
+        user_form = UserProfileForm(request.POST, instance=user)
+        profile_form = UserProfileBaseForm(request.POST, instance=user.userprofilebase)
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+        messages.success(request, 'Profile updated successfully.')
+    else:
+        user_form = UserProfileForm(instance=user)
+        profile_form = UserProfileBaseForm(instance=user.userprofilebase)
+    return render(request, 'accounts/accounts_profile.html', {
+        'header_title': header_title,
+        'user_form': user_form,
+        'profile_form': profile_form
     })
