@@ -7,11 +7,12 @@
 
 {% block ExtraHead %}
     <link rel="stylesheet" href="{% static 'css/onboarding/emr_setup_final.css' %}">
+    <link rel="stylesheet" href="{% static 'css/intlTelInput.min.css' %}">
 {% endblock %}
 
 {% block Content %}
     <div class="col-md-12 pt-3 pb-3 bg-white emrSetupStage2">
-        <form method="POST" enctype="multipart/form-data" id="newInstructionForm">
+        <form method="POST" enctype="multipart/form-data" id="OnboardingFinalSetupForm">
             {% csrf_token %}
             <div class="col-md-12">
                 <h2><b>eMR Set Up-Stage 2</b></h2>
@@ -58,22 +59,27 @@
 
                 </div>
             <div class="col-md-12 mt-5">
-                <h4><b>eMR Users <span class="red">*</span></b></h4>
-                <p class="mt-3 mb-3 red">
-                    Please complete details of people who will be using eMR for SARS, Medical Reports. management of
-                    workflow and payment of fees.
+                <h4><b>eMR Users</b></h4>
+                <p class="mt-3 mb-0 red">
+                    Please add the details of anyone who will be using eMR for SARs, Medical Reports, or workflow management.
+                </p>
+                <p class="red mb-3">
+                    You can skip this step and add users later if you wish.
                 </p>
                 {{ user_formset.management_form }}
                 <div class="table-responsive">
-                    <table class="table table-bordered">
+                    <table class="table table-bordered vertical-middle">
                         <thead>
                             <tr>
-                                <th style="width: 10%;">Title*</th>
-                                <th style="width: 14%;">First Name*</th>
-                                <th style="width: 14%;">Surname*</th>
-                                <th style="width: 14%;">Email*</th>
-                                <th style="width: 13%;">Role(GP, Other)</th>
-                                <th style="width: 14%;">GP Code if any</th>
+                                <th style="width: 7%;">Title*</th>
+                                <th style="width: 13%;">First Name*</th>
+                                <th style="width: 13%;">Surname*</th>
+                                <th style="width: 13%;">Email*</th>
+                                <th style="width: 11%;">Role(GP, Other)</th>
+                                <th style="width: 27%;">
+                                    Mobile Phone*
+                                    <p class="font-weight-light text-secondary mb-0">(required to set up two factor authentication)</p>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -84,7 +90,10 @@
                                 <td>{% bootstrap_field form.last_name placeholder='' %}</td>
                                 <td>{% bootstrap_field form.email placeholder='' %}</td>
                                 <td>{% bootstrap_field form.role placeholder='' %}</td>
-                                <td>{% bootstrap_field form.gp_code placeholder='' %}</td>
+                                <td>
+                                    {% bootstrap_field form.mobile_phone  form_group_class='col-md-12' show_label=false placeholder='' %}
+                                    {% bootstrap_field form.mobile_code %}
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -208,6 +217,7 @@
 
 {% block Script %}
     <script src="{% static 'js/jquery.formset.js' %}"></script>
+    <script src="{% static 'js/intlTelInput.min.js' %}"></script>
     <script>
     $(document).ready(function () {
 
@@ -250,6 +260,47 @@
                 $("#warningEmailModal").modal();
             }
         });
+
+        for(let i=0; i< $('tbody tr').length; i++){
+            let phoneCode = '';
+            let inputPhone = document.querySelector("#id_form-"+ i +"-mobile_phone");
+            intlTelInput(inputPhone, {
+              separateDialCode: true,
+              initialCountry: "auto"
+            });
+            inputPhone.addEventListener("countrychange", function() {
+              let code = $(this).parent().find('.selected-flag')[0].title.split(': ')[1];
+              $(this).parent().find('.selected-dial-code').html(code);
+              $('#id_form-'+ i +'-mobile_code').val($('#id_form-'+ i +'-mobile_phone').parent().find('.selected-flag')[0].title.split('+')[1]);
+            });
+            $.get('https://ipinfo.io', function() {}, "jsonp").always(function(resp) {
+              let countryCode = (resp && resp.country) ? resp.country : "";
+              countryCode = countryCode.toLocaleLowerCase();
+              phoneCode = $('.country-list li[data-country-code=' + countryCode + ']').attr('data-dial-code');
+              let telephoneCode = $('#id_form-'+ i +'-mobile_code').val();
+              if(telephoneCode){
+                countryCode = $('.country-list li[data-dial-code=' + telephoneCode + ']').attr('data-country-code');
+                phoneCode = telephoneCode;
+              }
+              $('#id_form-'+ i +'-mobile_phone').parent().find('.intl-tel-input').addClass('iti-sdc-3');
+              $('#id_form-'+ i +'-mobile_phone').parent().find('.selected-flag').attr('title', '+' + phoneCode);
+              $('#id_form-'+ i +'-mobile_phone').parent().find('.selected-flag .iti-flag').addClass(countryCode);
+              $('#id_form-'+ i +'-mobile_phone').parent().find('.selected-flag .selected-dial-code').html('+' + phoneCode);
+              $('#id_form-'+ i +'-mobile_phone').addClass('mobile-phone-input');
+            });
+        }
+
+        $('.intl-tel-input').css('display', 'block');
+        $('.selected-flag').css('border-collapse', 'initial');
+        $('.selected-flag').css('width', '85px');
+
+        $('#OnboardingFinalSetupForm').submit( function () {
+            for(let i=0; i< $('tbody tr').length; i++){
+                if($('#id_form-'+ i +'-mobile_phone').val() == ''){
+                    $('#id_form-'+ i +'-mobile_code').val('');
+                }
+            }
+        })
     });
     </script>
 {% endblock %}

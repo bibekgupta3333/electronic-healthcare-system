@@ -11,3 +11,13 @@
     width: 23px;
     height: 23px;
 }
+
+.vertical-middle {
+    vertical-align: middle !important;
+}
+
+.mobile-phone-input{
+    padding-right: 0px !important;
+    padding-left: 35% !important;
+    margin-left: 0 !important;
+}
