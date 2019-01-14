@@ -8,7 +8,8 @@ from .xml_utils import (
 from .medical_record import MedicalRecord
 from .auto_redactable import (
     auto_redact_referrals, auto_redact_consultations, auto_redact_attachments,
-    auto_redact_medications, auto_redact_profile_events, auto_redact_by_date
+    auto_redact_medications, auto_redact_profile_events, auto_redact_by_date,
+    auto_redact_significant_active_problems, auto_redact_significant_past_problems
 )
 from .xml_base import XMLModelBase
 from .consultation import Consultation
@@ -48,12 +49,18 @@ class MedicalReportDecorator(MedicalRecord):
 
     def significant_active_problems(self) -> List[Problem]:
         return alphabetical_redactable_elements(
-            super().significant_active_problems()
+            auto_redact_significant_active_problems(
+                super().significant_active_problems(),
+                self.instruction
+            )
         )
 
     def significant_past_problems(self) -> List[Problem]:
         return alphabetical_redactable_elements(
-            super().significant_past_problems()
+            auto_redact_significant_past_problems(
+                super().significant_past_problems(),
+                self.instruction
+            )
         )
 
     def referrals(self) -> List[Referral]:
