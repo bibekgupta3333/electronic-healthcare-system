@@ -216,7 +216,6 @@ MDXCONSENT_DIR = os.path.join(BASE_DIR, 'templates/instructions/mdx_dual_consent
 #MEDI ref number
 MEDI_REF_NUMBER = 10000000
 
-SITE_ID = 1
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 600 # 10 Minutes
