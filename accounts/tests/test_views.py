@@ -205,14 +205,18 @@ class TestViews( TestCase ):
         email = self.email_A
         password = 'secret1'
         role = '1'
+        telephone_mobile = '874432803'
+        telephone_code = '66'
 
         self.client.login( email = 'testuser@mohara.co', password = 'secret' )
         response = self.client.post('/accounts/create-user/', {
-            'user_role' : role,
+            'user_role': role,
             'first_name': firstName,
             'last_name': lastName,
             'email': email,
-            'password' : password
+            'password': password,
+            'telephone_mobile': telephone_mobile,
+            'telephone_code': telephone_code
         })
 
         expectedMassage = 'User Account Existing In Database'
@@ -228,6 +232,8 @@ class TestViews( TestCase ):
         lastName = 'Oopipat'
         email = 'snoopy@mohara.co'
         password = 'secret2'
+        telephone_mobile = '874432803'
+        telephone_code = '66'
         role = '1'
 
         self.client.login( email = 'testuser@mohara.co', password = 'secret' )
@@ -236,7 +242,9 @@ class TestViews( TestCase ):
             'first_name': firstName,
             'last_name': lastName,
             'email': email,
-            'password' : password
+            'password' : password,
+            'telephone_mobile': telephone_mobile,
+            'telephone_code': telephone_code
         })
 
         queryResultUser = User.objects.all()
@@ -249,6 +257,8 @@ class TestViews( TestCase ):
         self.assertEqual( firstName, resultUser.first_name )
         self.assertEqual( lastName, resultUser.last_name )
         self.assertEqual( 'General Practice User', resultUser.get_my_role() )
+        self.assertEqual( telephone_mobile, resultUser.userprofilebase.telephone_mobile)
+        self.assertEqual( telephone_code, resultUser.userprofilebase.telephone_code)
 
     def test_create_user_fail( self ):
         #   Test create user but fail. Because invalid form.

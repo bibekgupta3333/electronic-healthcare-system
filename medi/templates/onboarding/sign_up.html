@@ -11,6 +11,7 @@
     <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/onboarding/sign_up.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/onboarding/emr_setup_final.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/intlTelInput.min.css' %}">
 {% endblock %}
 
 {% block Content %}
@@ -194,6 +195,15 @@
                         </div>
                     </div>
                     <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4 title-pos">Mobile phone <span class="red">*</span></div>
+                                {% bootstrap_field pm_form.telephone_mobile show_label=False form_group_class='col-md-7' placeholder='' %}
+                                {% bootstrap_field pm_form.telephone_code %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
                         <div class="col-md-8">
                             <div class="row form-group">
                                 <div class="col-md-12">
@@ -267,6 +277,8 @@
     <script src="{% static 'js/select2.min.js' %}"></script>
     <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
     <script src="{% static 'js/jquery.formset.js' %}"></script>
+    <script src="{% static 'js/intlTelInput.min.js' %}"></script>
+    <script src="{% static 'js/intlTel.js' %}"></script>
     <script src="{% static 'js/onboarding/emr_signup.js' %}"></script>
     <script>
         $(document).ready(function () {
@@ -281,7 +293,7 @@
                 {% if selected_surgery_name %} ["{{ selected_surgery_name }}"] {% else %} [''] {% endif %},
                 "{% url 'organisations:sign_up_autocomplete' %}"
             );
-
+            setUpTel('id_telephone_mobile', 'id_telephone_code');
             $('#id_emis_org_code').prop('required', true);
             $('#id_operating_system').change(function () {
                 if($(this).val() != 'EMISWeb'){
@@ -331,42 +343,44 @@
 
             $('#id_postcode').on('change', function () {
                 var url = "{% url 'instructions:api_get_address' address='Address' %}".replace('Address', $(this).val());
-                $.ajax({
-                    type: "GET",
-                    processData: false,
-                    url: url,
-                    success: function (data) {
-                        data.formattedObj = {};
-                        var formattedData = data.addresses.map(function(item) {
-                            var name = item.split(',').filter(function (s) {
-                                return s != ' ';
-                            }).join(',');
-                            data.formattedObj[name] = item;
-                            return name;
-                        });
-                        $('#id_address').empty();
-                        $('#id_address').select2({
-                            data: formattedData
-                         });
-                        $('#id_address').on('select2:select', function (e) {
-                            var selected = e.params.data;
-                            var selectedData;
+                if($(this).val()){
+                  $.ajax({
+                      type: "GET",
+                      processData: false,
+                      url: url,
+                      success: function (data) {
+                          data.formattedObj = {};
+                          var formattedData = data.addresses.map(function(item) {
+                              var name = item.split(',').filter(function (s) {
+                                  return s != ' ';
+                              }).join(',');
+                              data.formattedObj[name] = item;
+                              return name;
+                          });
+                          $('#id_address').empty();
+                          $('#id_address').select2({
+                              data: formattedData
+                           });
+                          $('#id_address').on('select2:select', function (e) {
+                              var selected = e.params.data;
+                              var selectedData;
 
-                            if(data.formattedObj[selected.text]) {
-                                selectedData = data.formattedObj[selected.text].split(',');
-                            }else {
-                                selectedData = selected.text.split(',');
-                            }
-                            $('#id_address_line1').val(selectedData[0]);
-                            $('#id_address_line2').val(selectedData[1]);
-                            $('#id_address_line3').val(selectedData[2]);
-                            $('#id_address_line4').val(selectedData[3]);
-                            $('#id_city').val(selectedData[5]);
-                            $('#id_county').val(selectedData[6]);
-                            $('#id_address').val(selectedData.join(','));
-                        });
-                    }
-                })
+                              if(data.formattedObj[selected.text]) {
+                                  selectedData = data.formattedObj[selected.text].split(',');
+                              }else {
+                                  selectedData = selected.text.split(',');
+                              }
+                              $('#id_address_line1').val(selectedData[0]);
+                              $('#id_address_line2').val(selectedData[1]);
+                              $('#id_address_line3').val(selectedData[2]);
+                              $('#id_address_line4').val(selectedData[3]);
+                              $('#id_city').val(selectedData[5]);
+                              $('#id_county').val(selectedData[6]);
+                              $('#id_address').val(selectedData.join(','));
+                          });
+                      }
+                  })
+               }
             });
 
             $('#id_password1').change(function() {
