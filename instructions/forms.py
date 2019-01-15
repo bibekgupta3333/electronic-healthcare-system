@@ -9,7 +9,6 @@ from .models import InstructionAdditionQuestion, Instruction, InstructionClientN
 from template.models import TemplateInstruction
 from common.functions import multi_getattr
 from snomedct.models import CommonSnomedConcepts
-from accounts.models import User, GeneralPracticeUser
 
 
 DATE_INPUT_FORMATS = settings.DATE_INPUT_FORMATS
@@ -138,8 +137,14 @@ class ClientNoteForm(forms.ModelForm):
 
 
 class InstructionDateRangeForm(forms.ModelForm):
-    date_range_from = forms.DateField(required=False, label="From")
-    date_range_to = forms.DateField(required=False, label="To")
+    date_range_from = forms.DateField(
+        required=False, label="From",
+        input_formats=settings.DATE_INPUT_FORMATS,
+        widget=forms.DateInput(attrs={'autocomplete': "off"}))
+    date_range_to = forms.DateField(
+        required=False, label="To",
+        input_formats=settings.DATE_INPUT_FORMATS,
+        widget=forms.DateInput(attrs={'autocomplete': "off"}))
 
     class Meta:
         model = Instruction

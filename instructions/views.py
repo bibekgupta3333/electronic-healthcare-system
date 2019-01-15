@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.db.models import Q
+from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.http import HttpRequest, JsonResponse
 from django_tables2 import RequestConfig
@@ -106,15 +107,24 @@ def create_or_update_instruction(request, patient_instruction, scope_form=None, 
         instruction.gp_title_from_client = request.POST.get('gp_title')
         instruction.gp_initial_from_client = request.POST.get('initial')
         instruction.gp_last_name_from_client = request.POST.get('gp_last_name')
-        instruction.date_range_from = scope_form.cleaned_data['date_range_from']
-        instruction.date_range_to = scope_form.cleaned_data['date_range_to']
-
+        from_date = scope_form.cleaned_data['date_range_from']
+        to_date = scope_form.cleaned_data['date_range_to']
+        if from_date or to_date:
+            from_date = from_date if from_date else patient_instruction.patient_dob
+            to_date = to_date if to_date else timezone.now()
+        instruction.date_range_from = from_date
+        instruction.date_range_to = to_date
     else:
         instruction.type = SARS_TYPE
         instruction.gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
         instruction.gp_user = request.user.userprofilebase.generalpracticeuser
-        instruction.date_range_from = date_range_form.cleaned_data['date_range_from']
-        instruction.date_range_to = date_range_form.cleaned_data['date_range_to']
+        from_date = date_range_form.cleaned_data['date_range_from']
+        to_date = date_range_form.cleaned_data['date_range_to']
+        if from_date or to_date:
+            from_date = from_date if from_date else patient_instruction.patient_dob
+            to_date = to_date if to_date else timezone.now()
+        instruction.date_range_from = from_date
+        instruction.date_range_to = to_date
 
     instruction.patient_information_id = patient_instruction.id
     instruction.save()
@@ -272,7 +282,10 @@ def new_instruction(request):
             if practice_preferences[0].notification == 'NEW':
                 send_mail(
                     'New Instruction',
-                    'You have a new instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
+                    'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
+                        protocol=request.scheme,
+                        link=PIPELINE_INSTRUCTION_LINK
+                    ),
                     'MediData',
                     [gp_practice.organisation_email],
                     fail_silently=True,
@@ -319,7 +332,10 @@ def new_instruction(request):
             # Notification: client created new instruction
             send_mail(
                 'New Instruction',
-                'You have a new instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
+                'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
+                    protocol=request.scheme,
+                    link=PIPELINE_INSTRUCTION_LINK
+                ),
                 'MediData',
                 medidata_emails_list + gp_emails_list,
                 fail_silently=True,
