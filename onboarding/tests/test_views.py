@@ -70,6 +70,8 @@ class OnboardingSignUPTest(TestCase):
             'surname': 'Giles',
             'email': 'sarah@gmail.com',
             'password': 'sarah20182019',
+            'telephone_mobile': '874432803',
+            'telephone_code': '66',
         }
         self.gp_practice_info = {
             'surgery_name': 'Test Surgery 01',
@@ -88,6 +90,8 @@ class OnboardingSignUPTest(TestCase):
             'surname': 'Chatterly',
             'email': 'alan@gmail.com',
             'password': 'alannn20182019',
+            'telephone_mobile': '874432803',
+            'telephone_code': '66'
         }
 
         self.gp_practice_info_2 = {
@@ -124,6 +128,8 @@ class OnboardingSignUPTest(TestCase):
             'email2': self.gp_practitioner_info['email'],
             'password1': self.gp_practitioner_info['password'],
             'password2': self.gp_practitioner_info['password'],
+            'telephone_mobile': self.gp_practitioner_info['telephone_mobile'],
+            'telephone_code': self.gp_practitioner_info['telephone_code'],
             'accept_policy': True,
             'consented': True
         })
@@ -154,6 +160,8 @@ class OnboardingSignUPTest(TestCase):
             'email2': self.gp_practitioner_info_2['email'],
             'password1': self.gp_practitioner_info_2['password'],
             'password2': self.gp_practitioner_info_2['password'],
+            'telephone_mobile': self.gp_practitioner_info_2['telephone_mobile'],
+            'telephone_code': self.gp_practitioner_info_2['telephone_code'],
             'accept_policy': True,
             'consented': True
         })

@@ -8,6 +8,7 @@
 {% block ExtraHead %}
     <link rel="stylesheet" href="{% static 'css/pretty-checkbox.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/management/new_user.css' %}">
+    <link rel="stylesheet" href="{% static 'css/intlTelInput.min.css' %}">
 {% endblock %}
 
 {% block Content %}
@@ -31,6 +32,13 @@
             <div class="col-md-3 labelText"><label>Email</label></div>
             <div class="col-md-4 inputDiv">
                 {% bootstrap_field newuser_form.email %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3 labelText"><label>Mobile phone</label></div>
+            <div class="col-md-4 inputDiv">
+                {% bootstrap_field newuser_form.telephone_mobile show_label=false placeholder='' %}
+                {% bootstrap_field newuser_form.telephone_code %}
             </div>
         </div>
         <div class="row">
@@ -143,6 +151,8 @@
 {% endblock %}
 
 {% block Script %}
+    <script src="{% static 'js/intlTelInput.min.js' %}"></script>
+    <script src="{% static 'js/intlTel.js' %}"></script>
     <script>
         $(document).ready(function(){
             $("#passbtn").click(function(){
@@ -170,6 +180,7 @@
                 $("input[name=payment_bank_sort_code").val(sortcode);
                 $("#submitbtn").attr("disabled", "true");
             });
+            setUpTel('id_telephone_mobile', 'id_telephone_code');
         });
     </script>
 {% endblock %}

@@ -99,10 +99,16 @@ class PMForm(forms.ModelForm):
     email2 = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), label='', required=True)
     password1 = forms.CharField(required=True, widget=forms.PasswordInput())
     password2 = forms.CharField(required=True, widget=forms.PasswordInput())
+    telephone_mobile = forms.CharField(required=True)
+    telephone_code = forms.CharField(required=True, widget=forms.HiddenInput())
 
     class Meta:
         model = GeneralPracticeUser
-        fields = ('first_name', 'surname', 'email1', 'email2', 'password1', 'password2')
+        fields = (
+            'first_name', 'surname', 'email1',
+            'email2', 'password1', 'password2',
+            'telephone_mobile', 'telephone_code'
+        )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -140,7 +146,12 @@ class PMForm(forms.ModelForm):
             type=GENERAL_PRACTICE_USER,
             is_staff=True,
         )
-        gp_user_data = {'user': gp_manager_user, 'role': GeneralPracticeUser.PRACTICE_MANAGER}
+        gp_user_data = {
+            'user': gp_manager_user,
+            'role': GeneralPracticeUser.PRACTICE_MANAGER,
+            'telephone_mobile': self.cleaned_data.get('telephone_mobile'),
+            'telephone_code': self.cleaned_data.get('telephone_code')
+        }
         if gp_organisation:
             gp_user_data['organisation'] = gp_organisation
         general_practice_user = GeneralPracticeUser.objects.create(**gp_user_data)
@@ -159,11 +170,13 @@ class NewGPForm(forms.ModelForm):
     username = forms.CharField(max_length=255, required=False, label='', widget=forms.TextInput())
     password = forms.CharField(required=True, widget=forms.HiddenInput())
     send_email = forms.BooleanField(required=False, initial=False)
+    telephone_mobile = forms.CharField(required=True)
+    telephone_code = forms.CharField(required=True, widget=forms.HiddenInput())
 
     class Meta:
         model = GeneralPracticeUser
         fields = ('first_name', 'last_name', 'email', 'username', 'password', 'send_email', 'role', 'payment_bank_holder_name',
-                    'payment_bank_account_number', 'payment_bank_sort_code')
+                    'payment_bank_account_number', 'payment_bank_sort_code', 'telephone_mobile' ,'telephone_code')
         widgets = {
             'payment_bank_sort_code': forms.HiddenInput(attrs={'placeholder': '', }),
             'payment_bank_holder_name': forms.HiddenInput(),
@@ -184,10 +197,16 @@ class NewClientForm(forms.ModelForm):
     username = forms.CharField(max_length=255, required=False, label='', widget=forms.TextInput())
     password = forms.CharField(required=True, widget=forms.HiddenInput())
     send_email = forms.BooleanField(required=False, initial=False)
+    telephone_mobile = forms.CharField(required=True)
+    telephone_code = forms.CharField(required=True, widget=forms.HiddenInput())
 
     class Meta:
         model = ClientUser
-        fields = ('first_name', 'last_name', 'email', 'username', 'password', 'send_email')
+        fields = (
+            'first_name', 'last_name', 'email',
+            'username', 'password', 'send_email',
+            'telephone_mobile', 'telephone_code'
+        )
 
 
 class PracticePreferencesForm(forms.ModelForm):
