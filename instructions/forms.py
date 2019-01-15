@@ -173,3 +173,14 @@ class MdxConsentForm(forms.ModelForm):
     class Meta:
         model = Instruction
         fields = ('mdx_consent',)
+
+
+class InstructionAdminForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['gp_user'].required = False
+
+    class Meta:
+        model = Instruction
+        fields = '__all__'
