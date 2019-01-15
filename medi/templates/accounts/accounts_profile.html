@@ -11,6 +11,9 @@
 {% endblock %}
 
 {% block Content %}
+    <div class="alert alert-info" role="alert">
+        <span>If you have any queries please email us on emr@medi2data.com or contact our support team on 03333 0 55774</span>
+    </div>
     <form action="{% url 'accounts:view_profile' %}" method="post" id="createuser">
           {% csrf_token %}
           <div class="row">
@@ -38,11 +41,13 @@
                   {% bootstrap_field profile_form.telephone_mobile show_label=false %}
               </div>
           </div>
-          <div class="row mt-2">
-              <div class="col-md-3">
-                  <input id="submitbtn" type="submit" class="btn btn-primary btn-lg btn-block" value="Save">
+          {% if perms.accounts.change_user %}
+              <div class="row mt-2">
+                  <div class="col-md-3">
+                      <input id="submitbtn" type="submit" class="btn btn-primary btn-lg btn-block" value="Save">
+                  </div>
               </div>
-          </div>
+          {% endif %}
       </form>
 {% endblock %}
 

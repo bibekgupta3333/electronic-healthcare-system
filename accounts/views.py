@@ -68,12 +68,12 @@ def account_view(request):
         organisation_fee_data.append({
             'days': organisation_fee.max_day_lvl_2,
             'amount': organisation_fee.amount_rate_lvl_2,
-            'label': 'Received within %s-%s days'%(organisation_fee.max_day_lvl_1+1,organisation_fee.max_day_lvl_2)
+            'label': 'Received within %s-%s days'%(organisation_fee.max_day_lvl_1+1, organisation_fee.max_day_lvl_2)
         })
         organisation_fee_data.append({
             'days': organisation_fee.max_day_lvl_3,
             'amount': organisation_fee.amount_rate_lvl_3,
-            'label': 'Received within %s-%s days'%(organisation_fee.max_day_lvl_2+1,organisation_fee.max_day_lvl_3)
+            'label': 'Received within %s-%s days'%(organisation_fee.max_day_lvl_2+1, organisation_fee.max_day_lvl_3)
         })
         organisation_fee_data.append({
             'days': organisation_fee.max_day_lvl_4,
@@ -212,9 +212,9 @@ def update_permission(request):
 def set_all_permissions(request, form):
     permission = form.save(commit=False)
     data = form.cleaned_data
-    for organisation in OrganisationGeneralPractice.objects.filter(accept_policy= True, live=True):
+    for organisation in OrganisationGeneralPractice.objects.filter(accept_policy=True, live=True):
         gp_permission, create = InstructionPermission.objects.get_or_create(organisation=organisation, role=permission.role)
-        data['name'] = '%s : %s'%(permission.get_role_display(),organisation.__str__())
+        data['name'] = '%s : %s' % (permission.get_role_display(), organisation.__str__())
         if gp_permission.group:
             group_form = GroupPermissionForm(data, instance=gp_permission.group)
         else:
@@ -226,7 +226,7 @@ def set_all_permissions(request, form):
             gp_permission.save()
             gp_permission.allocate_permission_to_gp()
 
-    data['name'] = '%s : MediData'%permission.get_role_display()
+    data['name'] = '%s : MediData' % permission.get_role_display()
     if permission.group:
         group_form = GroupPermissionForm(data, instance=gp_permission.group)
     else:
@@ -380,7 +380,7 @@ def medi_change_user(request, email):
                 messages.warning(request, user_form.errors)
 
     newuser_form = AllUserForm(initial=initial_data)
-    response = render(request, 'user_management/medi_update_user.html',{
+    response = render(request, 'user_management/medi_update_user.html', {
         'newuser_form': newuser_form,
         'user': user,
     })
@@ -438,7 +438,7 @@ def medi_create_user(request):
                     messages.warning(request, user_form.errors)
             else:
                 messages.warning(request, 'User Account Existing In Database')
-    response = render(request, 'user_management/medi_create_user.html',{
+    response = render(request, 'user_management/medi_create_user.html', {
         'newuser_form': newuser_form,
     })
     return response
@@ -466,7 +466,9 @@ def login(request):
             username = request.POST['username']
             password = request.POST['password']
             user = authenticate(request, username=username, password=password)
-            if user is not None and settings.TWO_FACTOR_ENABLED and not check_ip_from_n3_hscn(request):
+            if user is not None and settings.TWO_FACTOR_ENABLED\
+                    and not check_ip_from_n3_hscn(request)\
+                    and not user.is_superuser:
                 request.session['post_data'] = request.POST
                 return redirect(reverse('accounts:two_factor'))
             elif user is not None:
@@ -474,7 +476,7 @@ def login(request):
                 return redirect(reverse('instructions:view_pipeline'))
     else:
         form = LoginForm()
-    return render(request, 'registration/login.html',{
+    return render(request, 'registration/login.html', {
         'form': form
     })
 
@@ -500,7 +502,7 @@ def two_factor(request):
             'username': username,
             'password': password
         })
-    return render(request, 'registration/two_factor.html',{
+    return render(request, 'registration/two_factor.html', {
         'form': form,
         'user': user
     })

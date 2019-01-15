@@ -177,7 +177,7 @@ class InstructionAdmin(CustomImportExportModelAdmin):
     fieldsets = (
         ('Instruction Information', {
             'fields': (
-                'client_user', 'gp_user', 'patient_information', 'type', 'gp_practice', 'date_range_from', 'date_range_to', 'your_ref', 'medi_ref',
+                'status', 'client_user', 'patient_information', 'type', 'gp_practice', 'date_range_from', 'date_range_to', 'your_ref', 'medi_ref',
                 'gp_title_from_client', 'gp_initial_from_client', 'gp_last_name_from_client'
             )
         }),

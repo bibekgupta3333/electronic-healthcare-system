@@ -17,7 +17,7 @@
                 <img class="mt-4 mb-4 w-75" src="{% static 'images/logo/eMR_med.png' %}">
                 <form action="{% url 'accounts:two_factor' %}" method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <h5 class="mb-3 font-weight-normal">OPT send to number +{{ user.userprofilebase.telephone_code }} {{ user.userprofilebase.telephone_mobile|sensor_phone }}</h5>
+                    <h5 class="mb-3 font-weight-normal">OTP sent to number +{{ user.userprofilebase.telephone_code }} {{ user.userprofilebase.telephone_mobile|sensor_phone }}</h5>
                     {% bootstrap_form form layout='inline' %}
                     <button class="btn btn-lg btn-primary btn-block " type="submit">LOGIN</button>
                     <p class="mt-5 mb-3 text-muted">&copy; 2017-2018</p>

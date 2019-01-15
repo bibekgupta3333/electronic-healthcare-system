@@ -34,3 +34,30 @@ body {
   width: 450px;
   /*whatever width you want*/
 }
+
+.terms-policy {
+  display: flex;
+  justify-content: space-between;
+}
+
+.terms-policy button {
+  text-decoration: underline;
+  color: #0056b3;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.modal-dialog {
+  max-width: 80%;
+  height: 90%;
+}
+
+.modal-content, .modal-body, .container {
+  height: 100%;
+}
+
+.modal-pdf {
+  height: 100%;
+}
