@@ -6,6 +6,8 @@ class UserTable(tables.Table):
     chkbox = tables.CheckBoxColumn(attrs={'id': 'check_all'}, accessor="email")
     role = tables.Column(verbose_name='Role', accessor="userprofilebase")
     organisation = tables.Column(verbose_name='Organisation', accessor="userprofilebase")
+    email = tables.Column(verbose_name='Email', accessor='email')
+    name = tables.Column(verbose_name='Name', accessor='get_full_name')
 
     class Meta:
         attrs = {
@@ -13,7 +15,7 @@ class UserTable(tables.Table):
             'id': 'usersTable'
         }
         model = User
-        fields = ('chkbox', 'username', 'email', 'organisation', 'role')
+        fields = ('chkbox', 'email', 'name', 'organisation', 'role')
         template_name = 'django_tables2/semantic.html'
 
     def render_role(self, value):
