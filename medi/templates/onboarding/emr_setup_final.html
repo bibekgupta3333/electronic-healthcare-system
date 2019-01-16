@@ -218,6 +218,7 @@
 {% block Script %}
     <script src="{% static 'js/jquery.formset.js' %}"></script>
     <script src="{% static 'js/intlTelInput.min.js' %}"></script>
+    <script src="{% static 'js/intlTel.js' %}"></script>
     <script>
     $(document).ready(function () {
 
@@ -262,32 +263,7 @@
         });
 
         for(let i=0; i< $('tbody tr').length; i++){
-            let phoneCode = '';
-            let inputPhone = document.querySelector("#id_form-"+ i +"-mobile_phone");
-            intlTelInput(inputPhone, {
-              separateDialCode: true,
-              initialCountry: "auto"
-            });
-            inputPhone.addEventListener("countrychange", function() {
-              let code = $(this).parent().find('.selected-flag')[0].title.split(': ')[1];
-              $(this).parent().find('.selected-dial-code').html(code);
-              $('#id_form-'+ i +'-mobile_code').val($('#id_form-'+ i +'-mobile_phone').parent().find('.selected-flag')[0].title.split('+')[1]);
-            });
-            $.get('https://ipinfo.io', function() {}, "jsonp").always(function(resp) {
-              let countryCode = (resp && resp.country) ? resp.country : "";
-              countryCode = countryCode.toLocaleLowerCase();
-              phoneCode = $('.country-list li[data-country-code=' + countryCode + ']').attr('data-dial-code');
-              let telephoneCode = $('#id_form-'+ i +'-mobile_code').val();
-              if(telephoneCode){
-                countryCode = $('.country-list li[data-dial-code=' + telephoneCode + ']').attr('data-country-code');
-                phoneCode = telephoneCode;
-              }
-              $('#id_form-'+ i +'-mobile_phone').parent().find('.intl-tel-input').addClass('iti-sdc-3');
-              $('#id_form-'+ i +'-mobile_phone').parent().find('.selected-flag').attr('title', '+' + phoneCode);
-              $('#id_form-'+ i +'-mobile_phone').parent().find('.selected-flag .iti-flag').addClass(countryCode);
-              $('#id_form-'+ i +'-mobile_phone').parent().find('.selected-flag .selected-dial-code').html('+' + phoneCode);
-              $('#id_form-'+ i +'-mobile_phone').addClass('mobile-phone-input');
-            });
+            setUpTel("id_form-" + i + "-mobile_phone", "id_form-" + i + "-mobile_code");
         }
 
         $('.intl-tel-input').css('display', 'block');
