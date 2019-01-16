@@ -4,32 +4,48 @@
 <div style="display:flex;background-color:#235597;margin:0;">
     <label style="color:white;font-size:20px;">Acute medications</label>
 </div>
-<table style="width:100%;font-size:15px;margin-top:10px;">
-    {% for model in acute_medications %}
-        {% with header=model|general_header %} 
-            {% with model|get_redaction:redaction as redacted %}
-                {% if not redacted %}
-                    <tr>
-                        <td>{{ header }}</td>
-                    </tr>
-                {% endif %}
+<div></div>
+{% if acute_medications or redaction.acute_prescription_notes|default:"" %}
+    <table style="width:100%;font-size:15px;margin-top:10px;">
+        {% for model in acute_medications %}
+            {% with header=model|general_header %} 
+                {% with model|get_redaction:redaction as redacted %}
+                    {% if not redacted %}
+                        <tr>
+                            <td>{{ header }}</td>
+                        </tr>
+                    {% endif %}
+                {% endwith %}
             {% endwith %}
-        {% endwith %}
-    {% endfor %}
-</table>
+        {% endfor %}
+        {% if redaction.acute_prescription_notes|default:"" %}
+            <tr>
+                <td><label style="font-weight:bold;">Additional contextual information</label> : {{redaction.acute_prescription_notes}}</td>
+            </tr>
+        {% endif %}
+    </table>
+{% endif %}
 <div style="display:flex;background-color:#235597;margin:0;">
     <label style="color:white;font-size:20px;">Repeat medications</label>
 </div>
-<table style="width:100%;font-size:15px;margin-top:10px;">
-    {% for model in repeat_medications %}
-        {% with header=model|general_header %} 
-            {% with model|get_redaction:redaction as redacted %}
-                {% if not redacted %}
-                    <tr>
-                        <td>{{ header }}</td>
-                    </tr>
-                {% endif %}
+<div></div>
+{% if repeat_medications or redaction.repeat_prescription_notes|default:"" %}
+    <table style="width:100%;font-size:15px;margin-top:10px;">
+        {% for model in repeat_medications %}
+            {% with header=model|general_header %} 
+                {% with model|get_redaction:redaction as redacted %}
+                    {% if not redacted %}
+                        <tr>
+                            <td>{{ header }}</td>
+                        </tr>
+                    {% endif %}
+                {% endwith %}
             {% endwith %}
-        {% endwith %}
-    {% endfor %}
-</table>
+        {% endfor %}
+        {% if redaction.repeat_prescription_notes|default:"" %}
+            <tr>
+                <td><label style="font-weight:bold;">Additional contextual information</label> : {{redaction.repeat_prescription_notes}}</td>
+            </tr>
+        {% endif %}
+    </table>
+{% endif %}

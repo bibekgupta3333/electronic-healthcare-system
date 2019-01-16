@@ -45,6 +45,24 @@ class OrganisationFeeModelTest(TestCase):
         self.assertEqual(fee_rate_3, 30)
         self.assertEqual(fee_rate_4, 20)
 
+    def test_default_calendar_days(self):
+        gp_practice = mommy.make(
+            OrganisationGeneralPractice,
+            name="GP organisation"
+        )
+        org_fee = OrganisationFee.objects.create(
+            gp_practice_id=gp_practice.pk,
+            amount_rate_lvl_1=60.00,
+            amount_rate_lvl_2=51.00,
+            amount_rate_lvl_3=43.35,
+            amount_rate_lvl_4=36.85
+        )
+
+        self.assertEqual(org_fee.max_day_lvl_1, 5)
+        self.assertEqual(org_fee.max_day_lvl_2, 10)
+        self.assertEqual(org_fee.max_day_lvl_3, 15)
+        self.assertEqual(org_fee.max_day_lvl_4, 16)
+
 
 class InstructionVolumeFeeClientModelTest(TestCase):
 

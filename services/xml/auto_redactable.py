@@ -47,6 +47,14 @@ def auto_redact_medications (medications, instruction, current_date=date.today()
     return auto_redact_by_date(medications, start_date=years_ago(2, current_date), from_date=instruction.date_range_from, to_date=instruction.date_range_to )
 
 
+def auto_redact_significant_active_problems(significant_active_problems, instruction, current_date=date.today()):
+    return auto_redact_by_date(significant_active_problems, start_date=years_ago(5, current_date), from_date=instruction.date_range_from, to_date=instruction.date_range_to)
+
+
+def auto_redact_significant_past_problems(significant_past_problems, instruction, current_date=date.today()):
+    return auto_redact_by_date(significant_past_problems, start_date=years_ago(5, current_date), from_date=instruction.date_range_from, to_date=instruction.date_range_to)
+
+
 def auto_redact_referrals(referrals, instruction, current_date=date.today()):
     return auto_redact_by_date(referrals, start_date=years_ago(5, current_date), from_date=instruction.date_range_from, to_date=instruction.date_range_to )
 

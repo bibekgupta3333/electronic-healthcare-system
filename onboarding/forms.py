@@ -90,7 +90,7 @@ class SurgeryUpdateForm(forms.Form):
     surgery_name = forms.CharField(max_length=255, label='', disabled=True, required=False)
     surgery_code = forms.CharField(max_length=20, label='', disabled=True, required=False)
     emis_org_code = forms.CharField(max_length=20, label='')
-    operating_system = forms.ChoiceField(choices=OrganisationGeneralPractice.GP_OP_SYS_CHOICES, label='')
+    operating_system = forms.ChoiceField(choices=SurgeryForm.GP_OP_SYS_CHOICES, label='')
 
 
 class SurgeryEmrSetUpStage2Form(forms.Form):
@@ -108,7 +108,8 @@ class UserEmrSetUpStage2Form(forms.Form):
     last_name = forms.CharField(max_length=255, label='')
     email = forms.EmailField(max_length=255, label='', widget=forms.EmailInput(attrs={'class': 'form-control input-email'}))
     role = forms.ChoiceField(choices=accounts_models.GeneralPracticeUser.ROLE_CHOICES, label='')
-    gp_code = forms.CharField(max_length=255, required=False, label='')
+    mobile_code = forms.CharField(max_length=10, label='', widget=forms.HiddenInput(attrs={'placeholder': ''}), required=False)
+    mobile_phone = forms.CharField(max_length=255, label='')
 
     def clean_email(self):
         email = self.cleaned_data.get('email')

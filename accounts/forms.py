@@ -4,7 +4,7 @@ from django.utils.timezone import now
 from common.functions import verify_password
 from .models import GeneralPracticeUser, ClientUser, TITLE_CHOICE, User,\
         MEDIDATA_USER, CLIENT_USER, GENERAL_PRACTICE_USER, PATIENT_USER,\
-        MedidataUser, NOTIFICATIONS, PracticePreferences
+        MedidataUser, NOTIFICATIONS, PracticePreferences, UserProfileBase
 from instructions.models import InstructionPatient
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 from report.mobile import AuthMobile
@@ -99,10 +99,16 @@ class PMForm(forms.ModelForm):
     email2 = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), label='', required=True)
     password1 = forms.CharField(required=True, widget=forms.PasswordInput())
     password2 = forms.CharField(required=True, widget=forms.PasswordInput())
+    telephone_mobile = forms.CharField(required=True)
+    telephone_code = forms.CharField(required=True, widget=forms.HiddenInput())
 
     class Meta:
         model = GeneralPracticeUser
-        fields = ('first_name', 'surname', 'email1', 'email2', 'password1', 'password2')
+        fields = (
+            'first_name', 'surname', 'email1',
+            'email2', 'password1', 'password2',
+            'telephone_mobile', 'telephone_code'
+        )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -140,7 +146,12 @@ class PMForm(forms.ModelForm):
             type=GENERAL_PRACTICE_USER,
             is_staff=True,
         )
-        gp_user_data = {'user': gp_manager_user, 'role': GeneralPracticeUser.PRACTICE_MANAGER}
+        gp_user_data = {
+            'user': gp_manager_user,
+            'role': GeneralPracticeUser.PRACTICE_MANAGER,
+            'telephone_mobile': self.cleaned_data.get('telephone_mobile'),
+            'telephone_code': self.cleaned_data.get('telephone_code')
+        }
         if gp_organisation:
             gp_user_data['organisation'] = gp_organisation
         general_practice_user = GeneralPracticeUser.objects.create(**gp_user_data)
@@ -159,13 +170,17 @@ class NewGPForm(forms.ModelForm):
     username = forms.CharField(max_length=255, required=False, label='', widget=forms.TextInput())
     password = forms.CharField(required=True, widget=forms.HiddenInput())
     send_email = forms.BooleanField(required=False, initial=False)
+    telephone_mobile = forms.CharField(required=True)
+    telephone_code = forms.CharField(required=True, widget=forms.HiddenInput())
 
     class Meta:
         model = GeneralPracticeUser
         fields = ('first_name', 'last_name', 'email', 'username', 'password', 'send_email', 'role', 'payment_bank_holder_name',
-                    'payment_bank_account_number', 'payment_bank_sort_code')
+                    'payment_bank_account_number', 'payment_bank_sort_code', 'telephone_mobile' ,'telephone_code')
         widgets = {
-            'payment_bank_sort_code': forms.HiddenInput(attrs={'placeholder': '', })
+            'payment_bank_sort_code': forms.HiddenInput(attrs={'placeholder': '', }),
+            'payment_bank_holder_name': forms.HiddenInput(),
+            'payment_bank_account_number': forms.HiddenInput()
         }
         labels = {
             'payment_bank_holder_name': '',
@@ -182,10 +197,16 @@ class NewClientForm(forms.ModelForm):
     username = forms.CharField(max_length=255, required=False, label='', widget=forms.TextInput())
     password = forms.CharField(required=True, widget=forms.HiddenInput())
     send_email = forms.BooleanField(required=False, initial=False)
+    telephone_mobile = forms.CharField(required=True)
+    telephone_code = forms.CharField(required=True, widget=forms.HiddenInput())
 
     class Meta:
         model = ClientUser
-        fields = ('first_name', 'last_name', 'email', 'username', 'password', 'send_email')
+        fields = (
+            'first_name', 'last_name', 'email',
+            'username', 'password', 'send_email',
+            'telephone_mobile', 'telephone_code'
+        )
 
 
 class PracticePreferencesForm(forms.ModelForm):
@@ -284,3 +305,36 @@ class TwoFactorForm(forms.Form):
                     self._errors = {"__all__": ["OPT isn't valid."]}
                     return False
         return valid
+
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if kwargs.get('instance'):
+            user = kwargs['instance']
+            if not user.has_perm('accounts.change_user'):
+                self.fields['first_name'].widget.attrs['disabled'] = True
+                self.fields['last_name'].widget.attrs['disabled'] = True
+                self.fields['email'].widget.attrs['disabled'] = True
+
+
+
+class UserProfileBaseForm(forms.ModelForm):
+    class Meta:
+        model = UserProfileBase
+        fields = ('telephone_mobile', 'telephone_code')
+        widgets = {
+            'telephone_code': forms.HiddenInput(attrs={'placeholder': '', })
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if kwargs.get('instance'):
+            userprofile = kwargs['instance']
+            if userprofile.user and not userprofile.user.has_perm('accounts.change_user'):
+                self.fields['telephone_mobile'].widget.attrs['disabled'] = True
+                self.fields['telephone_code'].widget.attrs['disabled'] = True

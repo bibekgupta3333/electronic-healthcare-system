@@ -4,16 +4,19 @@
 <div style="display:flex;background-color:#235597;margin:0;">
     <label style="color:white;font-size:20px;">Allergies</label>
 </div>
-<table style="width:100%;font-size:15px;margin-top:10px;">
-    {% for model in all_allergies %}
-        {% with header=model|general_header  %} 
-            {% with model|get_redaction:redaction as redacted %}
-                {% if not redacted %}
-                    <tr>
-                        <td>{{ header }}</td>
-                    </tr>
-                {% endif %}
+<div></div>
+{% if all_allergies %}
+    <table style="width:100%;font-size:15px;margin-top:10px;">
+        {% for model in all_allergies %}
+            {% with header=model|general_header  %} 
+                {% with model|get_redaction:redaction as redacted %}
+                    {% if not redacted %}
+                        <tr>
+                            <td>{{ header }}</td>
+                        </tr>
+                    {% endif %}
+                {% endwith %}
             {% endwith %}
-        {% endwith %}
-    {% endfor %}
-</table>
+        {% endfor %}
+    </table>
+{% endif %}

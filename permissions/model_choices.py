@@ -49,6 +49,7 @@ MEDI_PERMISSIONS=[
     'view_instructionpermission',
     'add_instructionpermission',
     'change_instructionpermission',
+    'change_user',
     'delete_instructionpermission'
 ]
 

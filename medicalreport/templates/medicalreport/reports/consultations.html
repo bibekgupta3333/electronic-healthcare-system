@@ -4,25 +4,33 @@
 <div style="display:flex;background-color:#235597;margin:0;">
     <label style="color:white;font-size:20px;">Consultations</label>
 </div>
-<table style="width:100%;font-size:15px;margin-top:10px;">
-    {% for model in consultations %}
-        {% with header=model|consultation_header:people dict_data=model|consultation_element_list label=model|consultaion_sick_note %}
-            {% with model|get_redaction:redaction as redacted %}
-                {% if not redacted %}
-                    <tr>
-                        <td>{{header}}</td>
-                    </tr>
-                    {% for item in dict_data %}
-                        {% for key, value in item.items %}
-                            {% if key != 'xpath' and key != 'map_code' %}
-                                <tr>
-                                    <td><label style="font-weight:bold;">{{key}}</label>: {{pattern|replace_ref_phrases:value}}</td>
-                                </tr>
-                            {% endif %}
+<div></div>
+{% if consultations or redaction.consultation_notes|default:"" %}
+    <table style="width:100%;font-size:15px;margin-top:10px;">
+        {% for model in consultations %}
+            {% with header=model|consultation_header:people dict_data=model|consultation_element_list label=model|consultaion_sick_note %}
+                {% with model|get_redaction:redaction as redacted %}
+                    {% if not redacted %}
+                        <tr>
+                            <td>{{header}}</td>
+                        </tr>
+                        {% for item in dict_data %}
+                            {% for key, value in item.items %}
+                                {% if key != 'xpath' and key != 'map_code' %}
+                                    <tr>
+                                        <td><label style="font-weight:bold;">{{key}}</label>: {{pattern|replace_ref_phrases:value}}</td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
                         {% endfor %}
-                    {% endfor %}
-                {% endif %}
+                    {% endif %}
+                {% endwith %}
             {% endwith %}
-        {% endwith %}
-    {% endfor %}
-</table>
+        {% endfor %}
+        {% if redaction.consultation_notes|default:"" %}
+            <tr>
+                <td><label style="font-weight:bold;">Additional contextual information</label> : {{redaction.consultation_notes}}</td>
+            </tr>
+        {% endif %}
+    </table>
+{% endif %}

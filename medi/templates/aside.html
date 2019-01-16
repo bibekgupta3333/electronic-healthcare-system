@@ -12,7 +12,7 @@
             </div>
         </div>
         <ul class="mainmenu">
-            {% if user.type == 'GP' and user.userprofilebase.generalpracticeuser.organisation.is_active or user.type == 'CLT' %}
+            {% if user.type == 'GP' and user.userprofilebase.generalpracticeuser.organisation.is_active or user.type == 'CLT' or user.type == 'MEDI' %}
                 {% if perms.instructions.add_instruction %}
                     <li class="{% if request.resolver_match.url_name == 'new_instruction' %}active{% endif %}">
                         <a href="{% url 'instructions:new_instruction' %}">New Instructions</a>

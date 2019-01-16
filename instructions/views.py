@@ -1,9 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.contrib.sites.models import Site
 from django.core.mail import send_mail
 from django.db.models import Q
+from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.http import HttpRequest, JsonResponse
 from django_tables2 import RequestConfig
@@ -19,7 +19,7 @@ from accounts.functions import create_or_update_patient_user
 from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice
 from organisations.views import get_gporganisation_data
-from medicalreport.views import get_matched_patient
+from medicalreport.views import get_patient_registration
 from common.functions import multi_getattr
 from common.functions import get_url_page
 from snomedct.models import SnomedConcept
@@ -107,15 +107,24 @@ def create_or_update_instruction(request, patient_instruction, scope_form=None, 
         instruction.gp_title_from_client = request.POST.get('gp_title')
         instruction.gp_initial_from_client = request.POST.get('initial')
         instruction.gp_last_name_from_client = request.POST.get('gp_last_name')
-        instruction.date_range_from = scope_form.cleaned_data['date_range_from']
-        instruction.date_range_to = scope_form.cleaned_data['date_range_to']
-
+        from_date = scope_form.cleaned_data['date_range_from']
+        to_date = scope_form.cleaned_data['date_range_to']
+        if from_date or to_date:
+            from_date = from_date if from_date else patient_instruction.patient_dob
+            to_date = to_date if to_date else timezone.now()
+        instruction.date_range_from = from_date
+        instruction.date_range_to = to_date
     else:
         instruction.type = SARS_TYPE
         instruction.gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
         instruction.gp_user = request.user.userprofilebase.generalpracticeuser
-        instruction.date_range_from = date_range_form.cleaned_data['date_range_from']
-        instruction.date_range_to = date_range_form.cleaned_data['date_range_to']
+        from_date = date_range_form.cleaned_data['date_range_from']
+        to_date = date_range_form.cleaned_data['date_range_to']
+        if from_date or to_date:
+            from_date = from_date if from_date else patient_instruction.patient_dob
+            to_date = to_date if to_date else timezone.now()
+        instruction.date_range_from = from_date
+        instruction.date_range_to = to_date
 
     instruction.patient_information_id = patient_instruction.id
     instruction.save()
@@ -273,7 +282,10 @@ def new_instruction(request):
             if practice_preferences[0].notification == 'NEW':
                 send_mail(
                     'New Instruction',
-                    'You have a new instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
+                    'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
+                        protocol=request.scheme,
+                        link=PIPELINE_INSTRUCTION_LINK
+                    ),
                     'MediData',
                     [gp_practice.organisation_email],
                     fail_silently=True,
@@ -320,7 +332,10 @@ def new_instruction(request):
             # Notification: client created new instruction
             send_mail(
                 'New Instruction',
-                'You have a new instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
+                'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
+                    protocol=request.scheme,
+                    link=PIPELINE_INSTRUCTION_LINK
+                ),
                 'MediData',
                 medidata_emails_list + gp_emails_list,
                 fail_silently=True,
@@ -629,11 +644,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
     patient_instruction = instruction.patient_information
     sars_consent_form = SarsConsentForm()
     mdx_consent_form = MdxConsentForm()
-
-    patient_email = patient_instruction.patient_email
-    patient_telephone_mobile = patient_instruction.patient_telephone_mobile
-    patient_alternate_phone = patient_instruction.patient_alternate_phone
-    patient_list = get_matched_patient(patient_instruction)
+    patient_registration = get_patient_registration(str(patient_emis_number))
 
     if request.method == "POST":
         sars_consent_form = SarsConsentForm(request.POST, request.FILES, instance=instruction)
@@ -673,11 +684,9 @@ def consent_contact(request, instruction_id, patient_emis_number):
             elif next_step == 'proceed':
                 return redirect('medicalreport:select_patient', instruction_id=instruction_id, patient_emis_number=patient_emis_number)
 
-    for patient in patient_list:
-        if patient_emis_number == patient.ref_id:
-            patient_email = patient_instruction.patient_email
-            patient_telephone_mobile = patient.telephone_mobile
-            patient_alternate_phone = patient.alternate_phone
+    patient_email = patient_registration.email() if not patient_instruction.patient_email else patient_instruction.patient_email
+    patient_telephone_mobile = patient_registration.mobile_number() if not patient_instruction.patient_telephone_mobile else patient_instruction.patient_telephone_mobile
+    patient_alternate_phone = patient_registration.home_telephone() if not patient_instruction.patient_alternate_phone else patient_instruction.patient_alternate_phone
     # Initial Patient Form
     patient_form = InstructionPatientForm(
         instance=patient_instruction,

@@ -26,7 +26,8 @@ def create_gp_user(gp_organisation: OrganisationGeneralPractice, user_form: dict
                 title=user_form['title'],
                 role=user_form['role'],
                 organisation=gp_organisation,
-                code=user_form['gp_code'],
+                telephone_mobile=user_form['mobile_phone'],
+                telephone_code=user_form['mobile_code'],
             )
             return {
                 'general_pratice_user': general_pratice_user,
