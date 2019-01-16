@@ -10,7 +10,6 @@ from services.xml.medical_report_decorator import MedicalReportDecorator
 from snomedct.models import SnomedConcept
 from services.emisapiservices import services
 from instructions import models
-from .dummy_models import (DummyInstruction)
 from .forms import MedicalReportFinaliseSubmitForm
 from .models import AdditionalMedicationRecords, AdditionalAllergies, AmendmentsForRecord,\
         ReferencePhrases
@@ -29,9 +28,8 @@ def create_or_update_redaction_record(request, instruction):
 
     get_redaction_xpaths(request, amendments_for_record)
     get_redaction_notes(request, amendments_for_record)
-    get_additional_allergies(request, amendments_for_record)
     get_redaction_conditions(request, amendments_for_record)
-    success = get_additional_medication(request, amendments_for_record)
+    success = get_additional_medication(request, amendments_for_record) or get_additional_allergies(request, amendments_for_record)
 
     delete_additional_medication_records(request)
     delete_additional_allergies_records(request)
@@ -46,6 +44,17 @@ def create_or_update_redaction_record(request, instruction):
             answer_obj.save()
         else:
             models.InstructionAdditionAnswer.objects.create(question=question, answer=input_answer)
+
+    if status == 'add-medication':
+        if success:
+            messages.success(request, 'Add Medication Successfully')
+        else:
+            messages.error(request, 'Missing Medication required field')
+    elif status == 'add-allergies':
+        if success:
+            messages.success(request, 'Add Allergies Successfully')
+        else:
+            messages.error(request, 'Missing Allergies required field')
 
     if request.method == "POST":
         submit_form = MedicalReportFinaliseSubmitForm(request.user, request.POST,
@@ -95,17 +104,13 @@ def create_or_update_redaction_record(request, instruction):
             amendments_for_record.save()
             if status == 'submit':
                 save_medical_report(request, instruction, amendments_for_record)
-
-            if status == 'add-medication':
-                if success:
-                    messages.success(request, 'Add Medication Successfully')
-                else:
-                    messages.error(request, 'Missing Medication required field')
+            elif status and status not in ['submit', 'draft']:
                 return False
 
             return True
         else:
-            messages.error(request, submit_form._errors)
+            if status not in ['add-medication', 'add-allergies']:
+                messages.error(request, submit_form._errors)
             return False
 
     amendments_for_record.save()
@@ -119,7 +124,6 @@ def create_or_update_redaction_record(request, instruction):
 def save_medical_report(request, instruction, amendments_for_record):
     raw_xml = services.GetMedicalRecord(amendments_for_record.patient_emis_number).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
-    dummy_instruction = DummyInstruction(instruction)
     gp_name = amendments_for_record.get_gp_name()
     pattern = '|'.join(ref_phrase.name for ref_phrase in ReferencePhrases.objects.all())
     params = {
@@ -128,7 +132,6 @@ def save_medical_report(request, instruction, amendments_for_record):
         'redaction': amendments_for_record,
         'instruction': instruction,
         'gp_name': gp_name,
-        'dummy_instruction': dummy_instruction
     }
     instruction.medical_report.save('report_%s.pdf'%uuid.uuid4().hex,MedicalReport.get_pdf_file(params))
 
@@ -180,6 +183,9 @@ def get_additional_allergies(request, amendments_for_record):
 
         record.amendments_for_record = amendments_for_record
         record.save()
+        return True
+    else:
+        return False
 
 
 def get_additional_medication(request, amendments_for_record):

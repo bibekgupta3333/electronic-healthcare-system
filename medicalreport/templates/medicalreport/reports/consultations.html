@@ -2,7 +2,7 @@
 {% load custom_filters %}
 {% load final_report_tags %}
 <div style="display:flex;background-color:#235597;margin:0;">
-    <label style="color:white;font-size:20px;">Consultations</label>
+    <label class="header-medical-section">Consultations</label>
 </div>
 <div></div>
 {% if consultations or redaction.consultation_notes|default:"" %}
@@ -11,7 +11,7 @@
             {% with header=model|consultation_header:people dict_data=model|consultation_element_list label=model|consultaion_sick_note %}
                 {% with model|get_redaction:redaction as redacted %}
                     {% if not redacted %}
-                        <tr>
+                        <tr style="padding-top: 5px; font-size:20px;">
                             <td>{{header}}</td>
                         </tr>
                         {% for item in dict_data %}
