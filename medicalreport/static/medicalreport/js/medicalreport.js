@@ -33,7 +33,14 @@ function subMitMedicalReport(event){
         $('#addMedicationButton').prop("disabled", true);
         $('#event_flag').val("add-medication");
         $('#medicalReportForm').submit();
-    } else {
+    }
+    else if(event == "add-allergies"){
+        $('#id_prepared_by').removeAttr("required");
+        $('#addAllergiesButton').prop("disabled", true);
+        $('#event_flag').val("add-allergies");
+        $('#medicalReportForm').submit();
+    }
+    else {
         $('#confirmSubmitModal').modal("show");
     }
 }

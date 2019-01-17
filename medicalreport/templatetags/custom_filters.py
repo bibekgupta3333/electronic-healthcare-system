@@ -37,13 +37,16 @@ def additional_medication_header(record):
     fsn_description = ''
     if record.snomed_concept is not None:
         fsn_description = record.snomed_concept.fsn_description
-    return "{} prescribed for '{}'.".format(record.drug, fsn_description)
+    return "{} prescribed for '{}'".format(record.drug, fsn_description if fsn_description else '-')
 
 
 @register.filter
 def additional_medication_body(record):
     return "{} {} {}. Additional contextual information:{}".format(
-        record.dose, record.frequency, additional_medication_dates_description(record), record.notes
+        record.dose,
+        record.frequency,
+        additional_medication_dates_description(record),
+        record.notes if record.notes else '-'
     )
 
 

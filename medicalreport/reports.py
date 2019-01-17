@@ -22,8 +22,11 @@ def link_callback(uri, rel):
 
     if uri.startswith(sUrl):
         path = os.path.join(sRoot, uri.replace(sUrl, ""))
+    else:
+        path = sRoot
 
-    path = BASE_DIR + '/medi/' + path
+    if sRoot == 'static' :
+        path = BASE_DIR + '/medi/' + path
 
     if not os.path.isfile(path):
         raise Exception('static URI must start with %s' % (sUrl))

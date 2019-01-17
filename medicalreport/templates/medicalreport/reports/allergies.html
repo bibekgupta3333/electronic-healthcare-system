@@ -2,7 +2,7 @@
 {% load custom_filters %}
 {% load final_report_tags %}
 <div style="display:flex;background-color:#235597;margin:0;">
-    <label style="color:white;font-size:20px;">Allergies</label>
+    <label class="header-medical-section">Allergies</label>
 </div>
 <div></div>
 {% if all_allergies %}
@@ -17,6 +17,17 @@
                     {% endif %}
                 {% endwith %}
             {% endwith %}
+        {% endfor %}
+    </table>
+{% endif %}
+{% if additional_allergies %}
+    <hr class='no-top-margin'/>
+    <h6 style="font-size: 15px; margin-bottom: 0px">Added</h6>
+    <table style="width:100%;font-size:15px;">
+        {% for record in additional_allergies %}
+            <tr>
+                <td>{{ record|additional_allergy_description }}</td>
+            </tr>
         {% endfor %}
     </table>
 {% endif %}

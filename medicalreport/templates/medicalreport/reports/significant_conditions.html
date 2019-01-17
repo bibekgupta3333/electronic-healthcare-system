@@ -2,7 +2,7 @@
 {% load custom_filters %}
 {% load final_report_tags %}
 <div style="display:flex;background-color:#235597;margin:0;">
-    <label style="color:white;font-size:20px;">Significant Conditions</label>
+    <label class="header-medical-section">Significant Conditions</label>
 </div>
 <div></div>
 {% if significant_active_problems or significant_past_problems or redaction.significant_problem_notes|default:"" %}

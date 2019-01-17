@@ -14,7 +14,6 @@ def patient_details(context):
 @register.inclusion_tag('medicalreport/reports/instruction_details.html', takes_context=True)
 def instruction_details(context):
     return {
-        'dummy_instruction': context['dummy_instruction'],
         'instruction': context['instruction']
     }
 
@@ -36,6 +35,7 @@ def allergies(context):
     return {
         'all_allergies': context['medical_record'].all_allergies,
         'redaction': context['redaction'],
+        'additional_allergies': context['redaction'].additional_allergies,
     }
 
 @register.inclusion_tag('medicalreport/reports/consultations.html', takes_context=True)
@@ -67,6 +67,8 @@ def medications(context):
     return {
         'acute_medications': context['medical_record'].acute_medications,
         'repeat_medications': context['medical_record'].repeat_medications,
+        'additional_acute_medications': context['redaction'].additional_acute_medications,
+        'additional_repeat_medications': context['redaction'].additional_repeat_medications,
         'redaction': context['redaction']
     }
 
