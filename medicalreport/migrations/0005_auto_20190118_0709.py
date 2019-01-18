@@ -6,8 +6,9 @@ import django.db.models.deletion
 
 def clean_prepared_by_fields(apps, schema_editor):
     AmendmentsForRecord = apps.get_model('medicalreport', 'AmendmentsForRecord')
+    GeneralPracticeUser = apps.get_model('accounts', 'GeneralPracticeUser')
     for record in AmendmentsForRecord.objects.all():
-        record.prepared_by = 1
+        record.prepared_by = GeneralPracticeUser.objects.first()
         record.save()
 
 
