@@ -7,7 +7,7 @@ from medicalreport.models import (
 )
 from instructions.models import Instruction
 from instructions import model_choices
-from accounts.models import User, Patient
+from accounts.models import User, Patient, GeneralPracticeUser
 
 
 class AmendmentsForRecordTest(TestCase):
@@ -16,9 +16,10 @@ class AmendmentsForRecordTest(TestCase):
         self.instruction_1 = mommy.make(Instruction, status=model_choices.INSTRUCTION_STATUS_COMPLETE, patient=patient)
         self.instruction_2 = mommy.make(Instruction, status=model_choices.INSTRUCTION_STATUS_PROGRESS)
         user = mommy.make(User, first_name='pete', last_name='john')
+        self.gp_user = mommy.make(GeneralPracticeUser, user=user)
         self.amendments_1 = mommy.make(
             AmendmentsForRecord, instruction=self.instruction_1,
-            prepared_by='test doctor', review_by=user
+            prepared_by=self.gp_user, review_by=user
         )
         self.amendments_2 = mommy.make(
             AmendmentsForRecord, instruction=self.instruction_2,
@@ -41,14 +42,14 @@ class AmendmentsForRecordTest(TestCase):
         self.assertEqual('', self.amendments_2.get_gp_name())
 
     def test_get_gp_name_when_instruction_status_is_complete(self):
-        self.assertEqual('pete john', self.amendments_1.get_gp_name())
+        self.assertEqual(self.gp_user, self.amendments_1.get_gp_name())
 
     def test_get_gp_name_when_prepared_by_is_blank(self):
-        self.amendments_1.prepared_by = ''
-        self.assertEqual('pete john', self.amendments_1.get_gp_name())
+        self.amendments_1.prepared_by = None
+        self.assertEqual('', self.amendments_1.get_gp_name())
 
     def test_get_gp_name_when_prepared_by_and_reviewed_by_are_blank(self):
-        self.amendments_1.prepared_by = ''
+        self.amendments_1.prepared_by = None
         self.amendments_1.review_by = None
         self.assertEqual('', self.amendments_1.get_gp_name())
 

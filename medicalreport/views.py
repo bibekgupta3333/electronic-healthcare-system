@@ -118,16 +118,19 @@ def edit_report(request, instruction_id):
     raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     questions = instruction.addition_questions.all()
+    initial_prepared_by = request.user.userprofilebase.generalpracticeuser.pk
+    if redaction.prepared_by:
+        initial_prepared_by = redaction.prepared_by.pk
     finalise_submit_form = MedicalReportFinaliseSubmitForm(
         initial={
             'record_type': redaction.instruction.type,
             'SUBMIT_OPTION_CHOICES': (
-                    ('PREPARED_AND_REVIEWED', format_html('Prepared by <span id="preparer" class="col-md-12"></span> and reviewed by {}'
-                                                          .format(request.user.first_name)),
+                    ('PREPARED_AND_REVIEWED', format_html(
+                        'Signed off by <span id="preparer"></span>'.format(request.user.first_name)),
                      ),
                 ),
-            'prepared_by': redaction.prepared_by,
-            'prepared_and_signed': redaction.submit_choice,
+            'prepared_by': initial_prepared_by,
+            'prepared_and_signed': redaction.submit_choice or AmendmentsForRecord.PREPARED_AND_REVIEWED,
             'instruction_checked': redaction.instruction_checked
         },
         user=request.user)

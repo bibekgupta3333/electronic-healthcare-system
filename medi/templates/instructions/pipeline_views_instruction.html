@@ -122,8 +122,12 @@
             });
 
             $(".page-link").each(function () {
-                this.href = this.href + '&type=' + getUrlParameter('type') + '&status=' + getUrlParameter('status')
-            })
+                this.href = this.href + '&type=' + getUrlParameter('type') + '&status=' + getUrlParameter('status');
+            });
+
+            $('th a').click(function(e) {
+                e.preventDefault();
+            });
         });
     </script>
 {% endblock %}

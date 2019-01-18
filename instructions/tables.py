@@ -8,9 +8,8 @@ from permissions.templatetags.get_permissions import view_complete_report
 
 class InstructionTable(tables.Table):
     checkbox = tables.CheckBoxColumn(attrs={'id': 'check_all'})
-    cost = tables.Column(empty_values=(), verbose_name='Cost £')
     patient_information = tables.Column()
-    created = tables.DateTimeColumn( format = 'D j M Y' )
+    created = tables.DateTimeColumn(format='D j M Y')
     status = tables.Column()
     user = None
 

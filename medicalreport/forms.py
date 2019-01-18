@@ -50,11 +50,6 @@ class MedicalReportFinaliseSubmitForm(forms.Form):
 
         return True
 
-    def clean_prepared_by(self):
-        prepared_by = self.cleaned_data['prepared_by']
-        self.cleaned_data['prepared_by'] = str(prepared_by)
-        return self.cleaned_data['prepared_by']
-
     def clean(self):
         super().clean()
         if self.cleaned_data.get('prepared_and_signed') == 'PREPARED_AND_SIGNED':
