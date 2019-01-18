@@ -65,13 +65,11 @@ def create_or_update_redaction_record(request, instruction):
                                                                'Prepared and signed directly by {}'.format(
                                                                    request.user.first_name)),
                                                               ('PREPARED_AND_REVIEWED', format_html(
-                                                                  'Prepared by <span id="preparer"></span> and reviewed by {}'
-                                                                  .format(request.user.first_name)),
+                                                                        'Signed off by <span id="preparer"></span>'
+                                                                    ),
                                                                ),
 
                                                           ),
-                                                      'prepared_by': amendments_for_record.prepared_by,
-                                                      'prepared_and_signed': amendments_for_record.submit_choice,
                                                       'instruction_checked': amendments_for_record.instruction_checked
                                                       },
                                                       )
@@ -88,12 +86,9 @@ def create_or_update_redaction_record(request, instruction):
             amendments_for_record.submit_choice = submit_form.cleaned_data.get('prepared_and_signed')
             amendments_for_record.review_by = request.user
             if submit_form.cleaned_data.get('prepared_and_signed') == AmendmentsForRecord.PREPARED_AND_SIGNED:
-                prepared_by = request.user.get_full_name()
-                if hasattr(request.user, 'userprofilebase'):
-                    prepared_by = "%s %s"%(request.user.userprofilebase.get_title_display(), prepared_by)
-                amendments_for_record.prepared_by = str(prepared_by)
+                amendments_for_record.prepared_by = request.user.userprofilebase.generalpracticeuser
             else:
-                amendments_for_record.prepared_by = str(submit_form.cleaned_data.get('prepared_by'))
+                amendments_for_record.prepared_by = submit_form.cleaned_data.get('prepared_by')
 
             if status == 'submit':
                 instruction.status = models.INSTRUCTION_STATUS_COMPLETE
