@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.http import HttpRequest, JsonResponse
-from django_tables2 import RequestConfig
+from django_tables2 import RequestConfig, Column
 from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest, Setting, InstructionPatient
 from .tables import InstructionTable
 from .model_choices import *
@@ -183,11 +183,14 @@ def instruction_pipeline_view(request):
     gp_practice_code = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.pk', default=None)
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
     overall_instructions_number = count_instructions(request.user, gp_practice_code, client_organisation)
+    cost_column_name = 'Fee £'
     if request.user.type == CLIENT_USER:
+        cost_column_name = 'Cost £'
         overall_instructions_number = count_instructions(request.user, gp_practice_code, client_organisation)
         instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
 
     if request.user.type == GENERAL_PRACTICE_USER:
+        cost_column_name = 'Income £'
         gp_role = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.role')
         if gp_role == GeneralPracticeUser.PRACTICE_MANAGER:
             instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
@@ -197,7 +200,7 @@ def instruction_pipeline_view(request):
                 gp_practice_id=gp_practice_code
             )
 
-    table = InstructionTable(instruction_query_set)
+    table = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
     table.order_by = request.GET.get('sort', '-created')
     RequestConfig(request, paginate={'per_page': 5}).configure(table)
 
