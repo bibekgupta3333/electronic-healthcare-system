@@ -48,13 +48,19 @@
                 </button>
             </div>
             <div class="modal-body">
-                {% if instruction.consent_form %}
-                    <iframe src="/{{ instruction.consent_form.url }}#zoom=200" height="735px" width="100%"></iframe>
-                {% elif instruction.sars_consent %}
-                    <iframe src="/{{ instruction.sars_consent.url }}#zoom=200" height="735px" width="100%"></iframe>
-                {% else %}
-                <p>No consent form </p>
-                {% endif %}
+                <div style="text-align: center; padding: 15px">
+                    {% if instruction.consent_form %}
+                        <object data="/{{ instruction.consent_form.url }}" height="735px" width="60%">
+                            <embed data="/{{ instruction.consent_form.url }}" />
+                        </object>
+                    {% elif instruction.sars_consent %}
+                        <object data="/{{ instruction.sars_consent.url }}" height="735px" width="60%">
+                            <embed data="/{{ instruction.sars_consent.url }}" />
+                        </object>
+                    {% else %}
+                    <p>No consent form </p>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -69,13 +75,19 @@
                 </button>
             </div>
             <div class="modal-body">
-                {% if instruction.consent_form %}
-                    <iframe src="/{{ instruction.consent_form.url }}#zoom=200" height="735px" width="100%"></iframe>
-                {% elif instruction.mdx_consent %}
-                    <iframe src="/{{ instruction.mdx_consent.url }}#zoom=200" height="735px" width="100%"></iframe>
-                {% else %}
-                <p>No consent form </p>
-                {% endif %}
+                <div style="text-align: center; padding: 15px">
+                    {% if instruction.consent_form %}
+                        <object data="/{{ instruction.consent_form.url }}" height="735px" width="60%">
+                            <embed data="/{{ instruction.consent_form.url }}" />
+                        </object>
+                    {% elif instruction.mdx_consent %}
+                        <object data="/{{ instruction.mdx_consent.url }}" height="735px" width="60%">
+                            <embed data="/{{ instruction.mdx_consent.url }}" />
+                        </object>
+                    {% else %}
+                    <p>No consent form </p>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
