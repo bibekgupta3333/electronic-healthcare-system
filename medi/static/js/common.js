@@ -16,7 +16,7 @@ function create_alert(message, level) {
             break;
     }
 
-    let alert_html = '<div class="alert' + alert_class + 'alert-dismissible" role="alert" id="alert-message">' +
+    let alert_html = '<div class="alert ' + alert_class + ' alert-dismissible" role="alert" id="alert-message">' +
         '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
         '<span aria-hidden="true">&times;</span>' +
         '</button>' + message + '</div>';

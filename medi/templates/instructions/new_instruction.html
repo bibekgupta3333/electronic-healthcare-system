@@ -360,14 +360,14 @@
                           $('#id_form-TOTAL_FORMS').val(data.questions.length);
                           question_form_html = '';
                           data.questions.forEach(function(question, index) {
-                              question_form_html += `
-                                  <tr class="dynamic-form">
-                                      <td>
-                                          <input type="text" value="` + question + `" name="form-`+ index + `-question" class="form-control questions_inputs" maxlength="255" id="id_form-`+ index + `-question">
-                                      </td>
-                                      <td><a class="btn btn-danger" href="javascript:void(0)">X remove</a></td>
-                                  </tr>
-                              `;
+                              question_form_html += '<tr class="dynamic-form"> ' +
+                                  '<td> ' +
+                                    '<input type="text" value="' + question + '" name="form-'+ index + '-question" class="form-control questions_inputs" maxlength="255" id="id_form-'+ index + '-question"> ' +
+                                  '</td> ' +
+                                  '<td>' +
+                                    '<a class="btn btn-danger" href="javascript:void(0)">X remove</a>' +
+                                  '</td> ' +
+                                  '</tr>';
                           });
                           $('#questions_block').find('tbody').prepend(question_form_html);
                       };

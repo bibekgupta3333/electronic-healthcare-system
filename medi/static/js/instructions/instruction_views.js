@@ -22,7 +22,7 @@ medidatauser_roleDict["Medidata"] = 0;
 
 function filterGlobal () {
     $('#instructionsTable').DataTable().search(
-        $('#search').val(),
+        $('#search').val()
     ).draw();
 }
 
