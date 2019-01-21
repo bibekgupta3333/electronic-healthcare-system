@@ -1,5 +1,5 @@
 .validate-pass {
-  display: -webkit-box;
+  display: flex;
 }
 
 .validate-pass div:nth-child(1),
@@ -8,7 +8,7 @@
 .validate-pass div:nth-child(4) {
   height: 5px;
   margin: 2px;
-  background: rgb(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.2);
   margin-bottom: 10px;
 }
 
