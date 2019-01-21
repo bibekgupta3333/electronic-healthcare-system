@@ -9,7 +9,6 @@ from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.xml.medical_record import MedicalRecord
 from services.xml.patient_list import PatientList
 from services.xml.registration import Registration
-from .dummy_models import (DummyInstruction)
 from medicalreport.forms import MedicalReportFinaliseSubmitForm
 from .models import AmendmentsForRecord, ReferencePhrases
 from medicalreport.reports import AttachmentReport
@@ -82,8 +81,7 @@ def select_patient(request, instruction_id, patient_emis_number):
                 return redirect('instructions:view_pipeline')
     if not AmendmentsForRecord.objects.filter(instruction=instruction).exists():
         AmendmentsForRecord.objects.create(instruction=instruction)
-    gp_user = get_object_or_404(GeneralPracticeUser, user_id=request.user.id)
-    instruction.in_progress(context={'gp_user': gp_user})
+    instruction.in_progress(context={'gp_user': request.user.userprofilebase.generalpracticeuser})
     instruction.saved = False
     instruction.save()
     return redirect('medicalreport:edit_report', instruction_id=instruction_id)
@@ -94,7 +92,6 @@ def select_patient(request, instruction_id, patient_emis_number):
 @check_user_type(GENERAL_PRACTICE_USER)
 def set_patient_emis_number(request, instruction_id):
     instruction = Instruction.objects.get(id=instruction_id)
-    dummy_instruction = DummyInstruction(instruction)
     patient_list = get_matched_patient(instruction.patient_information)
     allocate_instruction_form = AllocateInstructionForm(user=request.user, instruction_id=instruction_id)
 
@@ -103,7 +100,6 @@ def set_patient_emis_number(request, instruction_id):
         'reject_types': INSTRUCTION_REJECT_TYPE,
         'instruction': instruction,
         'amra_type': AMRA_TYPE,
-        'dummy_instruction': dummy_instruction,
         'allocate_instruction_form': allocate_instruction_form
     })
 
@@ -122,23 +118,26 @@ def edit_report(request, instruction_id):
     raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     questions = instruction.addition_questions.all()
+    initial_prepared_by = request.user.userprofilebase.generalpracticeuser.pk
+    if redaction.prepared_by:
+        initial_prepared_by = redaction.prepared_by.pk
     finalise_submit_form = MedicalReportFinaliseSubmitForm(
         initial={
             'record_type': redaction.instruction.type,
             'SUBMIT_OPTION_CHOICES': (
-                    ('PREPARED_AND_REVIEWED', format_html('Prepared by <span id="preparer" class="col-md-12"></span> and reviewed by {}'
-                                                          .format(request.user.first_name)),
+                    ('PREPARED_AND_REVIEWED', format_html(
+                        'Signed off by <span id="preparer"></span>'.format(request.user.first_name)),
                      ),
                 ),
-            'prepared_by': redaction.prepared_by,
-            'prepared_and_signed': redaction.submit_choice,
+            'prepared_by': initial_prepared_by,
+            'prepared_and_signed': redaction.submit_choice or AmendmentsForRecord.PREPARED_AND_REVIEWED,
             'instruction_checked': redaction.instruction_checked
         },
         user=request.user)
 
     pattern = '|'.join(ref_phrase.name for ref_phrase in ReferencePhrases.objects.all())
-    inst_gp_user = User.objects.get(username=instruction.gp_user.user.username)
-    cur_user = User.objects.get(username=request.user.username)
+    inst_gp_user = instruction.gp_user.user
+    cur_user = request.user
     return render(request, 'medicalreport/medicalreport_edit.html', {
         'user': request.user,
         'medical_record': medical_record_decorator,
@@ -181,11 +180,9 @@ def view_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
     if instruction.status != INSTRUCTION_STATUS_COMPLETE:
         redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
-
         pattern = '|'.join(ref_phrase.name for ref_phrase in ReferencePhrases.objects.all())
         raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
         medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
-        dummy_instruction = DummyInstruction(instruction)
         gp_name = redaction.get_gp_name()
 
         params = {
@@ -194,7 +191,6 @@ def view_report(request, instruction_id):
             'pattern': pattern,
             'instruction': instruction,
             'gp_name': gp_name,
-            'dummy_instruction': dummy_instruction
         }
 
         return MedicalReport.render(params)

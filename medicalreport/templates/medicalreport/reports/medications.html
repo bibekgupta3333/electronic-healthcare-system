@@ -2,7 +2,7 @@
 {% load custom_filters %}
 {% load final_report_tags %}
 <div style="display:flex;background-color:#235597;margin:0;">
-    <label style="color:white;font-size:20px;">Acute medications</label>
+    <label class="header-medical-section">Acute medications</label>
 </div>
 <div></div>
 {% if acute_medications or redaction.acute_prescription_notes|default:"" %}
@@ -18,17 +18,28 @@
                 {% endwith %}
             {% endwith %}
         {% endfor %}
-        {% if redaction.acute_prescription_notes|default:"" %}
+        {% if redaction.repeat_prescription_notes|default:"" %}
             <tr>
                 <td><label style="font-weight:bold;">Additional contextual information</label> : {{redaction.acute_prescription_notes}}</td>
             </tr>
         {% endif %}
     </table>
 {% endif %}
-<div style="display:flex;background-color:#235597;margin:0;">
-    <label style="color:white;font-size:20px;">Repeat medications</label>
+{% if additional_acute_medications %}
+    <hr class='no-top-margin'/>
+    <h6 style="font-size: 15px; margin-bottom: 0px">Added</h6>
+    <table style="width:100%;font-size:15px;">
+        {% for record in additional_acute_medications %}
+            <tr>
+                <td>{{ record|additional_medication_header }}</td>
+                <td>{{ record|additional_medication_body }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+<div style="display:flex;background-color:#235597;height: 30px">
+    <label class="header-medical-section">Repeat medications</label>
 </div>
-<div></div>
 {% if repeat_medications or redaction.repeat_prescription_notes|default:"" %}
     <table style="width:100%;font-size:15px;margin-top:10px;">
         {% for model in repeat_medications %}
@@ -47,5 +58,17 @@
                 <td><label style="font-weight:bold;">Additional contextual information</label> : {{redaction.repeat_prescription_notes}}</td>
             </tr>
         {% endif %}
+    </table>
+{% endif %}
+{% if additional_repeat_medications %}
+    <hr class='no-top-margin'/>
+    <h6 style="font-size: 15px; margin-bottom: 0px">Added</h6>
+    <table style="width:100%;font-size:15px;margin-top: 0;">
+        {% for record in additional_repeat_medications %}
+            <tr>
+                <td>{{ record|additional_medication_header }}</td>
+                <td>{{ record|additional_medication_body }}</td>
+            </tr>
+        {% endfor %}
     </table>
 {% endif %}

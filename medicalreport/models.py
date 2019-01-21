@@ -3,7 +3,7 @@ from django.contrib.postgres.fields import JSONField
 from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE
 from snomedct.models import SnomedConcept
-from accounts.models import User
+from accounts.models import User, GeneralPracticeUser
 from django.utils.html import format_html
 
 
@@ -23,7 +23,7 @@ class AmendmentsForRecord(models.Model):
 
     SUBMIT_OPTION_CHOICES = (
         (PREPARED_AND_SIGNED, 'Prepared and signed directly by {}'),
-        (PREPARED_AND_REVIEWED, format_html('Prepared by <span id="preparer"></span> and reviewed by')),
+        (PREPARED_AND_REVIEWED, format_html('Signed off by <span id="preparer"></span>')),
     )
 
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)
@@ -40,7 +40,7 @@ class AmendmentsForRecord(models.Model):
     re_redacted_codes = JSONField(null=True)
     submit_choice = models.CharField(max_length=255, choices=SUBMIT_OPTION_CHOICES, blank=True)
     review_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    prepared_by = models.CharField(max_length=255, blank=True)
+    prepared_by = models.ForeignKey(GeneralPracticeUser, on_delete=models.CASCADE, null=True)
     status = models.CharField(choices=REDACTION_STATUS_CHOICES, max_length=6, default=REDACTION_STATUS_NEW)
     comment_notes = models.TextField(blank=True)
     instruction_checked = models.BooleanField(default=False, blank=True, null=True)
@@ -52,10 +52,8 @@ class AmendmentsForRecord(models.Model):
     def get_gp_name(self) -> str:
         gp_name = ''
         if self.instruction.status == INSTRUCTION_STATUS_COMPLETE:
-            if self.review_by:
-                gp_name = self.review_by.get_full_name()
-                if hasattr(self.review_by, 'userprofilebase'):
-                    gp_name = "%s %s"%(self.review_by.userprofilebase.get_title_display(), gp_name)
+            if self.prepared_by:
+                gp_name = self.prepared_by
         return gp_name
 
     def additional_acute_medications(self):

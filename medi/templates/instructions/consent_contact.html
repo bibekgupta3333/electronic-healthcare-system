@@ -260,6 +260,7 @@
     <script src="{% static 'js/jquery.popupoverlay.js' %}"></script>
     <script src="{% static 'js/instructions/consent_form.js' %}"></script>
     <script src="{% static 'js/intlTelInput.min.js' %}"></script>
+    <script src="{% static 'js/intlTel.js' %}"></script>
     <script src="{% static 'js/csrf_safe.js' %}"></script>
     <script>
     $(document).ready(function () {
@@ -301,51 +302,8 @@
                 $('#consentContactForm').submit();
             }
         }
-        var inputPhone = document.querySelector("#id_patient_telephone_mobile");
-        var inputAlternatePhone = document.querySelector("#id_patient_alternate_phone");
-        intlTelInput(inputPhone, {
-          separateDialCode: true,
-          initialCountry: "auto"
-        });
-        intlTelInput(inputAlternatePhone, {
-          separateDialCode: true,
-          initialCountry: "auto"
-        });
-        inputPhone.addEventListener("countrychange", function() {
-          var code = $(this).parent().find('.selected-flag')[0].title.split(': ')[1];
-          $(this).parent().find('.selected-dial-code').html(code);
-          $('#id_patient_telephone_code').val($('#id_patient_telephone_mobile').parent().find('.selected-flag')[0].title.split('+')[1]);
-        });
-        inputAlternatePhone.addEventListener("countrychange", function() {
-          var code = $(this).parent().find('.selected-flag')[0].title.split(': ')[1];
-          $(this).parent().find('.selected-dial-code').html(code);
-          $('#id_patient_alternate_code').val($('#id_patient_alternate_phone').parent().find('.selected-flag')[0].title.split('+')[1]);
-        });
-        $.get('https://ipinfo.io', function() {}, "jsonp").always(function(resp) {
-          var countryCode = (resp && resp.country) ? resp.country : "";
-          countryCode = countryCode.toLocaleLowerCase();
-          phoneCode = $('.country-list li[data-country-code=' + countryCode + ']').attr('data-dial-code');
-          var telephoneCode = $('#id_patient_telephone_code').val();
-          if(telephoneCode){
-            countryCode = $('.country-list li[data-dial-code=' + telephoneCode + ']').attr('data-country-code');
-            phoneCode = telephoneCode;
-          }
-          $('#id_patient_telephone_code').parent().find('.intl-tel-input').addClass('iti-sdc-3');
-          $('#id_patient_telephone_code').parent().find('.selected-flag').attr('title', '+' + phoneCode);
-          $('#id_patient_telephone_code').parent().find('.selected-flag .iti-flag').addClass(countryCode);
-          $('#id_patient_telephone_code').parent().find('.selected-flag .selected-dial-code').html('+' + phoneCode);
-          $('#id_patient_telephone_code').val(phoneCode);
-          var alternateCode = $('#id_patient_alternate_code').val();
-          if(alternateCode){
-            countryCode = $('.country-list li[data-dial-code=' + alternateCode + ']').attr('data-country-code');
-            phoneCode = alternateCode;
-          }
-          $('#id_patient_alternate_code').parent().find('.intl-tel-input').addClass('iti-sdc-3');
-          $('#id_patient_alternate_code').parent().find('.selected-flag').attr('title', '+' + phoneCode);
-          $('#id_patient_alternate_code').parent().find('.selected-flag .iti-flag').addClass(countryCode);
-          $('#id_patient_alternate_code').parent().find('.selected-flag .selected-dial-code').html('+' + phoneCode);
-          $('#id_patient_alternate_code').val(phoneCode);
-        });
+        setUpTel("id_patient_telephone_mobile", "id_patient_telephone_code");
+        setUpTel("id_patient_alternate_phone", "id_patient_alternate_code");
         $('.InstructionPatientForm input').attr('readonly', true);
         $("#id_sars_consent").fileinput({
             theme: 'fas',

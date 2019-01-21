@@ -33,7 +33,14 @@ function subMitMedicalReport(event){
         $('#addMedicationButton').prop("disabled", true);
         $('#event_flag').val("add-medication");
         $('#medicalReportForm').submit();
-    } else {
+    }
+    else if(event == "add-allergies"){
+        $('#id_prepared_by').removeAttr("required");
+        $('#addAllergiesButton').prop("disabled", true);
+        $('#event_flag').val("add-allergies");
+        $('#medicalReportForm').submit();
+    }
+    else {
         $('#confirmSubmitModal').modal("show");
     }
 }
@@ -56,7 +63,8 @@ function submitConfirmReport( event ) {
     }
 }
 
-function saveReport(inst = false){
+function saveReport(){
+    var inst = arguments.length > 1 && arguments[0] !== undefined ? arguments[0] : false;
     var post_url = $('#medicalReportForm').attr("action"); //get form action url
     var request_method = $('#medicalReportForm').attr("method"); //get form GET/POST method
     var form_data = $('#medicalReportForm').serialize(); //Encode form elements for submission
@@ -64,13 +72,11 @@ function saveReport(inst = false){
         url : post_url,
         type: request_method,
         data : form_data
-    })
-    .done(function(){
+    }).done(function(){
         if (!inst) {
             create_alert('Report has been saved.', 'success');
         }
-    })
-    .fail(function() {
+    }).fail(function() {
         create_alert('Something went wrong, please try again.', 'error');
     });
 }

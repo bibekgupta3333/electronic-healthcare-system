@@ -11,10 +11,12 @@
     <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/onboarding/sign_up.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/onboarding/emr_setup_final.css' %}" rel="stylesheet">
+    <link href="{% static 'css/strongPass.css' %}" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/intlTelInput.min.css' %}">
 {% endblock %}
 
 {% block Content %}
+{% include 'onboarding/progress_bar_onboard.html' %}
     <form id="signup_form" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="sign-up">
@@ -178,12 +180,25 @@
                                 <div class="col-md-4 title-pos">Choose password <span class="red">*</span></div>
                                 {% bootstrap_field pm_form.password1 show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
+                            <div class="row">
+                                <div class="col-md-4"></div>
+                                <div class="col-md-8">
+                                  <div class="validate-pass" id="validate-pass">
+                                    <div class="col-md-2"></div>
+                                    <div class="col-md-2"></div>
+                                    <div class="col-md-2"></div>
+                                    <div class="col-md-2"></div>
+                                    <div class="col-md-4"><p></p></div>
+                                  </div>
+                                </div>
+                            </div>
                             <div id="password_error" class="offset-md-3"></div>
-                        </div>
-                    </div>
-                    <div class="row form-group">
-                        <div class="col-12">
-                            <span class="text-secondary">Your password must be at least 8 characters long and must not contain common words or be related to your username</span>
+                            <div class="row">
+                                <div class="col-md-4"></div>
+                                <div class="col-md-8">
+                                    <span class="text-secondary">Password must be at least 8 characters long and must not contain common words or be related to your username.</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="row form-group">
@@ -208,14 +223,13 @@
                             <div class="row form-group">
                                 <div class="col-md-12">
                                     <input type="checkbox" class="accept-policy" name="accept_policy" id="accept-policy" disabled>
-                                        Click  <a href="#" class="active-a" data-toggle="modal" data-target="#acceptTCs">here</a> to view and accept all T&Cs, End User Licence and data policy.
+                                        Click  <a href="#" class="active-a" data-toggle="modal" data-target="#acceptTCs">here</a> to view and accept all T&amp;Cs, End User Licence and data policy.
                                         <p class="mt-2 ml-4 text-secondary">These will appear in a pop-up, so please make sure any pop-up blockers are disabled temporarily to enable this.</p>
-                                    </input>
                                 </div>
                             </div>
                             <div class="row form-group">
                                 <div class="col-md-12">
-                                    <input type="checkbox" id="consent" class="consent" name="consented">I consent to MediData Exchange contacting the surgery regarding our services.</input>
+                                    <input type="checkbox" id="consent" class="consent" name="consented">I consent to MediData Exchange contacting the surgery regarding our services.
                                 </div>
                             </div>
                         </div>
@@ -233,14 +247,16 @@
         <div class="modal-dialog policy-modal" role="document">
         <div class="modal-content">
             <div class="modal-header">
-            <h5 class="modal-title">T&Cs</h5>
+            <h5 class="modal-title">T&amp;Cs</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
             </div>
             <div class="modal-body">
                 <div class="iframe" id="iframe">
-                    <iframe id="policyForm" src="{% static 'documents/TCs2.pdf' %}#zoom=100" height="400px" width="100%"></iframe>
+                    <object data="{% static 'documents/TCs2.pdf' %}#zoom=100" height="400px" width="100%">
+                        <embed data="/{% static 'documents/TCs2.pdf' %}" />
+                    </object>
                 </div>
             </div>
             <div class="modal-footer">
@@ -282,6 +298,35 @@
     <script src="{% static 'js/onboarding/emr_signup.js' %}"></script>
     <script>
         $(document).ready(function () {
+            $("#id_password1").keyup(function() {
+              var pass = $(this).val();
+              var pass_type = ["", "very-weak", "weak", "good", "great"];
+              var status = 0;
+              $("#validate-pass").removeClass("very-weak weak good great");
+              $("#validate-pass p").removeClass("very-weak weak good great");
+              $("#validate-pass p").text("");
+              if(pass){
+                if(pass.length > 8){
+                  if(pass.match(/[A-z]/)){
+                    status = status + 1;
+                  }
+                  if(pass.match(/[A-Z]/)){
+                    status = status + 1;
+                  }
+                  if(pass.match(/\d/)){
+                    status = status + 1;
+                  }
+                  if(pass.length > 10){
+                    status = status + 1;
+                  }
+                }else{
+                  status = status + 1;
+                }
+                $("#validate-pass").addClass(pass_type[status]);
+                $("#validate-pass p").addClass(pass_type[status]);
+                $("#validate-pass p").text(pass_type[status]);
+              }
+            });
             init_select2_postcode(
                 {% if selected_post_code %} ["{{ selected_post_code }}"] {% else %} [''] {% endif %}
             );

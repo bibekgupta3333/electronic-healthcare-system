@@ -19,7 +19,11 @@
         <div class="container-fluid callout callout--top">
             {% patient_info %}
         </div>
-        <h1>Provisional Report Contents</h1>
+        {% if instruction.type == 'SARS' %}
+            <h1>Provisional Record Contents</h1>
+        {% else %}
+            <h1>Provisional Report Contents</h1>
+        {% endif %}
         <form action="{% url 'medicalreport:update_report' instruction.id %}" method="post" id="medicalReportForm">
             {% csrf_token %}
             {% if not redaction.instruction_checked and show_alert %}
@@ -114,8 +118,8 @@
                             </div>
                         </div>
                         <div class="col-md-12">
-                            <div class="row submit-button">
-                                <div class="col-md-12">
+                            <div class="row offset-md-6">
+                                <div class="col-md-12 ml-5">
                                     <input type="hidden" name="event_flag" id="event_flag">
                                     <div class="row medicalreport-date">
                                         <div class="col-md-8 offset-4">
@@ -208,7 +212,6 @@
 
         $('#preparer').append($('#id_prepared_by'));
         $('#id_prepared_by').removeClass('form-control');
-        $('#id_prepared_by').css("width", "35%");
 
         $(".update_report_btn").on('click', function(event){
             event.preventDefault(); //prevent default action

@@ -135,23 +135,26 @@ def count_users(queryset):
 
 
 def get_table_data(user, query_set, filter_query):
+    table = UserTable(filter_query)
     if hasattr(user.userprofilebase, 'generalpracticeuser'):
+        table.exclude=('organisation')
         return {
             "user_type": "gp",
             "overall_users_number": count_gpusers(query_set),
-            "table": UserTable(filter_query)
+            "table": table
         }
     elif hasattr(user.userprofilebase, 'clientuser'):
+        table.exclude=('organisation')
         return {
             "user_type": "client",
             "overall_users_number": count_clientusers(query_set),
-            "table": UserTable(filter_query)
+            "table": table
         }
     elif hasattr(user.userprofilebase, 'medidatauser'):
         return {
             "user_type": "medidata",
             "overall_users_number": count_users(query_set),
-            "table": UserTable(filter_query)
+            "table": table
         }
 
 

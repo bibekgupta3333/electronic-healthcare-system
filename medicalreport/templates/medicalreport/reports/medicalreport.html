@@ -24,6 +24,14 @@
                     left: 30pt; width: 532pt; top: 732pt; height: 130pt;
                 }
             }
+            .header-medical-section {
+                color:white;
+                font-size:20px;
+                display: block;
+                padding: 10px;
+                padding-bottom: 0px;
+                margin-bottom: 15px;
+            }
         </style>
     </head>
     <body>
@@ -76,7 +84,11 @@
                 </tr>
             </table>
         </div>
-        <label style="font-size:60px;color:#235597;margin:0;line-height:60px;">Medical Report</label>
+        {% if instruction.type == 'SARS' %}
+            <label style="font-size:60px;color:#235597;margin:0;line-height:60px;">Medical Record</label>
+        {% else %}
+            <label style="font-size:60px;color:#235597;margin:0;line-height:60px;">Medical Report</label>
+        {% endif %}
         <div>
             {% patient_details %}
             {% instruction_details %}

@@ -3,9 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.db.models import Q
+from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.http import HttpRequest, JsonResponse
-from django_tables2 import RequestConfig
+from django_tables2 import RequestConfig, Column
 from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest, Setting, InstructionPatient
 from .tables import InstructionTable
 from .model_choices import *
@@ -106,15 +107,24 @@ def create_or_update_instruction(request, patient_instruction, scope_form=None, 
         instruction.gp_title_from_client = request.POST.get('gp_title')
         instruction.gp_initial_from_client = request.POST.get('initial')
         instruction.gp_last_name_from_client = request.POST.get('gp_last_name')
-        instruction.date_range_from = scope_form.cleaned_data['date_range_from']
-        instruction.date_range_to = scope_form.cleaned_data['date_range_to']
-
+        from_date = scope_form.cleaned_data['date_range_from']
+        to_date = scope_form.cleaned_data['date_range_to']
+        if from_date or to_date:
+            from_date = from_date if from_date else patient_instruction.patient_dob
+            to_date = to_date if to_date else timezone.now()
+        instruction.date_range_from = from_date
+        instruction.date_range_to = to_date
     else:
         instruction.type = SARS_TYPE
         instruction.gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
         instruction.gp_user = request.user.userprofilebase.generalpracticeuser
-        instruction.date_range_from = date_range_form.cleaned_data['date_range_from']
-        instruction.date_range_to = date_range_form.cleaned_data['date_range_to']
+        from_date = date_range_form.cleaned_data['date_range_from']
+        to_date = date_range_form.cleaned_data['date_range_to']
+        if from_date or to_date:
+            from_date = from_date if from_date else patient_instruction.patient_dob
+            to_date = to_date if to_date else timezone.now()
+        instruction.date_range_from = from_date
+        instruction.date_range_to = to_date
 
     instruction.patient_information_id = patient_instruction.id
     instruction.save()
@@ -173,11 +183,14 @@ def instruction_pipeline_view(request):
     gp_practice_code = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.pk', default=None)
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
     overall_instructions_number = count_instructions(request.user, gp_practice_code, client_organisation)
+    cost_column_name = 'Fee £'
     if request.user.type == CLIENT_USER:
+        cost_column_name = 'Cost £'
         overall_instructions_number = count_instructions(request.user, gp_practice_code, client_organisation)
         instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
 
     if request.user.type == GENERAL_PRACTICE_USER:
+        cost_column_name = 'Income £'
         gp_role = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.role')
         if gp_role == GeneralPracticeUser.PRACTICE_MANAGER:
             instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
@@ -187,7 +200,7 @@ def instruction_pipeline_view(request):
                 gp_practice_id=gp_practice_code
             )
 
-    table = InstructionTable(instruction_query_set)
+    table = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
     table.order_by = request.GET.get('sort', '-created')
     RequestConfig(request, paginate={'per_page': 5}).configure(table)
 
@@ -272,7 +285,10 @@ def new_instruction(request):
             if practice_preferences[0].notification == 'NEW':
                 send_mail(
                     'New Instruction',
-                    'You have a new instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
+                    'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
+                        protocol=request.scheme,
+                        link=PIPELINE_INSTRUCTION_LINK
+                    ),
                     'MediData',
                     [gp_practice.organisation_email],
                     fail_silently=True,
@@ -319,7 +335,10 @@ def new_instruction(request):
             # Notification: client created new instruction
             send_mail(
                 'New Instruction',
-                'You have a new instruction. Click here {link} to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
+                'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
+                    protocol=request.scheme,
+                    link=PIPELINE_INSTRUCTION_LINK
+                ),
                 'MediData',
                 medidata_emails_list + gp_emails_list,
                 fail_silently=True,
@@ -517,7 +536,7 @@ def review_instruction(request, instruction_id):
     consent_extension = ''
     consent_path = ''
     if instruction.consent_form:
-        consent_extension = (instruction.consent_form.url).split('.')[1]
+        consent_extension = (instruction.consent_form.url).split('.')[-1]
         consent_path = instruction.consent_form.url
     if consent_extension in ['jpeg', 'png', 'gif']:
         consent_type = 'image'

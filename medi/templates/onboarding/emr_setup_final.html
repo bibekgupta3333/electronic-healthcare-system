@@ -11,6 +11,7 @@
 {% endblock %}
 
 {% block Content %}
+{% include 'onboarding/progress_bar_onboard.html' %}
     <div class="col-md-12 pt-3 pb-3 bg-white emrSetupStage2">
         <form method="POST" enctype="multipart/form-data" id="OnboardingFinalSetupForm">
             {% csrf_token %}
@@ -71,12 +72,12 @@
                     <table class="table table-bordered vertical-middle">
                         <thead>
                             <tr>
-                                <th style="width: 7%;">Title*</th>
+                                <th style="width: 9%;">Title*</th>
                                 <th style="width: 13%;">First Name*</th>
                                 <th style="width: 13%;">Surname*</th>
                                 <th style="width: 13%;">Email*</th>
                                 <th style="width: 11%;">Role(GP, Other)</th>
-                                <th style="width: 27%;">
+                                <th style="width: 30%;">
                                     Mobile Phone*
                                     <p class="font-weight-light text-secondary mb-0">(required to set up two factor authentication)</p>
                                 </th>
@@ -218,8 +219,21 @@
 {% block Script %}
     <script src="{% static 'js/jquery.formset.js' %}"></script>
     <script src="{% static 'js/intlTelInput.min.js' %}"></script>
+    <script src="{% static 'js/intlTel.js' %}"></script>
     <script>
     $(document).ready(function () {
+
+        //  Set value in progress bar.
+        $('#progress_percent').text('90%');
+        $('#progress_bar').attr('aria-valuenow', '90');
+        $('#progress_bar').css('width', '90%');
+
+        $('#id_label').removeClass('text-danger');
+        $('#progress_bar').removeClass('bg-danger');
+
+        $('#id_label').addClass('text-success');
+        $('#progress_bar').addClass('bg-success');
+
 
         $('#min_fee_payments').on('change keyup', function () {
             $('#level_1_payments').val(($(this).val()*0.85).toFixed(2));
@@ -262,32 +276,7 @@
         });
 
         for(let i=0; i< $('tbody tr').length; i++){
-            let phoneCode = '';
-            let inputPhone = document.querySelector("#id_form-"+ i +"-mobile_phone");
-            intlTelInput(inputPhone, {
-              separateDialCode: true,
-              initialCountry: "auto"
-            });
-            inputPhone.addEventListener("countrychange", function() {
-              let code = $(this).parent().find('.selected-flag')[0].title.split(': ')[1];
-              $(this).parent().find('.selected-dial-code').html(code);
-              $('#id_form-'+ i +'-mobile_code').val($('#id_form-'+ i +'-mobile_phone').parent().find('.selected-flag')[0].title.split('+')[1]);
-            });
-            $.get('https://ipinfo.io', function() {}, "jsonp").always(function(resp) {
-              let countryCode = (resp && resp.country) ? resp.country : "";
-              countryCode = countryCode.toLocaleLowerCase();
-              phoneCode = $('.country-list li[data-country-code=' + countryCode + ']').attr('data-dial-code');
-              let telephoneCode = $('#id_form-'+ i +'-mobile_code').val();
-              if(telephoneCode){
-                countryCode = $('.country-list li[data-dial-code=' + telephoneCode + ']').attr('data-country-code');
-                phoneCode = telephoneCode;
-              }
-              $('#id_form-'+ i +'-mobile_phone').parent().find('.intl-tel-input').addClass('iti-sdc-3');
-              $('#id_form-'+ i +'-mobile_phone').parent().find('.selected-flag').attr('title', '+' + phoneCode);
-              $('#id_form-'+ i +'-mobile_phone').parent().find('.selected-flag .iti-flag').addClass(countryCode);
-              $('#id_form-'+ i +'-mobile_phone').parent().find('.selected-flag .selected-dial-code').html('+' + phoneCode);
-              $('#id_form-'+ i +'-mobile_phone').addClass('mobile-phone-input');
-            });
+            setUpTel("id_form-" + i + "-mobile_phone", "id_form-" + i + "-mobile_code");
         }
 
         $('.intl-tel-input').css('display', 'block');

@@ -22,6 +22,12 @@ function setUpTel(phoneID, codeID){
     separateDialCode: true,
     initialCountry: "auto"
   });
+  $("#" + phoneID).on('keyup click', function () {
+    var number = $(this).val();
+    if(number.length > 0 && number[0] == '0'){
+      $(this).val(number.substring(1));
+    }
+  });
   inputPhone.addEventListener("countrychange", function() {
     var code = $(this).parent().find(".selected-flag")[0].title.split(": ")[1];
     $(this).parent().find(".selected-dial-code").html(code);

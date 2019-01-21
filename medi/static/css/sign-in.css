@@ -16,7 +16,7 @@ body {
 .outer {
   background-color: #0000000f;
   display: table;
-  position: absolute;
+  position: relative;
   height: 100%;
   width: 100%;
 }
@@ -60,4 +60,10 @@ body {
 
 .modal-pdf {
   height: 100%;
+}
+
+.medi-logo {
+  background-color: black;
+  border: 10px solid black;
+  border-radius: 20px;
 }

@@ -12,6 +12,8 @@
 {% endblock %}
 
 {% block Content %}
+{% include 'onboarding/progress_bar_onboard.html' %}
+<div class="col-12">&nbsp;</div>
     <div class="modal fade" id="surgeryUpdateModal">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -102,198 +104,52 @@
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-12">
-            <h4><strong><span style="color: #212528;">Step 1: </span>&nbsp; Add a new user to EMISweb for eMR </strong></h4>
-            <p>
-                eMR needs to be able to securely extract consenting patient's data from your EMISweb system. So that you have full
-                control over eMR's access to your patient's data, we need you to create a unique user account in your EMISweb system.
-            </p>
-        </div>
+    <div id="step1-block">
+        {% include 'onboarding/emr_setup_step1.html' %}
     </div>
-    <div class="row">
-        <div class="col-md-4">
-            <figure class="figure">
-                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 02.png' %}>
-                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 02.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
-                </a>
-                <figcaption class="figure-caption">a) Menu > Configuration > Organisation Configuration</figcaption>
-            </figure>
-        </div>
-        <div class="col-md-4">
-            <figure class="figure">
-                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 03.png' %}>
-                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 03.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
-                </a>
-                <figcaption class="figure-caption">b) Click the "Add" button, select "New user"</figcaption>
-            </figure>
-        </div>
-        <div class="col-md-4">
-            <figure class="figure">
-                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 04.png' %}>
-                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 04.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
-                </a>
-                <figcaption class="figure-caption">c) Enter the username and password below, and give the user a suitable role where it can read records</figcaption>
-            </figure>
-        </div>
+    <div id="step2-block" class="another-block">
+        <div class="col-12">&nbsp;</div>
+        {% include 'onboarding/emr_setup_step2.html' %}
     </div>
-    <div class="row">
-        <div class="col-md-6">
-            <p>When prompted, enter this EMISweb username and password for the new user.</p>
-            <p>
-                This strong password has been randomly generated and is unique to your surgery. You will not need to remember it
-                after this sign up process. Copy and paste it into the EMISweb password field.
-            </p>
-        </div>
-        <div class="col-md-6">
-            <div class="col-md-12 credentialSection pt-4 pb-3 pl-4 pr-1">
-                <p>Username:&nbsp; <span class="credential">&nbsp; medidata_access</span></p>
-                <p id="password">
-                    Password:&nbsp; <span class="credential">&nbsp; {{ practice_password }}</span>
-                    <button type="button" class="btn btn-default btn-copy js-tooltip js-copy" data-toggle="tooltip" data-placement="bottom" data-copy="{{ practice_password }}" title="Copy to clipboard">
-                        <i class="fas fa-copy fa-2x"></i>
-                    </button>
-                    Click icon to copy the password
-                </p>
+    <div id="step3-block" class="another-block">
+        <div class="col-12">&nbsp;</div>
+        {% include 'onboarding/emr_setup_step3.html' %}
+    </div>
+    <div id="step4-block" class="another-block">
+        <div class="col-12">&nbsp;</div>
+        {% include 'onboarding/emr_setup_step4.html' %}
+    </div>
+
+    <div class="col-12">&nbsp;</div>
+    <div id="main-btn-block">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h6 class="text-danger">** Note : You can click image for preview mode. **</h6>
+            </div>
+            <div class="col-md-2 offset-md-4">
+                <button type="button" class="btn-block btn btn-secondary btn-lg" id="backBTN" onClick="changeAttr('back')">
+                    <i class="fas fa-angle-left"></i>&nbsp;&nbsp;Back
+                </button>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn-block btn btn-success btn-lg" id="nextBTN" onClick="changeAttr('next')">
+                    Next&nbsp;&nbsp;<i class="fas fa-angle-right"></i>
+                </button>
+            </div>
+            <div class="col-md-3 offset-md-1">
+                <button type="button" class="btn-block btn btn-primary btn-lg" id="completeBTN" disabled>
+                    <i class="fas fa-check"></i>&nbsp;&nbsp;&nbsp;Step 1 : Complete
+                </button>
             </div>
         </div>
     </div>
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <h4><strong><span style="color: #212528;">Step 2: </span>&nbsp; Activate the eMR partner product in your EMISweb system</strong></h4>
-            <p>
-                This tells your EMISweb system that it is okay for our eMR systems to communicate with it.
-            </p>
+    <div id="secon-btn-block" class="another-block">
+        <div class="col-12">
+            <h6 class="text-danger">If you miss any steps or need to review again, <br> you can go back to the beginning here.</h6>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-md-3">
-            <figure class="figure">
-                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 08.png' %}>
-                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 08.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
-                </a>
-                <figcaption class="figure-caption">d) Menu > System Tools > EMAS Manager</figcaption>
-            </figure>
-        </div>
-        <div class="col-md-3">
-            <figure class="figure">
-                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 09.png' %}>
-                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 09.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
-                </a>
-                <figcaption class="figure-caption">e) Select "Partner API" at the bottom</figcaption>
-            </figure>
-        </div>
-        <div class="col-md-3">
-            <figure class="figure">
-                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 10.png' %}>
-                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 10.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
-                </a>
-                <figcaption class="figure-caption">f) Select "eMR" in the Partner API list</figcaption>
-            </figure>
-        </div>
-        <div class="col-md-3">
-            <figure class="figure">
-                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 11.png' %}>
-                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 11.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
-                </a>
-                <figcaption class="figure-caption">g) Click "Activate Application" at the top</figcaption>
-            </figure>
-        </div>
-    </div>
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <h4><strong><span style="color: #212528;">Step 3: </span>&nbsp; Give the new EMISweb permission to use eMR</strong></h4>
-            <p>
-                This allows eMR to use that new user account in order to securely process your medical records when you need it.
-            </p>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-3">
-            <figure class="figure">
-                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 12.png' %}>
-                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 12.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
-                </a>
-                <figcaption class="figure-caption">h) Click "Edits Users" button</figcaption>
-            </figure>
-        </div>
-        <div class="col-md-3">
-            <figure class="figure">
-                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 13.png' %}>
-                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 13.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
-                </a>
-                <figcaption class="figure-caption">i) Find the new user you created and tick the box next to it</figcaption>
-            </figure>
-        </div>
-        <div class="col-md-3">
-            <figure class="figure">
-                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 14.png' %}>
-                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 14.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
-                </a>
-                <figcaption class="figure-caption">j) You'll be asked for that password we gave you above again</figcaption>
-            </figure>
-        </div>
-        <div class="col-md-3">
-            <figure class="figure">
-                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 15.png' %}>
-                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 15.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
-                </a>
-                <figcaption class="figure-caption">k) Click "OK"</figcaption>
-            </figure>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-4">
-            <figure class="figure">
-                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 16.png' %}>
-                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 16.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
-                </a>
-                <figcaption class="figure-caption">l) Click "Login Access" button</figcaption>
-            </figure>
-        </div>
-        <div class="col-md-4">
-            <figure class="figure">
-                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 17.png' %}>
-                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 17.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
-                </a>
-                <figcaption class="figure-caption">m) Find the new user you created and tick the boxes to the right of it</figcaption>
-            </figure>
-        </div>
-        <div class="col-md-4">
-            <figure class="figure">
-                <a data-fancybox="gallery" href={% static 'images/emis_setup/Medidata - Activating in EMIS 18.png' %}>
-                    <img src="{% static 'images/emis_setup/Medidata - Activating in EMIS 18.png' %}" class="figure-img img-fluid" alt="A generic square placeholder image with rounded corners in a figure.">
-                </a>
-                <figcaption class="figure-caption">n) Click "OK". Setup is complete</figcaption>
-            </figure>
-        </div>
-    </div>
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <h4><strong><span style="color: #212528;">Step 4: </span>&nbsp; Let us check that eMR can communicate with your EMISweb system</strong></h4>
-        </div>
-    </div>
-    <div class="row mt-2">
-        <div class="col-md-5">
-            <p>
-                Click the "Check setup" button to the right.
-            </p>
-            <p>
-                If we can communicate with your EMISweb successfully, you will be ready to start preparing medical reports with eMR!
-            </p>
-        </div>
-        <div class="col-md-7 checkingEmis">
-            <div class="col-md-7 emisSetupSuccess d-none">
-                <pre> <span style="color: #33aea0; font-size: 30px"><i class="fas fa-check"></i>  SUCCESS!</span></pre>
-                <p class="mb-0">
-                    We'll redirect you to where you can set up access to eMR for your GPs.
-                </p>
-                <p>
-                    <a href="{% url 'onboarding:emr_setup_final' practice_code %}" style="color: #33aea0; font-size: 18px"><strong>Click here</strong></a> if nothing happens.
-                </p>
-            </div>
-            <button class="btn btn-checkSetup" onclick="this.disabled=true; pollingEmis('{% url "onboarding:emis_polling" practice_code %}')" type="button" id="checkingEmisButton">
-                <i class="fas fa-question"></i>&nbsp; Check Setup
+        <div class="col-3 mt-3">
+            <button type="button" class="btn-block btn btn-primary btn-lg" id="refreshBTN">
+                <i class="fas fa-redo-alt"></i>&nbsp;&nbsp;&nbsp;Start Again.
             </button>
         </div>
     </div>
@@ -322,7 +178,78 @@
                 $('#surgeryUpdateModal').modal({
                     backdrop: "static"
                 });
-            })
+            });
+
+            //  set default progress bar
+            $('#progress_percent').text('20%');
+            $('#progress_bar').attr('aria-valuenow', '20');
+            $('#progress_bar').css('width', '20%');
+
+            validateBTN( $('#progress_bar').attr('aria-valuenow') );
+
+            $('#backBTN').click( function() {
+                var percentNow = $('#progress_bar').attr('aria-valuenow');
+                var percentNext = parseInt(percentNow) - 5;
+
+                $('#progress_percent').text( percentNext + ' % ');
+                $('#progress_bar').attr('aria-valuenow', percentNext);
+                $('#progress_bar').css('width', percentNext + '%');
+
+                validateBTN( $('#progress_bar').attr('aria-valuenow') );
+            });
+
+            $('#nextBTN').click( function() {
+                var percentNow = $('#progress_bar').attr('aria-valuenow');
+                var percentNext = parseInt(percentNow) + 5;
+
+                $('#progress_percent').text( percentNext + ' % ');
+                $('#progress_bar').attr('aria-valuenow', percentNext);
+                $('#progress_bar').css('width', percentNext + '%');
+
+                validateBTN( $('#progress_bar').attr('aria-valuenow') );
+            });
+
+            $('#completeBTN').click( function() {
+                var percentNow = parseInt( $('#progress_bar').attr('aria-valuenow') );
+                switch( percentNow ) {
+                    case 30:
+                        $('#id_label').removeClass('text-danger');
+                        $('#progress_bar').removeClass('bg-danger');
+
+                        $('#id_label').addClass('text-warning');
+                        $('#progress_bar').addClass('bg-warning');
+
+                        $('#completeBTN').html('<i class="fas fa-check"></i>&nbsp;&nbsp;&nbsp;Step 2 : Complete');
+                        $('#step2-block').show();
+                        $('#nextBTN').trigger('click');
+                        break;
+                    case 50:
+                        $('#completeBTN').html('<i class="fas fa-check"></i>&nbsp;&nbsp;&nbsp;Step 3 : Complete');
+                        $('#step3-block').show();
+                        $('#nextBTN').trigger('click');
+                        break;
+                    case 85:
+                        $('#id_label').removeClass('text-warning');
+                        $('#progress_bar').removeClass('bg-warning');
+
+                        $('#id_label').addClass('text-success');
+                        $('#progress_bar').addClass('bg-success');
+
+                        $('#completeBTN').html('<i class="fas fa-check"></i>&nbsp;&nbsp;&nbsp;Step 4 : Complete');
+                        $('#step4-block').show();
+                        $('#nextBTN').trigger('click');
+
+                        $('#main-btn-block').hide();
+                        $('#secon-btn-block').show();
+                        break;
+                }
+                $('#completeBTN').prop('disabled',true);
+            });
+
+            $('#refreshBTN').click( function() {
+                location.reload();
+            });
         });
+
     </script>
 {% endblock %}

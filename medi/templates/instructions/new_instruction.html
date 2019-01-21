@@ -238,6 +238,7 @@
     <script src="{% static 'js/select2.min.js' %}"></script>
     <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
     <script src="{% static 'js/jquery.formset.js' %}"></script>
+    <script src="{% static 'js/instructions/new_instruction.js' %}"></script>
     <script>
         $(document).ready(function () {
 
@@ -253,20 +254,6 @@
             $("#id_type_0").click( function() {
                 $('#consent_main_block').show();
                 $('#questions_main_block').show();
-            });
-
-            // Function for checking required date field. When one date_range has value, another date_range will be required
-            $('#id_date_range_from').change(function() { 
-                $('#id_date_range_to').prop('required', true);
-                if( $('#id_date_range_from').val() == '' ){
-                    $('#id_date_range_to').prop('required', false);
-                }
-            });
-            $('#id_date_range_to').change(function() { 
-                $('#id_date_range_from').prop('required', true);
-                if( $('#id_date_range_to').val() == '' ){
-                    $('#id_date_range_from').prop('required', false);
-                }
             });
 
             var template_data = null;
@@ -315,25 +302,29 @@
                 autoclose: true,
                 todayHighlight: true,
             });
+
+            var start = new Date(1900, 1, 1);
+            var end = new Date();
+
             $('#id_date_range_from').datepicker({
+                startDate : start,
+                endDate   : end,
+                autoclose : true,
                 format: 'dd/mm/yyyy',
-                orientation: 'bottom',
-                yearRange:"-100:2028",
-                weekStart: 1,
-                daysOfWeekHighlighted: "6,0",
-                autoclose: true,
-                todayHighlight: true,
+            }).on('changeDate', function(){
+                $('#id_date_range_to').datepicker('setStartDate', new Date(reformatted_date($(this).val())));
             });
+
             $('#id_date_range_to').datepicker({
-                yearRange:"-100:2028",
+                startDate : start,
+                endDate   : end,
+                autoclose : true,
                 format: 'dd/mm/yyyy',
-                orientation: 'bottom',
-                weekStart: 1,
-                daysOfWeekHighlighted: "6,0",
-                autoclose: true,
-                todayHighlight: true,
+            }).on('changeDate', function(){
+                $('#id_date_range_from').datepicker('setEndDate', new Date(reformatted_date($(this).val())));
             });
-            $('#datepicker').datepicker("setDate", new Date());
+
+
             $('.datepicker-days .table-condensed').css('width', '231px');
 
             $('#id_gp_practice').select2({
@@ -369,14 +360,14 @@
                           $('#id_form-TOTAL_FORMS').val(data.questions.length);
                           question_form_html = '';
                           data.questions.forEach(function(question, index) {
-                              question_form_html += `
-                                  <tr class="dynamic-form">
-                                      <td>
-                                          <input type="text" value="` + question + `" name="form-`+ index + `-question" class="form-control questions_inputs" maxlength="255" id="id_form-`+ index + `-question">
-                                      </td>
-                                      <td><a class="btn btn-danger" href="javascript:void(0)">X remove</a></td>
-                                  </tr>
-                              `;
+                              question_form_html += '<tr class="dynamic-form"> ' +
+                                  '<td> ' +
+                                    '<input type="text" value="' + question + '" name="form-'+ index + '-question" class="form-control questions_inputs" maxlength="255" id="id_form-'+ index + '-question"> ' +
+                                  '</td> ' +
+                                  '<td>' +
+                                    '<a class="btn btn-danger" href="javascript:void(0)">X remove</a>' +
+                                  '</td> ' +
+                                  '</tr>';
                           });
                           $('#questions_block').find('tbody').prepend(question_form_html);
                       };

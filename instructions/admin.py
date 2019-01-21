@@ -8,7 +8,7 @@ from datetime import timedelta
 from instructions.models import Instruction
 from django.db.models import Q
 from organisations.models import OrganisationGeneralPractice
-from instructions.forms import ClientNoteForm
+from instructions.forms import ClientNoteForm, InstructionAdminForm
 from import_export import resources
 
 class InstructionReminder(admin.TabularInline):
@@ -164,6 +164,7 @@ class InstructionResource(resources.ModelResource):
 
 class InstructionAdmin(CustomImportExportModelAdmin):
     change_status = False
+    form = InstructionAdminForm
     list_display = ('gp_practice', 'client', 'status', 'created', 'type', 'days_since_created')
     list_filter = ('type', DaysSinceFilter, ClientOrgFilter, GPOrgFilter)
     resource_class = InstructionResource
@@ -177,7 +178,7 @@ class InstructionAdmin(CustomImportExportModelAdmin):
     fieldsets = (
         ('Instruction Information', {
             'fields': (
-                'status', 'client_user', 'patient_information', 'type', 'gp_practice', 'date_range_from', 'date_range_to', 'your_ref', 'medi_ref',
+                'status', 'client_user', 'gp_user', 'patient_information', 'type', 'gp_practice', 'date_range_from', 'date_range_to', 'your_ref', 'medi_ref',
                 'gp_title_from_client', 'gp_initial_from_client', 'gp_last_name_from_client'
             )
         }),

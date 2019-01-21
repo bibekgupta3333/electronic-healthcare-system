@@ -1,0 +1,18 @@
+.top-progress {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.block-img {
+    box-shadow: 4px 4px 5px grey;
+}
+
+.block-username {
+    display: none;
+    padding: 1% 1% 1% 1%;
+}
+
+.another-block {
+    display: none;
+}
