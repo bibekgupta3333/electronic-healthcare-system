@@ -33,12 +33,12 @@
                         <a href="#" >Income</a>
                     </li>
                 {% endif %}
-                {% if perms.template.view_templateinstruction %}
+                {% if perms.template.view_templateinstruction and user.type != 'GP' %}
                     <li class="{% if request.resolver_match.url_name == 'view_templates' %}active{% endif %}">
                         <a href="{% url 'template:view_templates' %}">Templates</a>
                     </li>
                 {% endif %}
-                {% if perms.payment.view_organisationfee %}
+                {% if perms.payment.view_organisationfee and user.type != 'CLT' %}
                     <li class="{% if request.resolver_match.url_name == 'view_account' %}active{% endif %}">
                         <a href="{% url 'accounts:view_account' %}" >Account</a>
                     </li>
