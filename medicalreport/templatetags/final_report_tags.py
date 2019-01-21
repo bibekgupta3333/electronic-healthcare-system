@@ -44,7 +44,7 @@ def consultations(context):
         'consultations': context['medical_record'].consultations,
         'people': context['medical_record'].people,
         'redaction': context['redaction'],
-        'pattern': context['pattern']
+        'relations': context['relations']
     }
 
 @register.inclusion_tag('medicalreport/reports/bloods.html', takes_context=True)

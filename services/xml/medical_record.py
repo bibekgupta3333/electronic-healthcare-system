@@ -3,6 +3,7 @@ from .consultation import Consultation
 from .medication import Medication
 from .allergy_event import AllergyEvent
 from .allergy import Allergy
+from .relation import Relation
 from .value_event import ValueEvent
 from .problem import Problem
 from .referral import Referral
@@ -55,6 +56,11 @@ class MedicalRecord(XMLBase):
         referral_items = self.__referral_items()
         referral_event_items = self.__referral_event_items()
         return referral_items + referral_event_items
+
+    def relations(self) -> List[Relation]:
+        elements = self.parsed_xml.findall(Relation.XPATH)
+        result_list = [Relation(element) for element in elements]
+        return result_list
 
     def attachments(self) -> List[Attachment]:
         elements = self.parsed_xml.findall(Attachment.XPATH)
