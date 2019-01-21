@@ -182,9 +182,9 @@ def consultation_element_list(consultation):
 
 
 @register.filter
-def replace_ref_phrases(ref_phrases, value):
-    if ref_phrases:
-        return re.sub(ref_phrases, "[UNSPECIFIED THIRD PARTY]", value, flags=re.IGNORECASE)
+def replace_ref_phrases(relations, value):
+    if relations:
+        return re.sub(relations, "[UNSPECIFIED THIRD PARTY]", value, flags=re.IGNORECASE)
     return value
 
 

@@ -4,6 +4,7 @@ from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE
 from snomedct.models import SnomedConcept
 from accounts.models import User, GeneralPracticeUser
+from postgres_copy import CopyManager
 from django.utils.html import format_html
 
 
@@ -102,6 +103,7 @@ class NhsSensitiveConditions(models.Model):
 
 class ReferencePhrases(models.Model):
     name = models.CharField(max_length=255)
+    objects = CopyManager()
 
     def __str__(self):
         return self.name
