@@ -53,7 +53,7 @@ def reset_password(request):
 def change_role(request):
     cur_user = request.user
     cur_user = User.objects.get(username=cur_user.username)
-    role = request.POST.get("role")
+    role = int(request.POST.get("role"))
     emails = request.POST.getlist("users[]")
     user_cnt = len(emails)
     for email in emails:
@@ -63,11 +63,15 @@ def change_role(request):
         else:
             user.is_staff = False
 
-        if hasattr(cur_user.userprofilebase, 'generalpracticeuser'):
-            user.userprofilebase.generalpracticeuser.role = role
-        elif hasattr(cur_user.userprofilebase, 'clientuser'):
-            user.userprofilebase.clientuser.role = role
-        user.save()
+        if hasattr(user.userprofilebase, 'generalpracticeuser'):
+            gp_user = user.userprofilebase.generalpracticeuser
+            gp_user.role = role
+            gp_user.save()
+        elif hasattr(user.userprofilebase, 'clientuser'):
+            client_user = user.userprofilebase.clientuser
+            client_user.role = role
+            client_user.save()
+
 
     if user_cnt == 1:
         messages.success(request, "The role of selected user has been changed.")
