@@ -11,6 +11,7 @@
 
 
 {% block Content %}
+{% include 'onboarding/progress_bar_onboard.html' %}
     <div class="card emrMessage">
         <div class="centerMessage">
             {% if welcome_message1 %}
@@ -28,4 +29,21 @@
             {% endif %}
         </div>
     </div>
+{% endblock %}
+
+{% block Script %}
+    <script>
+    $(document).ready(function () {
+        //  Set value in progress bar.
+        $('#progress_percent').text('100%');
+        $('#progress_bar').attr('aria-valuenow', '100');
+        $('#progress_bar').css('width', '100%');
+
+        $('#id_label').removeClass('text-danger');
+        $('#progress_bar').removeClass('bg-danger');
+
+        $('#id_label').addClass('text-success');
+        $('#progress_bar').addClass('bg-success');
+    });
+    </script>
 {% endblock %}
