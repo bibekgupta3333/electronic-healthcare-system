@@ -120,10 +120,10 @@ def save_medical_report(request, instruction, amendments_for_record):
     raw_xml = services.GetMedicalRecord(amendments_for_record.patient_emis_number).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     gp_name = amendments_for_record.get_gp_name()
-    pattern = '|'.join(ref_phrase.name for ref_phrase in ReferencePhrases.objects.all())
+    relations = '|'.join(relation.name for relation in ReferencePhrases.objects.all())
     params = {
         'medical_record': medical_record_decorator,
-        'pattern': pattern,
+        'relations': relations,
         'redaction': amendments_for_record,
         'instruction': instruction,
         'gp_name': gp_name,

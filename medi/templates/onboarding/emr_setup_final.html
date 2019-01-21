@@ -11,6 +11,7 @@
 {% endblock %}
 
 {% block Content %}
+{% include 'onboarding/progress_bar_onboard.html' %}
     <div class="col-md-12 pt-3 pb-3 bg-white emrSetupStage2">
         <form method="POST" enctype="multipart/form-data" id="OnboardingFinalSetupForm">
             {% csrf_token %}
@@ -221,6 +222,18 @@
     <script src="{% static 'js/intlTel.js' %}"></script>
     <script>
     $(document).ready(function () {
+
+        //  Set value in progress bar.
+        $('#progress_percent').text('90%');
+        $('#progress_bar').attr('aria-valuenow', '90');
+        $('#progress_bar').css('width', '90%');
+
+        $('#id_label').removeClass('text-danger');
+        $('#progress_bar').removeClass('bg-danger');
+
+        $('#id_label').addClass('text-success');
+        $('#progress_bar').addClass('bg-success');
+
 
         $('#min_fee_payments').on('change keyup', function () {
             $('#level_1_payments').val(($(this).val()*0.85).toFixed(2));

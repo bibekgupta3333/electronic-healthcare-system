@@ -84,7 +84,11 @@
                 </tr>
             </table>
         </div>
-        <label style="font-size:60px;color:#235597;margin:0;line-height:60px;">Medical Report</label>
+        {% if instruction.type == 'SARS' %}
+            <label style="font-size:60px;color:#235597;margin:0;line-height:60px;">Medical Record</label>
+        {% else %}
+            <label style="font-size:60px;color:#235597;margin:0;line-height:60px;">Medical Report</label>
+        {% endif %}
         <div>
             {% patient_details %}
             {% instruction_details %}

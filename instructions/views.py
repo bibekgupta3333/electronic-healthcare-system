@@ -536,7 +536,7 @@ def review_instruction(request, instruction_id):
     consent_extension = ''
     consent_path = ''
     if instruction.consent_form:
-        consent_extension = (instruction.consent_form.url).split('.')[1]
+        consent_extension = (instruction.consent_form.url).split('.')[-1]
         consent_path = instruction.consent_form.url
     if consent_extension in ['jpeg', 'png', 'gif']:
         consent_type = 'image'

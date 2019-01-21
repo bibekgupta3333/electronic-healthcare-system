@@ -50,3 +50,194 @@ function pollingEmis(url) {
         });
     }, 2000);
 }
+
+function validateBTN( progressPercent ) {
+    if( progressPercent == 20 || progressPercent == 35 || progressPercent == 55 ){
+        $('#backBTN').prop('disabled',true);
+    } else {
+        $('#backBTN').prop('disabled',false);
+    }
+    
+    if( progressPercent == 30 || progressPercent == 50 || progressPercent == 85 ){
+        $('#nextBTN').prop('disabled',true);
+        $('#completeBTN').prop('disabled',false);
+        $('#username-block').show();
+    } else {
+        $('#nextBTN').prop('disabled',false);
+        $('#completeBTN').prop('disabled',true);
+    }
+}
+
+function changeAttr( status ){
+    var picPath, titleCaption;
+    var percent = parseInt( $('#progress_bar').attr('aria-valuenow') );
+    switch( percent ) {
+        // Step 1 Control.
+        case 20:
+            picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2003.png';
+            titleCaption = 'b) Click the "Add" button, select "New user"';
+            $('#setup-min-pic').attr('href', picPath );
+            $('#setup-full-pic').attr('src', picPath );
+            $('#setup-caption').text( titleCaption );
+            break;
+        case 25:
+            if( status == 'next' ){
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2004.png';
+                titleCaption = 'c) Enter the username and password below, and give the user a suitable role where it can read records';
+                $('#setup-min-pic').attr('href', picPath );
+                $('#setup-full-pic').attr('src', picPath );
+                $('#setup-caption').text( titleCaption );
+            } else {
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2002.png';
+                titleCaption = 'a) Menu > Configuration > Organisation Configuration';
+                $('#setup-min-pic').attr('href', picPath );
+                $('#setup-full-pic').attr('src', picPath );
+                $('#setup-caption').text( titleCaption );
+            }
+            break;
+        case 30:
+            picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2003.png';
+            titleCaption = 'b) Click the "Add" button, select "New user"';
+            $('#setup-min-pic').attr('href', picPath );
+            $('#setup-full-pic').attr('src', picPath );
+            $('#setup-caption').text( titleCaption );
+            break;
+        // Step 2 Control.
+        case 40:
+            if( status == 'next' ){
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2009.png';
+                titleCaption = 'e) Select "Partner API" at the bottom';
+                $('#setup-min-pic_2').attr('href', picPath );
+                $('#setup-full-pic_2').attr('src', picPath );
+                $('#setup-caption_2').text( titleCaption );
+            } else {
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2008.png';
+                titleCaption = 'd) Menu > System Tools > EMAS Manager';
+                $('#setup-min-pic_2').attr('href', picPath );
+                $('#setup-full-pic_2').attr('src', picPath );
+                $('#setup-caption_2').text( titleCaption );
+            }
+            break;
+        case 45:
+            if( status == 'next' ){
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2010.png';
+                titleCaption = 'f) Select "eMR" in the Partner API list';
+                $('#setup-min-pic_2').attr('href', picPath );
+                $('#setup-full-pic_2').attr('src', picPath );
+                $('#setup-caption_2').text( titleCaption );
+            } else {
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2009.png';
+                titleCaption = 'e) Select "Partner API" at the bottom';
+                $('#setup-min-pic_2').attr('href', picPath );
+                $('#setup-full-pic_2').attr('src', picPath );
+                $('#setup-caption_2').text( titleCaption );
+            }
+            break;
+        case 50:
+            if( status == 'next' ){
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2011.png';
+                titleCaption = 'g) Click "Activate Application" at the top';
+                $('#setup-min-pic_2').attr('href', picPath );
+                $('#setup-full-pic_2').attr('src', picPath );
+                $('#setup-caption_2').text( titleCaption );
+                break;
+            } else {
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2010.png';
+                titleCaption = 'f) Select "eMR" in the Partner API list';
+                $('#setup-min-pic_2').attr('href', picPath );
+                $('#setup-full-pic_2').attr('src', picPath );
+                $('#setup-caption_2').text( titleCaption );
+            }
+        // Step 3 control.
+        case 60:
+            if( status == 'next' ){
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2013.png';
+                titleCaption = 'i) Find the new user you created and tick the box next to it';
+                $('#setup-min-pic_3').attr('href', picPath );
+                $('#setup-full-pic_3').attr('src', picPath );
+                $('#setup-caption_3').text( titleCaption );
+            } else {
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2012.png';
+                titleCaption = 'h) Click "Edits Users" button';
+                $('#setup-min-pic_3').attr('href', picPath );
+                $('#setup-full-pic_3').attr('src', picPath );
+                $('#setup-caption_3').text( titleCaption );
+            }
+            break;
+        case 65:
+            if( status == 'next' ){
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2014.png';
+                titleCaption = "j) You'll be asked for that password we gave you above again";
+                $('#setup-min-pic_3').attr('href', picPath );
+                $('#setup-full-pic_3').attr('src', picPath );
+                $('#setup-caption_3').text( titleCaption );
+            } else {
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2013.png';
+                titleCaption = 'i) Find the new user you created and tick the box next to it';
+                $('#setup-min-pic_3').attr('href', picPath );
+                $('#setup-full-pic_3').attr('src', picPath );
+                $('#setup-caption_3').text( titleCaption );
+            }
+            break;
+        case 70:
+            if( status == 'next' ){
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2015.png';
+                titleCaption = 'k) Click "OK"';
+                $('#setup-min-pic_3').attr('href', picPath );
+                $('#setup-full-pic_3').attr('src', picPath );
+                $('#setup-caption_3').text( titleCaption );
+            } else {
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2014.png';
+                titleCaption = "j) You'll be asked for that password we gave you above again";
+                $('#setup-min-pic_3').attr('href', picPath );
+                $('#setup-full-pic_3').attr('src', picPath );
+                $('#setup-caption_3').text( titleCaption );
+            }
+            break;
+        case 75:
+            if( status == 'next' ){
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2016.png';
+                titleCaption = 'l) Click "Login Access" button';
+                $('#setup-min-pic_3').attr('href', picPath );
+                $('#setup-full-pic_3').attr('src', picPath );
+                $('#setup-caption_3').text( titleCaption );
+            } else {
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2015.png';
+                titleCaption = 'k) Click "OK"';
+                $('#setup-min-pic_3').attr('href', picPath );
+                $('#setup-full-pic_3').attr('src', picPath );
+                $('#setup-caption_3').text( titleCaption );
+            }
+            break;
+        case 80:
+            if( status == 'next' ){
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2017.png';
+                titleCaption = 'm) Find the new user you created and tick the boxes to the right of it';
+                $('#setup-min-pic_3').attr('href', picPath );
+                $('#setup-full-pic_3').attr('src', picPath );
+                $('#setup-caption_3').text( titleCaption );
+            } else {
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2016.png';
+                titleCaption = 'l) Click "Login Access" button';
+                $('#setup-min-pic_3').attr('href', picPath );
+                $('#setup-full-pic_3').attr('src', picPath );
+                $('#setup-caption_3').text( titleCaption );
+            }
+            break;
+        case 85:
+            if( status == 'next' ){
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2018.png';
+                titleCaption = 'n) Click "OK". Setup is complete';
+                $('#setup-min-pic_3').attr('href', picPath );
+                $('#setup-full-pic_3').attr('src', picPath );
+                $('#setup-caption_3').text( titleCaption );
+            } else {
+                picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2017.png';
+                titleCaption = 'm) Find the new user you created and tick the boxes to the right of it';
+                $('#setup-min-pic_3').attr('href', picPath );
+                $('#setup-full-pic_3').attr('src', picPath );
+                $('#setup-caption_3').text( titleCaption );
+            }
+            break;
+    }
+}

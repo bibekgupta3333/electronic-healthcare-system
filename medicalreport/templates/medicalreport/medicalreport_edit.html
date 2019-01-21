@@ -19,7 +19,11 @@
         <div class="container-fluid callout callout--top">
             {% patient_info %}
         </div>
-        <h1>Provisional Report Contents</h1>
+        {% if instruction.type == 'SARS' %}
+            <h1>Provisional Record Contents</h1>
+        {% else %}
+            <h1>Provisional Report Contents</h1>
+        {% endif %}
         <form action="{% url 'medicalreport:update_report' instruction.id %}" method="post" id="medicalReportForm">
             {% csrf_token %}
             {% if not redaction.instruction_checked and show_alert %}
