@@ -51,42 +51,44 @@
                     </div>
                 </div>
             </div>
-            <div class="card contactPreferences mt-4">
-                <div class="card-header">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h5>Practice Fee Income</h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="col-md-12 OrgaisationFee">
+            {% if false %}
+                <div class="card contactPreferences mt-4">
+                    <div class="card-header">
                         <div class="row">
-                            <div class="col-md-12">
-                                <div class="mt-2 mb-3">
-                                    <h6 ><b>Fees</b></h6>
-                                </div>
-                                <div class="mt-2 mb-4">
-                                    Your fees depend on the speed in which you're able to return the medical report. Your agreed fee levels are shown below. To discuss different fee levels, please contact a member of the Medidata team.
-                                </div>
+                            <div class="col-md-6">
+                                <h5>Practice Fee Income</h5>
                             </div>
                         </div>
-                        {% for data in organisation_fee_data %}
-                            <div class="row FeeLevel">
-                                <div class="col-md-3 rowTitle">
-                                  {{ data.label }}
-                                </div>
-                                <div class="col-md-9">
-                                    <div class="row">
-                                      <input type="text" class="form-control currency display-inline" value="£" readonly="true">
-                                      <input type="text" class="form-control feeData display-inline" value="{{ data.amount }}" readonly="true">
+                    </div>
+                    <div class="card-body">
+                        <div class="col-md-12 OrgaisationFee">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mt-2 mb-3">
+                                        <h6 ><b>Fees</b></h6>
+                                    </div>
+                                    <div class="mt-2 mb-4">
+                                        Your fees depend on the speed in which you're able to return the medical report. Your agreed fee levels are shown below. To discuss different fee levels, please contact a member of the Medidata team.
                                     </div>
                                 </div>
                             </div>
-                        {% endfor %}
+                            {% for data in organisation_fee_data %}
+                                <div class="row FeeLevel">
+                                    <div class="col-md-3 rowTitle">
+                                      {{ data.label }}
+                                    </div>
+                                    <div class="col-md-9">
+                                        <div class="row">
+                                          <input type="text" class="form-control currency display-inline" value="£" readonly="true">
+                                          <input type="text" class="form-control feeData display-inline" value="{{ data.amount }}" readonly="true">
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
-            </div>
+            {% endif %}
         </form>
     </div>
 {% endblock %}

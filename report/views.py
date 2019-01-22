@@ -1,11 +1,13 @@
-import json
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404, HttpResponse
+from django.contrib import messages
+
 from instructions.models import Instruction
 from .models import PatientReportAuth
-from .forms import AccessCodeForm
+from .forms import AccessCodeForm, ThirdPartyAuthorisationForm
 from report.mobile import AuthMobile
+
+import json
 
 
 def sar_request_code(request, instruction_id, url):
@@ -89,6 +91,7 @@ def get_report(request):
 
     try:
         report_auth = PatientReportAuth.objects.get(verify_pin=verified_pin)
+        third_parties = report_auth.third_parties.all()
         if report_auth.locked_report:
             return redirect_auth_limit(request)
     except PatientReportAuth.DoesNotExist:
@@ -111,7 +114,8 @@ def get_report(request):
 
     return render(request, 'patient/auth_4_select_report.html',{
         'verified_pin': verified_pin,
-        'name': report_auth.patient.user.first_name
+        'report_auth': report_auth,
+        'third_parties': third_parties,
     })
 
 
@@ -122,3 +126,21 @@ def redirect_auth_limit(request):
 
 def session_expired(request):
     return render(request, 'patient/session_expired.html')
+
+
+def add_third_party_authorisation(request, report_auth_id):
+    report_auth = get_object_or_404(PatientReportAuth, id=report_auth_id)
+    third_party_form = ThirdPartyAuthorisationForm()
+
+    if request.method == 'POST':
+        third_party_form = ThirdPartyAuthorisationForm(request.POST)
+        if third_party_form.is_valid():
+            third_party_form.save(report_auth)
+            messages.success(request, 'Form submission successful')
+
+            return redirect('report:select-report')
+
+    return render(request, 'patient/add_third_authorise.html', {
+        'third_party_form': third_party_form
+    })
+

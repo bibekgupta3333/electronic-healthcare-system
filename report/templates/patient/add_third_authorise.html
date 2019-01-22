@@ -1,0 +1,94 @@
+{% load static %}
+{% load medi_report_tags %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+
+<div class="container">
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <form  method="post" id="thirdPartyForm">
+                {% csrf_token %}
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h3>Third party authorisation</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="mt-2 mb-5">
+                            Please provide the details of third party, such as the solicitor, which you wish to authorise.
+                            To keep your data secure, they will need to provide a mobile phone number,
+                            to be able to receive a code, as part of the two-factor authentication process.
+                        </p>
+                        <div class="row form-group">
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-5 title-pos">Company </div>
+                                    {% bootstrap_field third_party_form.company show_label=False form_group_class='col-md-7' placeholder='' %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-5 title-pos">Contact Name </div>
+                                    {% bootstrap_field third_party_form.contact_name show_label=False form_group_class='col-md-7' placeholder='' %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-5 title-pos">Case Reference (if known) </div>
+                                    {% bootstrap_field third_party_form.case_reference show_label=False form_group_class='col-md-7' placeholder='' %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-5 title-pos">Email </div>
+                                    {% bootstrap_field third_party_form.email_1 show_label=False form_group_class='col-md-7' placeholder='' %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-4">
+                                <div class="row">
+                                    <div class="col-md-5 title-pos">Confirm Email </div>
+                                    {% bootstrap_field third_party_form.email_2 show_label=False form_group_class='col-md-7' placeholder='' %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-5">
+                                <div class="row">
+                                    <div class="col-md-5 title-pos">Family Phone Number </div>
+                                    {% bootstrap_field third_party_form.family_phone_number show_label=False form_group_class='col-md-6' placeholder='' %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-5">
+                                <div class="row">
+                                    <div class="col-md-5 title-pos">Office Phone number </div>
+                                    {% bootstrap_field third_party_form.office_phone_number show_label=False form_group_class='col-md-6' placeholder='' %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2">
+                                <a href="{% url 'report:select-report' %}" class="btn btn-primary w-100"><i class="fas fa-chevron-left mr-2"></i>Go back</a>
+                            </div>
+                            <div class="col-md-2 w-50">
+                                <input type="submit" value="Authorise" class="btn btn-outline-primary w-100">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
