@@ -237,20 +237,18 @@ def delete_additional_allergies_records(request):
 
 
 def send_patient_mail(request, instruction,  unique_url):
-    link = request.get_host() + '/report/' + str(instruction.pk) + '/' + unique_url
+    report_link = request.scheme + '://' + request.get_host() + '/report/' + str(instruction.pk) + '/' + unique_url
     send_mail(
-        'Medidata eMR: Your medical report is ready',
-        'Your instruction has been submitted',
+        'Notification from your GP surgery',
+        '',
         'MediData',
         [instruction.patient_information.patient_email],
         fail_silently=True,
-        html_message=loader.render_to_string('medicalreport/patient_email.html',
-                                             {
-                                                 'name': instruction.patient.user.first_name,
-                                                 'gp': instruction.gp_practice,
-                                                 'link': link
-                                             }
-                                             ))
+        html_message=loader.render_to_string('medicalreport/patient_email.html', {
+            'surgery_name': instruction.gp_practice,
+            'report_link': report_link
+        })
+    )
 
 def send_surgery_email(instruction):
     send_mail(

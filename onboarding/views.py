@@ -13,9 +13,9 @@ from accounts.forms import PMForm
 from services.emisapiservices.services import GetEmisStatusCode
 from organisations.models import OrganisationGeneralPractice
 from permissions.functions import generate_gp_permission
+from common.functions import get_url_page
 import random
 import string
-
 
 def sign_up(request):
     surgery_form = SurgeryForm()
@@ -144,6 +144,7 @@ def emr_setup_final(request, practice_code=None):
     surgery_email_form = SurgeryEmailForm(instance=gp_organisation)
 
     if request.method == "POST":
+        home_page_link = request.scheme + '://' + get_url_page('home', request=request)
         user_formset = UserEmrSetUpStage2Formset(request.POST)
         bank_details_form = BankDetailsEmrSetUpStage2Form(request.POST)
         surgery_email_form = SurgeryEmailForm(request.POST, instance=gp_organisation)
@@ -156,7 +157,7 @@ def emr_setup_final(request, practice_code=None):
             if surgery_email.organisation_email:
                 html_message = loader.render_to_string('onboarding/surgery_email.html')
                 send_mail(
-                    'Thank you for setting up',
+                    'eMR successful set up',
                     '',
                     settings.DEFAULT_FROM,
                     [surgery_email.organisation_email],
@@ -172,10 +173,11 @@ def emr_setup_final(request, practice_code=None):
             for user in created_user_list:
                 html_message = loader.render_to_string('onboarding/emr_setup_2_email.html', {
                     'user_email': user['general_pratice_user'].user.email,
-                    'user_password': user['password']
+                    'user_password': user['password'],
+                    'home_page_link': home_page_link
                 })
                 send_mail(
-                    'eMR Account Information',
+                    'eMR New User Account information',
                     '',
                     settings.DEFAULT_FROM,
                     [user['general_pratice_user'].user.email],

@@ -287,7 +287,7 @@ def new_instruction(request):
                     'New Instruction',
                     'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
                         protocol=request.scheme,
-                        link=PIPELINE_INSTRUCTION_LINK
+                        link=get_url_page('instruction_pipeline', request)
                     ),
                     'MediData',
                     [gp_practice.organisation_email],
@@ -337,7 +337,7 @@ def new_instruction(request):
                 'New Instruction',
                 'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
                     protocol=request.scheme,
-                    link=PIPELINE_INSTRUCTION_LINK
+                    link=get_url_page('instruction_pipeline', request)
                 ),
                 'MediData',
                 medidata_emails_list + gp_emails_list,
