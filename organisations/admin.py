@@ -43,9 +43,9 @@ class OrganisationGeneralPracticeAdmin(CustomImportExportModelAdmin):
         ('Contact Information', {
             'fields': ('phone_office', 'phone_alternate', 'phone_onboarding_setup', 'organisation_email', 'fax', 'website')
         }),
-        ('Systmem Information', {
+        ('System Information', {
             'fields': (
-                'gp_operating_system', 'operating_system_socket_endpoint', 'operating_system_organisation_code',
+                'gp_operating_system', 'operating_system_socket_endpoint', 'operating_system_organisation_code', 'operating_system_username',
                 '_operating_system_salt_and_encrypted_password', 'operating_system_auth_token'
             )
         }),

@@ -17,6 +17,7 @@ from common.functions import get_url_page
 import random
 import string
 
+
 def sign_up(request):
     surgery_form = SurgeryForm()
     pm_form = PMForm()

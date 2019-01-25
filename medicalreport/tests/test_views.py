@@ -48,7 +48,10 @@ class EmisAPITestCase(TestCase):
             billing_address_city='Bangkok',
             billing_address_postalcode='2510',
             gp_operating_system='OT',
-            practcode='99999'
+            practcode='99999',
+            operating_system_organisation_code=29390,
+            operating_system_username='michaeljtbrooks',
+            operating_system_salt_and_encrypted_password='Medidata2018',
         )
         self.gp_user = mommy.make(GeneralPracticeUser, user=user, organisation=gp_practice)
         self.gp_practice = gp_practice
@@ -72,7 +75,7 @@ class EmisAPITestCase(TestCase):
 
 class GetMatchedPatientTest(EmisAPITestCase):
     def test_get_matched_patient(self):
-        registrations = get_matched_patient(self.instruction_patient)
+        registrations = get_matched_patient(self.instruction_patient, self.gp_practice)
         self.assertIn(
             'Mr Alan Ball',
             [registration.full_name() for registration in registrations]

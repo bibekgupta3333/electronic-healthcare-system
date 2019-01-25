@@ -647,7 +647,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
     patient_instruction = instruction.patient_information
     sars_consent_form = SarsConsentForm()
     mdx_consent_form = MdxConsentForm()
-    patient_registration = get_patient_registration(str(patient_emis_number))
+    patient_registration = get_patient_registration(str(patient_emis_number), gp_organisation=instruction.gp_practice)
 
     if request.method == "POST":
         sars_consent_form = SarsConsentForm(request.POST, request.FILES, instance=instruction)
