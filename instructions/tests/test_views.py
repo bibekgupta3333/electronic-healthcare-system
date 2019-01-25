@@ -30,7 +30,14 @@ class TestInstructionBase(TestCase):
             emis_username='michaeljtbrooks',
             emis_password='Medidata2018'
         )
-        self.gp_practice_1 = mommy.make(OrganisationGeneralPractice, practcode='TEST0001', name='Test Surgery')
+        self.gp_practice_1 = mommy.make(
+            OrganisationGeneralPractice,
+            practcode='TEST0001',
+            name='Test Surgery',
+            operating_system_organisation_code=29390,
+            operating_system_username='michaeljtbrooks',
+            operating_system_salt_and_encrypted_password='Medidata2018',
+        )
         self.gp_user = mommy.make(User, email='gp_user1@gmail.com', password='test1234', type=account_models.GENERAL_PRACTICE_USER)
         self.gp_manager_1 = mommy.make(
             GeneralPracticeUser,

@@ -117,7 +117,7 @@ def create_or_update_redaction_record(request, instruction):
 
 
 def save_medical_report(request, instruction, amendments_for_record):
-    raw_xml = services.GetMedicalRecord(amendments_for_record.patient_emis_number).call()
+    raw_xml = services.GetMedicalRecord(amendments_for_record.patient_emis_number, gp_organisation=instruction.gp_practice).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     gp_name = amendments_for_record.get_gp_name()
     relations = '|'.join(relation.name for relation in ReferencePhrases.objects.all())

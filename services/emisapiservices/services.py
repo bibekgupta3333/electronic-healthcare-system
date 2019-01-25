@@ -3,6 +3,7 @@ import urllib
 import requests
 
 from ..models import EmisAPIConfig
+from organisations.models import OrganisationGeneralPractice
 from accounts.models import Patient
 
 
@@ -39,8 +40,8 @@ class EmisAPIServiceBase:
 
 
 class GetAttachment(EmisAPIServiceBase):
-    def __init__(self, patient_number: str, attachment_identifier: str):
-        super().__init__()
+    def __init__(self, patient_number: str, attachment_identifier: str, gp_organisation: OrganisationGeneralPractice):
+        super().__init__(gp_organisation)
         self.patient_number = patient_number
         self.attachment_identifier = attachment_identifier
 
@@ -54,8 +55,8 @@ class GetAttachment(EmisAPIServiceBase):
 
 
 class GetPatientList(EmisAPIServiceBase):
-    def __init__(self, patient: Patient):
-        super().__init__()
+    def __init__(self, patient: Patient, gp_organisation: OrganisationGeneralPractice):
+        super().__init__(gp_organisation)
         self.patient = patient
 
     def search_term(self) -> str:
@@ -77,8 +78,8 @@ class GetPatientList(EmisAPIServiceBase):
 
 
 class GetMedicalRecord(EmisAPIServiceBase):
-    def __init__(self, patient_number: str):
-        super().__init__()
+    def __init__(self, patient_number: str,  gp_organisation: OrganisationGeneralPractice):
+        super().__init__(gp_organisation)
         self.patient_number = patient_number
 
     def uri(self) -> str:
