@@ -5,6 +5,7 @@ from accounts import models as accounts_models
 from organisations.models import OrganisationGeneralPractice
 from common.fields import MyChoiceField
 
+import datetime
 
 class SurgeryForm(forms.Form):
     GP_OP_SYS_CHOICES = (
@@ -65,12 +66,14 @@ class SurgeryForm(forms.Form):
         return operating_system
 
     def save(self):
+        live_timechecked = datetime.datetime.now() if self.data.get('consented') == 'on' else None
         accept_policy = True if self.data.get('accept_policy') == 'on' else False
         gp_organisation = OrganisationGeneralPractice.objects.update_or_create(
             practcode=self.cleaned_data.get('practice_code'),
             defaults={
                 'name': self.cleaned_data.get('surgery_name'),
                 'accept_policy': accept_policy,
+                'live_timechecked': live_timechecked,
                 'billing_address_street': self.cleaned_data.get('address_line1'),
                 'billing_address_line_2': self.cleaned_data.get('address_line2'),
                 'billing_address_line_3': self.cleaned_data.get('address_line3'),

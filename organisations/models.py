@@ -130,6 +130,7 @@ class OrganisationGeneralPractice(models.Model):
     onboarding_job_title = models.CharField(max_length=255, blank=True)
     accept_policy = models.BooleanField(default=False)
     live = models.BooleanField(default=False)
+    live_timechecked = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = 'Organisation GeneralPractice'
