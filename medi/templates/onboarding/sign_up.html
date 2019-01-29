@@ -332,6 +332,9 @@
                 }else{
                   status = status + 1;
                 }
+                if($('.invalid-feedback').length){
+                    status = 1;
+                }
                 $("#validate-pass").addClass(pass_type[status]);
                 $("#validate-pass p").addClass(pass_type[status]);
                 $("#validate-pass p").text(pass_type[status]);
@@ -438,7 +441,7 @@
                }
             });
 
-            $('#id_password1').change(function() {
+            $('#id_password1').keyup(function() {
                 $.ajax({
                     url: "{% url 'accounts:verify_password' %}",
                     type: "POST",
