@@ -66,6 +66,7 @@ class OnboardingSignUPTest(TestCase):
 
     def setUp(self):
         self.gp_practitioner_info = {
+            'title': 'DR',
             'first_name': 'Sarah',
             'surname': 'Giles',
             'email': 'sarah@gmail.com',
@@ -86,6 +87,7 @@ class OnboardingSignUPTest(TestCase):
         }
 
         self.gp_practitioner_info_2 = {
+            'title': 'DR',
             'first_name': 'Alan',
             'surname': 'Chatterly',
             'email': 'alan@gmail.com',
@@ -122,6 +124,7 @@ class OnboardingSignUPTest(TestCase):
             'contact_num': self.gp_practice_info['contact_num'],
             'emis_org_code': self.gp_practice_info['emis_org_code'],
             'operating_system': self.gp_practice_info['operating_system'],
+            'title': self.gp_practitioner_info['title'],
             'first_name': self.gp_practitioner_info['first_name'],
             'surname': self.gp_practitioner_info['surname'],
             'email1': self.gp_practitioner_info['email'],
@@ -154,6 +157,7 @@ class OnboardingSignUPTest(TestCase):
             'contact_num': self.gp_practice_info_2['contact_num'],
             'emis_org_code': self.gp_practice_info_2['emis_org_code'],
             'operating_system': self.gp_practice_info_2['operating_system'],
+            'title': self.gp_practitioner_info_2['title'],
             'first_name': self.gp_practitioner_info_2['first_name'],
             'surname': self.gp_practitioner_info_2['surname'],
             'email1': self.gp_practitioner_info_2['email'],
