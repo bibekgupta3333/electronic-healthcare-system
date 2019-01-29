@@ -7,7 +7,6 @@ from permissions.templatetags.get_permissions import view_complete_report
 
 
 class InstructionTable(tables.Table):
-    checkbox = tables.CheckBoxColumn(attrs={'id': 'check_all'})
     patient_information = tables.Column()
     created = tables.DateTimeColumn(format='D j M Y')
     status = tables.Column()
@@ -19,7 +18,7 @@ class InstructionTable(tables.Table):
             'id': 'instructionsTable'
         }
         model = Instruction
-        fields = ('checkbox', 'client_user', 'gp_practice', 'type', 'patient_information', 'gp_user', 'cost', 'created', 'status')
+        fields = ('client_user', 'gp_practice', 'type', 'patient_information', 'gp_user', 'cost', 'created', 'status')
         template_name = 'django_tables2/semantic.html'
         row_attrs = {
             'data-id': lambda record: record.pk

@@ -20,7 +20,7 @@
             {% patient_info %}
         </div>
         {% if instruction.type == 'SARS' %}
-            <h1>Provisional Record Contents</h1>
+            <h1>Provisional copy of patient record</h1>
         {% else %}
             <h1>Provisional Report Contents</h1>
         {% endif %}
@@ -79,25 +79,47 @@
                 </div>
                 <div class="col-md-12 finalise-submit">
                     <div class="col-md-12">
-                        <label style="margin-top: 15px"> I confirm that : </label>
-                        <ul>
-                            <li>this medical report relates to the correct patient (“Patient”);</li>
-                            <li>
-                                this medical report is an accurate reflection of the information contained in the electronic medical record of the Patient 
-                                at the date this medical report is submitted; the contents of this medical report are limited solely to the information 
-                                which relates to the requested conditions for the Patient, as listed in “Patient Info”;
-                            </li>
-                            <li>
-                                I have not willingly redacted, without good reason, 
-                                any information from the electronic medical record of the Patient which should be included in the medical report being submitted; 
-                                and
-                            </li>
-                            <li>
-                                I have reviewed the medical report and it does not contain reference to third parties or any Sensitive Conditions of the Patient. 
-                                I acknowledge that the “Sensitive Conditions” are those conditions listed in the following link 
-                                <a target="_blank" href="https://isd.digital.nhs.uk/trud3/user/guest/group/0/pack/9/subpack/141/releases"> here.</a>
-                            </li>
-                        </ul>
+                        {% if instruction.type == 'SARS' %}
+                            <label style="margin-top: 15px"> I confirm that : </label>
+                            <ul>
+                                <li>this medical report relates to the correct patient (“Patient”)</li>
+                                <li>
+                                    this medical report is an accurate reflection of the information contained in the electronic medical record of the Patient 
+                                    at the date this medical report is submitted; the contents of this medical report are limited solely to the information 
+                                    which relates to the requested conditions for the Patient, as listed in “Patient Info”;
+                                </li>
+                                <li>
+                                    I have not willingly redacted, without good reason, 
+                                    any information from the electronic medical record of the Patient which should be included in the medical report being submitted; 
+                                    and
+                                </li>
+                                <li>
+                                    I have reviewed the medical report and it does not contain reference to third parties or any Sensitive Conditions of the Patient. 
+                                    I acknowledge that the “Sensitive Conditions” are those conditions listed in the following link 
+                                    <a target="_blank" href="https://isd.digital.nhs.uk/trud3/user/guest/group/0/pack/9/subpack/141/releases"> here.</a>
+                                </li>
+                            </ul>
+                        {% else %}
+                            <label style="margin-top: 15px"> I confirm that : </label>
+                            <ul>
+                                <li>this medical record relates to the correct patient ("Patient")</li>
+                                <li>
+                                    this medical record is an accurate reflection of the information contained in the electronic medical record of the Patient at the date this medical record is submitted
+                                </li>
+                                <li>
+                                    If appropriate, our confidentiality policies have been applied to producing a copy of this medical record
+                                </li>
+                                <li>
+                                    I have not willingly redacted, without good reason, 
+                                    any information from the electronic medical record of the Patient which should be included in the medical record being submitted: and
+                                </li>
+                                <li>
+                                    I have reviewed the medical record and it does not contain reference to third parties or any Sensitive Conditions of the Patient. 
+                                    I acknowledge that the ‘Sensitive Conditions’ are those listed in the following link 
+                                    <a target="_blank" href="https://isd.digital.nhs.uk/trud3/user/guest/group/0/pack/9/subpack/141/releases"> here.</a>
+                                </li>
+                            </ul>
+                        {% endif %}
                     </div>
                     <hr width="80%">
                     <div class="col-12">&nbsp;</div>
@@ -127,7 +149,7 @@
                                         </div>
                                     </div>
                                     <a href="{% url 'medicalreport:final_report' instruction.id %}" class="btn btn-info" target="_blank">
-                                        VIEW REPORT
+                                        VIEW DRAFT
                                     </a>
                                     <button type="button" id="saveDraftButton" onclick="subMitMedicalReport('draft')" class="btn btn-primary"><i class="fas fa-save"></i> SAVE DRAFT</button>
                                     {% if request.user.id|sign_off_report:instruction.id %}
@@ -135,7 +157,7 @@
                                     {% endif %}
                                     <div class="row">
                                         <div class="col-md-9 offset-3 p-0">
-                                            <p id="last-warning">You will not be able to amend this report once submitted</p>
+                                            <p id="last-warning">You will not be able to make any amends once submitted.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -149,8 +171,8 @@
                                     <div class="modal-body">
                                         <div class="container">
                                             <div class="col-12 text-center">
-                                                <h5><strong>Are you sure you wish to submit the report ?</strong></h5>
-                                                <label>Once submitted the report cannot be edited</label>
+                                                <h5><strong>Are you sure you wish to submit ?</strong></h5>
+                                                <label>Once submitted you will not be able to make any amendments. </label>
                                             </div>
                                             <div class="col-12">&nbsp;</div>
                                             <div class="row">
