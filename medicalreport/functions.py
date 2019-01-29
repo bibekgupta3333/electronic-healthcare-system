@@ -237,7 +237,7 @@ def delete_additional_allergies_records(request):
 
 
 def send_patient_mail(request, instruction,  unique_url):
-    report_link = request.scheme + '://' + request.get_host() + '/report/' + str(instruction.pk) + '/' + unique_url
+    report_link = request.scheme + '://' + request.get_host() + '/report/' + str(instruction.pk) + '/patient/' + unique_url
     send_mail(
         'Notification from your GP surgery',
         '',
