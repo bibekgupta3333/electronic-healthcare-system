@@ -1,10 +1,14 @@
+{% extends 'base.html' %}
 {% load static %}
 {% load medi_report_tags %}
 {% load bootstrap4 %}
 {% bootstrap_css %}
 
-<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+{% block ExtraHead %}
+    <link rel="stylesheet" href="{% static 'css/intlTelInput.min.css' %}">
+{% endblock %}
 
+{% block PageContent %}
 <div class="container">
     <div class="row mt-4">
         <div class="col-md-12">
@@ -67,6 +71,7 @@
                                 <div class="row">
                                     <div class="col-md-5 title-pos">Family Phone Number </div>
                                     {% bootstrap_field third_party_form.family_phone_number show_label=False form_group_class='col-md-6' placeholder='' %}
+                                    {% bootstrap_field third_party_form.family_phone_number_code %}
                                 </div>
                             </div>
                         </div>
@@ -75,12 +80,13 @@
                                 <div class="row">
                                     <div class="col-md-5 title-pos">Office Phone number </div>
                                     {% bootstrap_field third_party_form.office_phone_number show_label=False form_group_class='col-md-6' placeholder='' %}
+                                    {% bootstrap_field third_party_form.office_phone_number_code %}
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-2">
-                                <a href="{% url 'report:select-report' %}" class="btn btn-primary w-100"><i class="fas fa-chevron-left mr-2"></i>Go back</a>
+                                <a href="{% url 'report:select-report' access_type='patient' %}" class="btn btn-primary w-100"><i class="fas fa-chevron-left mr-2"></i>Go back</a>
                             </div>
                             <div class="col-md-2 w-50">
                                 <input type="submit" value="Authorise" class="btn btn-outline-primary w-100">
@@ -92,3 +98,13 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block Script %}
+    <script src="{% static 'js/intlTelInput.min.js' %}"></script>
+    <script src="{% static 'js/intlTel.js' %}"></script>
+    <script>
+        setUpTel("id_family_phone_number", "id_family_phone_number_code");
+        setUpTel("id_office_phone_number", "id_office_phone_number_code");
+    </script>
+{% endblock %}

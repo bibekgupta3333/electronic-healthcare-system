@@ -89,7 +89,7 @@ def aes_with_salt_decryption(encrypted_with_salt: str, initial_vector: str) -> s
             logger.error("Key incorrect or message corrupted")
 
 
-def get_url_page(page: str, obj_id: int = None) -> str:
+def get_url_page(page: str, obj_id: int = None, request=None) -> str:
     """
         get url page following by this list:
             - 'home'
@@ -101,7 +101,7 @@ def get_url_page(page: str, obj_id: int = None) -> str:
     from django.contrib.sites.models import Site  # prevent load module before Secret had set in common setting
 
     try:
-        domain_name = Site.objects.get_current().domain
+        domain_name = Site.objects.get_current(request).domain
     except:
         domain_name = 'localhost'
 

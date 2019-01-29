@@ -5,17 +5,24 @@
 {% bootstrap_css %}
 {% bootstrap_javascript jquery='full' %}
 
+{% block ExtraHead %}
+    <link href="{% static 'css/sign-in.css' %}" rel="stylesheet">
+{% endblock %}
+
 <div class="container">
     <div class="row">
-       <div class="col-sm-2 mt-3">
-            <img src="{% static "images/eMR_logo.png" %}" width="100%">
+        <div class="col-sm-3 mt-3">
+            <img class=" mb-3 w-100 medi-logo" src="{% static 'images/logo/eMR_med.png' %}">
         </div>
 
         <div class="col-sm-12 mt-3">
 
             <p>Hi {{ name }}, thank you for using eMR from MediData Exchange to obtain your report.</p>
             <p>In order to access the report, we require to confirm your identity.</p>
-            <p>We just sent a 6 digit access code by text to: {{ number }}</p>
+            <p>We just sent a 6 digit access code by text to: {{ number_1 }}</p>
+            {% if number_2 %}
+                <p>We just sent a 6 digit access code by voice to: {{ number_2 }}</p>
+            {% endif %}
             <p>It may take a few minutes to arrive.</p>
             {#todo set input field reuired #JS#}
             <form id="access_code_form" method="post">

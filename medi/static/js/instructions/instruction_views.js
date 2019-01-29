@@ -12,7 +12,7 @@ inst_statusDict["Paid"] = 4;
 gpuser_roleDict["All"] = -1;
 gpuser_roleDict["Manager"] = 0;
 gpuser_roleDict["GP"] = 1;
-gpuser_roleDict["Practice Staff"] = 2;
+gpuser_roleDict["Other Practice Staff"] = 2;
 
 clientuser_roleDict["All"] = -1;
 clientuser_roleDict["Admin"] = 0;

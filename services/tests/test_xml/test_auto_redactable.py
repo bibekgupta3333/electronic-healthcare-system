@@ -13,6 +13,7 @@ from services.xml.referral import Referral
 from services.xml.value_event import ValueEvent
 
 from instructions.models import Instruction, InstructionConditionsOfInterest
+from instructions import model_choices
 from snomedct.models import SnomedConcept, ReadCode
 
 from model_mommy import mommy
@@ -30,7 +31,7 @@ class AutoRedactableTest(XMLTestCase):
                 date_range_from=date(2016, 1, 1),
                 date_range_to=date(2016, 12, 10)
         )
-        self.instruction = mommy.make(Instruction)
+        self.instruction = mommy.make(Instruction, type=model_choices.SARS_TYPE)
         snomed_ct_1 = mommy.make(
             SnomedConcept, external_id=90332006)
         snomed_ct_2 = mommy.make(

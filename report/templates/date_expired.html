@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load medi_report_tags %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+
+{% block ExtraHead %}
+    <link rel="stylesheet" href="{% static 'css/intlTelInput.min.css' %}">
+{% endblock %}
+
+
+{% block PageContent %}
+    <div class="container" style="font-size: 18px">
+        <div class="row">
+            <div class="col-sm-3 mt-3">
+                <img class=" mb-3 w-100 medi-logo" src="{% static 'images/logo/eMR_med.png' %}">
+            </div>
+
+            <div class="col-sm-12 mt-3">
+                <p>Unfortunately, your medical report authorisation has expired</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block Script %}
+{% endblock %}

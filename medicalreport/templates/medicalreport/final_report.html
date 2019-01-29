@@ -20,7 +20,11 @@
                     <div class="row">
                         <div class="col-md-3 files">
                             <ul class="report-attachment">
-                                <li id="report-0" class="medical-report reports active" onclick="renderReport(this)"><i class="fas fa-file"></i> Medical Report</li>
+                                {% if instruction.type == 'SARS' %}
+                                    <li id="report-0" class="medical-report reports active" onclick="renderReport(this)"><i class="fas fa-file"></i> Medical Record</li>
+                                {% else %}
+                                    <li id="report-0" class="medical-report reports active" onclick="renderReport(this)"><i class="fas fa-file"></i> Medical Report</li>
+                                {% endif %}
                                 {% for attachment in attachments %}
                                     {% with header=attachment.parsed_date|format_date_filter|add:" - "|add:attachment.description %}
                                         {% with attachment|get_redaction:redaction as redacted %}

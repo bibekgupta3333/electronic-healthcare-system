@@ -71,7 +71,7 @@ class MedicalReport:
 
 class AttachmentReport:
     def __init__(self, instruction: object, path_file: str):
-        self.raw_xml = services.GetAttachment(instruction.patient.emis_number,path_file).call()
+        self.raw_xml = services.GetAttachment(instruction.patient.emis_number, path_file, gp_organisation=instruction.gp_practice).call()
         self.file_name = Base64Attachment(self.raw_xml).filename()
         self.file_type = self.file_name.split('.')[-1]
 

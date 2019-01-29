@@ -19,7 +19,7 @@
             <div class="col-md-3">
                 {% if request.user.type == 'GP' %}
                     {% if perms.instructions.create_sars %}
-                        <a href="{% url 'instructions:new_instruction' %}" class="btn btn-primary" id="addInstructionButton">New SARS Instruction</a>
+                        <a href="{% url 'instructions:new_instruction' %}" class="btn btn-primary" id="addInstructionButton">New SARs Instruction</a>
                     {% endif %}
                 {% else %}
                     <a href="{% url 'instructions:new_instruction' %}" class="btn btn-primary" id="addInstructionButton">New Instruction</a>

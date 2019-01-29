@@ -117,7 +117,7 @@ def create_or_update_redaction_record(request, instruction):
 
 
 def save_medical_report(request, instruction, amendments_for_record):
-    raw_xml = services.GetMedicalRecord(amendments_for_record.patient_emis_number).call()
+    raw_xml = services.GetMedicalRecord(amendments_for_record.patient_emis_number, gp_organisation=instruction.gp_practice).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     gp_name = amendments_for_record.get_gp_name()
     relations = '|'.join(relation.name for relation in ReferencePhrases.objects.all())
@@ -237,20 +237,19 @@ def delete_additional_allergies_records(request):
 
 
 def send_patient_mail(request, instruction,  unique_url):
-    link = request.get_host() + '/report/' + str(instruction.pk) + '/' + unique_url
+    report_link = request.scheme + '://' + request.get_host() + '/report/' + str(instruction.pk) + '/patient/' + unique_url
     send_mail(
-        'Medidata eMR: Your medical report is ready',
-        'Your instruction has been submitted',
+        'Notification from your GP surgery',
+        '',
         'MediData',
         [instruction.patient_information.patient_email],
         fail_silently=True,
-        html_message=loader.render_to_string('medicalreport/patient_email.html',
-                                             {
-                                                 'name': instruction.patient.user.first_name,
-                                                 'gp': instruction.gp_practice,
-                                                 'link': link
-                                             }
-                                             ))
+        html_message=loader.render_to_string('medicalreport/patient_email.html', {
+            'surgery_name': instruction.gp_practice,
+            'report_link': report_link
+        })
+    )
+
 
 def send_surgery_email(instruction):
     send_mail(
@@ -265,6 +264,7 @@ def send_surgery_email(instruction):
                                                  'gp': instruction.gp_user.user.first_name,
                                              }
                                              ))
+
 
 def create_patient_report(request, instruction):
     unique_url = uuid.uuid4().hex

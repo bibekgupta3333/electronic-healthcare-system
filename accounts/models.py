@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractUser, Permission, Group
+from django.template import loader
 from django.utils.translation import gettext_lazy as _
 from permissions.model_choices import MANAGER_PERMISSIONS, GP_PERMISSIONS,\
         OTHER_PERMISSIONS, CLIENT_PERMISSIONS, MEDI_PERMISSIONS, ADMIN_PERMISSIONS
@@ -300,12 +301,17 @@ class GeneralPracticeUser(UserProfileBase):
 
     def sending_surgery_email(self):
         if self.organisation and self.organisation.organisation_email:
+            html_message = loader.render_to_string('accounts/email_message_new_user.html', {
+                'name': self.user.get_full_name(),
+                'role': self.get_role_display()
+            })
             send_mail(
-                'New user',
-                'You have a new user. %s %s'%(self.user.get_full_name(), self.get_role_display()),
+                'eMR New user',
+                '',
                 'MediData',
                 [self.organisation.organisation_email],
                 fail_silently=True,
+                html_message=html_message,
             )
 
     def update_permission(self):

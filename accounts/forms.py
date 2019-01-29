@@ -93,6 +93,7 @@ class GPForm(forms.Form):
 
 
 class PMForm(forms.ModelForm):
+    title = forms.ChoiceField(choices=TITLE_CHOICE, required=True)
     first_name = forms.CharField(max_length=255, required=True, label='')
     surname = forms.CharField(max_length=255, required=True, label='')
     email1 = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), label='', required=True)
@@ -150,7 +151,8 @@ class PMForm(forms.ModelForm):
             'user': gp_manager_user,
             'role': GeneralPracticeUser.PRACTICE_MANAGER,
             'telephone_mobile': self.cleaned_data.get('telephone_mobile'),
-            'telephone_code': self.cleaned_data.get('telephone_code')
+            'telephone_code': self.cleaned_data.get('telephone_code'),
+            'title': self.cleaned_data.get('title')
         }
         if gp_organisation:
             gp_user_data['organisation'] = gp_organisation
