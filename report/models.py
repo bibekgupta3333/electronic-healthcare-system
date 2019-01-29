@@ -1,17 +1,19 @@
 from django.db import models
 from common.models import TimeStampedModel
 from accounts.models import Patient
-from django.contrib.auth.forms import UserCreationForm
 
 
 class PatientReportAuth(TimeStampedModel):
+    ACCESS_TYPE_PATIENT = 'patient'
+    ACCESS_TYPE_THIRD_PARTY = 'third-party'
+
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     instruction = models.ForeignKey('instructions.Instruction', on_delete=models.CASCADE)
     count = models.IntegerField(default=0)
     mobi_request_id = models.CharField(max_length=255, blank=True)
+    locked_report = models.BooleanField(default=False)
     verify_pin = models.CharField(max_length=6, blank=True)
     url = models.CharField(max_length=256)
-    locked_report = models.BooleanField(default=False)
 
     def __str__(self):
         return '%s : %s'%(self.instruction.__str__(), self.patient.__str__())
@@ -22,12 +24,35 @@ class ThirdPartyAuthorisation(TimeStampedModel):
     company = models.CharField(max_length=255)
     contact_name = models.CharField(max_length=255)
     case_reference = models.CharField(max_length=255, blank=True)
+    mobi_request_id = models.CharField(max_length=255, blank=True)
+    mobi_request_voice_id = models.CharField(max_length=255, blank=True)
+    count = models.IntegerField(default=0)
+    locked_report = models.BooleanField(default=False)
+    verify_sms_pin = models.CharField(max_length=6, blank=True)
+    verify_voice_pin = models.CharField(max_length=6, blank=True)
     email = models.EmailField()
+    family_phone_number_code = models.CharField(max_length=5, blank=True)
     family_phone_number = models.CharField(max_length=20)
+    office_phone_number_code = models.CharField(max_length=5, blank=True)
     office_phone_number = models.CharField(max_length=20)
-    expired = models.DateField(null=True)
+    expired_date = models.DateField(null=True)
+    expired = models.BooleanField(default=False)
+    unique = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return self.company
+
+    def get_family_phone_e164(self):
+        phone = self.get_phone_without_zero(self.family_phone_number)
+        return "+{phone_code}{phone_number}".format(phone_code=self.family_phone_number_code, phone_number=phone)
+
+    def get_office_phone_e164(self):
+        phone = self.get_phone_without_zero(self.office_phone_number)
+        return "+{phone_code}{phone_number}".format(phone_code=self.office_phone_number_code, phone_number=phone)
+
+    def get_phone_without_zero(self, phone):
+        if phone and phone[0] == '0':
+            phone = phone[1:]
+        return phone
 
 

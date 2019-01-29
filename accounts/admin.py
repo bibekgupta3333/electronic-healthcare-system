@@ -151,5 +151,9 @@ class UserAdmin(BaseUserAdmin):
         return redirect('/admin/accounts/user/')
 
 
+class PatientAdmin(admin.ModelAdmin):
+    raw_id_fields = ('organisation_gp',)
+
+
 admin.site.register(User, UserAdmin)
-admin.site.register(Patient)
+admin.site.register(Patient, PatientAdmin)

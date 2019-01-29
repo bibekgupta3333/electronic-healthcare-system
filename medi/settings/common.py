@@ -199,6 +199,7 @@ DATE_INPUT_FORMATS = [
 
 CRONJOBS = [
     ('0 0 * * *', 'instructions.cron.notification_mail.instruction_notification_email_job'),
+    ('0 0 * * *', 'report.cron.notification_mail.report_notification_expired_authorisation_job'),
     ('0 11,16 * * *', 'instructions.cron.notification_mail.send_email_to_practice_job'),
 ]
 

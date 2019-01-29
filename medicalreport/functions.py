@@ -250,6 +250,7 @@ def send_patient_mail(request, instruction,  unique_url):
         })
     )
 
+
 def send_surgery_email(instruction):
     send_mail(
         'Medidata eMR: Your medical report is ready',
@@ -263,6 +264,7 @@ def send_surgery_email(instruction):
                                                  'gp': instruction.gp_user.user.first_name,
                                              }
                                              ))
+
 
 def create_patient_report(request, instruction):
     unique_url = uuid.uuid4().hex
