@@ -276,10 +276,10 @@ class OnboardingEmrSetUpFinal(OnboardingBaseTest):
                 'bank_account_name': '',
                 'bank_account_number': '',
                 'bank_account_sort_code': '',
-                'received_within_3_days': '60.0',
-                'received_within_4_to_6_days': '51.00',
-                'received_within_7_to_10_days': '43.35',
-                'received_after_10_days': '36.85',
+                'received_within_5_days': '60.0',
+                'received_within_6_to_10_days': '51.00',
+                'received_within_11_to_15_days': '43.35',
+                'received_after_15_days': '36.85',
             }
         )
         self.assertEqual(response.status_code, 200)

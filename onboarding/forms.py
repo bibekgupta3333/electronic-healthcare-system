@@ -151,19 +151,19 @@ class BankDetailsEmrSetUpStage2Form(forms.Form):
     bank_account_name = forms.CharField(max_length=255, label='', required=False)
     bank_account_number = forms.CharField(max_length=50, label='', required=False)
     bank_account_sort_code = forms.CharField(max_length=50, label='', required=False)
-    received_within_3_days = forms.DecimalField(
+    received_within_5_days = forms.DecimalField(
         initial=60.00, max_value=80, min_value=60, max_digits=4, label='',
         widget=forms.NumberInput(attrs={'id': 'min_fee_payments'})
     )
-    received_within_4_to_6_days = forms.DecimalField(
+    received_within_6_to_10_days = forms.DecimalField(
         initial=level_1_payments, max_digits=4, label='',
         widget=forms.NumberInput(attrs={'id': 'level_1_payments', 'readonly': True})
     )
-    received_within_7_to_10_days = forms.DecimalField(
+    received_within_11_to_15_days = forms.DecimalField(
         initial=level_2_payments, max_digits=4, label='',
         widget=forms.NumberInput(attrs={'id': 'level_2_payments', 'readonly': True})
     )
-    received_after_10_days = forms.DecimalField(
+    received_after_15_days = forms.DecimalField(
         initial=level_3_payments, max_digits=4, label='',
         widget=forms.NumberInput(attrs={'id': 'level_3_payments', 'readonly': True})
     )
@@ -172,9 +172,9 @@ class BankDetailsEmrSetUpStage2Form(forms.Form):
 
     def clean(self):
         super().clean()
-        self.cleaned_data['received_within_3_days'] = round(self.cleaned_data['received_within_3_days'], 2)
-        self.cleaned_data['received_within_4_to_6_days'] = round(self.cleaned_data['received_within_4_to_6_days'], 2)
-        self.cleaned_data['received_within_7_to_10_days'] = round(self.cleaned_data['received_within_7_to_10_days'], 2)
-        self.cleaned_data['received_after_10_days'] = round(self.cleaned_data['received_after_10_days'], 2)
+        self.cleaned_data['received_within_5_days'] = round(self.cleaned_data['received_within_5_days'], 2)
+        self.cleaned_data['received_within_6_to_10_days'] = round(self.cleaned_data['received_within_6_to_10_days'], 2)
+        self.cleaned_data['received_within_11_to_15_days'] = round(self.cleaned_data['received_within_11_to_15_days'], 2)
+        self.cleaned_data['received_after_15_days'] = round(self.cleaned_data['received_after_15_days'], 2)
 
         return self.cleaned_data
