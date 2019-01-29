@@ -101,7 +101,7 @@ def count_gpusers(queryset):
         'All': all_count,
         'Manager': pmanager_count,
         'GP': gp_count,
-        'Practice Staff': sars_count
+        'Other Practice Staff': sars_count
     }
     return overall_users_number
 
