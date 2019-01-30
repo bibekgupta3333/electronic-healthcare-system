@@ -3,6 +3,7 @@ from ..autoredactors.date_redactor import DateRedactor
 from ..autoredactors.conditions_redactor import ConditionsRedactor
 from services.xml.xml_base import XMLModelBase
 from instructions.models import Instruction
+from instructions import model_choices
 
 from dateutil.relativedelta import relativedelta
 from typing import Iterable, List
@@ -43,8 +44,14 @@ def auto_redact_consultations(consultations, instruction, current_date=date.toda
     )
 
 
-def auto_redact_medications (medications, instruction, current_date=date.today()):
-    return auto_redact_by_date(medications, start_date=years_ago(2, current_date), from_date=instruction.date_range_from, to_date=instruction.date_range_to )
+def auto_redact_medications(medications, instruction, current_date=date.today()):
+    if instruction.type == model_choices.SARS_TYPE:
+        return auto_redact_by_date(medications, start_date=years_ago(2, current_date), from_date=instruction.date_range_from, to_date=instruction.date_range_to )
+    else:
+        return auto_redact_by_date(
+            auto_redact_by_conditions(medications, instruction),
+            start_date=years_ago(5, current_date), from_date=instruction.date_range_from, to_date=instruction.date_range_to
+        )
 
 
 def auto_redact_significant_active_problems(significant_active_problems, instruction, current_date=date.today()):

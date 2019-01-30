@@ -14,7 +14,7 @@ class DateRedactor:
     def is_redact(self, model: XMLModelBase) -> bool:
         parsed_date = model.parsed_date()
 
-        if parsed_date and not(self.from_date and self.to_date):
+        if parsed_date and not self.from_date and not self.to_date:
             return not(self.case_start_date(parsed_date))
         elif parsed_date and (self.from_date and self.to_date):
             return not(self.case_date_range(parsed_date) and self.case_start_date(parsed_date))

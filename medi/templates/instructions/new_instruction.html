@@ -10,9 +10,11 @@
     <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/bootstrap-datepicker.min.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/style.css' %}" rel="stylesheet"/>
+    <link rel="stylesheet" href="{% static 'medicalreport/css/medicalreport.css' %}">
     <link href="{% static 'css/instructions/new_instruction.css' %}" rel="stylesheet"/>
     <link rel="stylesheet" href="{% static 'assets/kartik-v-boostrap-fileinput/css/fileinput.css' %}">
     <link rel="stylesheet" href="{% static 'assets/kartik-v-boostrap-fileinput/themes/explorer-fas/theme.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pretty-checkbox.min.css' %}">
     <script src="{% static 'assets/kartik-v-boostrap-fileinput/js/fileinput.js' %}"></script>
     <script src="{% static 'assets/kartik-v-boostrap-fileinput/js/locales/LANG.js' %}"></script>
     <script src="{% static 'assets/kartik-v-boostrap-fileinput/themes/fas/theme.js' %}"></script>
@@ -21,6 +23,31 @@
 {% block Content %}
     <form method="POST" enctype="multipart/form-data" id="newInstructionForm">
         {% csrf_token %}
+        <div class="modal fade" id="form-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content sensitive-information-instructions alert-warning">
+                    <h6>Confidentiality Policies:</h6>
+                    <ul>
+                        <li class="mt-2">
+                            If there is a Confidentiality Policy applied to this patient's clinical record within EMIS Web
+                            and you have the authority to override this, then please do this prior to processing the SAR.
+                        </li>
+                        <li class="mt-2">
+                            If you don’t have the authority within your practice, then pass this SAR to a clinician who
+                            will have the authorisation to override the confidentiality policy and then process the SAR.
+                        </li>
+                    </ul>
+                    <div class="inst_chk mt-3">
+                        <div class="pretty p-default right">
+                            <input type="checkbox" id="warningCheckbox">
+                            <div class="state p-primary">
+                                <label>I understand</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <input type="hidden" id="instruction_id" name="instruction_id" value="{{ instruction_id }}" />
         <div class="card-deck instruction">
             <div class="pr-0 {% if request.user.type == 'CLT' %} col-md-6 {% else %} col-md-12 {% endif %}">
@@ -241,6 +268,9 @@
     <script src="{% static 'js/instructions/new_instruction.js' %}"></script>
     <script>
         $(document).ready(function () {
+            $("#form-modal").modal({
+                backdrop: 'static'
+            });
 
             // Function for hidden field if choose SARS type.
             $("#id_type_2").click( function() {
@@ -638,6 +668,21 @@
                     }
                 })
             });
+        });
+        $("#warningCheckbox").click(function(){
+            if($(this).is(":checked")){
+                setTimeout(function(){
+                    $("#form-modal").modal('hide');
+                }, 600);
+            }
+        });
+
+        $('#id_date_range_from').keydown(function () {
+            return false;
+        });
+
+        $('#id_date_range_to').keydown(function () {
+            return false;
         });
     </script>
 

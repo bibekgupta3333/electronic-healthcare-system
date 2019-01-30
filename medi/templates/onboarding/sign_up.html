@@ -132,14 +132,22 @@
                 <div class="card-header">
                     <div class="row">
                         <div class="col-md-6">
-                            <h5>Create Account</h5>
+                            <h5>Create your eMR Account</h5>
                         </div>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="row form-group">
                         <div class="col-12">
-                            <h6>Please create your account to continue your Surgery Registration</h6>
+                            <h6>Please create your eMR account to continue your Surgery Registration</h6>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4 title-pos">Title <span class="red">*</span></div>
+                                {% bootstrap_field pm_form.title show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
                         </div>
                     </div>
                     <div class="row form-group">
@@ -149,6 +157,8 @@
                                 {% bootstrap_field pm_form.first_name show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
                         </div>
+                    </div>
+                    <div class="row form-group">
                         <div class="col-md-6">
                             <div class="row">
                                 <div class="col-md-4 title-pos">Surname <span class="red">*</span></div>
@@ -322,6 +332,9 @@
                 }else{
                   status = status + 1;
                 }
+                if($('.invalid-feedback').length){
+                    status = 1;
+                }
                 $("#validate-pass").addClass(pass_type[status]);
                 $("#validate-pass p").addClass(pass_type[status]);
                 $("#validate-pass p").text(pass_type[status]);
@@ -428,7 +441,7 @@
                }
             });
 
-            $('#id_password1').change(function() {
+            $('#id_password1').keyup(function() {
                 $.ajax({
                     url: "{% url 'accounts:verify_password' %}",
                     type: "POST",

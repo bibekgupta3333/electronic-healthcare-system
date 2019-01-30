@@ -19,6 +19,7 @@ from .functions import create_or_update_redaction_record, create_patient_report
 from medicalreport.reports import MedicalReport
 from accounts.models import GeneralPracticeUser, User, GENERAL_PRACTICE_USER
 from accounts.functions import create_or_update_patient_user
+from organisations.models import OrganisationGeneralPractice
 from .forms import AllocateInstructionForm
 from permissions.functions import check_permission, check_user_type
 from payment.functions import calculate_instruction_fee
@@ -32,14 +33,14 @@ def view_attachment(request, instruction_id, path_file):
     return attachment_report.render()
 
 
-def get_matched_patient(patient: InstructionPatient) -> List[Registration]:
-    raw_xml = services.GetPatientList(patient).call()
+def get_matched_patient(patient: InstructionPatient, gp_organisation: OrganisationGeneralPractice) -> List[Registration]:
+    raw_xml = services.GetPatientList(patient, gp_organisation=gp_organisation).call()
     patients = PatientList(raw_xml).patients()
     return patients
 
 
-def get_patient_registration(patient_number):
-    raw_xml = services.GetMedicalRecord(patient_number).call()
+def get_patient_registration(patient_number, gp_organisation: OrganisationGeneralPractice):
+    raw_xml = services.GetMedicalRecord(patient_number, gp_organisation=gp_organisation).call()
     patient_registration = MedicalRecord(raw_xml).registration()
     return patient_registration
 
@@ -92,7 +93,7 @@ def select_patient(request, instruction_id, patient_emis_number):
 @check_user_type(GENERAL_PRACTICE_USER)
 def set_patient_emis_number(request, instruction_id):
     instruction = Instruction.objects.get(id=instruction_id)
-    patient_list = get_matched_patient(instruction.patient_information)
+    patient_list = get_matched_patient(instruction.patient_information, gp_organisation=instruction.gp_practice)
     allocate_instruction_form = AllocateInstructionForm(user=request.user, instruction_id=instruction_id)
 
     return render(request, 'medicalreport/patient_emis_number.html', {
@@ -115,7 +116,7 @@ def edit_report(request, instruction_id):
     except AmendmentsForRecord.DoesNotExist:
         return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
 
-    raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
+    raw_xml = services.GetMedicalRecord(redaction.patient_emis_number, gp_organisation=instruction.gp_practice).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     questions = instruction.addition_questions.all()
     initial_prepared_by = request.user.userprofilebase.generalpracticeuser.pk
@@ -180,7 +181,7 @@ def view_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
     if instruction.status != INSTRUCTION_STATUS_COMPLETE:
         redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
-        raw_xml = services.GetMedicalRecord(redaction.patient_emis_number).call()
+        raw_xml = services.GetMedicalRecord(redaction.patient_emis_number, instruction.gp_practice).call()
         medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
         gp_name = redaction.get_gp_name()
         relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
@@ -206,7 +207,7 @@ def final_report(request, instruction_id):
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
     patient_emis_number = instruction.patient.emis_number
-    raw_xml = services.GetMedicalRecord(patient_emis_number).call()
+    raw_xml = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     attachments = medical_record_decorator.attachments
     relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())

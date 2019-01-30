@@ -287,7 +287,7 @@ def new_instruction(request):
                     'New Instruction',
                     'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
                         protocol=request.scheme,
-                        link=PIPELINE_INSTRUCTION_LINK
+                        link=get_url_page('instruction_pipeline', request)
                     ),
                     'MediData',
                     [gp_practice.organisation_email],
@@ -337,7 +337,7 @@ def new_instruction(request):
                 'New Instruction',
                 'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
                     protocol=request.scheme,
-                    link=PIPELINE_INSTRUCTION_LINK
+                    link=get_url_page('instruction_pipeline', request)
                 ),
                 'MediData',
                 medidata_emails_list + gp_emails_list,
@@ -647,7 +647,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
     patient_instruction = instruction.patient_information
     sars_consent_form = SarsConsentForm()
     mdx_consent_form = MdxConsentForm()
-    patient_registration = get_patient_registration(str(patient_emis_number))
+    patient_registration = get_patient_registration(str(patient_emis_number), gp_organisation=instruction.gp_practice)
 
     if request.method == "POST":
         sars_consent_form = SarsConsentForm(request.POST, request.FILES, instance=instruction)

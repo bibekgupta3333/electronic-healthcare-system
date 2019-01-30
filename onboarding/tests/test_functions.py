@@ -16,10 +16,10 @@ class FunctionsOnboardingTest(TestCase):
             'bank_account_name': 'Test Bank account Name',
             'bank_account_number': '11-22-33',
             'bank_account_sort_code': '123456',
-            'received_within_3_days': 60.00,
-            'received_within_4_to_6_days': 51.00,
-            'received_within_7_to_10_days': 45.90,
-            'received_after_10_days': 38.56,
+            'received_within_5_days': 60.00,
+            'received_within_6_to_10_days': 51.00,
+            'received_within_11_to_15_days': 45.90,
+            'received_after_15_days': 38.56,
             'completed_by': 'Completer Man',
             'job_title': 'Tet Job Title'
         })

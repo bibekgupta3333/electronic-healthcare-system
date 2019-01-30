@@ -3,6 +3,7 @@ from django import forms
 from .models import ThirdPartyAuthorisation
 
 import datetime
+import uuid
 
 
 class AccessCodeForm(forms.Form):
@@ -19,7 +20,11 @@ class ThirdPartyAuthorisationForm(forms.ModelForm):
 
     class Meta:
         model = ThirdPartyAuthorisation
-        exclude = ('email', 'patient_report_auth', 'expired')
+        exclude = ('email', 'patient_report_auth', 'count', 'expired_date')
+        widgets = {
+            'family_phone_number_code': forms.HiddenInput(attrs={'placeholder': ''}),
+            'office_phone_number_code': forms.HiddenInput(attrs={'placeholder': ''})
+        }
 
     def clean_email_2(self):
         email_1 = self.cleaned_data.get("email_1")
@@ -35,9 +40,12 @@ class ThirdPartyAuthorisationForm(forms.ModelForm):
         third_party = super().save(commit=False)
         third_party.patient_report_auth = report_auth
         third_party.email = self.cleaned_data['email_2']
-        third_party.expired = datetime.datetime.now().date() + datetime.timedelta(days=30)
+        unique_url = uuid.uuid4().hex
+        third_party.unique = unique_url
+
+        third_party.expired_date = datetime.datetime.now().date() + datetime.timedelta(days=30)
         if third_party.modified:
-            third_party.expired = third_party.modified + datetime.timedelta(days=30)
+            third_party.expired_date = third_party.modified + datetime.timedelta(days=30)
 
         if commit:
             third_party.save()

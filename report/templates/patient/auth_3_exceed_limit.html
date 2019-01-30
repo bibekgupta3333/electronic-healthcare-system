@@ -4,10 +4,14 @@
 {% load get_permissions %}
 {% bootstrap_css %}
 
+{% block ExtraHead %}
+    <link href="{% static 'css/sign-in.css' %}" rel="stylesheet">
+{% endblock %}
+
 <div class="container">
     <div class="row">
-        <div class="col-sm-2 mt-3">
-            <img src="{% static "images/eMR_logo.png" %}" width="100%">
+        <div class="col-sm-3 mt-3">
+            <img class=" mb-3 w-100 medi-logo" src="{% static 'images/logo/eMR_med.png' %}">
         </div>
 
         <div class="col-sm-12 mt-3">

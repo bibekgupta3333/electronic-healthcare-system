@@ -72,10 +72,10 @@ def create_gp_payments_fee(bank_details_form: BankDetailsEmrSetUpStage2Form, gp_
             'max_day_lvl_2': 6,
             'max_day_lvl_3': 10,
             'max_day_lvl_4': 11,
-            'amount_rate_lvl_1': bank_details_form.cleaned_data['received_within_3_days'],
-            'amount_rate_lvl_2': bank_details_form.cleaned_data['received_within_4_to_6_days'],
-            'amount_rate_lvl_3': bank_details_form.cleaned_data['received_within_7_to_10_days'],
-            'amount_rate_lvl_4': bank_details_form.cleaned_data['received_after_10_days'],
+            'amount_rate_lvl_1': bank_details_form.cleaned_data['received_within_5_days'],
+            'amount_rate_lvl_2': bank_details_form.cleaned_data['received_within_6_to_10_days'],
+            'amount_rate_lvl_3': bank_details_form.cleaned_data['received_within_11_to_15_days'],
+            'amount_rate_lvl_4': bank_details_form.cleaned_data['received_after_15_days'],
         }
     )
 
