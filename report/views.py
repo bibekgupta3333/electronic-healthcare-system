@@ -72,13 +72,16 @@ def sar_request_code(request, instruction_id, access_type, url):
 
     return render(request, 'patient/auth_1.html', {
         'name': greeting_name,
-        'message': error_message
+        'message': error_message,
+        'access_type': access_type,
+        'third_party_authorisation': third_party_authorisation,
     })
 
 
 def sar_access_code(request, access_type, url):
     access_code_form = AccessCodeForm()
     error_message = None
+    third_party_authorisation = None
     if url:
         if access_type == PatientReportAuth.ACCESS_TYPE_PATIENT:
             patient_auth = PatientReportAuth.objects.filter(url=url).first()
@@ -87,11 +90,9 @@ def sar_access_code(request, access_type, url):
             instruction = patient_auth.instruction
             patient_phone = instruction.patient_information.get_telephone_e164()
 
-            number_1 = ["*"] * (len(patient_phone) - 2)
-            number_1.append(patient_phone[-2:])
-            number_1 = " ".join(map(str, number_1))
-
-            number_2 = ''
+            number = ["*"] * (len(patient_phone) - 3)
+            number.append(patient_phone[-3:])
+            number = " ".join(map(str, number))
         else:
             third_party_authorisation = get_object_or_404(ThirdPartyAuthorisation, unique=url)
             patient_auth = third_party_authorisation.patient_report_auth
@@ -100,16 +101,16 @@ def sar_access_code(request, access_type, url):
 
             if third_party_authorisation.locked_report:
                 return redirect_auth_limit(request)
-            third_party_family_phone = third_party_authorisation.get_family_phone_e164()
-            third_party_office_phone = third_party_authorisation.get_office_phone_e164()
+            phone_number = ''
+            if third_party_authorisation.office_phone_number:
+                phone_number = third_party_authorisation.get_office_phone_e164()
+            elif third_party_authorisation.family_phone_number:
+                phone_number = third_party_authorisation.get_family_phone_e164()
 
-            number_1 = ["*"] * (len(third_party_family_phone) - 2)
-            number_1.append(third_party_family_phone[-2:])
-            number_1 = " ".join(map(str, number_1))
-
-            number_2 = ["*"] * (len(third_party_office_phone) - 2)
-            number_2.append(third_party_office_phone[-2:])
-            number_2 = " ".join(map(str, number_2))
+            if phone_number:
+                number = ["*"] * (len(phone_number) - 3)
+                number.append(phone_number[-3:])
+                number = " ".join(map(str, number))
 
         if request.method == 'POST':
             third_party_response_sms = None
@@ -123,10 +124,10 @@ def sar_access_code(request, access_type, url):
                         patient_auth.save()
                 else:
                     if third_party_authorisation.family_phone_number:
-                        third_party_response_sms = AuthMobile(number=third_party_family_phone).request()
+                        third_party_response_sms = AuthMobile(number=phone_number).request()
 
                     if third_party_authorisation.office_phone_number:
-                        third_party_response_sms_voice = AuthMobile(number=third_party_office_phone, type='ivr').request()
+                        third_party_response_sms_voice = AuthMobile(number=phone_number, type='ivr').request()
 
                     if third_party_response_sms and third_party_response_sms.status_code == 200:
                         response_results_dict = json.loads(third_party_response_sms.text)
@@ -175,8 +176,9 @@ def sar_access_code(request, access_type, url):
         'form': access_code_form,
         'message': error_message,
         'name': patient_auth.patient.user.first_name,
-        'number_1': str(number_1),
-        'number_2': str(number_2)
+        'number': str(number),
+        'access_type': access_type,
+        'third_party_authorisation': third_party_authorisation,
     })
 
 

@@ -7,34 +7,47 @@
 
 {% block ExtraHead %}
     <link href="{% static 'css/sign-in.css' %}" rel="stylesheet">
+    <link href="{% static 'css/report/patient_report.css' %}" rel="stylesheet">
 {% endblock %}
 
 <div class="container">
     <div class="row">
-        <div class="col-sm-3 mt-3">
-            <img class=" mb-3 w-100 medi-logo" src="{% static 'images/logo/eMR_med.png' %}">
+        <div class="col-sm-3 mt-1">
+            <img class=" mb-3 w-75 medi-logo" src="{% static 'images/logo/eMR_med.png' %}">
         </div>
 
-        <div class="col-sm-12 mt-3">
-
-            <p>Hi {{ name }}, thank you for using eMR from MediData Exchange to obtain your report.</p>
-            <p>In order to access the report, we require to confirm your identity.</p>
-            <p>We just sent a 6 digit access code by text to: {{ number_1 }}</p>
-            {% if number_2 %}
-                <p>We just sent a 6 digit access code by voice to: {{ number_2 }}</p>
+        <div class="col-sm-12 report-messages">
+            {% if access_type == 'patient' %}
+                <p class="mt-2 mb-0">To access your medical records please input the 6 digit security code below from the text sent to your</p>
+                <p>mobile phone: {{ number }}</p>
+            {% elif third_party_authorisation and third_party_authorisation.office_phone_number %}
+                <p class="mt-2 mb-0">To access your client's medical records please input the 6 digit security code below from the automated</p>
+                <p>voice call you received: {{ number }}</p>
+            {% elif third_party_authorisation and third_party_authorisation.family_phone_number %}
+                <p class="mt-2 mb-0">To access the medical records you've been authorised to view, please input the 6 digit</p>
+                <p>security code below from the text sent to your mobile phone: {{ number }}</p>
             {% endif %}
-            <p>It may take a few minutes to arrive.</p>
-            {#todo set input field reuired #JS#}
+
+            {% if third_party_authorisation and third_party_authorisation.office_phone_number %}
+                <p class="mt-4">This call may take a few moments to occur.</p>
+            {% else %}
+                <p class="mt-4">This may take a few moments to arrive.</p>
+            {% endif %}
+
+            <p class="mt-4">If you do not recieve it within a minute or two, please press 'Request New Code'</p>
+
+            <p class="mt-5 font-weight-bold ">Access Code</p>
             <form id="access_code_form" method="post">
                 {% csrf_token %}
-                <div class="input-group mb-3">
-                    {{ form.as_p }}
+                <div class="input-group mb-1">
+                    {% bootstrap_field form.access_code show_label=fasle placeholder='' %}
                 </div>
-                <input id="access_report" type="submit" name='button' value="Access Report" class="btn btn-outline-primary">
-                <input id="request_report" type="submit" name='button' value="Request New Code" class="btn btn-primary">
+                <input id="request_report" type="submit" name='button' value="Request New Code" class="btn btn-requestCode mr-3">
+                <input id="access_report" type="submit" name='button' value="Access Report" class="btn btn-accessCode">
             </form>
 
             <h4>{% if message %} {{ message }} {% endif %}</h4>
+            <p class="mt-4 mb-5">Should you require assistance please make contact at notifyus@medi2data.com</p>
 
         </div>
     </div>

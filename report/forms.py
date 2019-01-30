@@ -13,6 +13,7 @@ class AccessCodeForm(forms.Form):
 class ThirdPartyAuthorisationForm(forms.ModelForm):
     error_messages = {
         'email_mismatch': "The two email fields didn't match.",
+        'phone_number_both_input': "Please enter either office phone or mobile phone only"
     }
 
     email_1 = forms.EmailField()
@@ -35,6 +36,19 @@ class ThirdPartyAuthorisationForm(forms.ModelForm):
                 code='email_mismatch',
             )
         return email_2
+
+    def clean(self):
+        family_phone_number = self.cleaned_data.get("family_phone_number")
+        office_phone_number = self.cleaned_data.get("office_phone_number")
+        if family_phone_number and office_phone_number:
+            raise forms.ValidationError(
+                self.error_messages['phone_number_both_input'],
+            )
+
+        if not family_phone_number and  not office_phone_number:
+            raise forms.ValidationError(
+                self.error_messages['phone_number_both_input'],
+            )
 
     def save(self, report_auth, commit=True):
         third_party = super().save(commit=False)

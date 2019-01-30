@@ -21,7 +21,7 @@ class PatientReportAuth(TimeStampedModel):
 
 class ThirdPartyAuthorisation(TimeStampedModel):
     patient_report_auth = models.ForeignKey(PatientReportAuth, on_delete=models.CASCADE, related_name='third_parties', null=True)
-    company = models.CharField(max_length=255)
+    company = models.CharField(max_length=255, blank=True)
     contact_name = models.CharField(max_length=255)
     case_reference = models.CharField(max_length=255, blank=True)
     mobi_request_id = models.CharField(max_length=255, blank=True)
@@ -32,9 +32,9 @@ class ThirdPartyAuthorisation(TimeStampedModel):
     verify_voice_pin = models.CharField(max_length=6, blank=True)
     email = models.EmailField()
     family_phone_number_code = models.CharField(max_length=5, blank=True)
-    family_phone_number = models.CharField(max_length=20)
+    family_phone_number = models.CharField(max_length=20, blank=True, null=True)
     office_phone_number_code = models.CharField(max_length=5, blank=True)
-    office_phone_number = models.CharField(max_length=20)
+    office_phone_number = models.CharField(max_length=20, blank=True, null=True)
     expired_date = models.DateField(null=True)
     expired = models.BooleanField(default=False)
     unique = models.CharField(max_length=255, blank=True)
