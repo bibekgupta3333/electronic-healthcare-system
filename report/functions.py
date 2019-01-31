@@ -33,7 +33,7 @@ def validate_pin(response, pin,  patient_auth, access_type, third_party_authoris
                 patient_auth.save()
                 return True
             else:
-                patient_auth = patient_auth.count +1
+                patient_auth.count = patient_auth.count + 1
                 if patient_auth.count >= max_input:
                     patient_auth.locked_report = True
                     patient_auth.count = 0

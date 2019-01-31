@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 from postgres_copy import CopyManager
 
 from typing import Set
@@ -99,6 +100,8 @@ class SnomedDescendant(models.Model):
 class CommonSnomedConcepts(models.Model):
     common_name = models.CharField(max_length=255)
     snomed_concept_code = models.ManyToManyField(SnomedConcept)
+    descendant_snomed_id = ArrayField(models.BigIntegerField())
+    descendant_readcodes = ArrayField(models.CharField(max_length=255))
 
     def __str__(self):
         return self.common_name

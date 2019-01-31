@@ -6,6 +6,7 @@
 
 {% block ExtraHead %}
     <link href="{% static 'css/sign-in.css' %}" rel="stylesheet">
+    <link href="{% static 'css/report/patient_report.css' %}" rel="stylesheet">
 {% endblock %}
 
 <div class="container">
@@ -14,11 +15,9 @@
             <img class=" mb-3 w-100 medi-logo" src="{% static 'images/logo/eMR_med.png' %}">
         </div>
 
-        <div class="col-sm-12 mt-3">
-            <p>Hi {{ name }}, thank you for using eMR from MediData Exchange to obtain your report.</p>
-            <p>Unfortunately we have not been able to confirm your identity. Please contact your GP Surgery for</p>
-            <p>alternative ways to obtain your report.</p>
-
+        <div class="col-sm-12 report-messages">
+            <p>Unfortunately we have not been able to confirm your identity. Please contact us at</p>
+            <p>notifyus@medi2data.com to obtain our assistance.</p>
         </div>
     </div>
 </div>
