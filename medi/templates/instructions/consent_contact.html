@@ -180,7 +180,7 @@
         <div class="col-md-12">
             <button class="btn btn-primary btn-lg" id="backButton"><i class="fas fa-chevron-left"></i > Go back</button>
             {% if perms.instructions.process_sars %}
-                <button class="btn btn-success btn-lg" id="proceedBtn">Proceed to Report <i class="fas fa-chevron-right"></i>
+                <button class="btn btn-success btn-lg" id="proceedBtn">Proceed<i class="fas fa-chevron-right"></i>
                 </button>
             {% endif %}
             </button>
@@ -223,7 +223,7 @@
     </div>
     <div id="noSarsConsent" class="well">
         <h4><i class="fas fa-exclamation-triangle"></i>Warning</h4>
-        <p>No SARS Request Consent was attached. Has the patient requested their medical record directly? If not, this consent is required</p>
+        <p>Has the patient requested their medical record directly?</p>
         <button class="rightBtn btn btn-primary mr-1" id="sarsProceed">Proceed</button>
         <button class="noSarsConsent_close rightBtn btn btn-default mr-1">Go back</button>
     </div>
