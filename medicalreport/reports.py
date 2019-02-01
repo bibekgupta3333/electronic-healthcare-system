@@ -10,6 +10,7 @@ import reportlab
 import reportlab.lib.pagesizes as pdf_sizes
 from PIL import Image
 from django.conf import settings
+import subprocess
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -78,6 +79,8 @@ class AttachmentReport:
     def render(self):
         if self.file_type == "pdf":
             return self.render_pdf()
+        elif self.file_type in ["doc", "docx"]:
+            return self.render_doc()
         else:
             return self.render_image()
 
@@ -87,6 +90,22 @@ class AttachmentReport:
         buffer.write(attachment)
         response = HttpResponse(
             buffer.getvalue(),
+            content_type="application/pdf",
+        )
+        return response
+
+    def render_doc(self):
+        attachment = Base64Attachment(self.raw_xml).data()
+        buffer = BytesIO()
+        buffer.write(attachment)
+        folder = BASE_DIR + '/medi/static/generic_pdf/'
+        f = open(folder + 'tmp.doc', 'wb')
+        f.write(buffer.getvalue())
+        f.close()
+        subprocess.call(['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', folder, folder + 'tmp.doc'])
+        pdf = open(folder + 'tmp.pdf', 'rb')
+        response = HttpResponse(
+            pdf,
             content_type="application/pdf",
         )
         return response
