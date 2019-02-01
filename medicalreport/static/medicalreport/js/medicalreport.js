@@ -28,6 +28,10 @@ function subMitMedicalReport(event){
         $('#event_flag').val('draft');
         $('#medicalReportForm').submit();
     }
+    else if(event == "preview"){
+        $('#event_flag').val('preview');
+        $('#medicalReportForm').submit();
+    }
     else if(event == "add-medication"){
         $('#id_prepared_by').removeAttr("required");
         $('#addMedicationButton').prop("disabled", true);

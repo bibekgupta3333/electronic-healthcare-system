@@ -274,7 +274,7 @@ h1 {
 }
 
 .finalise-submit {
-    background-color: gainsboro;
+    background-color: #dcdcdc36;
     background-clip: content-box;
 }
 
@@ -349,6 +349,17 @@ h1 {
 .modal-select-patient {
     color: #797979; !important;
     background-color: white; !important;
+}
+
+.btn-editReportButton {
+    width: 150px;
+    color: #fff;
+    border-color: #386ea0;
+    background-color: #386ea0;
+}
+
+#submitButton {
+    width: 150px;
 }
 
 #overlay {

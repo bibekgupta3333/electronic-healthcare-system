@@ -75,121 +75,28 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-12">
-                    <h2 class="d-flex justify-content-center">Finalise and Submit</h2>
-                </div>
-                <div class="col-md-12 finalise-submit">
-                    <div class="col-md-12">
-                        {% if instruction.type == 'SARS' %}
-                            <label style="margin-top: 15px"> I confirm that : </label>
-                            <ul>
-                                <li>this medical report relates to the correct patient (“Patient”)</li>
-                                <li>
-                                    this medical report is an accurate reflection of the information contained in the electronic medical record of the Patient 
-                                    at the date this medical report is submitted; the contents of this medical report are limited solely to the information 
-                                    which relates to the requested conditions for the Patient, as listed in “Patient Info”;
-                                </li>
-                                <li>
-                                    I have not willingly redacted, without good reason, 
-                                    any information from the electronic medical record of the Patient which should be included in the medical report being submitted; 
-                                    and
-                                </li>
-                                <li>
-                                    I have reviewed the medical report and it does not contain reference to third parties or any Sensitive Conditions of the Patient. 
-                                    I acknowledge that the “Sensitive Conditions” are those conditions listed in the following link 
-                                    <a target="_blank" href="https://isd.digital.nhs.uk/trud3/user/guest/group/0/pack/9/subpack/141/releases"> here.</a>
-                                </li>
-                            </ul>
-                        {% else %}
-                            <label style="margin-top: 15px"> I confirm that : </label>
-                            <ul>
-                                <li>this medical record relates to the correct patient ("Patient")</li>
-                                <li>
-                                    this medical record is an accurate reflection of the information contained in the electronic medical record of the Patient at the date this medical record is submitted
-                                </li>
-                                <li>
-                                    If appropriate, our confidentiality policies have been applied to producing a copy of this medical record
-                                </li>
-                                <li>
-                                    I have not willingly redacted, without good reason, 
-                                    any information from the electronic medical record of the Patient which should be included in the medical record being submitted: and
-                                </li>
-                                <li>
-                                    I have reviewed the medical record and it does not contain reference to third parties or any Sensitive Conditions of the Patient. 
-                                    I acknowledge that the ‘Sensitive Conditions’ are those listed in the following link 
-                                    <a target="_blank" href="https://isd.digital.nhs.uk/trud3/user/guest/group/0/pack/9/subpack/141/releases"> here.</a>
-                                </li>
-                            </ul>
-                        {% endif %}
-                    </div>
-                    <hr width="80%">
-                    <div class="col-12">&nbsp;</div>
-                    <div class="row submit-panel">
-                        <div class="col-md-12">
-                            <div class="row ml-2">
-                                {% if request.user.id|sign_off_report:instruction.id %}
-                                    <div class="col-md-12">
-                                        {% bootstrap_field finalise_submit_form.prepared_and_signed show_label=""%}
-                                        <label class="agreement-checkbox" for="accept_disclaimer" style="font-size: large;">
-                                            <input type="checkbox" id="accept_disclaimer" class="mt-2">
-                                            <span>I accept that MediData Exchange Ltd cannot be held responsible for the content of this report as the data redaction process is approved by me, the Data Controller.</span>
-                                        </label>
-                                    </div>
-                                    {% bootstrap_field finalise_submit_form.prepared_by show_label="" %}
-
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="row offset-md-6">
-                                <div class="col-md-12 ml-5">
-                                    <input type="hidden" name="event_flag" id="event_flag">
+                <div class="col-md-12 bg-white" style="background-clip: content-box">
+                    <div class="row">
+                        <div class="col-md-12 pt-3 pb-2 pr-0 pl-0">
+                            <input type="hidden" name="event_flag" id="event_flag">
+                            <div class="row">
+                                <div class="col-md-6 pl-5">
+                                    <button type="button" id="saveDraftButton" onclick="subMitMedicalReport('draft')"
+                                        class="btn btn-primary w-50"><i class="fas fa-save"></i> Save Draft</button>
                                     <div class="row medicalreport-date">
-                                        <div class="col-md-8 offset-4">
+                                        <div class="col-md-8 pl-0">
                                             last updated: {{ redaction.updated_at }}
                                         </div>
                                     </div>
-                                    <a href="{% url 'medicalreport:final_report' instruction.id %}" class="btn btn-info" target="_blank">
-                                        VIEW DRAFT
-                                    </a>
-                                    <button type="button" id="saveDraftButton" onclick="subMitMedicalReport('draft')" class="btn btn-primary"><i class="fas fa-save"></i> SAVE DRAFT</button>
-                                    {% if request.user.id|sign_off_report:instruction.id %}
-                                        <button type="button" id="submitButton" onclick="subMitMedicalReport('submit')" class="btn btn-primary btn-lg"><i class="fas fa-check"></i> SUBMIT</button>
-                                    {% endif %}
-                                    <div class="row">
-                                        <div class="col-md-9 offset-3 p-0">
-                                            <p id="last-warning">You will not be able to make any amends once submitted.</p>
-                                        </div>
-                                    </div>
+                                </div>
+                                <div class="col-md-6 pr-5">
+                                    <button type="button" id="sabePreviewButton" onclick="subMitMedicalReport('preview')"
+                                            class="btn btn-info w-50 float-right">
+                                        Preview and Submit &nbsp;<i class="fas fa-chevron-right"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Modal for confirm before submit. -->
-                        <div class="modal fade" id="confirmSubmitModal" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog" role="document">
-                                <div class="modal-content">
-                                    <div class="modal-body">
-                                        <div class="container">
-                                            <div class="col-12 text-center">
-                                                <h5><strong>Are you sure you wish to submit ?</strong></h5>
-                                                <label>Once submitted you will not be able to make any amendments. </label>
-                                            </div>
-                                            <div class="col-12">&nbsp;</div>
-                                            <div class="row">
-                                                <div class="col-6">
-                                                    <button type="button" class="btn btn-primary btn-block" id="submitConfirmButton" onclick="submitConfirmReport('confirm')">Proceed</button>
-                                                </div>
-                                                <div class="col-6">
-                                                    <button type="button" class="btn btn-secondary btn-block" data-dismiss="modal">Go Back</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
             </div>
