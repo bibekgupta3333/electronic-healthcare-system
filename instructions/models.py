@@ -90,6 +90,7 @@ class Instruction(TimeStampedModel, models.Model):
     sars_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
     mdx_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
     medical_report = models.FileField(upload_to='medical_reports', null=True, blank=True)
+    medical_xml_report = models.FileField(upload_to='medical_xml_reports', null=True, blank=True)
     saved = models.BooleanField(default=False)
     medi_ref = models.IntegerField(null=True, blank=True)
     your_ref = models.CharField(max_length=80, null=True, blank=True)

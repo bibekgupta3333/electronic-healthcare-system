@@ -6,9 +6,11 @@ from django.core.mail import send_mail
 from django.template import loader
 from django.utils.html import format_html
 from django.utils import timezone
+from django.core.files.base import ContentFile
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from snomedct.models import SnomedConcept
 from services.emisapiservices import services
+from services.xml.xml_utils import redaction_elements, lxml_to_string
 from instructions import models
 from .forms import MedicalReportFinaliseSubmitForm
 from .models import AdditionalMedicationRecords, AdditionalAllergies, AmendmentsForRecord,\
@@ -121,6 +123,8 @@ def save_medical_report(request, instruction, amendments_for_record):
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
     gp_name = amendments_for_record.get_gp_name()
     relations = '|'.join(relation.name for relation in ReferencePhrases.objects.all())
+    parse_xml = redaction_elements(raw_xml, amendments_for_record.redacted_xpaths)
+    str_xml = lxml_to_string(parse_xml)
     params = {
         'medical_record': medical_record_decorator,
         'relations': relations,
@@ -128,7 +132,9 @@ def save_medical_report(request, instruction, amendments_for_record):
         'instruction': instruction,
         'gp_name': gp_name,
     }
-    instruction.medical_report.save('report_%s.pdf'%uuid.uuid4().hex,MedicalReport.get_pdf_file(params))
+    uuid_hex = uuid.uuid4().hex
+    instruction.medical_report.save('report_%s.pdf'%uuid_hex, MedicalReport.get_pdf_file(params))
+    instruction.medical_xml_report.save('xml_report_%s.xml'%uuid_hex, ContentFile(str_xml))
 
 
 def get_redaction_xpaths(request, amendments_for_record):
@@ -271,3 +277,5 @@ def create_patient_report(request, instruction):
     PatientReportAuth.objects.create(patient_id=instruction.patient_id, instruction=instruction, url=unique_url)
     send_patient_mail(request, instruction, unique_url)
     send_surgery_email(instruction)
+
+

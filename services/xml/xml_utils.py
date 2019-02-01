@@ -22,6 +22,10 @@ def redaction_elements(xml_data, remove_xpaths):
     return xml
 
 
+def lxml_to_string(lxml):
+    return etree.tostring(lxml,pretty_print=True)
+
+
 def chronological_redactable_elements(elements):
     return sorted(elements, key=lambda x: x.parsed_date(), reverse=True)
 
