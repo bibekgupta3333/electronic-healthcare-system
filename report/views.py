@@ -4,6 +4,7 @@ from django.core.mail import send_mail
 from django.shortcuts import reverse
 from django.db.models import Q
 from django.contrib import messages
+from django.template import loader
 
 from instructions.models import Instruction
 from .models import PatientReportAuth, ThirdPartyAuthorisation
@@ -250,21 +251,31 @@ def add_third_party_authorisation(request, report_auth_id):
         third_party_form = ThirdPartyAuthorisationForm(request.POST)
         if third_party_form.is_valid():
             third_party_authorisation = third_party_form.save(report_auth)
+            phone_number = ''
+            if third_party_authorisation.office_phone_number:
+                phone_number = third_party_authorisation.get_office_phone_e164()
+            elif third_party_authorisation.family_phone_number:
+                phone_number = third_party_authorisation.get_family_phone_e164()
+
+            if phone_number:
+                last_three_digits = phone_number[-3:]
+
             send_mail(
-                'Medical Report Authorisation',
-                'Your access on SAR report from {patient_name} has been initiated. Please click {link} to access the report'.format(
-                    patient_name=report_auth.patient.user.first_name,
-                    link=request.scheme + '://' + request.get_host() + reverse(
+                'Completed SAR Request',
+                '',
+                'Medidata',
+                [third_party_authorisation.email],
+                fail_silently=True,
+                html_message=loader.render_to_string('third_parties_email.html', {
+                    'patient_first_name': report_auth.patient.user.first_name,
+                    'report_link': request.scheme + '://' + request.get_host() + reverse(
                         'report:request-code', kwargs={
                             'instruction_id': report_auth.instruction.id,
                             'access_type': PatientReportAuth.ACCESS_TYPE_THIRD_PARTY,
                             'url': third_party_authorisation.unique
-                        }
-                    )
-                ),
-                'Medidata',
-                [third_party_authorisation.email],
-                fail_silently=True
+                        }),
+                    'last_three_digits': last_three_digits
+                })
             )
 
             return redirect('report:select-report', access_type=PatientReportAuth.ACCESS_TYPE_PATIENT)
