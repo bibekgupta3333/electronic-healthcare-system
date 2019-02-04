@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from accounts.functions import notify_password_reset
 from django.contrib.auth import views as auth_views
 
 app_name = 'accounts'
@@ -17,6 +18,6 @@ urlpatterns = (
     path('login/', views.login, name='login'),
     path('two-factor/', views.two_factor, name='two_factor'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    path('password-reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
+    path('password-reset/', notify_password_reset(auth_views.PasswordResetView.as_view()), name='password_reset'),
     path('password-change/', auth_views.PasswordChangeView.as_view(), name='password_change')
 )

@@ -147,6 +147,8 @@ def sar_access_code(request, access_type, url):
                         pin=report_auth
                     ).verify()
                     success_sms_pin = validate_pin(patient_response_sms, report_auth, patient_auth, access_type)
+                    if patient_auth.locked_report:
+                        return redirect_auth_limit(request)
                 else:
                     third_party_response_sms = AuthMobile(
                         mobi_id=third_party_authorisation.mobi_request_id, pin=report_auth
@@ -163,6 +165,9 @@ def sar_access_code(request, access_type, url):
                         third_party_response_sms_voice, report_auth, patient_auth, access_type,
                         third_party_authorisation, otp_type='voice'
                     )
+
+                    if third_party_authorisation.locked_report:
+                        return redirect_auth_limit(request)
 
                 if success_sms_pin or success_voice_pin:
                     response = redirect('report:select-report',
