@@ -14,6 +14,7 @@ def xml_parse(xml_data):
 
 def redaction_elements(xml_data, remove_xpaths):
     xml = xml_parse(xml_data)
+    remove_xpaths = [] if remove_xpaths is None else remove_xpaths
     for xpath in remove_xpaths:
         element = xml.xpath(xpath)
         if element:
