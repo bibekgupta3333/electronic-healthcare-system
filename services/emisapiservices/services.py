@@ -5,6 +5,9 @@ import requests
 from ..models import EmisAPIConfig
 from organisations.models import OrganisationGeneralPractice
 from accounts.models import Patient
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class EmisAPIServiceBase:
@@ -35,6 +38,8 @@ class EmisAPIServiceBase:
                 self.emis_password,
             )
         )
+        if r.status_code != 200:
+            logger.error(r.text)
         r.raise_for_status()
         return r.text
 
