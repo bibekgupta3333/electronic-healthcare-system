@@ -77,11 +77,7 @@ class GetReadCodeApiTest(ConceptCodeTestCase):
 
     def test_call_get_descendant_readcodes(self):
         response = self.client.get(reverse('snomedct:get_descendant_readcodes'), {'snomedct': self.snomedct_0.pk})
-
-        self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(
-            str(response.content, encoding='utf-8'),
-            [
+        expected = [
                 {
                     "id": self.readcode_0.id,
                     "ext_read_code": self.readcode_0.ext_read_code,
@@ -137,4 +133,10 @@ class GetReadCodeApiTest(ConceptCodeTestCase):
                     "external_id": self.readcode_32.concept_id.external_id
                 },
             ]
+        self.assertEqual(response.status_code, 200)
+
+        self.assertListEqual(
+            sorted(json.loads(response.content), key=lambda k: k['id']),
+            sorted(expected, key=lambda k: k['id'])
         )
+
