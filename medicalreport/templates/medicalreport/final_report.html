@@ -18,36 +18,7 @@
             <div class="card">
                 <div class="card-body final-report">
                     <div class="row">
-                        <div class="col-md-3 files">
-                            <ul class="report-attachment">
-                                {% if instruction.type == 'SARS' %}
-                                    <li id="report-0" class="medical-report reports active" onclick="renderReport(this)"><i class="fas fa-file"></i> Medical Record</li>
-                                {% else %}
-                                    <li id="report-0" class="medical-report reports active" onclick="renderReport(this)"><i class="fas fa-file"></i> Medical Report</li>
-                                {% endif %}
-                                {% for attachment in attachments %}
-                                    {% with header=attachment.parsed_date|format_date_filter|add:" - "|add:attachment.description %}
-                                        {% with attachment|get_redaction:redaction as redacted %}
-                                            {% if not redacted %}
-                                                <li id="report-{{forloop.counter}}" class="reports" onclick="renderReport(this)"><i class="fas fa-paperclip"></i> {{header}}</li>
-                                            {% endif %}
-                                        {% endwith %}
-                                    {% endwith %}
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        <div class="col-md-9">
-                            <embed id="attachment-0" class="attachments" src="{% url 'medicalreport:view_report' instruction.id %}" width="100%" height="100%" alt="pdf">
-                            {% for attachment in attachments %}
-                                {% with header=attachment.parsed_date|format_date_filter|add:" - "|add:attachment.description %}
-                                    {% with attachment|get_redaction:redaction as redacted %}
-                                        {% if not redacted %}
-                                            <embed id="attachment-{{forloop.counter}}" class="attachments" src="/medicalreport/{{ instruction.id }}/attachment/{{ attachment.dds_identifier }}" width="100%" height="100%" alt="pdf" style="display:none">
-                                        {% endif %}
-                                    {% endwith %}
-                                {% endwith %}
-                            {% endfor %}
-                        </div>
+                        {% include 'medicalreport/medical_rerport_with_attachments.html' %}
                     </div>
                 </div>
             </div>

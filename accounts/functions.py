@@ -270,6 +270,28 @@ def notify_password_changed(func):
     return wrapper
 
 
+def notify_password_reset(func):
+    def wrapper(request, *args, **kwargs):
+        if request.method == 'POST':
+            email = request.POST.get("email")
+            user = User.objects.get(email=email)
+            surgery_email = None
+            if user.type == GENERAL_PRACTICE_USER and hasattr(user, 'userprofilebase') and\
+                hasattr(user.userprofilebase, 'generalpracticeuser') and\
+                user.userprofilebase.generalpracticeuser.organisation:
+                surgery_email = user.userprofilebase.generalpracticeuser.organisation.organisation_email
+                if surgery_email:
+                    send_mail(
+                        'Reset password',
+                        '%s has requested a reset password.'%(user.__str__()),
+                        DEFAULT_FROM,
+                        [surgery_email],
+                        fail_silently=True,
+                    )
+        return func(request, *args, **kwargs)
+    return wrapper
+
+
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:

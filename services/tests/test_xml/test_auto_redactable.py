@@ -31,7 +31,8 @@ class AutoRedactableTest(XMLTestCase):
                 date_range_from=date(2016, 1, 1),
                 date_range_to=date(2016, 12, 10)
         )
-        self.instruction = mommy.make(Instruction, type=model_choices.SARS_TYPE)
+        self.instruction_with_sars = mommy.make(Instruction, type='SARS')
+        self.instruction = mommy.make(Instruction, type='AMRA')
         snomed_ct_1 = mommy.make(
             SnomedConcept, external_id=90332006)
         snomed_ct_2 = mommy.make(
@@ -79,6 +80,17 @@ class AutoRedactableTest(XMLTestCase):
                 consultations, self.instruction, test_date))
         )
 
+    def test_auto_redact_consultations_with_sars(self):
+        consultation_elements = self.parsed_xml.xpath(Consultation.XPATH)
+        consultations = [Consultation(e) for e in consultation_elements]
+        self.assertEqual(9, len(consultations))
+        test_date = date(2018, 1, 1)
+        self.assertEqual(
+            9,
+            len(auto_redact_consultations(
+                consultations, self.instruction_with_sars, test_date))
+        )
+
     def test_auto_redact_consultations_with_range(self):
         consultation_elements = self.parsed_xml.xpath(Consultation.XPATH)
         consultations = [Consultation(e) for e in consultation_elements]
@@ -98,6 +110,14 @@ class AutoRedactableTest(XMLTestCase):
             len(auto_redact_medications(self.medications, self.instruction, test_date))
         )
 
+    def test_auto_redact_medications_with_sars(self):
+        test_date = date(2018, 1, 1)
+        self.assertEqual(4, len(self.medications))
+        self.assertEqual(
+            4,
+            len(auto_redact_medications(self.medications, self.instruction_with_sars, test_date))
+        )
+
     def test_auto_redact_medications_with_range(self):
         test_date = date(2018, 1, 1)
         self.assertEqual(4, len(self.medications))
@@ -114,6 +134,16 @@ class AutoRedactableTest(XMLTestCase):
         self.assertEqual(
             2,
             len(auto_redact_referrals(referrals, self.instruction, test_date))
+        )
+
+    def test_auto_redact_referrals_with_sars(self):
+        referral_elements = self.parsed_xml.xpath(Referral.XPATH)
+        referrals = [Referral(e) for e in referral_elements]
+        test_date = date(2018, 1, 1)
+        self.assertEqual(2, len(referrals))
+        self.assertEqual(
+            2,
+            len(auto_redact_referrals(referrals, self.instruction_with_sars, test_date))
         )
 
     def test_auto_redact_referrals_with_range(self):
@@ -136,6 +166,16 @@ class AutoRedactableTest(XMLTestCase):
             len(auto_redact_attachments(attachments, self.instruction, test_date))
         )
 
+    def test_auto_redact_attachments(self):
+        attachment_elements = self.parsed_xml.xpath(Attachment.XPATH)
+        attachments = [Attachment(e) for e in attachment_elements]
+        test_date = date(2019, 1, 1)
+        self.assertEqual(3, len(attachments))
+        self.assertEqual(
+            3,
+            len(auto_redact_attachments(attachments, self.instruction_with_sars, test_date))
+        )
+
     def test_auto_redact_attachments_with_range(self):
         attachment_elements = self.parsed_xml.xpath(Attachment.XPATH)
         attachments = [Attachment(e) for e in attachment_elements]
@@ -154,6 +194,16 @@ class AutoRedactableTest(XMLTestCase):
         self.assertEqual(
             12,
             len(auto_redact_profile_events(value_events, self.instruction, test_date))
+        )
+
+    def test_auto_redact_profile_events_with_sars(self):
+        value_event_elements = self.parsed_xml.xpath(ValueEvent.XPATH)
+        value_events = [ValueEvent(e) for e in value_event_elements]
+        test_date = date(2020, 1, 1)
+        self.assertEqual(21, len(value_events))
+        self.assertEqual(
+            21,
+            len(auto_redact_profile_events(value_events, self.instruction_with_sars, test_date))
         )
 
     def test_auto_redact_profile_events_with_range(self):

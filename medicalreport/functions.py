@@ -6,9 +6,11 @@ from django.core.mail import send_mail
 from django.template import loader
 from django.utils.html import format_html
 from django.utils import timezone
+from django.core.files.base import ContentFile
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from snomedct.models import SnomedConcept
 from services.emisapiservices import services
+from services.xml.xml_utils import redaction_elements, lxml_to_string
 from instructions import models
 from .forms import MedicalReportFinaliseSubmitForm
 from .models import AdditionalMedicationRecords, AdditionalAllergies, AmendmentsForRecord,\
@@ -26,24 +28,25 @@ def create_or_update_redaction_record(request, instruction):
         amendments_for_record = AmendmentsForRecord()
     status = request.POST.get('event_flag')
 
-    get_redaction_xpaths(request, amendments_for_record)
-    get_redaction_notes(request, amendments_for_record)
-    get_redaction_conditions(request, amendments_for_record)
-    success = get_additional_medication(request, amendments_for_record) or get_additional_allergies(request, amendments_for_record)
+    if status != 'submit':
+        get_redaction_xpaths(request, amendments_for_record)
+        get_redaction_notes(request, amendments_for_record)
+        get_redaction_conditions(request, amendments_for_record)
+        success = get_additional_medication(request, amendments_for_record) or get_additional_allergies(request, amendments_for_record)
 
-    delete_additional_medication_records(request)
-    delete_additional_allergies_records(request)
+        delete_additional_medication_records(request)
+        delete_additional_allergies_records(request)
 
-    amendments_for_record.instruction = instruction
-    questions = instruction.addition_questions.all()
-    for question in questions:
-        input_answer = request.POST.get('answer-question-{question_id}'.format(question_id=question.id))
-        answer_obj = models.InstructionAdditionAnswer.objects.filter(question=question).first()
-        if answer_obj:
-            answer_obj.answer = input_answer
-            answer_obj.save()
-        else:
-            models.InstructionAdditionAnswer.objects.create(question=question, answer=input_answer)
+        amendments_for_record.instruction = instruction
+        questions = instruction.addition_questions.all()
+        for question in questions:
+            input_answer = request.POST.get('answer-question-{question_id}'.format(question_id=question.id))
+            answer_obj = models.InstructionAdditionAnswer.objects.filter(question=question).first()
+            if answer_obj:
+                answer_obj.answer = input_answer
+                answer_obj.save()
+            else:
+                models.InstructionAdditionAnswer.objects.create(question=question, answer=input_answer)
 
     if status == 'add-medication':
         if success:
@@ -73,7 +76,7 @@ def create_or_update_redaction_record(request, instruction):
                                                       'instruction_checked': amendments_for_record.instruction_checked
                                                       },
                                                       )
-        if status == 'draft':
+        if status in ['draft', 'preview']:
             amendments_for_record.status = AmendmentsForRecord.REDACTION_STATUS_DRAFT
         elif status == 'submit':
             amendments_for_record.status = AmendmentsForRecord.REDACTION_STATUS_SUBMIT
@@ -99,7 +102,7 @@ def create_or_update_redaction_record(request, instruction):
             amendments_for_record.save()
             if status == 'submit':
                 save_medical_report(request, instruction, amendments_for_record)
-            elif status and status not in ['submit', 'draft']:
+            elif status and status not in ['submit', 'draft', 'preview']:
                 return False
 
             return True
@@ -119,16 +122,19 @@ def create_or_update_redaction_record(request, instruction):
 def save_medical_report(request, instruction, amendments_for_record):
     raw_xml = services.GetMedicalRecord(amendments_for_record.patient_emis_number, gp_organisation=instruction.gp_practice).call()
     medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
-    gp_name = amendments_for_record.get_gp_name()
     relations = '|'.join(relation.name for relation in ReferencePhrases.objects.all())
+    parse_xml = redaction_elements(raw_xml, amendments_for_record.redacted_xpaths)
+    str_xml = lxml_to_string(parse_xml)
     params = {
         'medical_record': medical_record_decorator,
         'relations': relations,
         'redaction': amendments_for_record,
         'instruction': instruction,
-        'gp_name': gp_name,
+        'surgery_name': instruction.gp_practice,
     }
-    instruction.medical_report.save('report_%s.pdf'%uuid.uuid4().hex,MedicalReport.get_pdf_file(params))
+    uuid_hex = uuid.uuid4().hex
+    instruction.medical_report.save('report_%s.pdf'%uuid_hex, MedicalReport.get_pdf_file(params))
+    instruction.medical_xml_report.save('xml_report_%s.xml'%uuid_hex, ContentFile(str_xml))
 
 
 def get_redaction_xpaths(request, amendments_for_record):
@@ -271,3 +277,5 @@ def create_patient_report(request, instruction):
     PatientReportAuth.objects.create(patient_id=instruction.patient_id, instruction=instruction, url=unique_url)
     send_patient_mail(request, instruction, unique_url)
     send_surgery_email(instruction)
+
+

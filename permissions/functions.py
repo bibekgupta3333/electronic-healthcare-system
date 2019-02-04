@@ -50,7 +50,8 @@ def check_permission(func):
             is_valid = True
         elif patient and user.pk == patient.user.pk:
             is_valid = True
-        elif instruction_type == 'SARS' and request.user.has_perm('instructions.process_sars'):
+        elif instruction_type == 'SARS' and request.user.has_perm('instructions.process_sars') and\
+            user.userprofilebase.generalpracticeuser.organisation == gp_practice:
             is_valid = True
 
         if hasattr(user.userprofilebase, "generalpracticeuser") and\

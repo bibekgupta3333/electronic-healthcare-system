@@ -18,8 +18,16 @@ def redaction_elements(xml_data, remove_xpaths):
         element = xml.xpath(xpath)
         if element:
             e = element[0]
-            e.getparent().remove(e)
+            parent = e.getparent()
+            if parent.tag == 'ConsultationElement':
+                parent.getparent().remove(parent)
+            else:
+                parent.remove(e)
     return xml
+
+
+def lxml_to_string(lxml):
+    return etree.tostring(lxml,pretty_print=True)
 
 
 def chronological_redactable_elements(elements):

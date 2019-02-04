@@ -20,12 +20,12 @@
                 {% endif %}
                 {% if perms.instructions.view_instruction %}
                     <li class="{% if request.resolver_match.url_name == 'view_pipeline' %}active{% endif %}">
-                        <a href="{% url 'instructions:view_pipeline' %}" >Instructions</a>
+                        <a href="{% url 'instructions:view_pipeline' %}" ><i class="fas fa-tasks"></i>Instructions</a>
                     </li>
                 {% endif %}
                 {% if perms.organisations.view_user_management %}
                     <li class="{% if request.resolver_match.url_name == 'view_users' %}active{% endif %}">
-                        <a href="{% url 'accounts:view_users' %}">User Management</a>
+                        <a href="{% url 'accounts:view_users' %}"><i class="fas fa-users-cog"></i>User Management</a>
                     </li>
                 {% endif %}
                 {% if user.type == 'MEDI' %}
@@ -35,14 +35,17 @@
                 {% endif %}
                 {% if perms.template.view_templateinstruction and user.type != 'GP' %}
                     <li class="{% if request.resolver_match.url_name == 'view_templates' %}active{% endif %}">
-                        <a href="{% url 'template:view_templates' %}">Templates</a>
+                        <a href="{% url 'template:view_templates' %}"><i class="fas fa-wrench"></i>Templates</a>
                     </li>
                 {% endif %}
                 {% if perms.payment.view_organisationfee and user.type != 'CLT' %}
                     <li class="{% if request.resolver_match.url_name == 'view_account' %}active{% endif %}">
-                        <a href="{% url 'accounts:view_account' %}" >Account</a>
+                        <a href="{% url 'accounts:view_account' %}" ><i class="fas fa-money-check-alt"></i>Account</a>
                     </li>
                 {% endif %}
+                <li class="{% if request.resolver_match.url_name == 'resource_centre' %}active{% endif %}">
+                    <a href="{% url 'help:resource_centre' %}"><i class="far fa-question-circle"></i>Resource Centre</a>
+                </li>
             {% endif %}
         </ul>
     </nav>

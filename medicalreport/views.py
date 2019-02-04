@@ -171,9 +171,49 @@ def update_report(request, instruction_id):
                     if instruction.client_user:
                         calculate_instruction_fee(instruction)
                     create_patient_report(request, instruction)
+                if request.POST.get('event_flag') == 'preview':
+                    return redirect('medicalreport:submit_report', instruction_id=instruction_id)
                 return redirect('instructions:view_pipeline')
 
         return redirect('medicalreport:edit_report', instruction_id=instruction_id)
+
+
+@login_required(login_url='/accounts/login')
+def submit_report(request, instruction_id):
+    header_title = "Preview and Submit Report"
+    instruction = get_object_or_404(Instruction, id=instruction_id)
+    redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
+
+    patient_emis_number = instruction.patient.emis_number
+    raw_xml = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
+    medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
+    attachments = medical_record_decorator.attachments
+    relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
+    initial_prepared_by = request.user.userprofilebase.generalpracticeuser.pk
+    if redaction.prepared_by:
+        initial_prepared_by = redaction.prepared_by.pk
+    finalise_submit_form = MedicalReportFinaliseSubmitForm(
+        initial={
+            'record_type': redaction.instruction.type,
+            'SUBMIT_OPTION_CHOICES': (
+                ('PREPARED_AND_REVIEWED', format_html(
+                    'Signed off by <span id="preparer"></span>'.format(request.user.first_name)),
+                 ),
+            ),
+            'prepared_by': initial_prepared_by,
+            'prepared_and_signed': redaction.submit_choice or AmendmentsForRecord.PREPARED_AND_REVIEWED,
+            'instruction_checked': redaction.instruction_checked
+        },
+        user=request.user)
+
+    return render(request, 'medicalreport/medicalreport_submit.html', {
+        'header_title': header_title,
+        'attachments': attachments,
+        'redaction': redaction,
+        'relations': relations,
+        'instruction': instruction,
+        'finalise_submit_form': finalise_submit_form
+    })
 
 
 @login_required(login_url='/accounts/login')
@@ -183,7 +223,7 @@ def view_report(request, instruction_id):
         redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
         raw_xml = services.GetMedicalRecord(redaction.patient_emis_number, instruction.gp_practice).call()
         medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
-        gp_name = redaction.get_gp_name()
+        surgery_name = instruction.gp_practice
         relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
 
         params = {
@@ -191,7 +231,7 @@ def view_report(request, instruction_id):
             'redaction': redaction,
             'instruction': instruction,
             'relations': relations,
-            'gp_name': gp_name,
+            'surgery_name': surgery_name,
         }
 
         return MedicalReport.render(params)

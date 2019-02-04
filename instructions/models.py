@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.utils import timezone
@@ -10,7 +9,7 @@ from common.functions import get_url_page
 from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser, User
 from organisations.models import OrganisationGeneralPractice
 from accounts import models as account_models
-from snomedct.models import SnomedConcept
+from snomedct.models import SnomedConcept, CommonSnomedConcepts
 from .model_choices import *
 from django.conf import settings
 from typing import Set
@@ -91,6 +90,7 @@ class Instruction(TimeStampedModel, models.Model):
     sars_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
     mdx_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
     medical_report = models.FileField(upload_to='medical_reports', null=True, blank=True)
+    medical_xml_report = models.FileField(upload_to='medical_xml_reports', null=True, blank=True)
     saved = models.BooleanField(default=False)
     medi_ref = models.IntegerField(null=True, blank=True)
     your_ref = models.CharField(max_length=80, null=True, blank=True)
@@ -171,15 +171,22 @@ class Instruction(TimeStampedModel, models.Model):
         snomed_concepts_ids = set()
         readcodes = set()
         for sct in self.selected_snomed_concepts():
-            snomed_descendants = sct.descendants(ret_descendants=set())
+            if CommonSnomedConcepts.objects.filter(snomed_concept_code=sct).exists():
+                snomed_concepts_ids.update(
+                    CommonSnomedConcepts.objects.filter(snomed_concept_code=sct).first().descendant_snomed_id
+                )
+                readcodes.update(
+                    CommonSnomedConcepts.objects.filter(snomed_concept_code=sct).first().descendant_readcodes
+                )
+            else:
+                snomed_descendants = sct.descendants(ret_descendants=set())
+                snomed_concepts_ids.update(
+                    map(lambda sc: sc.external_id, snomed_descendants)
+                )
 
-            snomed_concepts_ids.update(
-                map(lambda sc: sc.external_id, snomed_descendants)
-            )
-
-            readcodes.update(
-                map(lambda rc: rc.ext_read_code, sct.descendant_readcodes(snomed_descendants))
-            )
+                readcodes.update(
+                    map(lambda rc: rc.ext_read_code, sct.descendant_readcodes(snomed_descendants))
+                )
         return snomed_concepts_ids, readcodes
 
     def readcodes(self) -> Set[str]:

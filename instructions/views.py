@@ -31,6 +31,7 @@ from itertools import chain
 import ast
 import requests
 import json
+import re
 
 from django.conf import settings
 PIPELINE_INSTRUCTION_LINK = get_url_page('instruction_pipeline')
@@ -760,10 +761,20 @@ def print_mdx_consent(request, instruction_id, patient_emis_number):
     return MDXDualConsent.render(params)
 
 
+def atoi(text):
+    return int(text) if text.isdigit() else text
+
+
+def natural_keys(text):
+    return [atoi(c) for c in re.split(r'(\d+)', text)]
+
+
 def api_get_address(request, address):
     if not address:
         return JsonResponse({'status': 'error', 'error': 'Address not found.'}, status=404)
 
     url = 'https://api.getAddress.io/find/' + address + '?api-key=' + settings.GET_ADDRESS_API_KEY
     response = requests.get(url)
-    return JsonResponse(response.json())
+    json_response = response.json()
+    json_response['addresses'].sort(key=natural_keys)
+    return JsonResponse(json_response)
