@@ -1,4 +1,4 @@
-from django.test import Client
+from django.test import Client, RequestFactory
 from django.utils import timezone
 from model_mommy import mommy
 
@@ -19,9 +19,11 @@ class ImportExportTest(CalculateInstructionFeeBaseTest):
 
     def setUp(self):
         super().setUp()
+        self.factory = RequestFactory()
         self.medidata_user = User.objects.create_superuser(email='medidta@test.com', password='test1234')
         self.client = Client()
-        self.client.login(email=self.medidata_user.email, password='test1234')
+        request = self.factory.get('/login/')
+        self.client.login(request=request, email=self.medidata_user.email, password='test1234')
         self.amra_instruction = mommy.make(
             Instruction,
             id=3,
