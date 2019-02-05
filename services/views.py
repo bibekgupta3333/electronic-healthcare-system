@@ -59,3 +59,9 @@ def get_patient_attachment(request):
     response['Content-Disposition'] = 'inline;filename={}'.format(base64_attachment.file_basename())
     response['Content-Transfer-Encoding'] = 'binary'
     return response
+
+
+def handle_error(request, code):
+    return render(request, 'errors/handle_errors_emis.html', {
+        'code': code,
+    })

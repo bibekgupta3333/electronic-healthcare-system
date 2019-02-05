@@ -476,8 +476,10 @@ def get_merged_medicalreport_attachment(instruction_id):
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
     patient_emis_number = instruction.patient.emis_number
-    raw_xml = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
-    medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
+    raw_xml_or_status_code = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
+    if isinstance(raw_xml_or_status_code, int):
+        return redirect('services:handle_error', code=raw_xml_or_status_code)
+    medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
     output = PyPDF2.PdfFileWriter()
 
     # add each page of medical report to output file
@@ -490,14 +492,16 @@ def get_merged_medicalreport_attachment(instruction_id):
     for attachment in medical_record_decorator.attachments():
         xpaths = attachment.xpaths()
         if redaction.redacted(xpaths) is not True:
-            raw_xml = services.GetAttachment(
+            raw_xml_or_status_code = services.GetAttachment(
                 instruction.patient.emis_number,
                 attachment.dds_identifier(),
                 gp_organisation=instruction.gp_practice).call()
+            if isinstance(raw_xml_or_status_code, int):
+                return redirect('services:handle_error', code=raw_xml_or_status_code)
 
-            file_name = Base64Attachment(raw_xml).filename()
+            file_name = Base64Attachment(raw_xml_or_status_code).filename()
             file_type = file_name.split('.')[-1]
-            raw_attachment = Base64Attachment(raw_xml).data()
+            raw_attachment = Base64Attachment(raw_xml_or_status_code).data()
             buffer = io.BytesIO(raw_attachment)
             folder = settings.BASE_DIR + '/static/generic_pdf/'
             try:

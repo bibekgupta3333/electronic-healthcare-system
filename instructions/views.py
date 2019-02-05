@@ -5,7 +5,7 @@ from django.core.mail import send_mail
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest, JsonResponse, HttpResponseRedirect
 from django_tables2 import RequestConfig, Column
 from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest, Setting, InstructionPatient
 from .tables import InstructionTable
@@ -649,6 +649,8 @@ def consent_contact(request, instruction_id, patient_emis_number):
     sars_consent_form = SarsConsentForm()
     mdx_consent_form = MdxConsentForm()
     patient_registration = get_patient_registration(str(patient_emis_number), gp_organisation=instruction.gp_practice)
+    if isinstance(patient_registration, HttpResponseRedirect):
+        return patient_registration
 
     if request.method == "POST":
         sars_consent_form = SarsConsentForm(request.POST, request.FILES, instance=instruction)
