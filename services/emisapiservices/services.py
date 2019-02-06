@@ -5,6 +5,8 @@ import requests
 from ..models import EmisAPIConfig
 from organisations.models import OrganisationGeneralPractice
 from accounts.models import Patient
+from requests import HTTPError
+import time
 
 
 class EmisAPIServiceBase:
@@ -28,15 +30,44 @@ class EmisAPIServiceBase:
 
     def call(self) -> str:
         request_uri = self.uri()
-        r = requests.get(
-            request_uri,
-            auth=(
-                self.emis_username,
-                self.emis_password,
+        for i in range(9):
+            r = requests.get(
+                request_uri,
+                auth=(
+                    self.emis_username,
+                    self.emis_password,
+                )
             )
-        )
-        r.raise_for_status()
-        return r.text
+            if r.status_code == 200:
+                break
+            else:
+                time.sleep(0.2)
+
+        http_error_msg = ''
+        try:
+            if isinstance(r.reason, bytes):
+                try:
+                    reason = r.reason.decode('utf-8')
+                except UnicodeDecodeError:
+                    reason = r.reason.decode('iso-8859-1')
+            else:
+                reason = r.reason
+
+            if 400 <= r.status_code < 500:
+                http_error_msg = u'%s Client Error: %s for url: %s \n' \
+                                 u'Message: %s' % (r.status_code, reason, r.url, r.text)
+
+            elif 500 <= r.status_code < 600:
+                http_error_msg = u'%s Server Error: %s for url: %s \n' \
+                                 u'Message: %s' % (r.status_code, reason, r.url, r.text)
+
+            if http_error_msg:
+                raise HTTPError(http_error_msg, response=r)
+        finally:
+            if http_error_msg:
+                return r.status_code
+
+            return r.text
 
 
 class GetAttachment(EmisAPIServiceBase):

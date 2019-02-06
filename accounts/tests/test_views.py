@@ -1,7 +1,7 @@
 from django.test import TestCase, RequestFactory
 from django.shortcuts import reverse
+from django.test import Client
 from model_mommy import mommy
-
 from payment.models import OrganisationFee
 
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
@@ -159,9 +159,9 @@ class TestViewUser(TestAccountBase):
 class TestViews( TestCase ):
     def setUp( self ):
         #   Prepare request for test.
+        self.factory = RequestFactory()
         self.userNameTest = 'testMedi007'
         self.method = 'POST'
-        self.request = RequestFactory()
 
         #   create User_A in DB.
         #   create userProfile.
@@ -208,7 +208,8 @@ class TestViews( TestCase ):
         telephone_mobile = '874432803'
         telephone_code = '66'
 
-        self.client.login( email = 'testuser@mohara.co', password = 'secret' )
+        request = self.factory.get('/login/')
+        self.client.login(request=request, email='testuser@mohara.co', password='secret')
         response = self.client.post('/accounts/create-user/', {
             'user_role': role,
             'first_name': firstName,
@@ -236,7 +237,8 @@ class TestViews( TestCase ):
         telephone_code = '66'
         role = '1'
 
-        self.client.login( email = 'testuser@mohara.co', password = 'secret' )
+        request = self.factory.get('/login/')
+        self.client.login(request=request, email='testuser@mohara.co', password='secret')
         response = self.client.post('/accounts/create-user/', {
             'user_role' : role,
             'first_name': firstName,
@@ -265,7 +267,8 @@ class TestViews( TestCase ):
         firstName = 'Jirayu'
         lastName = 'Oopipat'
 
-        self.client.login( email = 'testuser@mohara.co', password = 'secret' )
+        request = self.factory.get('/login/')
+        self.client.login(request=request, email='testuser@mohara.co', password='secret')
         response = self.client.post('/accounts/create-user/', {
             'first_name': firstName,
             'last_name': lastName,

@@ -17,20 +17,20 @@ from common.functions import multi_getattr, verify_password as verify_pass
 from payment.models import OrganisationFee
 from django_tables2 import RequestConfig
 from accounts.forms import AllUserForm, NewGPForm, NewClientForm, NewMediForm,\
-        UserProfileForm, UserProfileBaseForm
-
-from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences
-from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
-from .forms import PracticePreferencesForm, TwoFactorForm
+        UserProfileForm, UserProfileBaseForm, PracticePreferencesForm,\
+        TwoFactorForm
+from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences,\
+        GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from permissions.functions import access_user_management
 from organisations.models import OrganisationGeneralPractice
+from axes.models import AccessAttempt
 
 from django.conf import settings
 DEFAULT_FROM = settings.DEFAULT_FROM
 
 from .functions import change_role, remove_user, get_table_data,\
         get_post_new_user_data, get_user_type_form, reset_password,\
-        check_ip_from_n3_hscn
+        check_ip_from_n3_hscn, get_client_ip
 
 
 @login_required(login_url='/accounts/login')
@@ -46,7 +46,7 @@ def account_view(request):
         practice_preferences.gp_organisation = gp_organisation
         practice_preferences.notification = 'NEW'
         practice_preferences.save()
-    
+
     if request.is_ajax():
         gp_preferences_form = PracticePreferencesForm(request.POST, instance=practice_preferences)
         if gp_preferences_form.is_valid():
@@ -461,7 +461,7 @@ def check_email(request):
 
 def login(request):
     if request.method == 'POST':
-        form = LoginForm(request.POST, request.POST)
+        form = LoginForm(request, request.POST)
         if form.is_valid():
             username = request.POST['username']
             password = request.POST['password']
@@ -476,6 +476,8 @@ def login(request):
                 return redirect(reverse('instructions:view_pipeline'))
     else:
         form = LoginForm()
+    if check_lock_out(request):
+        return redirect(reverse('accounts:locked_out'))
     return render(request, 'registration/login.html', {
         'form': form
     })
@@ -527,3 +529,15 @@ def view_profile(request):
         'user_form': user_form,
         'profile_form': profile_form
     })
+
+
+def check_lock_out(request):
+    ip = get_client_ip(request)
+    for access in AccessAttempt.objects.filter(ip_address=ip):
+        if access.failures >= settings.AXES_FAILURE_LIMIT:
+            return True
+    return False
+
+
+def locked_out(request):
+    return render(request, 'registration/locked_out.html')

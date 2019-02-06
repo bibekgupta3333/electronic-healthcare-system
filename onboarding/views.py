@@ -54,6 +54,7 @@ def sign_up(request):
             gp_organisation.save()
 
             new_pm_user = authenticate(
+                request,
                 email=pm_form.cleaned_data['email1'],
                 password=pm_form.cleaned_data['password1'],
             )
