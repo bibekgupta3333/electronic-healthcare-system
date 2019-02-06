@@ -1,5 +1,6 @@
-from datetime import date
+from datetime import date, datetime
 from django.test import TestCase
+from django.shortcuts import reverse
 
 from model_mommy import mommy
 
@@ -7,8 +8,11 @@ from services.emisapiservices.services import (
     EmisAPIServiceBase, GetAttachment, GetPatientList, GetMedicalRecord
 )
 from services.models import EmisAPIConfig
-from instructions.models import InstructionPatient
+from instructions.models import InstructionPatient, Instruction, SARS_TYPE
 from medicalreport.tests.test_views import EmisAPITestCase
+from organisations.models import OrganisationGeneralPractice
+from accounts.models import User, GENERAL_PRACTICE_USER, GeneralPracticeUser
+from instructions.model_choices import INSTRUCTION_STATUS_PROGRESS
 
 from django.conf import settings
 EMIS_API_HOST = settings.EMIS_API_HOST
@@ -42,7 +46,7 @@ class GetAttachmentTest(TestCase):
         self.assertEqual(self.get_attachment.uri(), expected)
 
 
-class GetPatientListTest():
+class GetPatientListTest(TestCase):
     def setUp(self):
         generate_emis_api_config()
         patient = mommy.make(
@@ -60,6 +64,37 @@ class GetPatientListTest():
         )
         self.get_patient_list_blank = GetPatientList(blank_patient, gp_organisation=None)
 
+        self.instruction_patient = mommy.make(
+            InstructionPatient,
+            patient_first_name='sarah',
+            patient_last_name='giles',
+            patient_dob=datetime.strptime('21091962', '%d%m%Y').date()
+        )
+
+        self.gp_practice = mommy.make(
+            OrganisationGeneralPractice,
+            practcode='TEST0001',
+            name='Test Surgery',
+            operating_system_organisation_code=29390,
+            operating_system_username='failusername',
+            operating_system_salt_and_encrypted_password='failpass',
+        )
+        self.gp_user = mommy.make(User, email='gp_user1@gmail.com', password='test1234', type=GENERAL_PRACTICE_USER, )
+        self.gp_manager = mommy.make(
+            GeneralPracticeUser,
+            user=self.gp_user,
+            organisation=self.gp_practice,
+            role=GeneralPracticeUser.PRACTICE_MANAGER
+        )
+        self.instruction = mommy.make(
+            Instruction,
+            gp_user=self.gp_manager,
+            patient_information=self.instruction_patient,
+            type=SARS_TYPE,
+            status=INSTRUCTION_STATUS_PROGRESS,
+            gp_practice=self.gp_practice
+        )
+
     def test_search_term(self):
         self.assertEqual(
             self.get_patient_list.search_term(),
@@ -72,6 +107,17 @@ class GetPatientListTest():
     def test_uri(self):
         expected = f'{EMIS_API_HOST}/api/organisations/emis_id/patients?q=first_name%20last_name%2002%2F01%2F1990'
         self.assertEqual(self.get_patient_list.uri(), expected)
+
+    def test_call_emis_fail(self):
+        self.client.force_login(self.gp_user)
+        response = self.client.get(
+            reverse('medicalreport:set_patient_emis_number', args=(self.instruction.id, ))
+        )
+
+        error_code_status = GetPatientList(self.instruction_patient, gp_organisation=self.gp_practice).call()
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(401, error_code_status)
 
 
 class GetMedicalRecordTest(EmisAPITestCase):

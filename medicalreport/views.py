@@ -17,7 +17,7 @@ from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTR
     INSTRUCTION_STATUS_COMPLETE
 from .functions import create_or_update_redaction_record, create_patient_report
 from medicalreport.reports import MedicalReport
-from accounts.models import GeneralPracticeUser, User, GENERAL_PRACTICE_USER
+from accounts.models import GENERAL_PRACTICE_USER
 from accounts.functions import create_or_update_patient_user
 from organisations.models import OrganisationGeneralPractice
 from .forms import AllocateInstructionForm
@@ -29,19 +29,26 @@ from typing import List
 @login_required(login_url='/accounts/login')
 def view_attachment(request, instruction_id, path_file):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
-    attachment_report = AttachmentReport(instruction, path_file)
+    raw_xml_or_status_code = services.GetAttachment(instruction.patient.emis_number, path_file, gp_organisation=instruction.gp_practice).call()
+    if isinstance(raw_xml_or_status_code, int):
+        return redirect('services:handle_error', code=raw_xml_or_status_code)
+    attachment_report = AttachmentReport(raw_xml_or_status_code)
     return attachment_report.render()
 
 
 def get_matched_patient(patient: InstructionPatient, gp_organisation: OrganisationGeneralPractice) -> List[Registration]:
-    raw_xml = services.GetPatientList(patient, gp_organisation=gp_organisation).call()
-    patients = PatientList(raw_xml).patients()
+    raw_xml_or_status_code = services.GetPatientList(patient, gp_organisation=gp_organisation).call()
+    if isinstance(raw_xml_or_status_code, int):
+        return redirect('services:handle_error', code=raw_xml_or_status_code)
+    patients = PatientList(raw_xml_or_status_code).patients()
     return patients
 
 
 def get_patient_registration(patient_number, gp_organisation: OrganisationGeneralPractice):
-    raw_xml = services.GetMedicalRecord(patient_number, gp_organisation=gp_organisation).call()
-    patient_registration = MedicalRecord(raw_xml).registration()
+    raw_xml_or_status_code = services.GetMedicalRecord(patient_number, gp_organisation=gp_organisation).call()
+    if isinstance(raw_xml_or_status_code, int):
+        return redirect('services:handle_error', code=raw_xml_or_status_code)
+    patient_registration = MedicalRecord(raw_xml_or_status_code).registration()
     return patient_registration
 
 
@@ -94,6 +101,8 @@ def select_patient(request, instruction_id, patient_emis_number):
 def set_patient_emis_number(request, instruction_id):
     instruction = Instruction.objects.get(id=instruction_id)
     patient_list = get_matched_patient(instruction.patient_information, gp_organisation=instruction.gp_practice)
+    if isinstance(patient_list, HttpResponseRedirect):
+        return patient_list
     allocate_instruction_form = AllocateInstructionForm(user=request.user, instruction_id=instruction_id)
 
     return render(request, 'medicalreport/patient_emis_number.html', {
@@ -116,8 +125,10 @@ def edit_report(request, instruction_id):
     except AmendmentsForRecord.DoesNotExist:
         return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
 
-    raw_xml = services.GetMedicalRecord(redaction.patient_emis_number, gp_organisation=instruction.gp_practice).call()
-    medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
+    raw_xml_or_status_code = services.GetMedicalRecord(redaction.patient_emis_number, gp_organisation=instruction.gp_practice).call()
+    if isinstance(raw_xml_or_status_code, int):
+        return redirect('services:handle_error', code=raw_xml_or_status_code)
+    medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
     questions = instruction.addition_questions.all()
     initial_prepared_by = request.user.userprofilebase.generalpracticeuser.pk
     if redaction.prepared_by:
@@ -185,8 +196,10 @@ def submit_report(request, instruction_id):
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
     patient_emis_number = instruction.patient.emis_number
-    raw_xml = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
-    medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
+    raw_xml_or_status_code = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
+    if isinstance(raw_xml_or_status_code, int):
+        return redirect('services:handle_error', code=raw_xml_or_status_code)
+    medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
     attachments = medical_record_decorator.attachments
     relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
     initial_prepared_by = request.user.userprofilebase.generalpracticeuser.pk
@@ -221,8 +234,10 @@ def view_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
     if instruction.status != INSTRUCTION_STATUS_COMPLETE:
         redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
-        raw_xml = services.GetMedicalRecord(redaction.patient_emis_number, instruction.gp_practice).call()
-        medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
+        raw_xml_or_status_code = services.GetMedicalRecord(redaction.patient_emis_number, instruction.gp_practice).call()
+        if isinstance(raw_xml_or_status_code, int):
+            return redirect('services:handle_error', code=raw_xml_or_status_code)
+        medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
         surgery_name = instruction.gp_practice
         relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
 
@@ -247,8 +262,10 @@ def final_report(request, instruction_id):
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
     patient_emis_number = instruction.patient.emis_number
-    raw_xml = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
-    medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
+    raw_xml_or_status_code = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
+    if isinstance(raw_xml_or_status_code, int):
+        return redirect('services:handle_error', code=raw_xml_or_status_code)
+    medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
     attachments = medical_record_decorator.attachments
     relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
 

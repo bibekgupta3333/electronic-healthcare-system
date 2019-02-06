@@ -1,8 +1,21 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
+
+import json
+import datetime
+
+from django.shortcuts import render, redirect, get_object_or_404, reverse
+from django.http import Http404, HttpResponse
+from django.db.models import Sum, Q
+
+from medicalreport.models import AmendmentsForRecord
+from services.emisapiservices import services
+from medicalreport.reports import MedicalReport
+from services.xml.medical_report_decorator import MedicalReportDecorator
+from instructions.models import Instruction, Patient
+from instructions.model_choices import *
+from accounts.models import *
+
+from .models import PatientReportAuth
 from django.core.mail import send_mail
-from django.shortcuts import reverse
-from django.db.models import Q
 from django.contrib import messages
 from django.template import loader
 
@@ -255,6 +268,103 @@ def redirect_auth_limit(request):
 def session_expired(request):
     return render(request, 'patient/session_expired.html')
 
+def summry_report(request):
+    if 'current_year' in request.GET:
+        numYear = int(request.GET.get('current_year', None))
+    else:
+        numYear = datetime.datetime.now().year
+
+    title = 'Reporting - ' + str(numYear)
+    numMonth = 1
+    newList = list()
+    progressList = list()
+
+    if request.user.type == CLIENT_USER:
+        completeList = list()
+        rejectList = list()
+        paidList = list()
+        client = ClientUser.objects.filter(organisation = request.user.get_my_organisation()).first()
+
+        gpSumInt = 0
+        mediSumInt = 0
+
+        while numMonth <= 12:
+            newQueryInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_NEW, created__month = numMonth, created__year = numYear, \
+                                                        client_user = client).count()
+            progressQueryInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_PROGRESS, created__month = numMonth, created__year = numYear, \
+                                                        client_user = client).count()
+            completeQueryInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_COMPLETE, completed_signed_off_timestamp__month = numMonth,\
+                                                            completed_signed_off_timestamp__year = numYear, client_user = client).count()
+            rejectQueryInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_REJECT, rejected_timestamp__month = numMonth,\
+                                                            rejected_timestamp__year = numYear, client_user = client).count()
+
+            gpSumInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_COMPLETE, completed_signed_off_timestamp__month = numMonth, \
+                                                        completed_signed_off_timestamp__year = numYear, client_user = client).aggregate(Sum('gp_earns'))
+            mediSumInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_COMPLETE, completed_signed_off_timestamp__month = numMonth, \
+                                                        completed_signed_off_timestamp__year = numYear, client_user = client).aggregate(Sum('medi_earns'))
+
+            if (gpSumInt.get('gp_earns__sum') != None) and (mediSumInt.get('medi_earns__sum') != None):
+                paidSum = gpSumInt.get('gp_earns__sum') + mediSumInt.get('medi_earns__sum')
+            else:
+                paidSum = 0
+
+            newList.append(newQueryInt)
+            progressList.append(progressQueryInt)
+            completeList.append(completeQueryInt)
+            rejectList.append(rejectQueryInt)
+
+            paidList.append(float(paidSum))
+            numMonth = numMonth + 1
+            
+        return render(request, 'reporting/summary_report.html', {
+                    'header_title': title,
+                    'currentYear' : numYear,
+                    'previousYear' : numYear - 1,
+                    'nextYear' : numYear + 1,
+                    'newList' : newList,
+                    'progressList' : progressList,
+                    'completeList' : completeList,
+                    'rejectList' : rejectList,
+                    'paidList' : paidList
+                })
+
+    SARSlist = list()
+    AMRAlist = list()
+    incomeList = list()
+    gp_pratice = request.user.get_my_organisation()
+    
+    while numMonth <= 12:
+        SARSqueryInt = Instruction.objects.filter(type = SARS_TYPE, gp_practice_id = gp_pratice, created__month = numMonth, created__year = numYear).count()
+        AMRAqueryInt = Instruction.objects.filter(type = AMRA_TYPE, gp_practice_id = gp_pratice, created__month = numMonth, created__year = numYear).count()
+
+        newQueryInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_NEW, created__month = numMonth, created__year = numYear, \
+                                                    gp_practice_id = gp_pratice).count()
+        progressQueryInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_PROGRESS, created__month = numMonth, created__year = numYear, \
+                                                    gp_practice_id = gp_pratice).count()
+
+        incomeQueryInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_COMPLETE, completed_signed_off_timestamp__month = numMonth, \
+                                                    completed_signed_off_timestamp__year = numYear, gp_practice_id = gp_pratice).aggregate(Sum('gp_earns'))
+        incomeInt = float(incomeQueryInt.get('gp_earns__sum')) if incomeQueryInt.get('gp_earns__sum') != None else 0
+
+        SARSlist.append(SARSqueryInt)
+        AMRAlist.append(AMRAqueryInt)
+        newList.append(newQueryInt)
+        progressList.append(progressQueryInt)
+        incomeList.append(incomeInt)
+
+        numMonth = numMonth + 1
+
+    return render(request, 'reporting/summary_report_gp.html', {
+                    'header_title': title,
+                    'currentYear' : numYear,
+                    'previousYear' : numYear - 1,
+                    'nextYear' : numYear + 1,
+                    'SARSlist' : SARSlist,
+                    'AMRAlist' : AMRAlist,
+                    'newList' : newList,
+                    'progressList' : progressList,
+                    'incomeList' : incomeList
+                })
 
 def add_third_party_authorisation(request, report_auth_id):
     report_auth = get_object_or_404(PatientReportAuth, id=report_auth_id)
@@ -366,8 +476,10 @@ def get_merged_medicalreport_attachment(instruction_id):
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
     patient_emis_number = instruction.patient.emis_number
-    raw_xml = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
-    medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
+    raw_xml_or_status_code = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
+    if isinstance(raw_xml_or_status_code, int):
+        return redirect('services:handle_error', code=raw_xml_or_status_code)
+    medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
     output = PyPDF2.PdfFileWriter()
 
     # add each page of medical report to output file
@@ -380,14 +492,16 @@ def get_merged_medicalreport_attachment(instruction_id):
     for attachment in medical_record_decorator.attachments():
         xpaths = attachment.xpaths()
         if redaction.redacted(xpaths) is not True:
-            raw_xml = services.GetAttachment(
+            raw_xml_or_status_code = services.GetAttachment(
                 instruction.patient.emis_number,
                 attachment.dds_identifier(),
                 gp_organisation=instruction.gp_practice).call()
+            if isinstance(raw_xml_or_status_code, int):
+                return redirect('services:handle_error', code=raw_xml_or_status_code)
 
-            file_name = Base64Attachment(raw_xml).filename()
+            file_name = Base64Attachment(raw_xml_or_status_code).filename()
             file_type = file_name.split('.')[-1]
-            raw_attachment = Base64Attachment(raw_xml).data()
+            raw_attachment = Base64Attachment(raw_xml_or_status_code).data()
             buffer = io.BytesIO(raw_attachment)
             folder = settings.BASE_DIR + '/static/generic_pdf/'
             try:
