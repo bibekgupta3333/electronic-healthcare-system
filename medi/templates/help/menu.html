@@ -9,6 +9,7 @@
 {% block ExtraHead %}
     <link href="{% static 'css/help/help.css' %}" rel="stylesheet"/>
     <link rel="stylesheet" href="{% static 'assets/fancybox/jquery.fancybox.min.css' %}" />
+    <link href="https://vjs.zencdn.net/7.4.1/video-js.css" rel="stylesheet">
 {% endblock %}
 
 {% block Content %}
@@ -99,6 +100,22 @@
                     </div>
                 </div>
             </div>
+        <div class="col-7" id="previewId">
+            {% comment %} <label class="label-title" id="previewTitle">Welcome to eMR</label>
+            <div class="iframe" id="iframe">
+                <object data="{% static 'documents/TCs2.pdf' %}#zoom=100" height="500px" width="100%" id="path1">
+                    <embed data="/{% static 'documents/TCs2.pdf' %}" id="path2"/>
+                </object>
+            </div>
+            <a href="/static/documents/TCs2.pdf" target="_blank" id="linkPreviewModeId">
+                <button type="button" class="btn btn-primary btn-block btn-lg">
+                    <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
+                </button>
+            </a> {% endcomment %}
+
+            <video class="video-js" id="my-player" style="width:auto">
+                <div class="vjs-big-play-button"></div>
+            </video>
         </div>
 
 
@@ -109,6 +126,15 @@
     <script>
         $(document).ready(function() {
 
+<script src='https://vjs.zencdn.net/7.4.1/video.js'></script>
+    <script src="{% static 'js/help/help.js' %}"></script>
+    <script>
+        var myPlayer = videojs('my-player');
+
+        myPlayer.src('/static/video/test.mp4');
+        myPlayer.addChild('BigPlayButton');
+        myPlayer.ready(function() {
+            myPlayer.play();
         });
 
     </script>
