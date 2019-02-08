@@ -303,8 +303,10 @@
             $('#newInstructionForm').submit(function(){
                 let sel_add_conds = $('#id_addition_condition').val();
                 let titles = [];
-                for (let i = 0; i < sel_add_conds.length; i++) {
-                    titles.push($('#id_addition_condition option[value='+sel_add_conds[i]+']').text());
+                if(sel_add_conds){
+                    for (let i = 0; i < sel_add_conds.length; i++) {
+                        titles.push($('#id_addition_condition option[value='+sel_add_conds[i]+']').text());
+                    }
                 }
                 $('#id_addition_condition_title').val(titles);
             });
