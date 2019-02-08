@@ -51,7 +51,7 @@ def auto_redact_medications (medications, instruction, current_date=date.today()
     start_date = None
     if instruction.type == AMRA_TYPE:
         start_date=years_ago(5, current_date)
-    return auto_redact_by_date(medications, start_date=start_date, from_date=instruction.date_range_from, to_date=instruction.date_range_to )
+    return auto_redact_by_date(medications, start_date=start_date, from_date=instruction.date_range_from, to_date=instruction.date_range_to)
 
 
 def auto_redact_significant_active_problems(significant_active_problems, instruction, current_date=date.today()):
@@ -72,18 +72,28 @@ def auto_redact_referrals(referrals, instruction, current_date=date.today()):
     start_date = None
     if instruction.type == AMRA_TYPE:
         start_date=years_ago(5, current_date)
-    return auto_redact_by_date(referrals, start_date=start_date, from_date=instruction.date_range_from, to_date=instruction.date_range_to )
+    return auto_redact_by_date(referrals, start_date=start_date, from_date=instruction.date_range_from, to_date=instruction.date_range_to)
 
 
 def auto_redact_attachments(attachments, instruction, current_date=date.today()):
     start_date = None
     if instruction.type == AMRA_TYPE:
         start_date=years_ago(2, current_date)
-    return auto_redact_by_date(attachments, start_date=start_date, from_date=instruction.date_range_from, to_date=instruction.date_range_to )
+    return auto_redact_by_date(attachments, start_date=start_date, from_date=instruction.date_range_from, to_date=instruction.date_range_to)
 
 
 def auto_redact_profile_events(events, instruction, current_date=date.today()):
     start_date = None
     if instruction.type == AMRA_TYPE:
         start_date=years_ago(5, current_date)
-    return auto_redact_by_date(events, start_date=start_date, from_date=instruction.date_range_from, to_date=instruction.date_range_to )
+    return auto_redact_by_date(events, start_date=start_date, from_date=instruction.date_range_from, to_date=instruction.date_range_to)
+
+
+def auto_redact_allergies(events, instruction, current_date=date.today()):
+    start_date = None
+    return auto_redact_by_date(events, start_date=start_date, from_date=instruction.date_range_from, to_date=instruction.date_range_to)
+
+
+def auto_redact_bloods(events, instruction, current_date=date.today()):
+    start_date = None
+    return auto_redact_by_date(events, start_date=start_date, from_date=instruction.date_range_from, to_date=instruction.date_range_to)
