@@ -9,99 +9,135 @@
 {% block ExtraHead %}
     <link href="{% static 'css/help/help.css' %}" rel="stylesheet"/>
     <link rel="stylesheet" href="{% static 'assets/fancybox/jquery.fancybox.min.css' %}" />
-    <link href="https://vjs.zencdn.net/7.4.1/video-js.css" rel="stylesheet">
 {% endblock %}
 
 {% block Content %}
     <div class="card">
         <div class="card-body pt-4">
-            Material contained in this section includes: training materials for Surgery staff users; <br>
-            information for Patients and 3 parties. <br>
-            Simply click on each link to access.
+            <div class="container-fluid">
+                Material contained in this section includes: training materials for Surgery staff users; <br>
+                information for Patients and 3 parties. <br>
+                Simply click on each link to access.
+            </div>
         </div>
     </div>
     <div class="col-12">&nbsp;</div>
+    
     <div class="row">
-        <div class="col-3">
-            <div class="card menu-block">
-                <div class="card-header bg-primary text-center text-light pt-4">
-                    <h6>Starter Guide.</h6>
+        <div class="col-5">
+            <label class="label-title">Guide Menu</label>
+            <div class='accordion' id="menu1">
+                <!-- Dropdown 1 -->
+                <div class="card">
+                    <div class="card-header bg-primary" id="title1">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link text-light" type="button" data-toggle="collapse" data-target="#detail1" aria-expanded="true" aria-controls="detail1">
+                                <strong><i class="fas fa-caret-down"></i>&nbsp;&nbsp;Starter Guide</strong>
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="detail1" class="collapse show" aria-labelby="title1" data-parent="#menu1">
+                        <div class="card-body">
+                            <div class="btn-group-vertical col-12">
+                                <a class="btn btn-block disabled" href="#" role="button">Set-up user guide</a>
+                                <a class="btn btn-block disabled" href="#" role="button">Set-up video</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="btn-group-vertical col-12">
-                        <a class="btn btn-block" href="#" role="button">Set-up user guide.</a>
-                        <a class="btn btn-block" href="#" role="button">Set-up video.</a>
+
+                <!-- Dropdown 2 -->
+                <div class="card">
+                    <div class="card-header bg-primary" id="title2">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link text-light" type="button" data-toggle="collapse" data-target="#detail2" aria-expanded="false" aria-controls="detail2">
+                                <strong><i class="fas fa-caret-down"></i>&nbsp;&nbsp;SARs Guide</strong>
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="detail2" class="collapse" aria-labelby="title2" data-parent="#menu1">
+                        <div class="card-body">
+                            <div class="btn-group-vertical col-12">
+                                <a class="btn btn-block disabled" href="#" role="button">SARs user guide</a>
+                                <a class="btn btn-block disabled" href="#" role="button">SARs video</a>
+                                <a class="btn btn-block disabled" href="#" role="button">SARs process map</a>
+                                <a class="btn btn-block disabled" href="#" role="button">Dual Consent Form</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dropdown 3 -->
+                <div class="card">
+                    <div class="card-header bg-primary" id="title3">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link text-light" type="button" data-toggle="collapse" data-target="#detail3" aria-expanded="false" aria-controls="detail3">
+                                <strong><i class="fas fa-caret-down"></i>&nbsp;&nbsp;AMRA Guide</strong>
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="detail3" class="collapse" aria-labelby="title3" data-parent="#menu1">
+                        <div class="card-body">
+                            <div class="card-body">
+                                <div class="btn-group-vertical col-12">
+                                    <a class="btn btn-block disabled" href="#" role="button">AMRA user guide</a>
+                                    <a class="btn btn-block disabled" href="#" role="button">AMRA video</a>
+                                    <a class="btn btn-block disabled" href="#" role="button">AMRA Fees guidelines</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dropdown 4 -->
+                <div class="card">
+                    <div class="card-header bg-primary" id="title4">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link text-light" type="button" data-toggle="collapse" data-target="#detail4" aria-expanded="false" aria-controls="detail4">
+                                <strong><i class="fas fa-caret-down"></i>&nbsp;&nbsp;Advance Instructions Guide</strong>
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="detail4" class="collapse" aria-labelby="title4" data-parent="#menu1">
+                        <div class="card-body">
+                            <div class="card-body">
+                                <div class="btn-group-vertical col-12">
+                                    <a class="btn btn-block disabled" href="#" role="button">SARs for Patients</a>
+                                    <a class="btn btn-block disabled" href="#" role="button">SARs for Solicitors</a>
+                                    <a class="btn btn-block disabled" href="#" role="button">AMRA for Patients</a>
+                                    <a class="btn btn-block disabled" href="#" role="button">AMRA for Solicitors</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dropdown 5-->
+                <div class="card">
+                    <div class="card-header bg-primary" id="title5">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link text-light" type="button" data-toggle="collapse" data-target="#detail5" aria-expanded="false" aria-controls="detail5">
+                                <strong><i class="fas fa-caret-down"></i>&nbsp;&nbsp;Other</strong>
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="detail5" class="collapse" aria-labelby="title5" data-parent="#menu1">
+                        <div class="card-body">
+                            <div class="card-body">
+                                <div class="btn-group-vertical col-12">
+                                    <a class="btn btn-block disabled" href="#" role="button">End user-license</a>
+                                    <a class="btn btn-block" href="#" role="button" onclick="return changeScreen(52);">Data Policy</a>
+                                    <a class="btn btn-block" href="#" role="button" onclick="return changeScreen(53);">Terms & Conditions</a>
+                                    <a class="btn btn-block disabled" href="#" role="button">Data Security Document</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-3">
-            <div class="card menu-block">
-                <div class="card-header bg-primary text-center text-light pt-4">
-                    <h6>SARs Guide.</h6>
-                </div>
-                <div class="card-body">
-                    <div class="btn-group-vertical col-12">
-                        <a class="btn btn-block" href="#" role="button">SARs user guide.</a>
-                        <a class="btn btn-block" href="#" role="button">SARs video.</a>
-                        <a class="btn btn-block" href="#" role="button">SARs process map.</a>
-                        <div class="col-12">&nbsp;</div>
-                        <a class="btn btn-block" href="#" role="button">Dual Consent Form</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-3">
-            <div class="card menu-block">
-                <div class="card-header bg-primary text-center text-light pt-4">
-                    <h6>AMRA Guide.</h6>
-                </div>
-                <div class="card-body">
-                    <div class="btn-group-vertical col-12">
-                        <a class="btn btn-block disabled" href="#" role="button">AMRA user guide.</a>
-                        <a class="btn btn-block disabled" href="#" role="button">AMRA video.</a>
-                        <a class="btn btn-block disabled" href="#" role="button">AMRA Fees guidelines.</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-3">
-            <div class="card menu-block">
-                <div class="card-header bg-primary text-center text-light pt-4">
-                    <h6>Advance Instructions Guide.</h6>
-                </div>
-                <div class="card-body">
-                    <div class="btn-group-vertical col-12">
-                        <a class="btn btn-block" href="#" role="button">SARs for Patients.</a>
-                        <a class="btn btn-block" href="#" role="button">SARs for Solicitors.</a>
-                        <div class="col-12">&nbsp;</div>
-                        <a class="btn btn-block disabled" href="#" role="button">AMRA for Patients.</a>
-                        <a class="btn btn-block disabled" href="#" role="button">AMRA for Solicitors.</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class='col-12'>&nbsp;</div>
-        <div class="col-3">
-            <div class="card menu-block">
-                <div class="card-header bg-primary text-center text-light pt-4">
-                    <h6>Other.</h6>
-                </div>
-                <div class="card-body">
-                    <div class="btn-group-vertical col-12">
-                        <a class="btn btn-block" href="#" role="button">End user-license.</a>
-                        <a class="btn btn-block" href="#" role="button">Data Policy.</a>
-                        <a class="btn btn-block" href="#" role="button">Terms & Conditions.</a>
-                        <a class="btn btn-block" href="#" role="button">Data Security Document.</a>
-                    </div>
-                </div>
-            </div>
         <div class="col-7" id="previewId">
-            {% comment %} <label class="label-title" id="previewTitle">Welcome to eMR</label>
+            <label class="label-title" id="previewTitle">Welcome to eMR</label>
             <div class="iframe" id="iframe">
                 <object data="{% static 'documents/TCs2.pdf' %}#zoom=100" height="500px" width="100%" id="path1">
                     <embed data="/{% static 'documents/TCs2.pdf' %}" id="path2"/>
@@ -111,31 +147,11 @@
                 <button type="button" class="btn btn-primary btn-block btn-lg">
                     <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
                 </button>
-            </a> {% endcomment %}
-
-            <video class="video-js" id="my-player" style="width:auto">
-                <div class="vjs-big-play-button"></div>
-            </video>
+            </a>
         </div>
-
-
     </div>
 {% endblock %}
 
 {% block Script %}
-    <script>
-        $(document).ready(function() {
-
-<script src='https://vjs.zencdn.net/7.4.1/video.js'></script>
     <script src="{% static 'js/help/help.js' %}"></script>
-    <script>
-        var myPlayer = videojs('my-player');
-
-        myPlayer.src('/static/video/test.mp4');
-        myPlayer.addChild('BigPlayButton');
-        myPlayer.ready(function() {
-            myPlayer.play();
-        });
-
-    </script>
 {% endblock %}
