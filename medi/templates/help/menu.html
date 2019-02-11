@@ -9,6 +9,7 @@
 {% block ExtraHead %}
     <link href="{% static 'css/help/help.css' %}" rel="stylesheet"/>
     <link rel="stylesheet" href="{% static 'assets/fancybox/jquery.fancybox.min.css' %}" />
+    <link href="https://vjs.zencdn.net/7.4.1/video-js.css" rel="stylesheet">
 {% endblock %}
 
 {% block Content %}
@@ -137,7 +138,7 @@
             </div>
         </div>
         <div class="col-7" id="previewId">
-            <label class="label-title" id="previewTitle">Welcome to eMR</label>
+            {% comment %} <label class="label-title" id="previewTitle">Welcome to eMR</label>
             <div class="iframe" id="iframe">
                 <object data="{% static 'documents/TCs2.pdf' %}#zoom=100" height="500px" width="100%" id="path1">
                     <embed data="/{% static 'documents/TCs2.pdf' %}" id="path2"/>
@@ -147,11 +148,21 @@
                 <button type="button" class="btn btn-primary btn-block btn-lg">
                     <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
                 </button>
-            </a>
+            </a> {% endcomment %}
+            <label class="label-title" id="previewTitle">Welcome to eMR</label>
+            <video id='my-video' class='video-js col-12' controls preload='auto' width='auto' height='auto' data-setup='{}'>
+                <source src='{% static "video/test.mp4" %}' type='video/mp4'>
+                <p class='vjs-no-js'>
+                To view this video please enable JavaScript, and consider upgrading to a web browser that
+                <a href='https://videojs.com/html5-video-support/' target='_blank'>supports HTML5 video</a>
+                </p>
+            </video>
+
         </div>
     </div>
 {% endblock %}
 
 {% block Script %}
+    <script src='https://vjs.zencdn.net/7.4.1/video.js'></script>
     <script src="{% static 'js/help/help.js' %}"></script>
 {% endblock %}
