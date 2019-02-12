@@ -24,6 +24,12 @@ class Problem(XMLModelBase):
             return None
         return value == '1'
 
+    def is_minor(self) -> Optional[bool]:
+        value = self.get_element_text('Problem/Significance')
+        if not value:
+            return None
+        return value == '2'
+
     def end_date(self) -> str:
         if self.is_active():
             return ''

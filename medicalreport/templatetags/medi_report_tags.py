@@ -19,6 +19,8 @@ def form_referrals(context):
     return {
         'referrals': context['medical_record'].referrals,
         'locations': context['medical_record'].locations,
+        'instruction': context['instruction'],
+        'minor_problems_list': context['medical_record'].minor_problems,
         'redaction': context['redaction']
     }
 

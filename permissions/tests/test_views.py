@@ -4,7 +4,8 @@ from accounts.models import User, MedidataUser, ClientUser, GeneralPracticeUser,
         MEDIDATA_USER, GENERAL_PRACTICE_USER, CLIENT_USER, ADMIN_PERMISSIONS
 from django.contrib.auth.models import Permission
 from permissions.model_choices import MANAGER_PERMISSIONS, GP_PERMISSIONS,\
-        OTHER_PERMISSIONS, CLIENT_PERMISSIONS, MEDI_PERMISSIONS
+        OTHER_PERMISSIONS, CLIENT_PERMISSIONS, MEDI_PERMISSIONS,\
+        MEDI_ADMIN_PERMISSIONS, MEDI_TEAM_PERMISSIONS
 
 
 class PermissionTestCase(TestCase):
@@ -87,14 +88,35 @@ class AutoAssignPermissionGP(TestCase):
 class AutoAssignPermissionMedi(TestCase):
     def setUp(self):
         self.user = mommy.make(User, type=MEDIDATA_USER)
-        mommy.make(MedidataUser, user=self.user)
         self.client.force_login(self.user, backend=None)
 
-    def test_permission_medi(self):
+    def test_permission_medi_super_user(self):
+        mommy.make(
+            MedidataUser,
+            user=self.user,
+            role=MedidataUser.MEDI_SUPER_USER
+        )
+        self.assertEqual(self.user.is_superuser, True)
+
+    def test_permission_medi_admin(self):
+        mommy.make(
+            MedidataUser,
+            user=self.user,
+            role=MedidataUser.MEDI_ADMIN
+        )
         for permission in self.user.user_permissions.all():
-            permission_verify = permission.codename in MEDI_PERMISSIONS
+            permission_verify = permission.codename in MEDI_ADMIN_PERMISSIONS
             self.assertEqual(permission_verify, True)
 
+    def test_permission_medi_team(self):
+        mommy.make(
+            MedidataUser,
+            user=self.user,
+            role=MedidataUser.MEDI_TEAM
+        )
+        for permission in self.user.user_permissions.all():
+            permission_verify = permission.codename in MEDI_TEAM_PERMISSIONS
+            self.assertEqual(permission_verify, True)
 
 class AutoAssignPermissionClient(TestCase):
     def setUp(self):
