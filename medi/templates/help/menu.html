@@ -59,7 +59,7 @@
                     <div id="detail2" class="collapse" aria-labelby="title2" data-parent="#menu1">
                         <div class="card-body">
                             <div class="btn-group-vertical col-12">
-                                <a class="btn btn-block disabled" href="#" role="button">SARs user guide</a>
+                                <a class="btn btn-block" href="#" role="button" onclick="return changeScreen(21);">SARs user guide</a>
                                 <a class="btn btn-block disabled" href="#" role="button">SARs video</a>
                                 <a class="btn btn-block disabled" href="#" role="button">SARs process map</a>
                                 <a class="btn btn-block disabled" href="#" role="button">Dual Consent Form</a>
@@ -138,26 +138,21 @@
             </div>
         </div>
         <div class="col-7" id="previewId">
-            {% comment %} <label class="label-title" id="previewTitle">Welcome to eMR</label>
-            <div class="iframe" id="iframe">
-                <object data="{% static 'documents/TCs2.pdf' %}#zoom=100" height="500px" width="100%" id="path1">
-                    <embed data="/{% static 'documents/TCs2.pdf' %}" id="path2"/>
-                </object>
+            <div id="pdfPreview">
+                <label class="label-title" id="previewTitle">Welcome to eMR</label>
+                <div class="iframe" id="iframe">
+                    <object data="{% static 'documents/TCs2.pdf' %}#zoom=100" height="500px" width="100%" id="path1">
+                        <embed data="/{% static 'documents/TCs2.pdf' %}" id="path2"/>
+                    </object>
+                </div>
+                <a href="/static/documents/TCs2.pdf" target="_blank" id="linkPreviewModeId">
+                    <button type="button" class="btn btn-primary btn-block btn-lg">
+                        <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
+                    </button>
+                </a>
             </div>
-            <a href="/static/documents/TCs2.pdf" target="_blank" id="linkPreviewModeId">
-                <button type="button" class="btn btn-primary btn-block btn-lg">
-                    <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
-                </button>
-            </a> {% endcomment %}
-            <label class="label-title" id="previewTitle">Welcome to eMR</label>
-            <video id='my-video' class='video-js col-12' controls preload='auto' width='auto' height='auto' data-setup='{}'>
-                <source src='{% static "video/test.mp4" %}' type='video/mp4'>
-                <p class='vjs-no-js'>
-                To view this video please enable JavaScript, and consider upgrading to a web browser that
-                <a href='https://videojs.com/html5-video-support/' target='_blank'>supports HTML5 video</a>
-                </p>
-            </video>
-
+            <label class="label-title" id="videoTitle">Welcome to eMR</label>
+            <iframe src="https://player.vimeo.com/video/108833436" id="videoPlayerId" width="100%" height="100%" class="col-12" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
         </div>
     </div>
 {% endblock %}
@@ -165,4 +160,10 @@
 {% block Script %}
     <script src='https://vjs.zencdn.net/7.4.1/video.js'></script>
     <script src="{% static 'js/help/help.js' %}"></script>
+    <script>
+         $(document).ready(function () {
+             $('#videoPlayerId').hide();
+             $('#videoTitle').hide();
+         });
+    </script>
 {% endblock %}
