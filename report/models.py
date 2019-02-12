@@ -7,7 +7,7 @@ class PatientReportAuth(TimeStampedModel):
     ACCESS_TYPE_PATIENT = 'patient'
     ACCESS_TYPE_THIRD_PARTY = 'third-party'
 
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, null=True)
     instruction = models.ForeignKey('instructions.Instruction', on_delete=models.CASCADE)
     count = models.IntegerField(default=0)
     mobi_request_id = models.CharField(max_length=255, blank=True)

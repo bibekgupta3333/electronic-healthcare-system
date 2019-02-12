@@ -13,8 +13,14 @@
         <div class="container">
             <div>
             {% for model in referrals %}
-            {% with header=model|general_header body=model|referral_body:locations  %} 
-                {% redaction_checkbox_with_body model redaction header body %}
+            {% with header=model|general_header body=model|referral_body:locations  %}
+                {% if instruction.type == 'AMRA' %}
+                    {% if not model|is_linked_with_minor_problem:minor_problems_list %}
+                        {% redaction_checkbox_with_body model redaction header body %}
+                    {% endif %}
+                {% else %}
+                    {% redaction_checkbox_with_body model redaction header body %}
+                {% endif %}
             {% endwith %}
             {% endfor %}
             </div>

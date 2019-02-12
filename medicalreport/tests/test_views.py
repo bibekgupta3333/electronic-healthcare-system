@@ -39,7 +39,8 @@ class EmisAPITestCase(TestCase):
             InstructionPatient,
             patient_first_name='Alan',
             patient_last_name='Ball',
-            patient_dob=None
+            patient_dob=None,
+            patient_emis_number='2985'
         )
         gp_practice = mommy.make(
             OrganisationGeneralPractice, pk=1,
@@ -185,12 +186,21 @@ class EditReportTest(EmisAPITestCase):
     def setUp(self):
         super().setUp()
         consent_form = SimpleUploadedFile('test_consent_form.txt', b'consent')
+        self.instruction_patient = mommy.make(
+            InstructionPatient,
+            patient_first_name='Alan',
+            patient_last_name='Ball',
+            patient_dob=None,
+            patient_emis_number='2985'
+        )
         self.instruction = mommy.make(
             Instruction, pk=2, consent_form=consent_form,
+            patient_information=self.instruction_patient,
             patient=self.patient, gp_user=self.gp_user,
             gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_PROGRESS, type='SARS',
             **{'date_range_from': datetime(1995, 10, 10), 'date_range_to': datetime(2015, 10, 10)}
         )
+
         self.snomed_concept = mommy.make(SnomedConcept, external_id=365981007)
         self.snomed_concept = mommy.make(SnomedConcept, external_id=228273003)
         self.redaction = mommy.make(
@@ -324,9 +334,11 @@ class FinalReportTest(EmisAPITestCase):
     def setUp(self):
         super().setUp()
         consent_form = SimpleUploadedFile('test_consent_form.txt', b'consent')
+        self.patient_information = mommy.make(InstructionPatient, patient_first_name='Alan', patient_last_name='Ball',patient_emis_number='2985')
         self.instruction = mommy.make(
             Instruction, pk=3, consent_form=consent_form,
             patient=self.patient, gp_user=self.gp_user,
+            patient_information=self.patient_information,
             gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_COMPLETE
         )
         self.redaction = mommy.make(

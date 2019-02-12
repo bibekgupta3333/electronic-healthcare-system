@@ -48,7 +48,7 @@ class AmendmentsForRecord(models.Model):
 
     @property
     def patient_emis_number(self) -> str:
-        return self.instruction.patient.emis_number
+        return self.instruction.patient_information.patient_emis_number
 
     def get_gp_name(self) -> str:
         gp_name = ''

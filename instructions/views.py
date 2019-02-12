@@ -675,6 +675,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
             patient_instruction.patient_telephone_code = request.POST.get('patient_telephone_code', '')
             patient_instruction.patient_alternate_phone = patient_alternate_phone
             patient_instruction.patient_alternate_code = request.POST.get('patient_alternate_code', '')
+            patient_instruction.patient_emis_number = patient_emis_number
             patient_instruction.save()
             patient_user = create_or_update_patient_user(patient_instruction, patient_emis_number)
             instruction.patient = patient_user
