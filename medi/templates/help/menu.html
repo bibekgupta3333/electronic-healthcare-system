@@ -9,7 +9,6 @@
 {% block ExtraHead %}
     <link href="{% static 'css/help/help.css' %}" rel="stylesheet"/>
     <link rel="stylesheet" href="{% static 'assets/fancybox/jquery.fancybox.min.css' %}" />
-    <link href="https://vjs.zencdn.net/7.4.1/video-js.css" rel="stylesheet">
 {% endblock %}
 
 {% block Content %}
@@ -32,8 +31,8 @@
                 <div class="card">
                     <div class="card-header bg-primary" id="title1">
                         <h5 class="mb-0">
-                            <button class="btn btn-link text-light" type="button" data-toggle="collapse" data-target="#detail1" aria-expanded="true" aria-controls="detail1">
-                                <strong><i class="fas fa-caret-down"></i>&nbsp;&nbsp;Starter Guide</strong>
+                            <button class="choice-1 btn btn-link text-light" type="button" data-toggle="collapse" data-target="#detail1" aria-expanded="true" aria-controls="detail1">
+                                <strong><i class="fas fa-caret-down" id="symbol-1"></i>&nbsp;&nbsp;Starter Guide</strong>
                             </button>
                         </h5>
                     </div>
@@ -51,8 +50,8 @@
                 <div class="card">
                     <div class="card-header bg-primary" id="title2">
                         <h5 class="mb-0">
-                            <button class="btn btn-link text-light" type="button" data-toggle="collapse" data-target="#detail2" aria-expanded="false" aria-controls="detail2">
-                                <strong><i class="fas fa-caret-right"></i>&nbsp;&nbsp;SARs Guide</strong>
+                            <button class="choice-2 btn btn-link text-light" type="button" data-toggle="collapse" data-target="#detail2" aria-expanded="false" aria-controls="detail2">
+                                <strong><i class="fas fa-caret-right" id="symbol-2"></i>&nbsp;&nbsp;SARs Guide</strong>
                             </button>
                         </h5>
                     </div>
@@ -72,8 +71,8 @@
                 <div class="card">
                     <div class="card-header bg-primary" id="title3">
                         <h5 class="mb-0">
-                            <button class="btn btn-link text-light" type="button" data-toggle="collapse" data-target="#detail3" aria-expanded="false" aria-controls="detail3">
-                                <strong><i class="fas fa-caret-right"></i>&nbsp;&nbsp;AMRA Guide</strong>
+                            <button class="choice-3 btn btn-link text-light" type="button" data-toggle="collapse" data-target="#detail3" aria-expanded="false" aria-controls="detail3">
+                                <strong><i class="fas fa-caret-right" id="symbol-3"></i>&nbsp;&nbsp;AMRA Guide</strong>
                             </button>
                         </h5>
                     </div>
@@ -94,8 +93,8 @@
                 <div class="card">
                     <div class="card-header bg-primary" id="title4">
                         <h5 class="mb-0">
-                            <button class="btn btn-link text-light" type="button" data-toggle="collapse" data-target="#detail4" aria-expanded="false" aria-controls="detail4">
-                                <strong><i class="fas fa-caret-right"></i>&nbsp;&nbsp;Advance Instructions Guide</strong>
+                            <button class="choice-4 btn btn-link text-light" type="button" data-toggle="collapse" data-target="#detail4" aria-expanded="false" aria-controls="detail4">
+                                <strong><i class="fas fa-caret-right" id="symbol-4"></i>&nbsp;&nbsp;Advance Instructions Guide</strong>
                             </button>
                         </h5>
                     </div>
@@ -117,7 +116,7 @@
                 <div class="card">
                     <div class="card-header bg-primary" id="title5">
                         <h5 class="mb-0">
-                            <button class="btn btn-link text-light" type="button" data-toggle="collapse" data-target="#detail5" aria-expanded="false" aria-controls="detail5">
+                            <button class="choice-5 btn btn-link text-light" type="button" data-toggle="collapse" data-target="#detail5" aria-expanded="false" aria-controls="detail5">
                                 <strong><i class="fas fa-caret-right" id="symbol-5"></i>&nbsp;&nbsp;Other</strong>
                             </button>
                         </h5>
@@ -158,12 +157,16 @@
 {% endblock %}
 
 {% block Script %}
-    <script src='https://vjs.zencdn.net/7.4.1/video.js'></script>
     <script src="{% static 'js/help/help.js' %}"></script>
     <script>
          $(document).ready(function () {
              $('#videoPlayerId').hide();
              $('#videoTitle').hide();
+
+           
+
          });
+
+         
     </script>
 {% endblock %}
