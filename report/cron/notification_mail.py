@@ -13,7 +13,7 @@ def report_notification_expired_authorisation_job():
     current_date = timezone.now().date()
     third_party_authorisations = ThirdPartyAuthorisation.objects.all()
     for authorisation in third_party_authorisations:
-        if current_date > authorisation.expired_date and not authorisation.expired:
+        if authorisation.expired_date and current_date > authorisation.expired_date and not authorisation.expired:
             authorisation.expired = True
             authorisation.save()
             try:
