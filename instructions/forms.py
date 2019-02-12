@@ -179,8 +179,10 @@ class InstructionAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['gp_user'].required = False
-        self.fields['client_user'].required = False
+        if self.fields.get('gp_user'):
+            self.fields['gp_user'].required = False
+        if self.fields.get('client_user'):
+            self.fields['client_user'].required = False
 
     class Meta:
         model = Instruction

@@ -66,6 +66,11 @@ class UserAdmin(BaseUserAdmin):
         ]
         return my_urls + urls
 
+    def get_readonly_fields(self, request, obj=None):
+        if not request.user.is_superuser:
+            return self.readonly_fields + ('groups', 'user_permissions')
+        return self.readonly_fields
+
     def get_queryset(self, request):
         if hasattr(request.user, 'userprofilebase'):
             queryset = request.user.get_query_set_within_organisation()
@@ -110,7 +115,7 @@ class UserAdmin(BaseUserAdmin):
             self.fieldsets = (
                 (None, {'fields': ('email', 'password')}),
                 ('Personal info', {'fields': ('first_name', 'last_name')}),
-                ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+                ('Permissions', {'fields': ('is_active', 'groups', 'user_permissions')}),
             )
             # add type field form
             self.add_fieldsets = (

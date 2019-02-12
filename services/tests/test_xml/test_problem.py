@@ -8,6 +8,13 @@ class ProblemTest(XMLTestCase):
     def setUp(self):
         super().setUp(Problem.XPATH)
         self.problems = [Problem(p) for p in self.elements]
+        """
+            Display term on each problems
+                problems[0] is Asthma
+                problems[1] is Gout
+                problems[2] is Coughing
+                problems[3] is O/E - weight, 15 kg
+        """
 
     def test_is_active_returns_true_when_active(self):
         self.assertTrue(self.problems[0].is_active())
@@ -35,6 +42,15 @@ class ProblemTest(XMLTestCase):
 
     def test_is_significant_returns_none_when_status_unknown(self):
         self.assertIsNone(self.problems[2].is_significant())
+
+    def test_is_minor_returns_true_when_minor(self):
+        self.assertTrue(self.problems[3].is_minor())
+
+    def test_is_minor_returns_false_when_not_minor(self):
+        self.assertFalse(self.problems[1].is_minor())
+
+    def test_is_minor_returns_none_when_status_unknown(self):
+        self.assertIsNone(self.problems[2].is_minor())
 
     def test_date(self):
         self.assertEqual('05/05/2015', self.problems[3].date())
