@@ -61,10 +61,18 @@
     <script src="{% static '/js/instructions/consent_form.js' %}"></script>
     <script>
         var selectType = "{{ select_type }}";
-        $("#id_consent_form").fileinput({
-            theme: 'fas',
-            showUpload: false,
-        });
+        if((navigator.userAgent.indexOf("MSIE") != -1 ) || (!!document.documentMode == true )){
+            $("#id_consent_form").fileinput({
+                theme: 'fas',
+                showUpload: false,
+                showPreview: false,
+            });
+        } else {
+            $("#id_consent_form").fileinput({
+                theme: 'fas',
+                showUpload: false,
+            });
+        }
         renderType(selectType);
     </script>
 {% endblock %}
