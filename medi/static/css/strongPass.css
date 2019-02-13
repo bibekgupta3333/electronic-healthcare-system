@@ -54,3 +54,15 @@
 .validate-pass p.great{
   color: rgb(0, 178, 20);
 }
+
+.progress-bar-danger {
+  background-color: #d9534f;
+}
+
+.progress-bar-warning {
+  background-color: #f0ad4e;
+}
+
+.progress-bar-success {
+  background-color: #5cb85c;
+}

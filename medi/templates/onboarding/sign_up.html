@@ -188,18 +188,13 @@
                         <div class="col-md-6">
                             <div class="row" id="password_form">
                                 <div class="col-md-4 title-pos">Choose password <span class="red">*</span></div>
-                                {% bootstrap_field pm_form.password1 show_label=False form_group_class='col-md-7' placeholder='' %}
+                                <div class="col-md-8">
+                                    <input type="password" name="password1" class="form-control" required id="id_password1">
+                                </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-4"></div>
-                                <div class="col-md-8">
-                                  <div class="validate-pass" id="validate-pass">
-                                    <div class="col-md-2"></div>
-                                    <div class="col-md-2"></div>
-                                    <div class="col-md-2"></div>
-                                    <div class="col-md-2"></div>
-                                    <div class="col-md-4"><p></p></div>
-                                  </div>
+                                <div class="progress offset-4 col-md-8 mt-1" style="background-clip: content-box">
+                                    <div id="StrengthProgressBar" class="progress-bar progress-bar-success" style="width: 100%;">Very strong</div>
                                 </div>
                             </div>
                             <div id="password_error" class="offset-md-3"></div>
@@ -306,40 +301,15 @@
     <script src="{% static 'js/intlTelInput.min.js' %}"></script>
     <script src="{% static 'js/intlTel.js' %}"></script>
     <script src="{% static 'js/onboarding/emr_signup.js' %}"></script>
+    <script src="{% static 'js/axcvbn.min.js' %}"></script>
+    <script src="{% static 'js/zxcvbn-bootstrap-strength-meter.js' %}" ></script>
     <script>
         $(document).ready(function () {
-            $("#id_password1").keyup(function() {
-              var pass = $(this).val();
-              var pass_type = ["", "very-weak", "weak", "good", "great"];
-              var status = 0;
-              $("#validate-pass").removeClass("very-weak weak good great");
-              $("#validate-pass p").removeClass("very-weak weak good great");
-              $("#validate-pass p").text("");
-              if(pass){
-                if(pass.length > 8){
-                  if(pass.match(/[A-z]/)){
-                    status = status + 1;
-                  }
-                  if(pass.match(/[A-Z]/)){
-                    status = status + 1;
-                  }
-                  if(pass.match(/\d/)){
-                    status = status + 1;
-                  }
-                  if(pass.length > 10){
-                    status = status + 1;
-                  }
-                }else{
-                  status = status + 1;
-                }
-                if($('.invalid-feedback').length){
-                    status = 1;
-                }
-                $("#validate-pass").addClass(pass_type[status]);
-                $("#validate-pass p").addClass(pass_type[status]);
-                $("#validate-pass p").text(pass_type[status]);
-              }
+            $("#StrengthProgressBar").zxcvbnProgressBar({
+                  passwordInput: "#id_password1",
+                  ratings: ["Very Weak", "Weak", "OK", "Strong", "Very strong"]
             });
+
             init_select2_postcode(
                 {% if selected_post_code %} ["{{ selected_post_code }}"] {% else %} [''] {% endif %}
             );
@@ -385,6 +355,9 @@
                 } else {
                     $('#password_error').text("");
                 }
+                if($('#id_password1').hasClass('is-invalid')){
+                    match_error = true;
+                }
                 if(!match_error) {
                     $('#accept-policy').removeAttr("disabled");
                     if(!$('#accept-policy:checked').length) {
@@ -397,6 +370,33 @@
                 } else {
                     event.preventDefault();
                 }
+            });
+
+            $('#id_password1').on('keyup', function () {
+                $.ajax({
+                        url: "{% url 'accounts:verify_password' %}",
+                        type: "POST",
+                        dataType: "json",
+                        data: {
+                            "password": $(this).val(),
+                            "first_name": $('#id_first_name').val(),
+                            "surname": $('#id_surname').val(),
+                            "email": $('#id_email1').val(),
+                            "csrfmiddlewaretoken": csrf_token
+                        },
+                        success: function (data) {
+                            $('#password_form').find('.invalid-feedback').remove();
+                            $('id_password1').removeClass("is-invalid");
+                            if (!data.results.verified){
+                                $('#id_password1').addClass("is-invalid");
+                                data.results.warning.map(function (item) {
+                                    $('#id_password1').after('<div class="invalid-feedback">' + item + '</div>');
+                                })
+                            }else {
+                                $('#id_password1').removeClass("is-invalid");
+                            }
+                        }
+                    });
             });
 
             $('#id_postcode').on('change', function () {
@@ -561,7 +561,7 @@
                     });
                 }
               },
-              '.select2-results__option'
+              '#select2-id_surgery_name-results > .select2-results__option, #select2-id_practice_code-results > .select2-results__option'
             );
         });
     </script>
