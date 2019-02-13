@@ -37,7 +37,7 @@ def verify_password(password: str, first_name: str=None, last_name: str=None, em
         'verified': True,
         'warning': None
     }
-    if results.get('score',0) < max_score:
+    if results.get('score', 0) < max_score:
         data['verified'] = False
         data['warning'] = results.get('feedback').get('suggestions')
     return data
