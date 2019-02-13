@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.template import loader
 from django.utils.html import format_html
+from django.shortcuts import redirect
 from django.utils import timezone
 from django.core.files.base import ContentFile
 from services.xml.medical_report_decorator import MedicalReportDecorator
@@ -120,10 +121,12 @@ def create_or_update_redaction_record(request, instruction):
 
 
 def save_medical_report(request, instruction, amendments_for_record):
-    raw_xml = services.GetMedicalRecord(amendments_for_record.patient_emis_number, gp_organisation=instruction.gp_practice).call()
-    medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
+    raw_xml_or_status_code = services.GetMedicalRecord(amendments_for_record.patient_emis_number, gp_organisation=instruction.gp_practice).call()
+    if isinstance(raw_xml_or_status_code, int):
+        return redirect('services:handle_error', code=raw_xml_or_status_code)
+    medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
     relations = '|'.join(relation.name for relation in ReferencePhrases.objects.all())
-    parse_xml = redaction_elements(raw_xml, amendments_for_record.redacted_xpaths)
+    parse_xml = redaction_elements(raw_xml_or_status_code, amendments_for_record.redacted_xpaths)
     str_xml = lxml_to_string(parse_xml)
     params = {
         'medical_record': medical_record_decorator,
@@ -274,7 +277,7 @@ def send_surgery_email(instruction):
 
 def create_patient_report(request, instruction):
     unique_url = uuid.uuid4().hex
-    PatientReportAuth.objects.create(patient_id=instruction.patient_id, instruction=instruction, url=unique_url)
+    PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
     send_patient_mail(request, instruction, unique_url)
     send_surgery_email(instruction)
 

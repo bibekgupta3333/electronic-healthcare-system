@@ -1,18 +1,37 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.http import HttpResponse
+from django.db.models import Sum, Q
+
+from instructions.model_choices import *
+from accounts.models import *
+
 from django.core.mail import send_mail
-from django.shortcuts import reverse
-from django.db.models import Q
 from django.contrib import messages
+from django.template import loader
 
 from instructions.models import Instruction
 from .models import PatientReportAuth, ThirdPartyAuthorisation
 from .forms import AccessCodeForm, ThirdPartyAuthorisationForm
 from .functions import validate_pin
+from services.xml.base64_attachment import Base64Attachment
+from medicalreport.models import AmendmentsForRecord
+from services.xml.medical_report_decorator import MedicalReportDecorator
+from services.emisapiservices import services
 from report.mobile import AuthMobile
+from django.conf import settings
+from PIL import Image
 
+import io
 import json
 import datetime
+import PyPDF2
+import subprocess
+import img2pdf
+import reportlab
+import reportlab.lib.pagesizes as pdf_sizes
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def sar_request_code(request, instruction_id, access_type, url):
@@ -214,16 +233,15 @@ def get_report(request, access_type):
             instruction = get_object_or_404(Instruction, id=report_auth.instruction_id)
 
             if request.POST.get('button') == 'Download Report':
-                response = HttpResponse(content_type='application/pdf')
+                response = get_merged_medicalreport_attachment(instruction_id=instruction.id)
                 response['Content-Disposition'] = 'attachment; filename="medical_report.pdf"'
-                response.write(instruction.medical_report.read())
                 return response
 
             elif request.POST.get('button') == 'View Report':
-                return HttpResponse(instruction.medical_report, content_type='application/pdf')
+                return get_merged_medicalreport_attachment(instruction_id=instruction.id)
 
             elif request.POST.get('button') == 'Print Report':
-                return HttpResponse(instruction.medical_report, content_type='application/pdf')
+                return get_merged_medicalreport_attachment(instruction_id=instruction.id)
 
     return render(request, 'patient/auth_4_select_report.html',{
         'verified_pin': verified_pin,
@@ -241,6 +259,103 @@ def redirect_auth_limit(request):
 def session_expired(request):
     return render(request, 'patient/session_expired.html')
 
+def summry_report(request):
+    if 'current_year' in request.GET:
+        numYear = int(request.GET.get('current_year', None))
+    else:
+        numYear = datetime.datetime.now().year
+
+    title = 'Reporting - ' + str(numYear)
+    numMonth = 1
+    newList = list()
+    progressList = list()
+
+    if request.user.type == CLIENT_USER:
+        completeList = list()
+        rejectList = list()
+        paidList = list()
+        client = ClientUser.objects.filter(organisation = request.user.get_my_organisation()).first()
+
+        gpSumInt = 0
+        mediSumInt = 0
+
+        while numMonth <= 12:
+            newQueryInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_NEW, created__month = numMonth, created__year = numYear, \
+                                                        client_user = client).count()
+            progressQueryInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_PROGRESS, created__month = numMonth, created__year = numYear, \
+                                                        client_user = client).count()
+            completeQueryInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_COMPLETE, completed_signed_off_timestamp__month = numMonth,\
+                                                            completed_signed_off_timestamp__year = numYear, client_user = client).count()
+            rejectQueryInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_REJECT, rejected_timestamp__month = numMonth,\
+                                                            rejected_timestamp__year = numYear, client_user = client).count()
+
+            gpSumInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_COMPLETE, completed_signed_off_timestamp__month = numMonth, \
+                                                        completed_signed_off_timestamp__year = numYear, client_user = client).aggregate(Sum('gp_earns'))
+            mediSumInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_COMPLETE, completed_signed_off_timestamp__month = numMonth, \
+                                                        completed_signed_off_timestamp__year = numYear, client_user = client).aggregate(Sum('medi_earns'))
+
+            if (gpSumInt.get('gp_earns__sum') != None) and (mediSumInt.get('medi_earns__sum') != None):
+                paidSum = gpSumInt.get('gp_earns__sum') + mediSumInt.get('medi_earns__sum')
+            else:
+                paidSum = 0
+
+            newList.append(newQueryInt)
+            progressList.append(progressQueryInt)
+            completeList.append(completeQueryInt)
+            rejectList.append(rejectQueryInt)
+
+            paidList.append(float(paidSum))
+            numMonth = numMonth + 1
+            
+        return render(request, 'reporting/summary_report.html', {
+                    'header_title': title,
+                    'currentYear' : numYear,
+                    'previousYear' : numYear - 1,
+                    'nextYear' : numYear + 1,
+                    'newList' : newList,
+                    'progressList' : progressList,
+                    'completeList' : completeList,
+                    'rejectList' : rejectList,
+                    'paidList' : paidList
+                })
+
+    SARSlist = list()
+    AMRAlist = list()
+    incomeList = list()
+    gp_pratice = request.user.get_my_organisation()
+    
+    while numMonth <= 12:
+        SARSqueryInt = Instruction.objects.filter(type = SARS_TYPE, gp_practice_id = gp_pratice, created__month = numMonth, created__year = numYear).count()
+        AMRAqueryInt = Instruction.objects.filter(type = AMRA_TYPE, gp_practice_id = gp_pratice, created__month = numMonth, created__year = numYear).count()
+
+        newQueryInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_NEW, created__month = numMonth, created__year = numYear, \
+                                                    gp_practice_id = gp_pratice).count()
+        progressQueryInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_PROGRESS, created__month = numMonth, created__year = numYear, \
+                                                    gp_practice_id = gp_pratice).count()
+
+        incomeQueryInt = Instruction.objects.filter(status = INSTRUCTION_STATUS_COMPLETE, completed_signed_off_timestamp__month = numMonth, \
+                                                    completed_signed_off_timestamp__year = numYear, gp_practice_id = gp_pratice).aggregate(Sum('gp_earns'))
+        incomeInt = float(incomeQueryInt.get('gp_earns__sum')) if incomeQueryInt.get('gp_earns__sum') != None else 0
+
+        SARSlist.append(SARSqueryInt)
+        AMRAlist.append(AMRAqueryInt)
+        newList.append(newQueryInt)
+        progressList.append(progressQueryInt)
+        incomeList.append(incomeInt)
+
+        numMonth = numMonth + 1
+
+    return render(request, 'reporting/summary_report_gp.html', {
+                    'header_title': title,
+                    'currentYear' : numYear,
+                    'previousYear' : numYear - 1,
+                    'nextYear' : numYear + 1,
+                    'SARSlist' : SARSlist,
+                    'AMRAlist' : AMRAlist,
+                    'newList' : newList,
+                    'progressList' : progressList,
+                    'incomeList' : incomeList
+                })
 
 def add_third_party_authorisation(request, report_auth_id):
     report_auth = get_object_or_404(PatientReportAuth, id=report_auth_id)
@@ -250,21 +365,31 @@ def add_third_party_authorisation(request, report_auth_id):
         third_party_form = ThirdPartyAuthorisationForm(request.POST)
         if third_party_form.is_valid():
             third_party_authorisation = third_party_form.save(report_auth)
+            phone_number = ''
+            if third_party_authorisation.office_phone_number:
+                phone_number = third_party_authorisation.get_office_phone_e164()
+            elif third_party_authorisation.family_phone_number:
+                phone_number = third_party_authorisation.get_family_phone_e164()
+
+            if phone_number:
+                last_three_digits = phone_number[-3:]
+
             send_mail(
-                'Medical Report Authorisation',
-                'Your access on SAR report from {patient_name} has been initiated. Please click {link} to access the report'.format(
-                    patient_name=report_auth.patient.user.first_name,
-                    link=request.scheme + '://' + request.get_host() + reverse(
+                'Completed SAR Request',
+                '',
+                'Medidata',
+                [third_party_authorisation.email],
+                fail_silently=True,
+                html_message=loader.render_to_string('third_parties_email.html', {
+                    'patient_first_name': report_auth.instruction.patient_information.patient_first_name,
+                    'report_link': request.scheme + '://' + request.get_host() + reverse(
                         'report:request-code', kwargs={
                             'instruction_id': report_auth.instruction.id,
                             'access_type': PatientReportAuth.ACCESS_TYPE_THIRD_PARTY,
                             'url': third_party_authorisation.unique
-                        }
-                    )
-                ),
-                'Medidata',
-                [third_party_authorisation.email],
-                fail_silently=True
+                        }),
+                    'last_three_digits': last_three_digits
+                })
             )
 
             return redirect('report:select-report', access_type=PatientReportAuth.ACCESS_TYPE_PATIENT)
@@ -286,7 +411,7 @@ def cancel_authorisation(request, third_party_authorisation_id):
     send_mail(
         'Medical Report Authorisation',
         'Your access on SAR report from {patient_name} has been expired. Please contact {patient_name}'.format(
-            patient_name=report_auth.patient.user.first_name,
+            patient_name=report_auth.instruction.patient_information.patient_first_name,
         ),
         'Medidata',
         [third_party_authorisation.email],
@@ -308,7 +433,7 @@ def extend_authorisation(request, third_party_authorisation_id):
         send_mail(
             'Medical Report Authorisation',
             'Your access on SAR report from {patient_name} has been extended. Please click {link} to access the report'.format(
-                patient_name=report_auth.patient.user.first_name,
+                patient_name=report_auth.instruction.patient_information.patient_first_name,
                 link=request.scheme + '://' + request.get_host() + reverse(
                     'report:request-code', kwargs={
                         'instruction_id': report_auth.instruction.id,
@@ -335,3 +460,99 @@ def renew_authorisation(request, third_party_authorisation_id):
     third_party_authorisation.save()
 
     return redirect('report:select-report', access_type=PatientReportAuth.ACCESS_TYPE_PATIENT)
+
+
+def get_merged_medicalreport_attachment(instruction_id):
+    instruction = get_object_or_404(Instruction, id=instruction_id)
+    redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
+
+    patient_emis_number = instruction.patient_information.patient_emis_number
+    raw_xml_or_status_code = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
+    if isinstance(raw_xml_or_status_code, int):
+        return redirect('services:handle_error', code=raw_xml_or_status_code)
+    medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
+    output = PyPDF2.PdfFileWriter()
+
+    # add each page of medical report to output file
+    medical_report = PyPDF2.PdfFileReader(instruction.medical_report)
+    for page_num in range(medical_report.getNumPages()):
+        output.addPage(medical_report.getPage(page_num))
+
+    # create list of PdfFileReader obj from raw bytes of xml data
+    attachments_pdf = []
+    for attachment in medical_record_decorator.attachments():
+        xpaths = attachment.xpaths()
+        if redaction.redacted(xpaths) is not True:
+            raw_xml_or_status_code = services.GetAttachment(
+                instruction.patient_information.patient_emis_number,
+                attachment.dds_identifier(),
+                gp_organisation=instruction.gp_practice).call()
+            if isinstance(raw_xml_or_status_code, int):
+                return redirect('services:handle_error', code=raw_xml_or_status_code)
+
+            file_name = Base64Attachment(raw_xml_or_status_code).filename()
+            file_type = file_name.split('.')[-1]
+            raw_attachment = Base64Attachment(raw_xml_or_status_code).data()
+            buffer = io.BytesIO(raw_attachment)
+            folder = settings.BASE_DIR + '/static/generic_pdf/'
+            try:
+                if file_type == 'pdf':
+                    attachments_pdf.append(PyPDF2.PdfFileReader(buffer))
+                elif file_type in ['doc', 'docx']:
+                    f = open(folder + 'temp1.doc', 'wb')
+                    f.write(buffer.getvalue())
+                    f.close()
+                    subprocess.call(['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', folder, folder + 'tmp1.doc'])
+                    pdf = open(folder + 'tmp1.pdf', 'rb')
+                    attachments_pdf.append(PyPDF2.PdfFileReader(pdf))
+                else:
+                    image = Image.open(buffer)
+                    image_format = image.format
+                    if image_format == "TIFF":
+                        max_pages = 200
+                        height = image.tag[0x101][0]
+                        width = image.tag[0x100][0]
+                        out_pdf_io = io.BytesIO()
+                        c = reportlab.pdfgen.canvas.Canvas(out_pdf_io, pagesize=pdf_sizes.letter)
+                        pdf_width, pdf_height = pdf_sizes.letter
+                        page = 0
+                        while True:
+                            try:
+                                image.seek(page)
+                            except EOFError:
+                                break
+                            if pdf_width * height / width <= pdf_height:
+                                c.drawInlineImage(image, 0, 0, pdf_width, pdf_width * height / width)
+                            else:
+                                c.drawInlineImage(image, 0, 0, pdf_height * width / height, pdf_height)
+                            c.showPage()
+                            if max_pages and page > max_pages:
+                                break
+                            page += 1
+                        c.save()
+                        attachments_pdf.append(PyPDF2.PdfFileReader(out_pdf_io))
+                    else:
+                        pdf_bytes = img2pdf.convert('imgtemp1.pdf')
+                        f = open(folder + 'imgtemp1.pdf', 'wb')
+                        f.write(pdf_bytes)
+                        attachments_pdf.append(PyPDF2.PdfFileReader(f))
+                        image.close()
+                        f.close()
+            except Exception as e:
+                logger.error(e)
+
+    # add each page of each attachment to output file
+    for pdf in attachments_pdf:
+        if pdf.isEncrypted:
+            pdf.decrypt(password='')
+        for page_num in range(pdf.getNumPages()):
+            output.addPage(pdf.getPage(page_num))
+
+    pdf_page_buf = io.BytesIO()
+    output.write(pdf_page_buf)
+
+    response = HttpResponse(
+        pdf_page_buf.getvalue(),
+        content_type="application/pdf",
+    )
+    return response

@@ -43,6 +43,11 @@
                         <a href="{% url 'accounts:view_account' %}" ><i class="fas fa-money-check-alt"></i>Account</a>
                     </li>
                 {% endif %}
+                {% if perms.instructions.view_summry_report %}
+                    <li class="{% if request.resolver_match.url_name == 'summary-report' %}active{% endif %}">
+                        <a href="{% url 'report:summary-report' %}"><i class="fas fa-chart-bar"></i>Reporting</a>
+                    </li>
+                {% endif %}
                 <li class="{% if request.resolver_match.url_name == 'resource_centre' %}active{% endif %}">
                     <a href="{% url 'help:resource_centre' %}"><i class="far fa-question-circle"></i>Resource Centre</a>
                 </li>
@@ -50,3 +55,12 @@
         </ul>
     </nav>
 </aside>
+{% block Script %}
+  <script>
+      var APP_ID = "ch0w7zit";
+      window.intercomSettings = {
+          app_id: APP_ID
+      };
+      (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/' + APP_ID;var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
+  </script>
+{% endblock %}

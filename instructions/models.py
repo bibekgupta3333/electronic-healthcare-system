@@ -110,7 +110,8 @@ class Instruction(TimeStampedModel, models.Model):
             ('sign_off_amra', 'Sign off AMRA'),
             ('sign_off_sars', 'Sign off SARS'),
             ('view_completed_amra', 'View completed AMRA'),
-            ('view_completed_sars', 'View completed SARS')
+            ('view_completed_sars', 'View completed SARS'),
+            ('view_summry_report', 'View summary report')
         )
 
     def __str__(self):

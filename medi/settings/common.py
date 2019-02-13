@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'django_select2',
     'django_crontab',
     'django_clamd',
+    'axes',
 
     # app
     'accounts',
@@ -138,6 +139,27 @@ AUTH_USER_MODEL = 'accounts.User'
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
+#django-axes Authentication backend
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+#django-axes CACHES
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    },
+    'axes_cache': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+AXES_CACHE = 'axes_cache'
+AXES_FAILURE_LIMIT = 8 #The number of login attempts allowed before a record is created for the failed logins
+#AXES_LOCKOUT_TEMPLATE = 'registration/locked_out.html'
+#AXES_LOCKOUT_URL = '/locked/'
+AXES_RESET_ON_SUCCESS = True
+
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Europe/London'
@@ -169,8 +191,8 @@ RAVEN_CONFIG = {
     'dsn': 'https://33c2417eac2f468dadf54d7061d533d2:e741c290968045c098a339001c99f49f@sentry.io/1267663',
 }
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
-MEDIA_URL = "media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "/media/"
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.sendgrid.net'

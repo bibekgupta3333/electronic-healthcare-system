@@ -1,0 +1,18 @@
+.error-parent {
+    margin-top: 10%;
+}
+
+.error-code {
+    font-size: 6.5rem;
+    font-weight: 300;
+    line-height: 1.2;
+}
+
+.message-head {
+    font-size: 25px;
+    font-weight: bolder;
+}
+
+.message-secondary {
+    font-size: 21px;
+}

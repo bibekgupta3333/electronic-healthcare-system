@@ -3,7 +3,8 @@ from django.contrib.auth.models import BaseUserManager, AbstractUser, Permission
 from django.template import loader
 from django.utils.translation import gettext_lazy as _
 from permissions.model_choices import MANAGER_PERMISSIONS, GP_PERMISSIONS,\
-        OTHER_PERMISSIONS, CLIENT_PERMISSIONS, MEDI_PERMISSIONS, ADMIN_PERMISSIONS
+        OTHER_PERMISSIONS, CLIENT_PERMISSIONS, MEDI_PERMISSIONS, ADMIN_PERMISSIONS,\
+        MEDI_ADMIN_PERMISSIONS, MEDI_TEAM_PERMISSIONS
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 from common.models import TimeStampedModel
 from django.core.mail import send_mail
@@ -194,6 +195,18 @@ class UserProfileBase(TimeStampedModel, models.Model):
 
 
 class MedidataUser(UserProfileBase):
+    MEDI_SUPER_USER = 0
+    MEDI_ADMIN = 1
+    MEDI_TEAM = 2
+
+    ROLE_CHOICES = (
+        ('', '----'),
+        (MEDI_SUPER_USER, 'Medi Super User'),
+        (MEDI_ADMIN, 'Medi Admin'),
+        (MEDI_TEAM, 'Medi Team'),
+    )
+
+    role = models.IntegerField(choices=ROLE_CHOICES, null=True, blank=True, verbose_name='Role')
     organisation = models.ForeignKey(OrganisationMedidata, on_delete=models.CASCADE)
 
     class Meta:
@@ -202,13 +215,27 @@ class MedidataUser(UserProfileBase):
     def __str__(self):
         return 'Medidata' + self.user.first_name
 
+    def __init__(self, *args, **kwargs):
+        super(MedidataUser, self).__init__(*args, **kwargs)
+        self.initial_role = self.role
+
     def save(self, *args, **kwargs):
-        if self._state.adding:
+        if self.initial_role != self.role or self._state.adding:
             self.update_permission()
         super(MedidataUser, self).save(*args, **kwargs)
 
     def update_permission(self):
-        self.set_permission(MEDI_PERMISSIONS)
+        self.remove_permission()
+        user = self.user
+        user.is_staff = True
+        user.is_superuser = False
+        if self.role == self.MEDI_SUPER_USER:
+            user.is_superuser = True
+        elif self.role == self.MEDI_ADMIN:
+            self.set_permission(MEDI_ADMIN_PERMISSIONS)
+        else:
+            self.set_permission(MEDI_TEAM_PERMISSIONS)
+        user.save()
 
 
 class ClientUser(UserProfileBase):

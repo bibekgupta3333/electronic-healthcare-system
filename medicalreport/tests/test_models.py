@@ -5,7 +5,7 @@ from model_mommy import mommy
 from medicalreport.models import (
     AmendmentsForRecord, AdditionalMedicationRecords, AdditionalAllergies
 )
-from instructions.models import Instruction
+from instructions.models import Instruction, InstructionPatient
 from instructions import model_choices
 from accounts.models import User, Patient, GeneralPracticeUser
 
@@ -13,7 +13,11 @@ from accounts.models import User, Patient, GeneralPracticeUser
 class AmendmentsForRecordTest(TestCase):
     def setUp(self):
         patient = mommy.make(Patient, emis_number='12345')
-        self.instruction_1 = mommy.make(Instruction, status=model_choices.INSTRUCTION_STATUS_COMPLETE, patient=patient)
+        self.patient_information = mommy.make(InstructionPatient, patient_emis_number='12345')
+        self.instruction_1 = mommy.make(
+            Instruction, status=model_choices.INSTRUCTION_STATUS_COMPLETE,
+            patient=patient, patient_information=self.patient_information
+        )
         self.instruction_2 = mommy.make(Instruction, status=model_choices.INSTRUCTION_STATUS_PROGRESS)
         user = mommy.make(User, first_name='pete', last_name='john')
         self.gp_user = mommy.make(GeneralPracticeUser, user=user)

@@ -9,7 +9,8 @@ from .medical_record import MedicalRecord
 from .auto_redactable import (
     auto_redact_referrals, auto_redact_consultations, auto_redact_attachments,
     auto_redact_medications, auto_redact_profile_events, auto_redact_by_date,
-    auto_redact_significant_active_problems, auto_redact_significant_past_problems
+    auto_redact_significant_active_problems, auto_redact_significant_past_problems,
+    auto_redact_allergies, auto_redact_bloods
 )
 from .xml_base import XMLModelBase
 from .consultation import Consultation
@@ -64,9 +65,16 @@ class MedicalReportDecorator(MedicalRecord):
         )
 
     def referrals(self) -> List[Referral]:
-        ret_xml = chronological_redactable_elements(
-            auto_redact_referrals(super().referrals(), self.instruction)
-        )
+        if self.instruction.type == model_choices.AMRA_TYPE:
+            ret_xml = chronological_redactable_elements(
+                auto_redact_referrals(super().referrals(), self.instruction)
+            )
+        else:
+            ret_xml = auto_redact_by_date(
+                super().referrals(),
+                from_date=self.instruction.date_range_from,
+                to_date=self.instruction.date_range_to,
+            )
         return ret_xml
 
     def attachments(self) -> List[Attachment]:
@@ -88,7 +96,10 @@ class MedicalReportDecorator(MedicalRecord):
         return ret_xml
 
     def all_allergies(self) -> List[XMLModelBase]:
-        return chronological_redactable_elements(super().all_allergies())
+        ret_xml = chronological_redactable_elements(
+            auto_redact_allergies(super().all_allergies(), self.instruction)
+        )
+        return ret_xml
 
     def profile_events_for(self, event_type: str) -> List[XMLModelBase]:
         ret_xml = chronological_redactable_elements(
@@ -108,7 +119,7 @@ class MedicalReportDecorator(MedicalRecord):
 
     def bloods_for(self, blood_type: str) -> List[ValueEvent]:
         return (self.__table_blood_elements(self.__redact_elements(chronological_redactable_elements(
-            super().blood_test(blood_type))
+            auto_redact_bloods(super().blood_test(blood_type), self.instruction))
         )))
 
     def blood_test_results_by_type(self) -> Dict[str, List[ValueEvent]]:
