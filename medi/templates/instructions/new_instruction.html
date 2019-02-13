@@ -312,10 +312,18 @@
                 $('#id_addition_condition_title').val(titles);
             });
 
-            $("#id_consent_form").fileinput({
-                theme: 'fas',
-                showUpload: false,
-            });
+            if((navigator.userAgent.indexOf("MSIE") != -1 ) || (!!document.documentMode == true )){
+                $("#id_consent_form").fileinput({
+                    theme: 'fas',
+                    showUpload: false,
+                    showPreview: false,
+                });
+            } else {
+                $("#id_consent_form").fileinput({
+                    theme: 'fas',
+                    showUpload: false
+                });
+            }
 
             $('.radio').addClass('d-inline');
             $('#id_common_condition').addClass('row px-2');

@@ -305,40 +305,80 @@
         setUpTel("id_patient_telephone_mobile", "id_patient_telephone_code");
         setUpTel("id_patient_alternate_phone", "id_patient_alternate_code");
         $('.InstructionPatientForm input').attr('readonly', true);
-        $("#id_sars_consent").fileinput({
-            theme: 'fas',
-            showUpload: false,
-            {% if sars_consent_form_data.path %}
-                initialPreview: [
-                    "/{{ sars_consent_form_data.path }}"
-                ],
-                initialPreviewAsData: true,
-                initialPreviewConfig: [
-                    {
-                        type: "{{ sars_consent_form_data.type }}",
-                        url: "/{{ sars_consent_form_data.path }}",
-                        extra: {csrfmiddlewaretoken: csrftoken}
-                    }
-                ]
-            {% endif %}
-        });
-        $("#id_mdx_consent").fileinput({
-            theme: 'fas',
-            showUpload: false,
-            {% if mdx_consent_form_data.path %}
-                initialPreview: [
-                    "/{{ mdx_consent_form_data.path }}"
-                ],
-                initialPreviewAsData: true,
-                initialPreviewConfig: [
-                    {
-                        type: "{{ mdx_consent_form_data.type }}",
-                        url: "/{{ mdx_consent_form_data.path }}",
-                        extra: {csrfmiddlewaretoken: csrftoken}
-                    }
-                ]
-            {% endif %}
-        });
+        if((navigator.userAgent.indexOf("MSIE") != -1 ) || (!!document.documentMode == true )){
+            $("#id_sars_consent").fileinput({
+                theme: 'fas',
+                showUpload: false,
+                showPreview: false,
+                {% if sars_consent_form_data.path %}
+                    initialPreview: [
+                        "/{{ sars_consent_form_data.path }}"
+                    ],
+                    initialPreviewAsData: true,
+                    initialPreviewConfig: [
+                        {
+                            type: "{{ sars_consent_form_data.type }}",
+                            url: "/{{ sars_consent_form_data.path }}",
+                            extra: {csrfmiddlewaretoken: csrftoken}
+                        }
+                    ]
+                {% endif %}
+            });
+            $("#id_mdx_consent").fileinput({
+                theme: 'fas',
+                showUpload: false,
+                showPreview: false,
+                {% if mdx_consent_form_data.path %}
+                    initialPreview: [
+                        "/{{ mdx_consent_form_data.path }}"
+                    ],
+                    initialPreviewAsData: true,
+                    initialPreviewConfig: [
+                        {
+                            type: "{{ mdx_consent_form_data.type }}",
+                            url: "/{{ mdx_consent_form_data.path }}",
+                            extra: {csrfmiddlewaretoken: csrftoken}
+                        }
+                    ]
+                {% endif %}
+            });
+        }
+        else {
+            $("#id_sars_consent").fileinput({
+                theme: 'fas',
+                showUpload: false,
+                {% if sars_consent_form_data.path %}
+                    initialPreview: [
+                        "/{{ sars_consent_form_data.path }}"
+                    ],
+                    initialPreviewAsData: true,
+                    initialPreviewConfig: [
+                        {
+                            type: "{{ sars_consent_form_data.type }}",
+                            url: "/{{ sars_consent_form_data.path }}",
+                            extra: {csrfmiddlewaretoken: csrftoken}
+                        }
+                    ]
+                {% endif %}
+            });
+            $("#id_mdx_consent").fileinput({
+                theme: 'fas',
+                showUpload: false,
+                {% if mdx_consent_form_data.path %}
+                    initialPreview: [
+                        "/{{ mdx_consent_form_data.path }}"
+                    ],
+                    initialPreviewAsData: true,
+                    initialPreviewConfig: [
+                        {
+                            type: "{{ mdx_consent_form_data.type }}",
+                            url: "/{{ mdx_consent_form_data.path }}",
+                            extra: {csrfmiddlewaretoken: csrftoken}
+                        }
+                    ]
+                {% endif %}
+            });
+        }
         $('#id_patient_email').blur(function(){
             validation = new RegExp(validations['email'][0]);
             if ($('#id_patient_email').val() !='' && !validation.test(this.value) && !isPopup){
