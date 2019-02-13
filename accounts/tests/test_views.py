@@ -144,16 +144,16 @@ class TestViewUser(TestAccountBase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'user_management/user_management.html')
 
-    def test_get_view_user_by_medidata(self):
-        self.client.force_login(self.medidata_user1)
-        response = self.client.get(
-            reverse('accounts:view_users'), {
-                'type': 'allType'
-            }
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'user_management/user_management.html')
+    # If user medidata can access on front-end we will discuss about permissions again.
+    #def test_get_view_user_by_medidata(self):
+    #    self.client.force_login(self.medidata_user1)
+    #    response = self.client.get(
+    #        reverse('accounts:view_users'), {
+    #            'type': 'allType'
+    #        }
+    #    )
+    #    self.assertEqual(response.status_code, 200)
+    #    self.assertTemplateUsed(response, 'user_management/user_management.html')
 
 
 class TestViews( TestCase ):

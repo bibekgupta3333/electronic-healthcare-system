@@ -277,7 +277,7 @@ def send_surgery_email(instruction):
 
 def create_patient_report(request, instruction):
     unique_url = uuid.uuid4().hex
-    PatientReportAuth.objects.create(patient_id=instruction.patient_id, instruction=instruction, url=unique_url)
+    PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
     send_patient_mail(request, instruction, unique_url)
     send_surgery_email(instruction)
 

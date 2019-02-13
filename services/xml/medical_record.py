@@ -162,6 +162,9 @@ class MedicalRecord(XMLBase):
     def significant_past_problems(self) -> List[Problem]:
         return [sp for sp in self.__significant_problems() if sp.is_past()]
 
+    def minor_problems(self) -> List[Problem]:
+        return [mp for mp in self.__minor_problems()]
+
     # private method
     def __event_allergies(self) -> List[AllergyEvent]:
         elements = self.parsed_xml.findall(AllergyEvent.XPATH)
@@ -192,6 +195,11 @@ class MedicalRecord(XMLBase):
         elements = self.parsed_xml.xpath(Problem.XPATH)
         problem_list = [Problem(element) for element in elements]
         return list(filter(lambda problem: problem.is_significant() is True, problem_list))
+
+    def __minor_problems(self) -> List[Problem]:
+        elements = self.parsed_xml.xpath(Problem.XPATH)
+        problem_list = [Problem(element) for element in elements]
+        return list(filter(lambda problem: problem.is_minor() is True, problem_list))
 
     def __referral_items(self) -> List[Referral]:
         elements = self.parsed_xml.findall(Referral.XPATH)

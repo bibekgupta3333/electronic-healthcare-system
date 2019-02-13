@@ -65,9 +65,16 @@ class MedicalReportDecorator(MedicalRecord):
         )
 
     def referrals(self) -> List[Referral]:
-        ret_xml = chronological_redactable_elements(
-            auto_redact_referrals(super().referrals(), self.instruction)
-        )
+        if self.instruction.type == model_choices.AMRA_TYPE:
+            ret_xml = chronological_redactable_elements(
+                auto_redact_referrals(super().referrals(), self.instruction)
+            )
+        else:
+            ret_xml = auto_redact_by_date(
+                super().referrals(),
+                from_date=self.instruction.date_range_from,
+                to_date=self.instruction.date_range_to,
+            )
         return ret_xml
 
     def attachments(self) -> List[Attachment]:
