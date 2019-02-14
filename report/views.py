@@ -502,8 +502,11 @@ def get_merged_medicalreport_attachment(instruction_id):
                     f = open(folder + 'temp1.doc', 'wb')
                     f.write(buffer.getvalue())
                     f.close()
-                    subprocess.call(['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', folder, folder + 'tmp1.doc'])
-                    pdf = open(folder + 'tmp1.pdf', 'rb')
+                    subprocess.call(
+                        ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/temp1.doc"),
+                        shell=True
+                    )
+                    pdf = open(folder + 'temp1.pdf', 'rb')
                     attachments_pdf.append(PyPDF2.PdfFileReader(pdf))
                 else:
                     image = Image.open(buffer)
