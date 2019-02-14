@@ -195,7 +195,7 @@
             showUpload: false,
             {% if consent_form_data.path %}
                 initialPreview: [
-                   window.location.origin+'/{{ consent_form_data.path }}'
+                   window.location.origin+'{{ consent_form_data.path }}'
                 ],
                 initialPreviewAsData: true,
                 initialPreviewConfig: [
