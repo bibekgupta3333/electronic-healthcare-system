@@ -10,6 +10,8 @@ from django.db.models import Q
 from organisations.models import OrganisationGeneralPractice
 from instructions.forms import ClientNoteForm, InstructionAdminForm
 from import_export import resources
+from accounts.models import MedidataUser
+
 
 class InstructionReminder(admin.TabularInline):
     model = models.InstructionReminder
@@ -28,6 +30,21 @@ class InstructionClientNote(admin.TabularInline):
     readonly_fields = ('created_date', 'created_by')
     form = ClientNoteForm
     extra = 0
+
+    def has_delete_permission(self, request, obj=None):
+        if request.user.has_perm('instructions.delete_instruction') or request.user.is_superuser:
+            return True
+        return False
+
+    def has_add_permission(self, request, obj=None):
+        if request.user.has_perm('instructions.add_instruction') or request.user.is_superuser:
+            return True
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        if request.user.has_perm('instructions.change_instruction') or request.user.is_superuser:
+            return True
+        return False
 
 
 class InstructionInternalNote(admin.TabularInline):
@@ -55,6 +72,21 @@ class InstructionConditionsInline(admin.TabularInline):
 class InstructionAdditionQuestionInline(admin.TabularInline):
     model = models.InstructionAdditionQuestion
     fields = ['question']
+
+    def has_delete_permission(self, request, obj=None):
+        if request.user.has_perm('instructions.delete_instruction') or request.user.is_superuser:
+            return True
+        return False
+
+    def has_add_permission(self, request, obj=None):
+        if request.user.has_perm('instructions.add_instruction') or request.user.is_superuser:
+            return True
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        if request.user.has_perm('instructions.change_instruction') or request.user.is_superuser:
+            return True
+        return False
 
     def get_extra(self, request, obj=None, **kwargs):
         if obj and obj.instructionconditionsofinterest_set.count():
@@ -169,7 +201,7 @@ class InstructionAdmin(CustomImportExportModelAdmin):
     list_filter = ('type', DaysSinceFilter, ClientOrgFilter, GPOrgFilter)
     resource_class = InstructionResource
     raw_id_fields = ('gp_practice', )
-    readonly_fields = ('medi_ref', )
+    readonly_fields = ('medi_ref',)
     actions = ['export_status_report_as_csv', 'export_payment_as_csv', 'export_client_payment_as_csv']
     search_fields = [
         'type'
@@ -211,6 +243,22 @@ class InstructionAdmin(CustomImportExportModelAdmin):
         InstructionConditionsInline,
         InstructionAdditionQuestionInline
     ]
+
+    def get_inline_instances(self, request, obj=None):
+        self.inlines = []
+        self.inlines.append(InstructionReminder)
+        self.inlines.append(InstructionClientNote)
+        self.inlines.append(InstructionConditionsInline)
+        if request.user.has_perm('instructions.view_instructionadditionquestion') or request.user.is_superuser:
+            self.inlines.append(InstructionAdditionQuestionInline)
+        return super(InstructionAdmin, self).get_inline_instances(request, obj)
+
+    def get_readonly_fields(self, request, obj=None):
+        user = request.user
+        if hasattr(user, 'userprofilebase') and hasattr(user.userprofilebase, 'medidatauser') and\
+                request.user.userprofilebase.medidatauser.role == MedidataUser.MEDI_ADMIN:
+            return [f.name for f in self.model._meta.fields]
+        return self.readonly_fields
 
     def get_search_results(self, request, queryset, search_term):
         gp_organisations = [gp_org.pk for gp_org in OrganisationGeneralPractice.objects.filter(name__icontains=search_term)]

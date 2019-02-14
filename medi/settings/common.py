@@ -191,8 +191,8 @@ RAVEN_CONFIG = {
     'dsn': 'https://33c2417eac2f468dadf54d7061d533d2:e741c290968045c098a339001c99f49f@sentry.io/1267663',
 }
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
-MEDIA_URL = "media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "/media/"
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.sendgrid.net'

@@ -29,7 +29,7 @@ from typing import List
 @login_required(login_url='/accounts/login')
 def view_attachment(request, instruction_id, path_file):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
-    raw_xml_or_status_code = services.GetAttachment(instruction.patient.emis_number, path_file, gp_organisation=instruction.gp_practice).call()
+    raw_xml_or_status_code = services.GetAttachment(instruction.patient_information.patient_emis_number, path_file, gp_organisation=instruction.gp_practice).call()
     if isinstance(raw_xml_or_status_code, int):
         return redirect('services:handle_error', code=raw_xml_or_status_code)
     attachment_report = AttachmentReport(raw_xml_or_status_code)
@@ -71,6 +71,9 @@ def select_patient(request, instruction_id, patient_emis_number):
             if allocate_option == AllocateInstructionForm.PROCEED_REPORT:
                 patient_user = create_or_update_patient_user(instruction.patient_information, patient_emis_number)
                 instruction.patient = patient_user
+                patient_instruction = instruction.patient_information
+                patient_instruction.patient_emis_number = patient_emis_number
+                patient_instruction.save()
                 instruction.gp_user = request.user.userprofilebase.generalpracticeuser
                 instruction.save()
                 messages.success(request, 'Allocated to self successful')
@@ -80,6 +83,9 @@ def select_patient(request, instruction_id, patient_emis_number):
                 gp_name = ' '.join([instruction.gp_user.user.first_name, instruction.gp_user.user.last_name])
                 if request.user.id == instruction.gp_user.user.id:
                     patient_user = create_or_update_patient_user(instruction.patient_information, patient_emis_number)
+                    patient_instruction = instruction.patient_information
+                    patient_instruction.patient_emis_number = patient_emis_number
+                    patient_instruction.save()
                     instruction.patient = patient_user
                     instruction.save()
                 else:
@@ -195,7 +201,7 @@ def submit_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
-    patient_emis_number = instruction.patient.emis_number
+    patient_emis_number = instruction.patient_information.patient_emis_number
     raw_xml_or_status_code = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
     if isinstance(raw_xml_or_status_code, int):
         return redirect('services:handle_error', code=raw_xml_or_status_code)
@@ -261,7 +267,7 @@ def final_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
-    patient_emis_number = instruction.patient.emis_number
+    patient_emis_number = instruction.patient_information.patient_emis_number
     raw_xml_or_status_code = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
     if isinstance(raw_xml_or_status_code, int):
         return redirect('services:handle_error', code=raw_xml_or_status_code)
