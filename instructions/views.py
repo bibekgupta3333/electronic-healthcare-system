@@ -771,14 +771,25 @@ def atoi(text):
 
 
 def natural_keys(text):
-    return [atoi(c) for c in re.split(r'(\d+)', text)]
+    if 'Road' in text.split(',')[0]:
+        use_text = text.split(',')[0]
+    elif 'Road' in text.split(',')[1]:
+        use_text = text.split(',')[1]
+    elif 'Street' in text.split(',')[1]:
+        use_text = text.split(',')[1]
+    elif 'Street' in text.split(',')[1]:
+        use_text = text.split(',')[1]
+    else:
+        use_text = text.split(',')[1]
+
+    return [atoi(c) for c in re.split(r'(\d+)', use_text)]
 
 
 def api_get_address(request, address):
     if not address:
         return JsonResponse({'status': 'error', 'error': 'Address not found.'}, status=404)
 
-    url = 'https://api.getAddress.io/find/' + address + '?api-key=' + settings.GET_ADDRESS_API_KEY
+    url = 'https://api.getAddress.io/find/' + address + '?api-key=' + settings.GET_ADDRESS_API_KEY + '&sort=True'
     response = requests.get(url)
     json_response = response.json()
     json_response['addresses'].sort(key=natural_keys)

@@ -102,7 +102,10 @@ class AttachmentReport:
         f = open(folder + 'tmp.doc', 'wb')
         f.write(buffer.getvalue())
         f.close()
-        subprocess.call(['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', folder, folder + 'tmp.doc'])
+        subprocess.call(
+            ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/tmp.doc"),
+            shell=True
+        )
         pdf = open(folder + 'tmp.pdf', 'rb')
         response = HttpResponse(
             pdf,
