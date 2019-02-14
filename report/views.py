@@ -1,20 +1,10 @@
-
-import json
-import datetime
-
 from django.shortcuts import render, redirect, get_object_or_404, reverse
-from django.http import Http404, HttpResponse
+from django.http import HttpResponse
 from django.db.models import Sum, Q
 
-from medicalreport.models import AmendmentsForRecord
-from services.emisapiservices import services
-from medicalreport.reports import MedicalReport
-from services.xml.medical_report_decorator import MedicalReportDecorator
-from instructions.models import Instruction, Patient
 from instructions.model_choices import *
 from accounts.models import *
 
-from .models import PatientReportAuth
 from django.core.mail import send_mail
 from django.contrib import messages
 from django.template import loader
@@ -42,6 +32,7 @@ import reportlab.lib.pagesizes as pdf_sizes
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 def sar_request_code(request, instruction_id, access_type, url):
     error_message = None
@@ -390,7 +381,7 @@ def add_third_party_authorisation(request, report_auth_id):
                 [third_party_authorisation.email],
                 fail_silently=True,
                 html_message=loader.render_to_string('third_parties_email.html', {
-                    'patient_first_name': report_auth.patient.user.first_name,
+                    'patient_first_name': report_auth.instruction.patient_information.patient_first_name,
                     'report_link': request.scheme + '://' + request.get_host() + reverse(
                         'report:request-code', kwargs={
                             'instruction_id': report_auth.instruction.id,
@@ -420,7 +411,7 @@ def cancel_authorisation(request, third_party_authorisation_id):
     send_mail(
         'Medical Report Authorisation',
         'Your access on SAR report from {patient_name} has been expired. Please contact {patient_name}'.format(
-            patient_name=report_auth.patient.user.first_name,
+            patient_name=report_auth.instruction.patient_information.patient_first_name,
         ),
         'Medidata',
         [third_party_authorisation.email],
@@ -442,7 +433,7 @@ def extend_authorisation(request, third_party_authorisation_id):
         send_mail(
             'Medical Report Authorisation',
             'Your access on SAR report from {patient_name} has been extended. Please click {link} to access the report'.format(
-                patient_name=report_auth.patient.user.first_name,
+                patient_name=report_auth.instruction.patient_information.patient_first_name,
                 link=request.scheme + '://' + request.get_host() + reverse(
                     'report:request-code', kwargs={
                         'instruction_id': report_auth.instruction.id,
@@ -475,7 +466,7 @@ def get_merged_medicalreport_attachment(instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
-    patient_emis_number = instruction.patient.emis_number
+    patient_emis_number = instruction.patient_information.patient_emis_number
     raw_xml_or_status_code = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
     if isinstance(raw_xml_or_status_code, int):
         return redirect('services:handle_error', code=raw_xml_or_status_code)
@@ -493,7 +484,7 @@ def get_merged_medicalreport_attachment(instruction_id):
         xpaths = attachment.xpaths()
         if redaction.redacted(xpaths) is not True:
             raw_xml_or_status_code = services.GetAttachment(
-                instruction.patient.emis_number,
+                instruction.patient_information.patient_emis_number,
                 attachment.dds_identifier(),
                 gp_organisation=instruction.gp_practice).call()
             if isinstance(raw_xml_or_status_code, int):
@@ -511,8 +502,11 @@ def get_merged_medicalreport_attachment(instruction_id):
                     f = open(folder + 'temp1.doc', 'wb')
                     f.write(buffer.getvalue())
                     f.close()
-                    subprocess.call(['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', folder, folder + 'tmp1.doc'])
-                    pdf = open(folder + 'tmp1.pdf', 'rb')
+                    subprocess.call(
+                        ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/temp1.doc"),
+                        shell=True
+                    )
+                    pdf = open(folder + 'temp1.pdf', 'rb')
                     attachments_pdf.append(PyPDF2.PdfFileReader(pdf))
                 else:
                     image = Image.open(buffer)

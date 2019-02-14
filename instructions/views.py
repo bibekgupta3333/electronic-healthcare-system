@@ -675,6 +675,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
             patient_instruction.patient_telephone_code = request.POST.get('patient_telephone_code', '')
             patient_instruction.patient_alternate_phone = patient_alternate_phone
             patient_instruction.patient_alternate_code = request.POST.get('patient_alternate_code', '')
+            patient_instruction.patient_emis_number = patient_emis_number
             patient_instruction.save()
             patient_user = create_or_update_patient_user(patient_instruction, patient_emis_number)
             instruction.patient = patient_user
@@ -693,6 +694,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
     patient_email = patient_registration.email() if not patient_instruction.patient_email else patient_instruction.patient_email
     patient_telephone_mobile = patient_registration.mobile_number() if not patient_instruction.patient_telephone_mobile else patient_instruction.patient_telephone_mobile
     patient_alternate_phone = patient_registration.home_telephone() if not patient_instruction.patient_alternate_phone else patient_instruction.patient_alternate_phone
+    date_format = patient_instruction.patient_dob.strftime("%d/%m/%Y")
     # Initial Patient Form
     patient_form = InstructionPatientForm(
         instance=patient_instruction,
@@ -705,7 +707,8 @@ def consent_contact(request, instruction_id, patient_emis_number):
             'patient_email': patient_email,
             'confirm_email' : patient_email,
             'patient_telephone_mobile': patient_telephone_mobile,
-            'patient_alternate_phone': patient_alternate_phone
+            'patient_alternate_phone': patient_alternate_phone,
+            'patient_dob': date_format
         }
     )
     consent_type = 'pdf'

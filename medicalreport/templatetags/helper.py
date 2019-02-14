@@ -13,6 +13,7 @@ def format_date(date: Optional[Date]) -> str:
         return ''
     return date.strftime("%d %b %Y")
 
+
 def end_date(problem: Problem) -> str:
     parsed_end_date = problem.parsed_end_date()
     if parsed_end_date is None:

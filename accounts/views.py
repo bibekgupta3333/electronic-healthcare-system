@@ -461,6 +461,12 @@ def check_email(request):
 
 def login(request):
     if request.method == 'POST':
+
+        #Set client ip for axes
+        client_ip_attribute = 'axes_client_ip'
+        client_ip = get_client_ip(request)
+        setattr(request, client_ip_attribute, client_ip)
+
         form = LoginForm(request, request.POST)
         if form.is_valid():
             username = request.POST['username']

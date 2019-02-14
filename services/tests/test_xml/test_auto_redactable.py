@@ -132,7 +132,7 @@ class AutoRedactableTest(XMLTestCase):
         test_date = date(2018, 1, 1)
         self.assertEqual(2, len(referrals))
         self.assertEqual(
-            2,
+            0,
             len(auto_redact_referrals(referrals, self.instruction, test_date))
         )
 

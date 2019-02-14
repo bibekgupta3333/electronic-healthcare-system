@@ -276,6 +276,7 @@
             $("#id_type_2").click( function() {
                 $('#consent_main_block').hide();
                 $('#questions_main_block').hide();
+                $('.checkbox input[type="checkbox"]').prop("checked", false);
             });
             $("#id_type_1").click( function() {
                 $('#consent_main_block').show();
@@ -303,16 +304,26 @@
             $('#newInstructionForm').submit(function(){
                 let sel_add_conds = $('#id_addition_condition').val();
                 let titles = [];
-                for (let i = 0; i < sel_add_conds.length; i++) {
-                    titles.push($('#id_addition_condition option[value='+sel_add_conds[i]+']').text());
+                if(sel_add_conds){
+                    for (let i = 0; i < sel_add_conds.length; i++) {
+                        titles.push($('#id_addition_condition option[value='+sel_add_conds[i]+']').text());
+                    }
                 }
                 $('#id_addition_condition_title').val(titles);
             });
 
-            $("#id_consent_form").fileinput({
-                theme: 'fas',
-                showUpload: false,
-            });
+            if((navigator.userAgent.indexOf("MSIE") != -1 ) || (!!document.documentMode == true )){
+                $("#id_consent_form").fileinput({
+                    theme: 'fas',
+                    showUpload: false,
+                    showPreview: false,
+                });
+            } else {
+                $("#id_consent_form").fileinput({
+                    theme: 'fas',
+                    showUpload: false
+                });
+            }
 
             $('.radio').addClass('d-inline');
             $('#id_common_condition').addClass('row px-2');
