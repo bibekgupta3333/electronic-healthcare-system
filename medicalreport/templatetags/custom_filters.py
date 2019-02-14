@@ -81,9 +81,16 @@ def referral_body(referral, locations):
         if location.ref_id() == referral.provider_refid():
             provider = location
             break
-    if provider is not None:
+    try:
         return ', '.join(provider.address_lines())
-    return ''
+    except:
+        return ''
+
+
+@register.filter
+def is_linked_with_minor_problem(referral, minor_problems_list):
+    guid_minor_problems = [p.get_element_text('GUID') for p in minor_problems_list]
+    return referral.get_element_text('ProblemLinkList/Link/Target/GUID') in guid_minor_problems
 
 
 @register.filter
