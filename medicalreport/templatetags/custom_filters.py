@@ -81,9 +81,10 @@ def referral_body(referral, locations):
         if location.ref_id() == referral.provider_refid():
             provider = location
             break
-    if provider is not None:
+    try:
         return ', '.join(provider.address_lines())
-    return ''
+    except:
+        return ''
 
 
 @register.filter
