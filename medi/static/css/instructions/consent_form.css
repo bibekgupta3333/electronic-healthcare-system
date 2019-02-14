@@ -8,7 +8,7 @@
 
 .mdx-consent-style {
     font-size: 15.5px;
-    padding: 20px 16px 0 16px;
+    padding: 17px 16px 0 16px;
     line-height: 105%;
 }
 
@@ -25,4 +25,10 @@
 
 .mdx-title {
     text-align: center;
+}
+
+.foother-title {
+    text-align: right;
+    font-size: 15px;
+    color: gray;
 }
