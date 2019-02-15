@@ -38,6 +38,10 @@ def sar_request_code(request, instruction_id, access_type, url):
     error_message = None
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     third_party_authorisation = None
+    report_auth = PatientReportAuth.objects.filter(url=url).first()
+
+    if report_auth.get_activate():
+        return render(request, 'de_activate.html', )
     if access_type == PatientReportAuth.ACCESS_TYPE_PATIENT:
         patient_auth = get_object_or_404(PatientReportAuth, url=url)
         greeting_name = patient_auth.patient.user.first_name
