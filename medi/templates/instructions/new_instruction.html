@@ -348,23 +348,32 @@
             var end = new Date();
 
             $('#id_date_range_from').datepicker({
+                clearBtn: true,
                 startDate : start,
                 endDate   : end,
                 autoclose : true,
                 format: 'dd/mm/yyyy',
             }).on('changeDate', function(){
-                $('#id_date_range_to').datepicker('setStartDate', new Date(reformatted_date($(this).val())));
+                if($(this).val()){
+                    $('#id_date_range_to').datepicker('setStartDate', new Date(reformatted_date($(this).val())));
+                }else {
+                    $('#id_date_range_to').datepicker('setStartDate', start);
+                }
             });
 
             $('#id_date_range_to').datepicker({
+                clearBtn: true,
                 startDate : start,
                 endDate   : end,
                 autoclose : true,
                 format: 'dd/mm/yyyy',
             }).on('changeDate', function(){
-                $('#id_date_range_from').datepicker('setEndDate', new Date(reformatted_date($(this).val())));
+                if($(this).val()){
+                    $('#id_date_range_from').datepicker('setEndDate', new Date(reformatted_date($(this).val())));
+                }else {
+                    $('#id_date_range_from').datepicker('setEndDate', end);
+                }
             });
-
 
             $('.datepicker-days .table-condensed').css('width', '231px');
 
