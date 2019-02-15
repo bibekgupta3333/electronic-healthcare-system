@@ -1,19 +1,13 @@
 function showDivControl( tag ) {
+    $('#default-preview').hide();
     if( tag == 'video') {
-        $('#videoTitle').show();
-        $('#videoPlayerId').show();
-        $('#pdfPreview').hide();
-        $('#download-block').hide();
-    } else if( tag == 'pdf' ) {
-        $('#videoTitle').hide();
-        $('#videoPlayerId').hide();
-        $('#pdfPreview').show();
-        $('#download-block').hide();
+        $('.video-title').show();
+        $('.video-player').show();
+        $('.pdf-block').hide();
     } else {
-        $('#videoTitle').hide();
-        $('#videoPlayerId').hide();
-        $('#pdfPreview').show();
-        $('#download-block').show();
+        $('.video-title').hide();
+        $('.video-player').hide();
+        $('.pdf-block').hide();
     }
 }
 
@@ -24,33 +18,23 @@ function changeScreen( code ) {
     switch( code ) {
         // Dropdown 1
         case 11:
-            filePath = '/static/documents/Set Up Guide Final 2.pdf';
-            titlePreview = 'Set-up user guide';
-            $('#path1').attr('data', filePath + '#zoom=100' );
-            $('#path2').attr('data', filePath );
-            $('#previewTitle').text( titlePreview );
-            $('#linkPreviewModeId').attr('href', filePath );
-            $('#iframe').attr('src', $('#iframe').attr('src'));
             showDivControl('pdf');
+            $('#preview-11').show();
             break;
         case 12:
             url = 'https://player.vimeo.com/video/312782124';
             title = 'Set-up video'
             $('#videoPlayerId').attr('src', url );
             $('#videoTitle').text( title );
+            $('#default-preview').hide();
             $('#videoPlayerId').attr('src', $('#videoPlayerId').attr('src'));
             showDivControl('video');
             break;
+
         // Dropdown 2
         case 21:
-            filePath = '/static/documents/SARs User guide Final.pdf';
-            titlePreview = 'SARs user guide';
-            $('#path1').attr('data', filePath + '#zoom=100' );
-            $('#path2').attr('data', filePath );
-            $('#previewTitle').text( titlePreview );
-            $('#linkPreviewModeId').attr('href', filePath );
-            $('#iframe').attr('src', $('#iframe').attr('src'));
             showDivControl('pdf');
+            $('#preview-21').show();
             break;
         case 22:
             url = 'https://player.vimeo.com/video/317073626';
@@ -61,50 +45,24 @@ function changeScreen( code ) {
             showDivControl('video');
             break;
         case 23:
-            filePath = '/static/documents/SARs process with eMR.pdf';
-            titlePreview = 'SARs process map';
-            $('#path1').attr('data', filePath + '#zoom=100' );
-            $('#path2').attr('data', filePath );
-            $('#previewTitle').text( titlePreview );
-            $('#linkPreviewModeId').attr('href', filePath );
-            $('#iframe').attr('src', $('#iframe').attr('src'));
             showDivControl('pdf');
+            $('#preview-23').show();
             break;
         case 24:
-            filePath = '/static/documents/Dual Consent Form for SARs Jan 31 2019.pdf';
-            titlePreview = 'Dual Consent Form';
-            $('#path1').attr('data', filePath + '#zoom=100' );
-            $('#path2').attr('data', filePath );
-            $('#previewTitle').text( titlePreview );
-            $('#linkPreviewModeId').attr('href', filePath );
-            $('#iframe').attr('src', $('#iframe').attr('src'));
             showDivControl('pdf');
+            $('#preview-24').show();
             break;
+
         // Dropdown 4
         case 41:
-            filePath = '/static/documents/SARs for Patients.pdf';
-            titlePreview = 'SARs for Patients';
-            downloadPath = '/static/documents/SARs for Patients.docx';
-            $('#path1').attr('data', filePath + '#zoom=100' );
-            $('#path2').attr('data', filePath );
-            $('#previewTitle').text( titlePreview );
-            $('#linkPreviewModeId').attr('href', filePath );
-            $('#linkDownload').attr('href', downloadPath );
-            $('#iframe').attr('src', $('#iframe').attr('src'));
             showDivControl('doc');
+            $('#preview-41').show();
             break;
         case 42:
-            filePath = '/static/documents/SARs for Solicitors.pdf';
-            titlePreview = 'SARs for Solicitors';
-            downloadPath = '/static/documents/SARs for Solicitors.docx';
-            $('#path1').attr('data', filePath + '#zoom=100' );
-            $('#path2').attr('data', filePath );
-            $('#previewTitle').text( titlePreview );
-            $('#linkPreviewModeId').attr('href', filePath );
-            $('#linkDownload').attr('href', downloadPath );
-            $('#iframe').attr('src', $('#iframe').attr('src'));
             showDivControl('doc');
+            $('#preview-42').show();
             break;
+
         // Dropdown 5
         case 52:
             filePath = '/static/documents/DataPolicy.pdf';
