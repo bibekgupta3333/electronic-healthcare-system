@@ -73,7 +73,7 @@
                                             </th>
                                             <th class="w-25"></th>
                                         {% else %}
-                                            <th class="w-25 font-weight-normal">Expired {{ company.expired_date|date:"d/m/Y" }}</th>
+                                            <th class="w-25 font-weight-normal">Expires {{ company.expired_date|date:"d/m/Y" }}</th>
                                             <th class="w-25 font-weight-normal">
                                                 <a href="{% url 'report:cancel-authorisation' third_party_authorisation_id=company.id%}"
                                                    class="btn btn-cancelAuthorisation w-75">Cancel Authorisation</a>
