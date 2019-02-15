@@ -268,9 +268,11 @@
     <script src="{% static 'js/instructions/new_instruction.js' %}"></script>
     <script>
         $(document).ready(function () {
-            $("#form-modal").modal({
-                backdrop: 'static'
-            });
+            {% if request.user.type == 'GP' %}
+                $("#form-modal").modal({
+                    backdrop: 'static'
+                });
+            {% endif %}
 
             // Function for hidden field if choose SARS type.
             $("#id_type_2").click( function() {
