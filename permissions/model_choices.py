@@ -156,5 +156,5 @@ INSTRUCTION_PERMISSIONS=[
     'sign_off_sars',
     'view_completed_amra',
     'view_completed_sars',
-    'view_summry_report',
+    'view_summary_report',
 ]
