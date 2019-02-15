@@ -18,9 +18,9 @@ TITLE_CHOICE = (
     ('', '----'),
     ('DR', 'Dr.'),
     ('MR', 'Mr.'),
-    ('MRS', 'Mrs.'),
+    ('MIS', 'Miss'),
     ('MS', 'Ms.'),
-    ('MX', 'Mx.')
+    ('MRS', 'Mrs.')
 )
 
 MEDIDATA_USER = 'MEDI'
