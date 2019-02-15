@@ -92,6 +92,7 @@ class Instruction(TimeStampedModel, models.Model):
     medical_report = models.FileField(upload_to='medical_reports', null=True, blank=True)
     medical_xml_report = models.FileField(upload_to='medical_xml_reports', null=True, blank=True)
     saved = models.BooleanField(default=False)
+    deactivated = models.BooleanField(default=False, verbose_name="Deactivated at patient request")
     medi_ref = models.IntegerField(null=True, blank=True)
     your_ref = models.CharField(max_length=80, null=True, blank=True)
     client_payment_reference = models.CharField(max_length=255, blank=True)

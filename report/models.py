@@ -12,15 +12,11 @@ class PatientReportAuth(TimeStampedModel):
     count = models.IntegerField(default=0)
     mobi_request_id = models.CharField(max_length=255, blank=True)
     locked_report = models.BooleanField(default=False)
-    report_de_activate = models.BooleanField(default=False, verbose_name="Deactivated at patient request")
     verify_pin = models.CharField(max_length=6, blank=True)
     url = models.CharField(max_length=256)
 
     def __str__(self):
         return '%s : %s'%(self.instruction.__str__(), self.patient.__str__())
-
-    def get_activate(self):
-        return self.report_de_activate
 
 
 class ThirdPartyAuthorisation(TimeStampedModel):
