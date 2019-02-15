@@ -131,7 +131,7 @@
 .redaction-checkbox__input:checked ~ .redaction-checkbox__header,
 .redaction-checkbox__input:checked ~ .redaction-checkbox__list .redaction-checkbox__list-item {
     -webkit-text-decoration-line: line-through;
-            text-decoration-line: line-through;
+            text-decoration: line-through;
   }
 .redaction-checkbox__input:checked ~ .redaction-checkbox__icon {
     color: #0a0a0a;
