@@ -67,11 +67,11 @@ class reportAuthTestCase(TestCase):
 
     # Test de-activate report
     def test_sar_request_code_lock(self):
-        reportAuth = PatientReportAuth.objects.filter(url=self.url).first()
-        reportAuth.report_de_activate = True
-        reportAuth.save()
+        instruction = self.instruction
+        instruction.deactivated = True
+        instruction.save()
 
-        response = self.client.get(reverse('report:request-code', 
+        response = self.client.get(reverse('report:request-code',
                     kwargs={'instruction_id': self.instruction.id, 'access_type': PatientReportAuth.ACCESS_TYPE_PATIENT, 'url': self.url}))
         self.assertTemplateUsed(response, 'de_activate.html')
         self.assertEqual(response.status_code, 200)
