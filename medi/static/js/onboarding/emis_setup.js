@@ -51,6 +51,32 @@ function pollingEmis(url) {
     }, 2000);
 }
 
+function pollingNewEmis(url) {
+    $("#checkingEmisButton").addClass("pendingCheck");
+    $("#checkingEmisButton").html(
+        "<img src='/static/images/emis_setup/Spin-1s-40px.gif' style='height: 20px; width: 20px;'/> Authenticating..."
+    );
+    setTimeout(function () {
+        $.ajax({
+            url: url,
+            success: function (data) {
+                if(data["status"] == 400){
+                    $(".btn-checkChangeSetup").hide();
+                    $(".emisSetupSuccess").removeClass("d-none");
+                    setTimeout(function () {
+
+                    }, 2000)
+                } else {
+                    $(".emisSetupFail").removeClass("d-none");
+                    $('#checkingEmisButton').prop("disabled", false);
+                    $("#checkingEmisButton").removeClass("pendingCheck");
+                    $("#checkingEmisButton").html("<i class='fas fa-question'></i>&nbsp; Check Setup");
+                }
+            },
+        });
+    }, 2000);
+}
+
 function validateBTN( progressPercent ) {
     if( progressPercent == 20 || progressPercent == 35 || progressPercent == 55 ){
         $('#backBTN').prop('disabled',true);
