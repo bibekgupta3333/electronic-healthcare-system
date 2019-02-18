@@ -3,10 +3,12 @@ import xhtml2pdf.pisa as pisa
 from io import BytesIO
 from django.core.files.base import ContentFile
 from django.http import HttpResponse
+from django.shortcuts import render_to_response
 from django.template.loader import get_template
 from services.xml.base64_attachment import Base64Attachment
 from services.emisapiservices import services
 import reportlab
+from django.urls import reverse
 import reportlab.lib.pagesizes as pdf_sizes
 from PIL import Image
 from django.conf import settings
@@ -79,10 +81,15 @@ class AttachmentReport:
     def render(self):
         if self.file_type == "pdf":
             return self.render_pdf()
-        elif self.file_type in ["doc", "docx"]:
-            return self.render_doc()
-        else:
+        elif self.file_type in ["rtf", "doc", "docx"]:
+            return self.render_pdf_with_libreoffice()
+        elif self.file_type in ["jpg", "jpeg", "png", "tiff"]:
             return self.render_image()
+        else:
+            return self.render_error()
+
+    def render_error(self):
+        return render_to_response('errors/handle_errors_convert_file.html')
 
     def render_pdf(self):
         attachment = Base64Attachment(self.raw_xml).data()
@@ -94,16 +101,17 @@ class AttachmentReport:
         )
         return response
 
-    def render_doc(self):
+    def render_pdf_with_libreoffice(self):
         attachment = Base64Attachment(self.raw_xml).data()
         buffer = BytesIO()
         buffer.write(attachment)
         folder = BASE_DIR + '/medi/static/generic_pdf/'
-        f = open(folder + 'tmp.doc', 'wb')
+        tmp_file = 'tmp.' + self.file_type
+        f = open(folder + tmp_file, 'wb')
         f.write(buffer.getvalue())
         f.close()
         subprocess.call(
-            ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/tmp.doc"),
+            ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
             shell=True
         )
         pdf = open(folder + 'tmp.pdf', 'rb')

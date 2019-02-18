@@ -501,17 +501,18 @@ def get_merged_medicalreport_attachment(instruction_id):
             try:
                 if file_type == 'pdf':
                     attachments_pdf.append(PyPDF2.PdfFileReader(buffer))
-                elif file_type in ['doc', 'docx']:
-                    f = open(folder + 'temp1.doc', 'wb')
+                elif file_type in ['doc', 'docx', 'rtf']:
+                    tmp_file = 'temp1.' + file_type
+                    f = open(folder + tmp_file, 'wb')
                     f.write(buffer.getvalue())
                     f.close()
                     subprocess.call(
-                        ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/temp1.doc"),
+                        ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
                         shell=True
                     )
                     pdf = open(folder + 'temp1.pdf', 'rb')
                     attachments_pdf.append(PyPDF2.PdfFileReader(pdf))
-                else:
+                elif file_type in ['jpg', 'jpeg', 'png', 'tiff']:
                     image = Image.open(buffer)
                     image_format = image.format
                     if image_format == "TIFF":
