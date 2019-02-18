@@ -50,7 +50,7 @@ class MedicalReport:
         pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), response, link_callback=link_callback)
         end_time = timezone.now()
         total_time = end_time - start_time
-        logger.info("[GENERATE PDF WITH XML] %s seconds with instruction %s"%(total_time.seconds, params.instruction))
+        logger.info("[GENERATE PDF WITH XML] %s seconds with instruction %s"%(total_time.seconds, params.get('instruction')))
         if not pdf.err:
             return HttpResponse(response.getvalue(), content_type='application/pdf')
         else:
