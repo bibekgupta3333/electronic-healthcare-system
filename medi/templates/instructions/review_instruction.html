@@ -253,7 +253,14 @@
                 }, 600);
             }
         });
+
+        $('#btn-zoom-embed').click( function() {
+            $('#embed-image').hide();
+        });
     });
+    function showEmbed() {
+        $('#embed-image').show();
+    }
     </script>
 
 {% endblock %}
