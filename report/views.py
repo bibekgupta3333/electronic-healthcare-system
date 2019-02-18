@@ -8,6 +8,7 @@ from accounts.models import *
 from django.core.mail import send_mail
 from django.contrib import messages
 from django.template import loader
+from django.utils import timezone
 
 from instructions.models import Instruction
 from .models import PatientReportAuth, ThirdPartyAuthorisation
@@ -32,6 +33,7 @@ import reportlab.lib.pagesizes as pdf_sizes
 import logging
 
 logger = logging.getLogger(__name__)
+time_logger = logging.getLogger('timestamp')
 
 
 def sar_request_code(request, instruction_id, access_type, url):
@@ -466,6 +468,7 @@ def renew_authorisation(request, third_party_authorisation_id):
 
 
 def get_merged_medicalreport_attachment(instruction_id):
+    start_time = timezone.now()
     instruction = get_object_or_404(Instruction, id=instruction_id)
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
@@ -562,4 +565,7 @@ def get_merged_medicalreport_attachment(instruction_id):
         pdf_page_buf.getvalue(),
         content_type="application/pdf",
     )
+    end_time = timezone.now()
+    total_time = end_time - start_time
+    time_logger.info("[PATIENT VIEW REPORT] %s seconds with patient %s"%(total_time.seconds, instruction.patient_information.__str__()))
     return response

@@ -1,7 +1,9 @@
 import os
+import logging
 import xhtml2pdf.pisa as pisa
 from io import BytesIO
 from django.core.files.base import ContentFile
+from django.utils import timezone
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template.loader import get_template
@@ -17,6 +19,7 @@ import subprocess
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPORT_DIR = BASE_DIR + '/medicalreport/templates/medicalreport/reports/medicalreport.html'
+logger = logging.getLogger('timestamp')
 
 
 def link_callback(uri, rel):
@@ -40,10 +43,14 @@ class MedicalReport:
 
     @staticmethod
     def render(params: dict):
+        start_time = timezone.now()
         template = get_template(REPORT_DIR)
         html = template.render(params)
         response = BytesIO()
         pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), response, link_callback=link_callback)
+        end_time = timezone.now()
+        total_time = end_time - start_time
+        logger.info("[GENERATE PDF WITH XML] %s seconds with instruction %s"%(total_time.seconds, params.get('instruction')))
         if not pdf.err:
             return HttpResponse(response.getvalue(), content_type='application/pdf')
         else:

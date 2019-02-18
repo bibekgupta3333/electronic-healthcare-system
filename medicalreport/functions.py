@@ -1,4 +1,5 @@
 import uuid
+import logging
 from datetime import datetime
 
 from django.contrib import messages
@@ -19,7 +20,9 @@ from .models import AdditionalMedicationRecords, AdditionalAllergies, Amendments
 from medicalreport.reports import MedicalReport
 from report.models import PatientReportAuth
 
+
 UI_DATE_FORMAT = '%m/%d/%Y'
+logger = logging.getLogger('timestamp')
 
 
 def create_or_update_redaction_record(request, instruction):
@@ -121,6 +124,7 @@ def create_or_update_redaction_record(request, instruction):
 
 
 def save_medical_report(request, instruction, amendments_for_record):
+    start_time = timezone.now()
     raw_xml_or_status_code = services.GetMedicalRecord(amendments_for_record.patient_emis_number, gp_organisation=instruction.gp_practice).call()
     if isinstance(raw_xml_or_status_code, int):
         return redirect('services:handle_error', code=raw_xml_or_status_code)
@@ -138,6 +142,9 @@ def save_medical_report(request, instruction, amendments_for_record):
     uuid_hex = uuid.uuid4().hex
     instruction.medical_report.save('report_%s.pdf'%uuid_hex, MedicalReport.get_pdf_file(params))
     instruction.medical_xml_report.save('xml_report_%s.xml'%uuid_hex, ContentFile(str_xml))
+    end_time = timezone.now()
+    total_time = end_time - start_time
+    logger.info("[SAVING PDF AND XML] %s seconds with patient %s"%(total_time.seconds, instruction.patient_information.__str__()))
 
 
 def get_redaction_xpaths(request, amendments_for_record):
