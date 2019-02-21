@@ -143,7 +143,7 @@ def generate_medicalreport_with_attachment(instruction_id, report_link_info):
     end_time = timezone.now()
     total_time = end_time - start_time
     time_logger.info(
-        "[PATIENT VIEW REPORT] %s seconds with patient %s" % (
+        "[PROCESS ATTACHMENTS] %s seconds with patient %s" % (
             total_time.seconds, instruction.patient_information.__str__()
         )
     )
