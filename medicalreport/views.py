@@ -248,26 +248,7 @@ def submit_report(request, instruction_id):
 @login_required(login_url='/accounts/login')
 def view_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
-    if instruction.status != INSTRUCTION_STATUS_COMPLETE:
-        redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
-        raw_xml_or_status_code = services.GetMedicalRecord(redaction.patient_emis_number, instruction.gp_practice).call()
-        if isinstance(raw_xml_or_status_code, int):
-            return redirect('services:handle_error', code=raw_xml_or_status_code)
-        medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
-        surgery_name = instruction.gp_practice
-        relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
-
-        params = {
-            'medical_record': medical_record_decorator,
-            'redaction': redaction,
-            'instruction': instruction,
-            'relations': relations,
-            'surgery_name': surgery_name,
-        }
-
-        return MedicalReport.render(params)
-    else:
-        return HttpResponse(instruction.medical_report, content_type='application/pdf')
+    return HttpResponse(instruction.medical_report, content_type='application/pdf')
 
 
 @login_required(login_url='/accounts/login')
@@ -279,10 +260,7 @@ def final_report(request, instruction_id):
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
     patient_emis_number = instruction.patient_information.patient_emis_number
-    raw_xml_or_status_code = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
-    if isinstance(raw_xml_or_status_code, int):
-        return redirect('services:handle_error', code=raw_xml_or_status_code)
-    medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
+    medical_record_decorator = MedicalReportDecorator(instruction.medical_xml_report.read().decode('utf-8'), instruction)
     attachments = medical_record_decorator.attachments
     relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
 

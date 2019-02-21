@@ -1,5 +1,6 @@
 import uuid
 import logging
+import os
 from datetime import datetime
 
 from django.contrib import messages
@@ -106,9 +107,9 @@ def create_or_update_redaction_record(request, instruction):
 
             instruction.save()
             amendments_for_record.save()
-            if status == 'submit':
+            if status == 'preview':
                 save_medical_report(request, instruction, amendments_for_record)
-            elif status and status not in ['submit', 'draft', 'preview']:
+            if status and status not in ['submit', 'draft', 'preview']:
                 return False
 
             return True
@@ -128,11 +129,17 @@ def create_or_update_redaction_record(request, instruction):
 def save_medical_report(request, instruction, amendments_for_record):
     start_time = timezone.now()
     raw_xml_or_status_code = services.GetMedicalRecord(amendments_for_record.patient_emis_number, gp_organisation=instruction.gp_practice).call()
+    parse_xml = redaction_elements(raw_xml_or_status_code, amendments_for_record.redacted_xpaths)
     if isinstance(raw_xml_or_status_code, int):
         return redirect('services:handle_error', code=raw_xml_or_status_code)
-    medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
+    if instruction.medical_report:
+        os.remove(instruction.medical_report.path)
+        instruction.medical_report.delete()
+    if instruction.medical_xml_report:
+        os.remove(instruction.medical_xml_report.path)
+        instruction.medical_xml_report.delete()
+    medical_record_decorator = MedicalReportDecorator(parse_xml, instruction)
     relations = '|'.join(relation.name for relation in ReferencePhrases.objects.all())
-    parse_xml = redaction_elements(raw_xml_or_status_code, amendments_for_record.redacted_xpaths)
     str_xml = lxml_to_string(parse_xml)
     params = {
         'medical_record': medical_record_decorator,

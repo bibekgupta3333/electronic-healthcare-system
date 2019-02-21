@@ -8,13 +8,9 @@
     <table style="width:100%;font-size:15px;">
         {% for attachment in attachments %}
             {% with header=attachment.parsed_date|format_date_filter|add:" - "|add:attachment.description %}
-                {% with attachment|get_redaction:redaction as redacted %}
-                    {% if not redacted %}
-                        <tr>
-                          <td>{{ header }}</td>
-                        </tr>
-                    {% endif %}
-                {% endwith %}
+                <tr>
+                  <td>{{ header }}</td>
+                </tr>
             {% endwith %}
         {% endfor %}
     </table>
