@@ -376,7 +376,7 @@ def add_third_party_authorisation(request, report_auth_id):
                 [third_party_authorisation.email],
                 fail_silently=True,
                 html_message=loader.render_to_string('third_parties_email.html', {
-                    'patient_first_name': report_auth.instruction.patient_information.patient_first_name,
+                    'ref_number': third_party_authorisation.case_reference,
                     'report_link': request.scheme + '://' + request.get_host() + reverse(
                         'report:request-code', kwargs={
                             'instruction_id': report_auth.instruction.id,
