@@ -1,6 +1,6 @@
 from django.core.mail import send_mail
 from django.utils import timezone
-
+from django.shortcuts import reverse
 from instructions.models import Instruction, InstructionReminder
 from instructions.model_choices import INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS
 from accounts.models import User, PracticePreferences, GeneralPracticeUser
@@ -30,7 +30,7 @@ def instruction_notification_email_job():
                     send_mail(
                         'Pending Instruction',
                         'You have a pending or not started instruction. Click here {link} to see it.'.format(
-                            link=get_url_page('instruction_pipeline')
+                            link=settings.MDX_URL + reverse('instructions:view_pipeline')
                         ),
                         'MediData',
                         [gp['email'] for gp in gp_managers],
@@ -65,7 +65,7 @@ def send_email_to_practice_job():
         if practice_preferences.notification == 'DIGEST':
             send_mail(
                 'Unstarted Instruction',
-                'You have unstarted instructions. Click here {link} to see it.'.format(link=get_url_page('instruction_pipeline')),
+                'You have unstarted instructions. Click here {link} to see it.'.format(link=settings.MDX_URL + reverse('instructions:view_pipeline')),
                 'MediData',
                 [gp_practice.organisation_email],
                 fail_silently=True,
