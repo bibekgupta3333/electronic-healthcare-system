@@ -105,14 +105,15 @@ def generate_gp_permission(organisation):
             group, created = Group.objects.get_or_create(
                 name='%s : %s'%(permission.get_role_display(),organisation.__str__())
             )
-            set_default_gp_perm(group)
+            set_default_gp_perm(group, role)
             permission.group = group
             permission.save()
             permission.allocate_permission_to_gp()
 
 
-def set_default_gp_perm(group):
+def set_default_gp_perm(group, role):
     for codename in INSTRUCTION_PERMISSIONS:
+        if codename == 'view_summary_report' and role != GeneralPracticeUser.PRACTICE_MANAGER: continue
         perm = Permission.objects.get(codename=codename)
         group.permissions.add(perm)
     group.save()

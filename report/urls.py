@@ -12,5 +12,5 @@ urlpatterns = [
     path('summary-report', views.summry_report, name='summary-report'),
     path('cancel-authorisation/<int:third_party_authorisation_id>', views.cancel_authorisation, name='cancel-authorisation'),
     path('extend-authorisation/<int:third_party_authorisation_id>', views.extend_authorisation, name='extend-authorisation'),
-    path('renew--authorisation/<int:third_party_authorisation_id>', views.renew_authorisation, name='renew-authorisation')
+    path('renew-authorisation/<int:third_party_authorisation_id>', views.renew_authorisation, name='renew-authorisation')
 ]

@@ -43,7 +43,7 @@
                         <a href="{% url 'accounts:view_account' %}" ><i class="fas fa-money-check-alt"></i>Account</a>
                     </li>
                 {% endif %}
-                {% if perms.instructions.view_summry_report %}
+                {% if perms.instructions.view_summary_report %}
                     <li class="{% if request.resolver_match.url_name == 'summary-report' %}active{% endif %}">
                         <a href="{% url 'report:summary-report' %}"><i class="fas fa-chart-bar"></i>Reporting</a>
                     </li>

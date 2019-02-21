@@ -1,8 +1,7 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordResetForm
-from django.contrib.auth.models import Group
 from django.contrib import messages
 from django.db.models import Q
 from django.shortcuts import redirect
@@ -23,6 +22,7 @@ from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferen
         GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from permissions.functions import access_user_management
 from organisations.models import OrganisationGeneralPractice
+from onboarding.views import generate_password
 from axes.models import AccessAttempt
 
 from django.conf import settings
@@ -39,6 +39,7 @@ def account_view(request):
     user = request.user
     gp_user = GeneralPracticeUser.objects.get(pk=user.userprofilebase.generalpracticeuser.pk)
     gp_organisation = gp_user.organisation
+    practice_code = gp_organisation.practcode
     try:
         practice_preferences = PracticePreferences.objects.get(gp_organisation=gp_organisation)
     except PracticePreferences.DoesNotExist:
@@ -81,10 +82,24 @@ def account_view(request):
             'label': 'Received after %s days'%organisation_fee.max_day_lvl_3
         })
 
+    if request.method == "POST":
+        new_organisation_password = generate_password(initial_range=1, body_rage=12, tail_rage=1)
+        gp_organisation.set_operating_system_salt_and_encrypted_password(new_organisation_password)
+        gp_organisation.save()
+
+        return render(request, 'accounts/accounts_view.html', {
+            'header_title': header_title,
+            'organisation_fee_data': organisation_fee_data,
+            'gp_preferences_form': gp_preferences_form,
+            'new_password': new_organisation_password,
+            'practice_code': practice_code
+        })
+
     return render(request, 'accounts/accounts_view.html', {
         'header_title': header_title,
         'organisation_fee_data': organisation_fee_data,
-        'gp_preferences_form': gp_preferences_form
+        'gp_preferences_form': gp_preferences_form,
+        'practice_code': practice_code
     })
 
 

@@ -18,9 +18,9 @@ TITLE_CHOICE = (
     ('', '----'),
     ('DR', 'Dr.'),
     ('MR', 'Mr.'),
-    ('MRS', 'Mrs.'),
+    ('MIS', 'Miss'),
     ('MS', 'Ms.'),
-    ('MX', 'Mx.')
+    ('MRS', 'Mrs.')
 )
 
 MEDIDATA_USER = 'MEDI'
@@ -126,7 +126,7 @@ class User(AbstractUser):
             elif role == GeneralPracticeUser.GENERAL_PRACTICE:
                 return 'General Practice User'
             else:
-                return 'SARS'
+                return 'Other Practice Stuff'
         else:
             return 'Patient User'
 

@@ -222,9 +222,9 @@ class EditReportTest(EmisAPITestCase):
         self.assertTemplateUsed(
             response, 'medicalreport/medicalreport_edit.html')
 
-    def test_view_returns_404_if_instruction_does_not_exist(self):
+    def test_view_returns_302_if_instruction_does_not_exist(self):
         response = self.client.get('/medicalreport/5/edit/')
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(302, response.status_code)
 
     def test_view_redirects_if_redaction_does_not_exist(self):
         self.redaction.delete()
@@ -278,9 +278,9 @@ class UpdateReportTest(EmisAPITestCase):
         self.assertEqual(200, response.status_code)
         self.assertIsInstance(response, JsonResponse)
 
-    def test_view_returns_404_if_instruction_does_not_exist(self):
+    def test_view_returns_302_if_instruction_does_not_exist(self):
         response = self.client.get('/medicalreport/2/update/')
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(302, response.status_code)
 
     def test_view_redirects_to_correct_url_if_not_valid(self):
         response = self.client.post('/medicalreport/1/update/', {'event_flag': 'submit'})
@@ -321,9 +321,9 @@ class ViewReportTest(EmisAPITestCase):
         )
         self.assertEqual(200, response.status_code)
 
-    def test_view_returns_404_if_redaction_does_not_exist(self):
+    def test_view_returns_302_if_redaction_does_not_exist(self):
         response = self.client.get('/medicalreport/2/view-report/')
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(302, response.status_code)
 
     def test_view_returns_pdf(self):
         response = self.client.get('/medicalreport/1/view-report/')
@@ -359,9 +359,9 @@ class FinalReportTest(EmisAPITestCase):
         response = self.client.get('/medicalreport/3/final-report/')
         self.assertTemplateUsed(response, 'medicalreport/final_report.html')
 
-    def test_view_returns_404_if_instruction_does_not_exist(self):
+    def test_view_returns_302_if_instruction_does_not_exist(self):
         response = self.client.get('/medicalreport/5/final-report/')
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(302, response.status_code)
 
 
 class RedactReferencePhraseTest(TestCase):

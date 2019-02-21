@@ -84,7 +84,9 @@ def remove_user(request):
     user_cnt = len(emails)
     for email in emails:
         user = User.objects.get(email=email)
+        user.is_active = False
         user.userprofilebase.delete()
+        user.save()
 
     if user_cnt == 1:
         messages.success(request, "The selected user has been deleted.")

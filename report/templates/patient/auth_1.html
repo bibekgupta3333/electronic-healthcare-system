@@ -3,6 +3,7 @@
 {% load bootstrap4 %}
 {% load get_permissions %}
 {% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
 
 {% block ExtraHead %}
     <link href="{% static 'css/sign-in.css' %}" rel="stylesheet">
@@ -26,9 +27,9 @@
                     <p class="mb-0">protocol please press the button below to request a code, which you will receive via an automated voice</p>
                     <p class="mb-0">call to your contact phone number.</p>
                 {% elif third_party_authorisation and third_party_authorisation.family_phone_number %}
-                    <p class="mt-5 mb-0">Accessing to the medical record you've been authorised to view is a simple and secure process.For</p>
+                    <p class="mt-5 mb-0">Accessing the medical record you've been authorised to view is a simple and secure process. For</p>
                     <p class="mb-0">stage one of our security protocol please press the button below to request a code, which will be</p>
-                    <p class="mb-0"> sent via text message to your mobile phone.</p>
+                    <p class="mb-0"> sent by phone.</p>
                 {% endif %}
             {% endif %}
 
@@ -46,4 +47,5 @@
             <h4>{% if message %} {{ message }} {% endif %}</h4>
         </div>
     </div>
+    {% include 'patient/footer.html' %}
 </div>

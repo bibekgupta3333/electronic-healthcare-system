@@ -175,7 +175,8 @@ class GPOrgFilter(admin.SimpleListFilter):
 class InstructionResource(resources.ModelResource):
     class Meta:
         model = Instruction
-        fields = ('id', 'medi_ref', 'status', 'client_payment_reference', 'gp_payment_reference')
+        fields = ('id', 'medi_ref', 'status', 'type', 'gp_practice__practcode',
+                'gp_practice__billing_address_postalcode', 'client_payment_reference', 'gp_payment_reference')
 
     def before_import(self, dataset, using_transactions, dry_run, **kwargs):
         columns = []
@@ -211,7 +212,7 @@ class InstructionAdmin(CustomImportExportModelAdmin):
         ('Instruction Information', {
             'fields': (
                 'status', 'client_user', 'gp_user', 'patient_information', 'type', 'gp_practice', 'date_range_from', 'date_range_to', 'your_ref', 'medi_ref',
-                'gp_title_from_client', 'gp_initial_from_client', 'gp_last_name_from_client'
+                'gp_title_from_client', 'gp_initial_from_client', 'gp_last_name_from_client', 'deactivated'
             )
         }),
         ('Rejected Information', {
@@ -221,7 +222,7 @@ class InstructionAdmin(CustomImportExportModelAdmin):
         }),
         ('Final report Information', {
             'fields': (
-                'completed_signed_off_timestamp', 'final_report_date', 'medical_report'
+                'completed_signed_off_timestamp', 'final_report_date', 'medical_report', 'medical_with_attachment_report'
             )
         }),
         ('Consents Information', {

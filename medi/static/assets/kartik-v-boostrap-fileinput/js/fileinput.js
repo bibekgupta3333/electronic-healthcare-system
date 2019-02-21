@@ -729,7 +729,7 @@
                 '{uploadIcon}</button>';
             tActionDownload = '<a class="kv-file-download {downloadClass}" title="{downloadTitle}" ' +
                 'href="{downloadUrl}" download="{caption}" target="_blank">{downloadIcon}</a>';
-            tActionZoom = '<button type="button" class="kv-file-zoom {zoomClass}" ' +
+            tActionZoom = '<button type="button" id="btn-zoom-embed" class="kv-file-zoom {zoomClass}" ' +
                 'title="{zoomTitle}">{zoomIcon}</button>';
             tActionDrag = '<span class="file-drag-handle {dragClass}" title="{dragTitle}">{dragIcon}</span>';
             tIndicator = '<div class="file-upload-indicator" title="{indicatorTitle}">{indicator}</div>';
@@ -754,7 +754,7 @@
             tAudio = '<!--suppress ALL --><audio class="kv-preview-data file-preview-audio" controls' + tStyle + '>\n<source src="{data}" ' +
                 'type="{type}">\n' + $h.DEFAULT_PREVIEW + '\n</audio>\n';
             tFlash = '<embed class="kv-preview-data file-preview-flash" src="{data}" type="application/x-shockwave-flash"' + tStyle + '>\n';
-            tPdf = '<embed class="kv-preview-data file-preview-pdf" src="{data}" type="application/pdf"' + tStyle + '>\n';
+            tPdf = '<embed class="image-embed kv-preview-data file-preview-pdf" id="embed-image" src="{data}" type="application/pdf"' + tStyle + '>\n';
             tObject = '<object class="kv-preview-data file-preview-object file-object {typeCss}" ' +
                 'data="{data}" type="{type}"' + tStyle + '>\n' + '<param name="movie" value="{caption}" />\n' +
                 $h.OBJECT_PARAMS + ' ' + $h.DEFAULT_PREVIEW + '\n</object>\n';
@@ -1652,7 +1652,11 @@
             if (type === 'fullscreen' || type === 'borderless' || type === 'toggleheader') {
                 params += ' data-toggle="button" aria-pressed="false" autocomplete="off"';
             }
-            return '<button type="button" class="' + css + ' btn-' + type + '"' + params + '>' + label + '</button>';
+            if (type === 'close') {
+                return '<button type="button" onclick="return showEmbed();" class="' + css + ' btn-' + type + '"' + params + '>' + label + '</button>';
+            } else {
+                return '<button type="button" class="' + css + ' btn-' + type + '"' + params + '>' + label + '</button>';
+            }
         },
         _getModalContent: function () {
             var self = this;

@@ -27,6 +27,12 @@ p {
     width: 350px;
 }
 
+.btn-checkChangeSetup {
+    margin-bottom: 50px;
+    color: white;
+    background-color: #33aea0;
+}
+
 .btn-checkSetupAgain {
     margin-bottom: 50px;
     box-shadow: 7px 6px #cfcfcf;

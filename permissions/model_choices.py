@@ -37,7 +37,7 @@ ADMIN_PERMISSIONS=[
     'change_instruction',
     'view_organisationfee',
     'view_templateinstruction',
-    'view_summry_report'
+    'view_summary_report'
 ]
 
 MEDI_PERMISSIONS=[
@@ -155,5 +155,6 @@ INSTRUCTION_PERMISSIONS=[
     'sign_off_amra',
     'sign_off_sars',
     'view_completed_amra',
-    'view_completed_sars'
+    'view_completed_sars',
+    'view_summary_report',
 ]

@@ -372,32 +372,6 @@
                 }
             });
 
-            $('#id_password1').on('keyup', function () {
-                $.ajax({
-                        url: "{% url 'accounts:verify_password' %}",
-                        type: "POST",
-                        dataType: "json",
-                        data: {
-                            "password": $(this).val(),
-                            "first_name": $('#id_first_name').val(),
-                            "surname": $('#id_surname').val(),
-                            "email": $('#id_email1').val(),
-                            "csrfmiddlewaretoken": csrf_token
-                        },
-                        success: function (data) {
-                            $('#password_form').find('.invalid-feedback').remove();
-                            $('id_password1').removeClass("is-invalid");
-                            if (!data.results.verified){
-                                $('#id_password1').addClass("is-invalid");
-                                data.results.warning.map(function (item) {
-                                    $('#id_password1').after('<div class="invalid-feedback">' + item + '</div>');
-                                })
-                            }else {
-                                $('#id_password1').removeClass("is-invalid");
-                            }
-                        }
-                    });
-            });
 
             $('#id_postcode').on('change', function () {
                 var url = "{% url 'instructions:api_get_address' address='Address' %}".replace('Address', $(this).val());
@@ -441,7 +415,7 @@
                }
             });
 
-            $('#id_password1').keyup(function() {
+            $('#id_password1').keyup(delay(function() {
                 $.ajax({
                     url: "{% url 'accounts:verify_password' %}",
                     type: "POST",
@@ -464,7 +438,8 @@
                         }
                     }
                 });
-            });
+            }, 500));
+
             $('#id_email1').change(function() {
               $.ajax({
                   url: "{% url 'accounts:check_email' %}",

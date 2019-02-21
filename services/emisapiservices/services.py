@@ -1,12 +1,16 @@
 from django.conf import settings
 import urllib
 import requests
-
+import logging
+from django.utils import timezone
 from ..models import EmisAPIConfig
 from organisations.models import OrganisationGeneralPractice
 from accounts.models import Patient
 from requests import HTTPError
 import time
+
+
+logger = logging.getLogger('timestamp')
 
 
 class EmisAPIServiceBase:
@@ -30,6 +34,7 @@ class EmisAPIServiceBase:
 
     def call(self) -> str:
         request_uri = self.uri()
+        start_time = timezone.now()
         for i in range(9):
             r = requests.get(
                 request_uri,
@@ -42,6 +47,10 @@ class EmisAPIServiceBase:
                 break
             else:
                 time.sleep(0.2)
+        end_time = timezone.now()
+        total_time = end_time - start_time
+        if 'attachments' not in request_uri:
+            logger.info("[CALL EMIS] %s seconds with url %s"%(total_time.seconds, request_uri))
 
         http_error_msg = ''
         try:

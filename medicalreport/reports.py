@@ -1,12 +1,16 @@
 import os
+import logging
 import xhtml2pdf.pisa as pisa
 from io import BytesIO
 from django.core.files.base import ContentFile
+from django.utils import timezone
 from django.http import HttpResponse
+from django.shortcuts import render_to_response
 from django.template.loader import get_template
 from services.xml.base64_attachment import Base64Attachment
 from services.emisapiservices import services
 import reportlab
+from django.urls import reverse
 import reportlab.lib.pagesizes as pdf_sizes
 from PIL import Image
 from django.conf import settings
@@ -15,6 +19,7 @@ import subprocess
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPORT_DIR = BASE_DIR + '/medicalreport/templates/medicalreport/reports/medicalreport.html'
+logger = logging.getLogger('timestamp')
 
 
 def link_callback(uri, rel):
@@ -26,7 +31,7 @@ def link_callback(uri, rel):
     else:
         path = sRoot
 
-    if sRoot == 'static' :
+    if sRoot == 'static':
         path = BASE_DIR + '/medi/' + path
 
     if not os.path.isfile(path):
@@ -38,10 +43,14 @@ class MedicalReport:
 
     @staticmethod
     def render(params: dict):
+        start_time = timezone.now()
         template = get_template(REPORT_DIR)
         html = template.render(params)
         response = BytesIO()
         pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), response, link_callback=link_callback)
+        end_time = timezone.now()
+        total_time = end_time - start_time
+        logger.info("[GENERATE PDF WITH XML] %s seconds with instruction %s"%(total_time.seconds, params.get('instruction')))
         if not pdf.err:
             return HttpResponse(response.getvalue(), content_type='application/pdf')
         else:
@@ -79,10 +88,15 @@ class AttachmentReport:
     def render(self):
         if self.file_type == "pdf":
             return self.render_pdf()
-        elif self.file_type in ["doc", "docx"]:
-            return self.render_doc()
-        else:
+        elif self.file_type in ["rtf", "doc", "docx"]:
+            return self.render_pdf_with_libreoffice()
+        elif self.file_type in ["jpg", "jpeg", "png", "tiff"]:
             return self.render_image()
+        else:
+            return self.render_error()
+
+    def render_error(self):
+        return render_to_response('errors/handle_errors_convert_file.html')
 
     def render_pdf(self):
         attachment = Base64Attachment(self.raw_xml).data()
@@ -94,16 +108,17 @@ class AttachmentReport:
         )
         return response
 
-    def render_doc(self):
+    def render_pdf_with_libreoffice(self):
         attachment = Base64Attachment(self.raw_xml).data()
         buffer = BytesIO()
         buffer.write(attachment)
         folder = BASE_DIR + '/medi/static/generic_pdf/'
-        f = open(folder + 'tmp.doc', 'wb')
+        tmp_file = 'tmp.' + self.file_type
+        f = open(folder + tmp_file, 'wb')
         f.write(buffer.getvalue())
         f.close()
         subprocess.call(
-            ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/tmp.doc"),
+            ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
             shell=True
         )
         pdf = open(folder + 'tmp.pdf', 'rb')

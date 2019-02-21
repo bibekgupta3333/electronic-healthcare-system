@@ -18,6 +18,14 @@ import random
 import string
 
 
+def generate_password(initial_range: int, body_rage: int, tail_rage: int) -> str:
+    initial_password = random.choices(string.ascii_uppercase, k=initial_range)
+    body_password = random.choices(string.ascii_letters + string.digits, k=body_rage)
+    tail_password = random.choices(string.digits, k=tail_rage)
+    password = ''.join(initial_password + body_password + tail_password)
+    return password
+
+
 def sign_up(request):
     surgery_form = SurgeryForm()
     pm_form = PMForm()
@@ -45,10 +53,7 @@ def sign_up(request):
                 gp_organisation.operating_system_username = 'michaeljtbrooks'
                 gp_organisation.operating_system_salt_and_encrypted_password = 'Medidata2018'
             else:
-                initial_password = random.choices(string.ascii_uppercase, k=1)
-                body_password = random.choices(string.ascii_letters+string.digits, k=12)
-                tail_password = random.choices(string.digits, k=1)
-                password = ''.join(initial_password + body_password + tail_password)
+                password = generate_password(initial_range=1, body_rage=12, tail_rage=1)
                 gp_organisation.operating_system_salt_and_encrypted_password = password
                 gp_organisation.operating_system_username = 'medidata_access'
             gp_organisation.save()
@@ -155,7 +160,6 @@ def emr_setup_final(request, practice_code=None):
             surgery_email = surgery_email_form.save()
             create_gp_payments_fee(bank_details_form, gp_organisation)
             update_gp_organisation_bank_details(bank_details_form, gp_organisation)
-            create_gp_user(gp_organisation)
             if surgery_email.organisation_email:
                 html_message = loader.render_to_string('onboarding/surgery_email.html')
                 send_mail(

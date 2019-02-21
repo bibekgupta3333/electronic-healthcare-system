@@ -64,3 +64,15 @@ function init_select2_practice_code(init_data, ajax_url) {
         }
     });
 }
+
+
+function delay(callback, ms) {
+  var timer = 0;
+  return function() {
+    var context = this, args = arguments;
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      callback.apply(context, args);
+    }, ms || 0);
+  };
+}
