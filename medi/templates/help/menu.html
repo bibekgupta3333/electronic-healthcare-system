@@ -143,10 +143,10 @@
                 <label class="label-title" id="previewTitle">Welcome to Resource Centre</label>
                 <div class="iframe" id="iframe">
                     <object data="{% static 'documents/Welcome to your Resource Centre.RF (002).pdf' %}#view=FitH" height="500px" width="100%" id="path1">
-                        <embed data="/{% static 'documents/Welcome to your Resource Centre.RF (002).pdf' %}" id="path2"/>
+                        <embed data="{% static 'documents/Welcome to your Resource Centre.RF (002).pdf' %}" id="path2"/>
                     </object>
                 </div>
-                <a href="/static/documents/TCs2.pdf" target="_blank" id="linkPreviewModeId">
+                <a href="{% static 'documents/Welcome to your Resource Centre.RF (002).pdf' %}" target="_blank" id="linkPreviewModeId">
                     <button type="button" class="btn btn-primary btn-block btn-lg">
                         <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
                     </button>
