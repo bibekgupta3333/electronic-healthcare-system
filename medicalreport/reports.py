@@ -31,7 +31,7 @@ def link_callback(uri, rel):
     else:
         path = sRoot
 
-    if sRoot == 'static' :
+    if sRoot == 'static':
         path = BASE_DIR + '/medi/' + path
 
     if not os.path.isfile(path):

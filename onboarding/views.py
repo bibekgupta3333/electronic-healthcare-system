@@ -160,7 +160,6 @@ def emr_setup_final(request, practice_code=None):
             surgery_email = surgery_email_form.save()
             create_gp_payments_fee(bank_details_form, gp_organisation)
             update_gp_organisation_bank_details(bank_details_form, gp_organisation)
-            create_gp_user(gp_organisation)
             if surgery_email.organisation_email:
                 html_message = loader.render_to_string('onboarding/surgery_email.html')
                 send_mail(

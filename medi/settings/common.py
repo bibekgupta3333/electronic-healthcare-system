@@ -255,3 +255,5 @@ CLAMD_TCP_ADDR = '127.0.0.1'
 
 #Set false for disable two factor authentication
 TWO_FACTOR_ENABLED = True
+
+CELERY_BROKER_URL = 'amqp://localhost'

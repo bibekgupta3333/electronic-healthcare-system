@@ -19,6 +19,7 @@ from .models import AdditionalMedicationRecords, AdditionalAllergies, Amendments
         ReferencePhrases
 from medicalreport.reports import MedicalReport
 from report.models import PatientReportAuth
+from report.tasks import generate_medicalreport_with_attachment
 
 
 UI_DATE_FORMAT = '%m/%d/%Y'
@@ -252,21 +253,6 @@ def delete_additional_allergies_records(request):
         AdditionalAllergies.objects.filter(id__in=additional_allergies_records_delete).delete()
 
 
-def send_patient_mail(request, instruction,  unique_url):
-    report_link = request.scheme + '://' + request.get_host() + '/report/' + str(instruction.pk) + '/patient/' + unique_url
-    send_mail(
-        'Notification from your GP surgery',
-        '',
-        'MediData',
-        [instruction.patient_information.patient_email],
-        fail_silently=True,
-        html_message=loader.render_to_string('medicalreport/patient_email.html', {
-            'surgery_name': instruction.gp_practice,
-            'report_link': report_link
-        })
-    )
-
-
 def send_surgery_email(instruction):
     send_mail(
         'Medidata eMR: Your medical report is ready',
@@ -285,7 +271,12 @@ def send_surgery_email(instruction):
 def create_patient_report(request, instruction):
     unique_url = uuid.uuid4().hex
     PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
-    send_patient_mail(request, instruction, unique_url)
+    report_link_info = {
+        'scheme': request.scheme,
+        'host': request.get_host(),
+        'unique_url': unique_url
+    }
+    generate_medicalreport_with_attachment.delay(instruction.id, report_link_info)
     send_surgery_email(instruction)
 
 

@@ -8,28 +8,16 @@ from accounts.models import *
 from django.core.mail import send_mail
 from django.contrib import messages
 from django.template import loader
-from django.utils import timezone
 
 from instructions.models import Instruction
 from .models import PatientReportAuth, ThirdPartyAuthorisation
 from .forms import AccessCodeForm, ThirdPartyAuthorisationForm
 from .functions import validate_pin
-from services.xml.base64_attachment import Base64Attachment
-from medicalreport.models import AmendmentsForRecord
-from services.xml.medical_report_decorator import MedicalReportDecorator
-from services.emisapiservices import services
-from report.mobile import AuthMobile
-from django.conf import settings
-from PIL import Image
 
-import io
+from report.mobile import AuthMobile
+
 import json
 import datetime
-import PyPDF2
-import subprocess
-import img2pdf
-import reportlab
-import reportlab.lib.pagesizes as pdf_sizes
 import logging
 
 logger = logging.getLogger(__name__)
@@ -45,7 +33,7 @@ def sar_request_code(request, instruction_id, access_type, url):
         return render(request, 'de_activate.html', )
     if access_type == PatientReportAuth.ACCESS_TYPE_PATIENT:
         patient_auth = get_object_or_404(PatientReportAuth, url=url)
-        greeting_name = patient_auth.patient.user.first_name
+        greeting_name = instruction.patient_information.patient_first_name
         if patient_auth.locked_report:
             return redirect_auth_limit(request)
     else:
@@ -204,7 +192,7 @@ def sar_access_code(request, access_type, url):
     return render(request, 'patient/auth_2_access_code.html', {
         'form': access_code_form,
         'message': error_message,
-        'name': patient_auth.patient.user.first_name,
+        'name': instruction.patient_information.patient_first_name,
         'number': str(number),
         'access_type': access_type,
         'third_party_authorisation': third_party_authorisation,
@@ -236,19 +224,18 @@ def get_report(request, access_type):
 
     if request.method == 'POST':
             instruction = get_object_or_404(Instruction, id=report_auth.instruction_id)
-
             if request.POST.get('button') == 'Download Report':
-                response = get_merged_medicalreport_attachment(instruction_id=instruction.id)
+                response = HttpResponse(instruction.medical_with_attachment_report, content_type='application/pdf')
                 response['Content-Disposition'] = 'attachment; filename="medical_report.pdf"'
                 return response
 
             elif request.POST.get('button') == 'View Report':
-                return get_merged_medicalreport_attachment(instruction_id=instruction.id)
+                return HttpResponse(instruction.medical_with_attachment_report, content_type='application/pdf')
 
             elif request.POST.get('button') == 'Print Report':
-                return get_merged_medicalreport_attachment(instruction_id=instruction.id)
+                return HttpResponse(instruction.medical_with_attachment_report, content_type='application/pdf')
 
-    return render(request, 'patient/auth_4_select_report.html',{
+    return render(request, 'patient/auth_4_select_report.html', {
         'verified_pin': verified_pin,
         'report_auth': report_auth,
         'third_parties': third_parties,
@@ -465,107 +452,3 @@ def renew_authorisation(request, third_party_authorisation_id):
     third_party_authorisation.save()
 
     return redirect('report:select-report', access_type=PatientReportAuth.ACCESS_TYPE_PATIENT)
-
-
-def get_merged_medicalreport_attachment(instruction_id):
-    start_time = timezone.now()
-    instruction = get_object_or_404(Instruction, id=instruction_id)
-    redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
-
-    patient_emis_number = instruction.patient_information.patient_emis_number
-    raw_xml_or_status_code = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
-    if isinstance(raw_xml_or_status_code, int):
-        return redirect('services:handle_error', code=raw_xml_or_status_code)
-    medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
-    output = PyPDF2.PdfFileWriter()
-
-    # add each page of medical report to output file
-    medical_report = PyPDF2.PdfFileReader(instruction.medical_report)
-    for page_num in range(medical_report.getNumPages()):
-        output.addPage(medical_report.getPage(page_num))
-
-    # create list of PdfFileReader obj from raw bytes of xml data
-    attachments_pdf = []
-    for attachment in medical_record_decorator.attachments():
-        xpaths = attachment.xpaths()
-        if redaction.redacted(xpaths) is not True:
-            raw_xml_or_status_code = services.GetAttachment(
-                instruction.patient_information.patient_emis_number,
-                attachment.dds_identifier(),
-                gp_organisation=instruction.gp_practice).call()
-            if isinstance(raw_xml_or_status_code, int):
-                return redirect('services:handle_error', code=raw_xml_or_status_code)
-
-            file_name = Base64Attachment(raw_xml_or_status_code).filename()
-            file_type = file_name.split('.')[-1]
-            raw_attachment = Base64Attachment(raw_xml_or_status_code).data()
-            buffer = io.BytesIO(raw_attachment)
-            folder = settings.BASE_DIR + '/static/generic_pdf/'
-            try:
-                if file_type == 'pdf':
-                    attachments_pdf.append(PyPDF2.PdfFileReader(buffer))
-                elif file_type in ['doc', 'docx', 'rtf']:
-                    tmp_file = 'temp1.' + file_type
-                    f = open(folder + tmp_file, 'wb')
-                    f.write(buffer.getvalue())
-                    f.close()
-                    subprocess.call(
-                        ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
-                        shell=True
-                    )
-                    pdf = open(folder + 'temp1.pdf', 'rb')
-                    attachments_pdf.append(PyPDF2.PdfFileReader(pdf))
-                elif file_type in ['jpg', 'jpeg', 'png', 'tiff']:
-                    image = Image.open(buffer)
-                    image_format = image.format
-                    if image_format == "TIFF":
-                        max_pages = 200
-                        height = image.tag[0x101][0]
-                        width = image.tag[0x100][0]
-                        out_pdf_io = io.BytesIO()
-                        c = reportlab.pdfgen.canvas.Canvas(out_pdf_io, pagesize=pdf_sizes.letter)
-                        pdf_width, pdf_height = pdf_sizes.letter
-                        page = 0
-                        while True:
-                            try:
-                                image.seek(page)
-                            except EOFError:
-                                break
-                            if pdf_width * height / width <= pdf_height:
-                                c.drawInlineImage(image, 0, 0, pdf_width, pdf_width * height / width)
-                            else:
-                                c.drawInlineImage(image, 0, 0, pdf_height * width / height, pdf_height)
-                            c.showPage()
-                            if max_pages and page > max_pages:
-                                break
-                            page += 1
-                        c.save()
-                        attachments_pdf.append(PyPDF2.PdfFileReader(out_pdf_io))
-                    else:
-                        pdf_bytes = img2pdf.convert('imgtemp1.pdf')
-                        f = open(folder + 'imgtemp1.pdf', 'wb')
-                        f.write(pdf_bytes)
-                        attachments_pdf.append(PyPDF2.PdfFileReader(f))
-                        image.close()
-                        f.close()
-            except Exception as e:
-                logger.error(e)
-
-    # add each page of each attachment to output file
-    for pdf in attachments_pdf:
-        if pdf.isEncrypted:
-            pdf.decrypt(password='')
-        for page_num in range(pdf.getNumPages()):
-            output.addPage(pdf.getPage(page_num))
-
-    pdf_page_buf = io.BytesIO()
-    output.write(pdf_page_buf)
-
-    response = HttpResponse(
-        pdf_page_buf.getvalue(),
-        content_type="application/pdf",
-    )
-    end_time = timezone.now()
-    total_time = end_time - start_time
-    time_logger.info("[PATIENT VIEW REPORT] %s seconds with patient %s"%(total_time.seconds, instruction.patient_information.__str__()))
-    return response

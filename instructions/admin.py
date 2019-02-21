@@ -222,7 +222,7 @@ class InstructionAdmin(CustomImportExportModelAdmin):
         }),
         ('Final report Information', {
             'fields': (
-                'completed_signed_off_timestamp', 'final_report_date', 'medical_report'
+                'completed_signed_off_timestamp', 'final_report_date', 'medical_report', 'medical_with_attachment_report'
             )
         }),
         ('Consents Information', {
