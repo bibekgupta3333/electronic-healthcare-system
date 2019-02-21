@@ -26,17 +26,18 @@ def instruction_notification_email_job():
                 userprofilebase__generalpracticeuser__role=GeneralPracticeUser.PRACTICE_MANAGER
             ).values('email')
             try:
-                send_mail(
-                    'Pending Instruction',
-                    'You have a pending or not started instruction. Click here {link} to see it.'.format(
-                        link=get_url_page('instruction_pipeline')
-                    ),
-                    'MediData',
-                    [gp['email'] for gp in gp_managers],
-                    fail_silently=True,
-                    auth_user=settings.EMAIL_HOST_USER,
-                    auth_password=settings.EMAIL_HOST_PASSWORD,
-                )
+                if gp_managers:
+                    send_mail(
+                        'Pending Instruction',
+                        'You have a pending or not started instruction. Click here {link} to see it.'.format(
+                            link=get_url_page('instruction_pipeline')
+                        ),
+                        'MediData',
+                        [gp['email'] for gp in gp_managers],
+                        fail_silently=True,
+                        auth_user=settings.EMAIL_HOST_USER,
+                        auth_password=settings.EMAIL_HOST_PASSWORD,
+                    )
                 if instruction.gp_practice and instruction.gp_practice.organisation_email:
                     send_mail(
                         'Pending Instruction',
