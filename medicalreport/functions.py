@@ -2,7 +2,7 @@ import uuid
 import logging
 import os
 from datetime import datetime
-
+from django.conf import settings
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.template import loader
@@ -284,7 +284,10 @@ def create_patient_report(request, instruction):
         'host': request.get_host(),
         'unique_url': unique_url
     }
-    generate_medicalreport_with_attachment.delay(instruction.id, report_link_info)
+    if settings.CELERY_ENABLED:
+        generate_medicalreport_with_attachment.delay(instruction.id, report_link_info)
+    else:
+        generate_medicalreport_with_attachment(instruction.id, report_link_info)
     send_surgery_email(instruction)
 
 
