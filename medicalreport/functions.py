@@ -22,6 +22,7 @@ from report.models import PatientReportAuth
 from report.tasks import generate_medicalreport_with_attachment
 
 
+
 UI_DATE_FORMAT = '%m/%d/%Y'
 logger = logging.getLogger('timestamp')
 
