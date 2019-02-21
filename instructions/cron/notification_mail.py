@@ -20,7 +20,7 @@ def instruction_notification_email_job():
 
     for instruction in new_or_pending_instructions:
         diff_date = now - instruction.created
-        if diff_date.days == 3 or diff_date.days == 7 or diff_date.days >= 14:
+        if diff_date.days == 3 or diff_date.days == 7 or diff_date.days == 14:
             gp_managers = User.objects.filter(
                 userprofilebase__generalpracticeuser__organisation=instruction.gp_practice.pk,
                 userprofilebase__generalpracticeuser__role=GeneralPracticeUser.PRACTICE_MANAGER
