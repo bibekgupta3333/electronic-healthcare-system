@@ -175,7 +175,8 @@ class GPOrgFilter(admin.SimpleListFilter):
 class InstructionResource(resources.ModelResource):
     class Meta:
         model = Instruction
-        fields = ('id', 'medi_ref', 'status', 'client_payment_reference', 'gp_payment_reference')
+        fields = ('id', 'medi_ref', 'status', 'type', 'gp_practice__practcode',
+                'gp_practice__billing_address_postalcode', 'client_payment_reference', 'gp_payment_reference')
 
     def before_import(self, dataset, using_transactions, dry_run, **kwargs):
         columns = []
