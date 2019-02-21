@@ -304,7 +304,7 @@ class TwoFactorForm(forms.Form):
             if response.status_code == 200:
                 response_results_dict = json.loads(response.text)
                 if not response_results_dict['validated']:
-                    self._errors = {"__all__": ["OPT isn't valid."]}
+                    self._errors = {"__all__": ["OTP isn't valid."]}
                     return False
         return valid
 
