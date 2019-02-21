@@ -47,10 +47,7 @@ def generate_medicalreport_with_attachment(instruction_id, report_link_info):
     instruction = get_object_or_404(Instruction, id=instruction_id)
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
-    patient_emis_number = instruction.patient_information.patient_emis_number
-    raw_xml_or_status_code = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
-
-    medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
+    medical_record_decorator = MedicalReportDecorator(instruction.medical_xml_report.read().decode('utf-8'), instruction)
     output = PyPDF2.PdfFileWriter()
 
     # add each page of medical report to output file
