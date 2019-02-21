@@ -8,6 +8,7 @@
 
 {% block ExtraHead %}
     <link href="{% static 'css/accounts/view_account.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/onboarding/emis_setup.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/instructions/new_instruction.css' %}" rel="stylesheet"/>
     <link rel="stylesheet" href="{% static 'css/pretty-checkbox.min.css' %}">
 {% endblock %}
@@ -89,13 +90,67 @@
                     </div>
                 </div>
             {% endif %}
+                <div class="card contactPreferences mt-4">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Settings</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h4>Generate new password</h4>
+                        <p>Please use new password that was generated to setup on EMAS then click check setup button to check it all ready</p>
+                        <div class="row mt-4">
+                            <div class="col-md-5">
+                                <button class="btn btn-primary" type="submit" value="generate-password">
+                                    Generate New Organisation Password
+                                </button>
+                            </div>
+                            {% if new_password %}
+                                <div class="col-md-12 mt-3">
+                                    <p> Your organisation password has changed.</p>
+                                    <p> Your organisation cannot access EMIS until you finish your new password setup on EMAS</p>
+                                    <p id="password">
+                                    New Password:&nbsp; <span class="credential pr-2" style="background-color: gainsboro;">&nbsp; {{ new_password }}</span>
+                                    <button type="button" class="btn btn-default btn-copy js-tooltip js-copy" data-toggle="tooltip" data-placement="bottom" data-copy="{{ new_password }}" title="Copy to clipboard">
+                                        <i class="fas fa-copy fa-2x"></i>
+                                    </button>
+                                    Click icon to copy the password
+                                </p>
+                                </div>
+                                <div class="col-md-12">
+                                    <p>When you finished your setup you can check it by click on Check Setup button</p>
+                                    <button class="btn btn-checkChangeSetup mb-0" onclick="this.disabled=true; pollingNewEmis('{% url "onboarding:emis_polling" practice_code %}')" type="button" id="checkingEmisButton">
+                                        <i class="fas fa-question"></i>&nbsp; Check Setup
+                                    </button>
+                                    <div class="emisSetupFail d-none">
+                                        <pre> <span style="color: red; font-size: 25px"><i class="fas fa-times"></i>  Fail!</span></pre>
+                                    </div>
+                                    <div class="emisSetupSuccess d-none">
+                                        <pre> <span style="color: #33aea0; font-size: 25px"><i class="fas fa-check"></i>  SUCCESS!</span></pre>
+                                    </div>
+                                </div>
+                             {% endif %}
+
+                        </div>
+                    </div>
+                </div>
         </form>
     </div>
 {% endblock %}
 
 {% block Script %}
+    <script src="{% static 'js/onboarding/emis_setup.js' %}"></script>
     <script>
         $(document).ready(function () {
+            $('.js-tooltip').tooltip();
+
+            $('.js-copy').click(function() {
+                var text = $(this).attr('data-copy');
+                var el = $(this);
+                copyToClipboard(text, el);
+            });
             $('#id_notification').on('change', function(){
                 $.ajax({
                     url : "{% url 'accounts:view_account' %}",

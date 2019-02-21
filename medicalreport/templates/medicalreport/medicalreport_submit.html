@@ -34,7 +34,7 @@
                                 </div>
                                 <div class="col-md-12 finalise-submit">
                                     <div class="col-md-12">
-                                        {% if instruction.type == 'SARS' %}
+                                        {% if not instruction.type == 'SARS' %}
                                             <label style="margin-top: 15px"> I confirm that : </label>
                                             <ul>
                                                 <li>this medical report relates to the correct patient (“Patient”)</li>

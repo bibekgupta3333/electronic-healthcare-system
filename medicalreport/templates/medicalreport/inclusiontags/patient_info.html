@@ -50,12 +50,12 @@
             <div class="modal-body">
                 <div style="text-align: center; padding: 15px">
                     {% if instruction.consent_form %}
-                        <object data="/{{ instruction.consent_form.url }}" height="735px" width="60%">
-                            <embed data="/{{ instruction.consent_form.url }}" />
+                        <object data="{{ instruction.consent_form.url }}" height="735px" width="60%">
+                            <embed data="{{ instruction.consent_form.url }}" />
                         </object>
                     {% elif instruction.sars_consent %}
-                        <object data="/{{ instruction.sars_consent.url }}" height="735px" width="60%">
-                            <embed data="/{{ instruction.sars_consent.url }}" />
+                        <object data="{{ instruction.sars_consent.url }}" height="735px" width="60%">
+                            <embed data="{{ instruction.sars_consent.url }}" />
                         </object>
                     {% else %}
                     <p>No consent form </p>
@@ -76,13 +76,9 @@
             </div>
             <div class="modal-body">
                 <div style="text-align: center; padding: 15px">
-                    {% if instruction.consent_form %}
-                        <object data="/{{ instruction.consent_form.url }}" height="735px" width="60%">
-                            <embed data="/{{ instruction.consent_form.url }}" />
-                        </object>
-                    {% elif instruction.mdx_consent %}
-                        <object data="/{{ instruction.mdx_consent.url }}" height="735px" width="60%">
-                            <embed data="/{{ instruction.mdx_consent.url }}" />
+                    {% if instruction.mdx_consent %}
+                        <object data="{{ instruction.mdx_consent.url }}" height="735px" width="60%">
+                            <embed data="{{ instruction.mdx_consent.url }}" />
                         </object>
                     {% else %}
                     <p>No consent form </p>

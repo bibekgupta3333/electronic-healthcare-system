@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
@@ -288,7 +288,7 @@ def new_instruction(request):
                     'New Instruction',
                     'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
                         protocol=request.scheme,
-                        link=get_url_page('instruction_pipeline', request)
+                        link=request.get_host() + reverse('instructions:view_pipeline')
                     ),
                     'MediData',
                     [gp_practice.organisation_email],
@@ -338,7 +338,7 @@ def new_instruction(request):
                 'New Instruction',
                 'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
                     protocol=request.scheme,
-                    link=get_url_page('instruction_pipeline', request)
+                    link=request.get_host() + reverse('instructions:view_pipeline')
                 ),
                 'MediData',
                 medidata_emails_list + gp_emails_list,
@@ -771,15 +771,30 @@ def atoi(text):
 
 
 def natural_keys(text):
-    return [atoi(c) for c in re.split(r'(\d+)', text)]
+    if 'Road' in text.split(',')[0]:
+        use_text = text.split(',')[0]
+    elif 'Road' in text.split(',')[1]:
+        use_text = text.split(',')[1]
+    elif 'Street' in text.split(',')[1]:
+        use_text = text.split(',')[1]
+    elif 'Street' in text.split(',')[1]:
+        use_text = text.split(',')[1]
+    else:
+        use_text = text.split(',')[1]
+
+    return [atoi(c) for c in re.split(r'(\d+)', use_text)]
 
 
 def api_get_address(request, address):
     if not address:
         return JsonResponse({'status': 'error', 'error': 'Address not found.'}, status=404)
 
-    url = 'https://api.getAddress.io/find/' + address + '?api-key=' + settings.GET_ADDRESS_API_KEY
+    url = 'https://api.getAddress.io/find/' + address + '?api-key=' + settings.GET_ADDRESS_API_KEY + '&sort=True'
     response = requests.get(url)
     json_response = response.json()
     json_response['addresses'].sort(key=natural_keys)
     return JsonResponse(json_response)
+
+
+def handler404(request, exception, template_name=None):
+    return redirect('instructions:view_pipeline')

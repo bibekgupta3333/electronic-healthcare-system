@@ -91,7 +91,9 @@ class Instruction(TimeStampedModel, models.Model):
     mdx_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
     medical_report = models.FileField(upload_to='medical_reports', null=True, blank=True)
     medical_xml_report = models.FileField(upload_to='medical_xml_reports', null=True, blank=True)
+    medical_with_attachment_report = models.FileField(upload_to='medical_with_attachment_reports', null=True, blank=True)
     saved = models.BooleanField(default=False)
+    deactivated = models.BooleanField(default=False, verbose_name="Deactivated at patient request")
     medi_ref = models.IntegerField(null=True, blank=True)
     your_ref = models.CharField(max_length=80, null=True, blank=True)
     client_payment_reference = models.CharField(max_length=255, blank=True)
@@ -111,7 +113,7 @@ class Instruction(TimeStampedModel, models.Model):
             ('sign_off_sars', 'Sign off SARS'),
             ('view_completed_amra', 'View completed AMRA'),
             ('view_completed_sars', 'View completed SARS'),
-            ('view_summry_report', 'View summary report')
+            ('view_summary_report', 'View summary report')
         )
 
     def __str__(self):

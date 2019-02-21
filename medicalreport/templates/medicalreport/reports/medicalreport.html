@@ -1,6 +1,8 @@
 {% load final_report_tags %}
 {% load static %}
+{% load bootstrap4 %}
 {% load custom_filters %}
+{% bootstrap_css %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -21,7 +23,7 @@
                 }
                 @frame footer_frame {
                     -pdf-frame-content: footer_content;
-                    left: 30pt; width: 532pt; top: 732pt; height: 130pt;
+                    left: 30pt; width: 532pt; top: 720pt; height: 130pt;
                 }
             }
             .header-medical-section {
@@ -31,6 +33,9 @@
                 padding: 10px;
                 padding-bottom: 0px;
                 margin-bottom: 15px;
+            }
+            .numberText {
+                text-align: right;
             }
         </style>
     </head>
@@ -80,6 +85,10 @@
                     <td style="background-color:#e6e6e6;width:50%;"/>
                 </tr>
             </table>
+            <br>
+            <div class="numberText">
+                Page : <pdf:pagenumber>
+            </div>
         </div>
         {% if instruction.type == 'SARS' %}
             <label style="font-size:60px;color:#235597;margin:0;line-height:60px;">Medical Record</label>

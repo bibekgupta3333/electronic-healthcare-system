@@ -22,6 +22,7 @@ class ReadCodeAdmin(admin.ModelAdmin):
 
 class CommonSnomedConceptsAdmin(admin.ModelAdmin):
     raw_id_fields = ('snomed_concept_code', )
+    fields = ('common_name', 'snomed_concept_code')
 
 
 admin.site.register(SnomedConcept, SnomedConceptsAdmin)

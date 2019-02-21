@@ -3,6 +3,7 @@
 {% load bootstrap4 %}
 {% load get_permissions %}
 {% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
 
 {% block ExtraHead %}
     <link href="{% static 'css/sign-in.css' %}" rel="stylesheet">
@@ -20,4 +21,5 @@
             <p>notifyus@medi2data.com to obtain our assistance.</p>
         </div>
     </div>
+    {% include 'patient/footer.html' %}
 </div>

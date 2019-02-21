@@ -12,58 +12,63 @@
 {% endblock %}
 
 {% block Content %}
-    <div class="col-12">
-        <h6>Summary Report : <strong>{{ currentYear }}</strong><h6>
-        <div class="card">
-            <div class='col-12'>
-                <div class="card-body">
-                    <div class="row">
-                        <div class='col-4 text-left'>
-                            <a href='/report/summary-report?current_year={{ previousYear }}'><i class="fas fa-caret-left"></i>&nbsp;&nbsp;{{ previousYear }}</a>
-                        </div>
-                        <div class="col-4 text-center">
-                            Year : {{ currentYear }}
-                        </div>
-                        <div class='col-4 text-right'>
-                            <a href='/report/summary-report?current_year={{ nextYear }}'>{{ nextYear }}&nbsp;&nbsp;<i class="fas fa-caret-right"></i></a>
+    <div class="container-fluid">
+        <div class="col-12">
+            <h6>Summary Report : <strong>{{ currentYear }}</strong><h6>
+            <div class="card">
+                <div class='container-fluid'>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class='col-4 text-left'>
+                                <a href='/report/summary-report?current_year={{ previousYear }}'><i class="fas fa-caret-left"></i>&nbsp;&nbsp;{{ previousYear }}</a>
+                            </div>
+                            <div class="col-4 text-center">
+                                Year : {{ currentYear }}
+                            </div>
+                            <div class='col-4 text-right'>
+                                <a href='/report/summary-report?current_year={{ nextYear }}'>{{ nextYear }}&nbsp;&nbsp;<i class="fas fa-caret-right"></i></a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-12">
+        <div class="col-12">&nbsp;</div>
+        <div class="col-12">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-4">
+                        <button class="btn btn-secondary btn-block" id="chart1Btn" type="button">
+                            <i class="far fa-chart-bar"></i>&nbsp;&nbsp;Instructions Charts
+                        </button>
+                    </div>
+                    <div class="col-4">
+                        <button class="btn btn-secondary btn-block" id="chart2Btn" type="button">
+                            <i class="fas fa-chart-line"></i>&nbsp;&nbsp;Fee Charts
+                        </button>
+                    </div>
+                    <div class="col-4">
+                        <button class="btn btn-secondary btn-block" id="chart3Btn" type="button">
+                            <i class="far fas fa-columns"></i>&nbsp;&nbsp;All Charts
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="row">
-            <div class="col-4">
-                <button class="btn btn-secondary btn-block" id="chart1Btn">
-                    <i class="far fa-chart-bar"></i>&nbsp;&nbsp;Show Instructions Charts.
-                </button>
+            <div class="col-12" id="chart1">
+                <div class="col-12">&nbsp;</div>
+                <canvas id="summaryChart1" width="auto" height="auto"></canvas>
+                <div class="col-12 text-center mt-3">
+                    <label><strong>Instructions Chart</strong></label>
+                </div>
             </div>
-            <div class="col-4">
-                <button class="btn btn-secondary btn-block" id="chart2Btn">
-                    <i class="fas fa-chart-line"></i>&nbsp;&nbsp;Show Fee Charts.
-                </button>
-            </div>
-            <div class="col-4">
-                <button class="btn btn-secondary btn-block" id="chart3Btn">
-                    <i class="far fas fa-columns"></i>&nbsp;&nbsp;Show All Charts.
-                </button>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-12" id="chart1">
-            <div class="col-12">&nbsp;</div>
-            <canvas id="summaryChart1" width="auto" height="auto"></canvas>
-            <div class="col-12 text-center mt-3">
-                <label><strong>Instructions Chart.</strong></label>
-            </div>
-        </div>
-        <div class="col-12" id="chart2" style='display:none'>
-            <div class="col-12">&nbsp;</div>
-            <canvas id="summaryChart2" width="auto" height="auto"></canvas>
-            <div class="col-12 text-center mt-3">
-                <label><strong>Fee Chart.</strong></label>
+            <div class="col-12" id="chart2" style='display:none'>
+                <div class="col-12">&nbsp;</div>
+                <canvas id="summaryChart2" width="auto" height="auto"></canvas>
+                <div class="col-12 text-center mt-3">
+                    <label><strong>Fee Chart</strong></label>
+                </div>
             </div>
         </div>
     </div>

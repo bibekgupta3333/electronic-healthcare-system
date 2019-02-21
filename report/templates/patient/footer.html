@@ -1,0 +1,53 @@
+{% load static %} 
+<div class="footer">
+    <div class="terms-policy mb-3 space-around">
+        {% if not request.COOKIES.verified_pin %}
+            <button id="MediTerms" type="button">Patient Terms and Conditions</button>
+        {% endif %}
+        <p>&copy; MediData Exchange 2019 <button id="MediPolicy" type="button">Data Policy</button></p>
+    </div>
+</div>
+<div class="modal fade" id="MediTermsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <div class="container">
+                    <div class="col-12 text-center modal-pdf">
+                        <embed src="{% static 'documents/PatientTermAndConditions.pdf' %}" width="100%" height="100%" alt="pdf">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="MediPolicyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <div class="container">
+                    <div class="col-12 text-center modal-pdf">
+                        <embed src="{% static 'documents/PatientDataPolicy.pdf' %}" width="100%" height="100%" alt="pdf">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% block Script %}
+  <script>
+      $(document).ready(function () {
+          $('#MediTerms').on('click', function(){
+              $('#MediTermsModal').modal("show");
+          });
+          $('#MediPolicy').on('click', function(){
+              $('#MediPolicyModal').modal("show");
+          });
+      });
+  </script>
+{% endblock %}

@@ -13,15 +13,9 @@
           </tr>
           {% for model in significant_active_problems %}
               {% with header=model|active_problem_header:problem_linked_lists  %} 
-                  {% with model|get_xpaths:problem_linked_lists as xpaths %}
-                      {% with xpaths|get_redaction_problem_xpaths:redaction as redacted %}
-                          {% if not redacted %}
-                              <tr>
-                                  <td>{{ header }}</td>
-                              </tr>
-                          {% endif %}
-                      {% endwith %}
-                  {% endwith %}
+                  <tr>
+                      <td>{{ header }}</td>
+                  </tr>
               {% endwith %}
           {% endfor %}
       {% endif %}
@@ -31,15 +25,9 @@
           </tr>
           {% for model in significant_past_problems %}
               {% with header=model|past_problem_header  %} 
-                  {% with model|get_xpaths:problem_linked_lists as xpaths %}
-                      {% with xpaths|get_redaction_problem_xpaths:redaction as redacted %}
-                          {% if not redacted %}
-                              <tr>
-                                  <td>{{ header }}</td>
-                              </tr>
-                          {% endif %}
-                      {% endwith %}
-                  {% endwith %}
+                  <tr>
+                      <td>{{ header }}</td>
+                  </tr>
               {% endwith %}
           {% endfor %}
       {% endif %}

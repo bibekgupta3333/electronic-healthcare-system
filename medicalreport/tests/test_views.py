@@ -23,6 +23,10 @@ import os
 from contextlib import suppress
 
 
+medical_report = SimpleUploadedFile('report.pdf', b'consent')
+medical_xml_report = SimpleUploadedFile('report.xml', b'<MedicalRecord></MedicalRecord>')
+
+
 class EmisAPITestCase(TestCase):
     def setUp(self):
         EmisAPIConfig.objects.create(
@@ -63,6 +67,8 @@ class EmisAPITestCase(TestCase):
             gp_practice=gp_practice,
             patient_information=self.instruction_patient,
             mdx_consent=consent_form,
+            medical_report=medical_report,
+            medical_xml_report=medical_xml_report
         )
         self.redaction = mommy.make(
             AmendmentsForRecord, instruction=self.instruction, pk=1
@@ -90,7 +96,9 @@ class RejectRequestTest(EmisAPITestCase):
         self.instruction = mommy.make(
             Instruction, pk=4, consent_form=consent_form,
             patient=self.patient, gp_user=self.gp_user,
-            gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_REJECT
+            gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_REJECT,
+            medical_report=medical_report,
+            medical_xml_report=medical_xml_report
         )
         self.redaction = mommy.make(
             AmendmentsForRecord, instruction=self.instruction, pk=4
@@ -198,6 +206,8 @@ class EditReportTest(EmisAPITestCase):
             patient_information=self.instruction_patient,
             patient=self.patient, gp_user=self.gp_user,
             gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_PROGRESS, type='SARS',
+            medical_report=medical_report,
+            medical_xml_report=medical_xml_report,
             **{'date_range_from': datetime(1995, 10, 10), 'date_range_to': datetime(2015, 10, 10)}
         )
 
@@ -222,9 +232,9 @@ class EditReportTest(EmisAPITestCase):
         self.assertTemplateUsed(
             response, 'medicalreport/medicalreport_edit.html')
 
-    def test_view_returns_404_if_instruction_does_not_exist(self):
+    def test_view_returns_302_if_instruction_does_not_exist(self):
         response = self.client.get('/medicalreport/5/edit/')
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(302, response.status_code)
 
     def test_view_redirects_if_redaction_does_not_exist(self):
         self.redaction.delete()
@@ -278,9 +288,9 @@ class UpdateReportTest(EmisAPITestCase):
         self.assertEqual(200, response.status_code)
         self.assertIsInstance(response, JsonResponse)
 
-    def test_view_returns_404_if_instruction_does_not_exist(self):
+    def test_view_returns_302_if_instruction_does_not_exist(self):
         response = self.client.get('/medicalreport/2/update/')
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(302, response.status_code)
 
     def test_view_redirects_to_correct_url_if_not_valid(self):
         response = self.client.post('/medicalreport/1/update/', {'event_flag': 'submit'})
@@ -321,9 +331,9 @@ class ViewReportTest(EmisAPITestCase):
         )
         self.assertEqual(200, response.status_code)
 
-    def test_view_returns_404_if_redaction_does_not_exist(self):
+    def test_view_returns_302_if_redaction_does_not_exist(self):
         response = self.client.get('/medicalreport/2/view-report/')
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(302, response.status_code)
 
     def test_view_returns_pdf(self):
         response = self.client.get('/medicalreport/1/view-report/')
@@ -339,7 +349,9 @@ class FinalReportTest(EmisAPITestCase):
             Instruction, pk=3, consent_form=consent_form,
             patient=self.patient, gp_user=self.gp_user,
             patient_information=self.patient_information,
-            gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_COMPLETE
+            gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_COMPLETE,
+            medical_report=medical_report,
+            medical_xml_report=medical_xml_report
         )
         self.redaction = mommy.make(
             AmendmentsForRecord, instruction=self.instruction, pk=3
@@ -359,9 +371,9 @@ class FinalReportTest(EmisAPITestCase):
         response = self.client.get('/medicalreport/3/final-report/')
         self.assertTemplateUsed(response, 'medicalreport/final_report.html')
 
-    def test_view_returns_404_if_instruction_does_not_exist(self):
+    def test_view_returns_302_if_instruction_does_not_exist(self):
         response = self.client.get('/medicalreport/5/final-report/')
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(302, response.status_code)
 
 
 class RedactReferencePhraseTest(TestCase):

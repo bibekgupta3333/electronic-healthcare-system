@@ -6,3 +6,13 @@
     font-size: 20px;
     color: black;
 }
+
+.label-note {
+    font-size: 15px;
+    color: red;
+    margin-top: 1%;
+}
+
+.another-block {
+    display: none;
+}

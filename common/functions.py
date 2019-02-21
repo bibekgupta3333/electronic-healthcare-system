@@ -32,14 +32,15 @@ def get_env_variable(name):
 
 def verify_password(password: str, first_name: str=None, last_name: str=None, email: str=None) -> dict:
     max_score = 3
-    results = zxcvbn(password, user_inputs=[first_name, last_name, email])
     data = {
         'verified': True,
-        'warning': None
+        'warning': []
     }
-    if results.get('score',0) < max_score:
-        data['verified'] = False
-        data['warning'] = results.get('feedback').get('suggestions')
+    if password:
+        results = zxcvbn(password, user_inputs=[first_name, last_name, email])
+        if results.get('score', 0) < max_score:
+            data['verified'] = False
+            data['warning'] = results.get('feedback').get('suggestions')
     return data
 
 

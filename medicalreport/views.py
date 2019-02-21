@@ -1,9 +1,11 @@
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.utils.html import format_html
 from django.urls import reverse
+from django.utils import timezone
 from services.emisapiservices import services
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.xml.medical_record import MedicalRecord
@@ -24,6 +26,9 @@ from .forms import AllocateInstructionForm
 from permissions.functions import check_permission, check_user_type
 from payment.functions import calculate_instruction_fee
 from typing import List
+
+
+logger = logging.getLogger('timestamp')
 
 
 @login_required(login_url='/accounts/login')
@@ -135,6 +140,7 @@ def edit_report(request, instruction_id):
     if isinstance(raw_xml_or_status_code, int):
         return redirect('services:handle_error', code=raw_xml_or_status_code)
     medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
+    start_time = timezone.now()
     questions = instruction.addition_questions.all()
     initial_prepared_by = request.user.userprofilebase.generalpracticeuser.pk
     if redaction.prepared_by:
@@ -156,7 +162,7 @@ def edit_report(request, instruction_id):
     relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
     inst_gp_user = instruction.gp_user.user
     cur_user = request.user
-    return render(request, 'medicalreport/medicalreport_edit.html', {
+    response =  render(request, 'medicalreport/medicalreport_edit.html', {
         'user': request.user,
         'medical_record': medical_record_decorator,
         'redaction': redaction,
@@ -166,6 +172,10 @@ def edit_report(request, instruction_id):
         'relations': relations,
         'show_alert': True if inst_gp_user == cur_user else False
     })
+    end_time = timezone.now()
+    total_time = end_time - start_time
+    logger.info("[RENDER XML] %s seconds with patient %s"%(total_time.seconds, instruction.patient_information.__str__()))
+    return response
 
 
 @login_required(login_url='/accounts/login')
@@ -238,47 +248,30 @@ def submit_report(request, instruction_id):
 @login_required(login_url='/accounts/login')
 def view_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
-    if instruction.status != INSTRUCTION_STATUS_COMPLETE:
-        redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
-        raw_xml_or_status_code = services.GetMedicalRecord(redaction.patient_emis_number, instruction.gp_practice).call()
-        if isinstance(raw_xml_or_status_code, int):
-            return redirect('services:handle_error', code=raw_xml_or_status_code)
-        medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
-        surgery_name = instruction.gp_practice
-        relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
-
-        params = {
-            'medical_record': medical_record_decorator,
-            'redaction': redaction,
-            'instruction': instruction,
-            'relations': relations,
-            'surgery_name': surgery_name,
-        }
-
-        return MedicalReport.render(params)
-    else:
-        return HttpResponse(instruction.medical_report, content_type='application/pdf')
+    return HttpResponse(instruction.medical_report, content_type='application/pdf')
 
 
 @login_required(login_url='/accounts/login')
 @check_permission
 def final_report(request, instruction_id):
+    start_time = timezone.now()
     header_title = "Final Report"
     instruction = get_object_or_404(Instruction, id=instruction_id)
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
     patient_emis_number = instruction.patient_information.patient_emis_number
-    raw_xml_or_status_code = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
-    if isinstance(raw_xml_or_status_code, int):
-        return redirect('services:handle_error', code=raw_xml_or_status_code)
-    medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
+    medical_record_decorator = MedicalReportDecorator(instruction.medical_xml_report.read().decode('utf-8'), instruction)
     attachments = medical_record_decorator.attachments
     relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
 
-    return render(request, 'medicalreport/final_report.html', {
+    response = render(request, 'medicalreport/final_report.html', {
         'header_title': header_title,
         'attachments': attachments,
         'redaction': redaction,
         'relations': relations,
         'instruction': instruction
     })
+    end_time = timezone.now()
+    total_time = end_time - start_time
+    logger.info("[RENDER PDF] %s seconds with patient %s"%(total_time.seconds, instruction.patient_information.__str__()))
+    return response

@@ -3,7 +3,7 @@ from .common import *
 ALLOWED_HOSTS.append('medi.mohub.co')
 ALLOWED_HOSTS.append('web02-cl02-mde.flexiion-customer.net')
 
-DEBUG = False
+DEBUG = True
 
 DATABASES = {
     'default': {
@@ -55,3 +55,6 @@ LOGGING = {
 }
 
 EMIS_API_HOST = 'http://medi2data.net:9443'
+
+MDX_URL = 'http://medi.mohub.co'
+EMR_URL = 'http://medi.mohub.co'
