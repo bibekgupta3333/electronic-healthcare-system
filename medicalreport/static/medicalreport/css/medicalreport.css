@@ -270,6 +270,7 @@ h1 {
 }
 
 .final-report .files {
+    max-height: 100%;
     overflow-y: scroll;
 }
 
