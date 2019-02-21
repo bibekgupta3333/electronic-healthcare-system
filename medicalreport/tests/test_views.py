@@ -23,6 +23,10 @@ import os
 from contextlib import suppress
 
 
+medical_report = SimpleUploadedFile('report.pdf', b'consent')
+medical_xml_report = SimpleUploadedFile('report.xml', b'<MedicalRecord></MedicalRecord>')
+
+
 class EmisAPITestCase(TestCase):
     def setUp(self):
         EmisAPIConfig.objects.create(
@@ -63,6 +67,8 @@ class EmisAPITestCase(TestCase):
             gp_practice=gp_practice,
             patient_information=self.instruction_patient,
             mdx_consent=consent_form,
+            medical_report=medical_report,
+            medical_xml_report=medical_xml_report
         )
         self.redaction = mommy.make(
             AmendmentsForRecord, instruction=self.instruction, pk=1
@@ -90,7 +96,9 @@ class RejectRequestTest(EmisAPITestCase):
         self.instruction = mommy.make(
             Instruction, pk=4, consent_form=consent_form,
             patient=self.patient, gp_user=self.gp_user,
-            gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_REJECT
+            gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_REJECT,
+            medical_report=medical_report,
+            medical_xml_report=medical_xml_report
         )
         self.redaction = mommy.make(
             AmendmentsForRecord, instruction=self.instruction, pk=4
@@ -198,6 +206,8 @@ class EditReportTest(EmisAPITestCase):
             patient_information=self.instruction_patient,
             patient=self.patient, gp_user=self.gp_user,
             gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_PROGRESS, type='SARS',
+            medical_report=medical_report,
+            medical_xml_report=medical_xml_report,
             **{'date_range_from': datetime(1995, 10, 10), 'date_range_to': datetime(2015, 10, 10)}
         )
 
@@ -339,7 +349,9 @@ class FinalReportTest(EmisAPITestCase):
             Instruction, pk=3, consent_form=consent_form,
             patient=self.patient, gp_user=self.gp_user,
             patient_information=self.patient_information,
-            gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_COMPLETE
+            gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_COMPLETE,
+            medical_report=medical_report,
+            medical_xml_report=medical_xml_report
         )
         self.redaction = mommy.make(
             AmendmentsForRecord, instruction=self.instruction, pk=3

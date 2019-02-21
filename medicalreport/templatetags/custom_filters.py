@@ -94,6 +94,12 @@ def is_linked_with_minor_problem(referral, minor_problems_list):
 
 
 @register.filter
+def is_linked_with_minor_problem(referral, minor_problems_list):
+    guid_minor_problems = [p.get_element_text('GUID') for p in minor_problems_list]
+    return referral.get_element_text('ProblemLinkList/Link/Target/GUID') in guid_minor_problems
+
+
+@register.filter
 def consultation_header(consultation, people):
     author = None
     for p in people:

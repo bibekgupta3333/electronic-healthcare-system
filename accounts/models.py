@@ -126,7 +126,7 @@ class User(AbstractUser):
             elif role == GeneralPracticeUser.GENERAL_PRACTICE:
                 return 'General Practice User'
             else:
-                return 'SARS'
+                return 'Other Practice Stuff'
         else:
             return 'Patient User'
 

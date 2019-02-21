@@ -90,21 +90,3 @@ def questions(context):
     return {
         'questions': context['instruction'].addition_questions.all()
     }
-
-def get_redaction(model, redaction):
-    xpaths = model.xpaths()
-    if redaction.redacted(xpaths) is True:
-        return True
-    return False
-
-def get_xpaths(model, problem_linked_lists):
-    return problem_xpaths(model, problem_linked_lists)
-
-def get_redaction_problem_xpaths(xpaths, redaction):
-    if redaction.redacted(xpaths) is True:
-        return True
-    return False
-
-register.filter('get_xpaths', get_xpaths)
-register.filter('get_redaction', get_redaction)
-register.filter('get_redaction_problem_xpaths', get_redaction_problem_xpaths)

@@ -15,9 +15,10 @@
     <div class="card">
         <div class="card-body pt-4">
             <div class="container-fluid">
-                Material contained in this section includes: training materials for Surgery staff users; <br>
-                information for Patients and 3 parties. <br>
-                Simply click on each link to access.
+                <div class="col-md-12">
+                    Material contained in this section includes: training materials for Surgery staff users, information for Patients and 3 Parties.<br>
+                    Simply click on each link to access.
+                </div>
             </div>
         </div>
     </div>
@@ -139,13 +140,13 @@
         <div class="col-7" id="previewId">
             <!-- Set for default PDF -->
             <div id="default-preview">
-                <label class="label-title" id="previewTitle">Welcome to eMR</label>
+                <label class="label-title" id="previewTitle">Welcome to Resource Centre</label>
                 <div class="iframe" id="iframe">
-                    <object data="{% static 'documents/TCs2.pdf' %}#zoom=100" height="500px" width="100%" id="path1">
-                        <embed data="/{% static 'documents/TCs2.pdf' %}" id="path2"/>
+                    <object data="{% static 'documents/Welcome to your Resource Centre.RF (002).pdf' %}#view=FitH" height="500px" width="100%" id="path1">
+                        <embed data="{% static 'documents/Welcome to your Resource Centre.RF (002).pdf' %}" id="path2"/>
                     </object>
                 </div>
-                <a href="/static/documents/TCs2.pdf" target="_blank" id="linkPreviewModeId">
+                <a href="{% static 'documents/Welcome to your Resource Centre.RF (002).pdf' %}" target="_blank" id="linkPreviewModeId">
                     <button type="button" class="btn btn-primary btn-block btn-lg">
                         <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
                     </button>

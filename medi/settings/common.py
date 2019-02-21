@@ -255,3 +255,10 @@ CLAMD_TCP_ADDR = '127.0.0.1'
 
 #Set false for disable two factor authentication
 TWO_FACTOR_ENABLED = True
+
+#Set false for disable celery
+CELERY_ENABLED = True
+CELERY_BROKER_URL = 'amqp://localhost'
+
+MDX_URL = 'https://mdx.medi2data.com'
+EMR_URM = 'https://emr.medi2data.com'

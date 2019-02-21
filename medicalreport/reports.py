@@ -4,6 +4,7 @@ import xhtml2pdf.pisa as pisa
 from io import BytesIO
 from django.core.files.base import ContentFile
 from django.utils import timezone
+from django.shortcuts import render_to_response
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template.loader import get_template
@@ -31,7 +32,7 @@ def link_callback(uri, rel):
     else:
         path = sRoot
 
-    if sRoot == 'static' :
+    if sRoot == 'static':
         path = BASE_DIR + '/medi/' + path
 
     if not os.path.isfile(path):

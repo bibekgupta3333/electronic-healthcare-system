@@ -7,17 +7,17 @@
 <body>
     The Subject to Access Request has now been processed.
     <br><br>
-    I {{ patient_first_name }}, now authorise you to access my medical record via a secure on-line portal,
-    provide by MediData Exchange, using the link below.
+    Ref Number : {{ ref_number }}
     <br><br>
-    Please note you will have access for 30 days only.
+    You are authorised to access this medical record via a secure on-line portal, provided by MediData Exchange, using the link below.
     <br><br>
-    For security purposes you will receive an access code either by on the telephone or mobile phone.
-    This number end in {{ last_three_digits }}
+    Please note you will have access for 30 days only.<br>
+    However, this can be extended by the Patient.
+    <br><br>
+    For security purposes, you will receive an access code delivered to the telephone number
+    given by the Patient, ending in {{ last_three_digits }}
     <br><br>
     Please follow the link and the on-screen instructions.
-    <br><br>
-    Access to my medical record is via this link.
     <br>
     <a href="{{ report_link }}">{{ report_link }}</a>
     <br><br>

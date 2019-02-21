@@ -3,6 +3,7 @@ asn1crypto==0.24.0
 Babel==2.6.0
 binaryornot==0.4.4
 cached-property==1.4.3
+celery==4.2.1
 certifi==2018.4.16
 cffi==1.11.5
 chardet==3.0.4
@@ -35,6 +36,7 @@ docker-pycreds==0.3.0
 dockerpty==0.4.1
 docopt==0.6.2
 et-xmlfile==1.0.1
+flower==0.9.2
 future==0.16.0
 gunicorn==19.9.0
 idna==2.6
