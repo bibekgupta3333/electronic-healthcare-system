@@ -109,6 +109,7 @@ def sar_access_code(request, access_type, url):
             number = " ".join(map(str, number))
         else:
             third_party_authorisation = get_object_or_404(ThirdPartyAuthorisation, unique=url)
+            instruction = third_party_authorisation.patient_report_auth.instruction
             patient_auth = third_party_authorisation.patient_report_auth
             if third_party_authorisation.expired:
                 return render(request, 'date_expired.html', )
