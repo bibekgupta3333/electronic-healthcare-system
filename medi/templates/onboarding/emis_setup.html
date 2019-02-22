@@ -148,9 +148,11 @@
             <h6 class="text-danger">If you miss any steps or need to review again, <br> you can go back to the beginning here.</h6>
         </div>
         <div class="col-3 mt-3">
-            <button type="button" class="btn-block btn btn-primary btn-lg" id="refreshBTN">
-                <i class="fas fa-redo-alt"></i>&nbsp;&nbsp;&nbsp;Start Again.
-            </button>
+            <form method="GET" id="refreshForm">
+                <button type="submit" class="btn-block btn btn-primary btn-lg" id="refreshBtn">
+                    <i class="fas fa-redo-alt"></i>&nbsp;&nbsp;&nbsp;Start Again.
+                </button>
+            </form>
         </div>
     </div>
 {% endblock %}
@@ -181,9 +183,13 @@
             });
 
             //  set default progress bar
-            $('#progress_percent').text('20%');
-            $('#progress_bar').attr('aria-valuenow', '20');
-            $('#progress_bar').css('width', '20%');
+            {% if reload_status == 1 %}
+                fromReload();
+            {% else %}
+                $('#progress_percent').text('20%');
+                $('#progress_bar').attr('aria-valuenow', '20');
+                $('#progress_bar').css('width', '20%');
+            {% endif %}
 
             validateBTN( $('#progress_bar').attr('aria-valuenow') );
 
@@ -244,10 +250,6 @@
                         break;
                 }
                 $('#completeBTN').prop('disabled',true);
-            });
-
-            $('#refreshBTN').click( function() {
-                location.reload();
             });
         });
 
