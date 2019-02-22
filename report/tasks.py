@@ -11,6 +11,7 @@ from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.emisapiservices import services
 from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE
+from report.mobile import SendSMS
 
 from celery import shared_task
 from PIL import Image
@@ -133,6 +134,8 @@ def generate_medicalreport_with_attachment(instruction_id, report_link_info):
 
     uuid_hex = uuid.uuid4().hex
     instruction.medical_with_attachment_report.save('report_with_attachments_%s.pdf' % uuid_hex, ContentFile(pdf_page_buf.getvalue()))
+
+    SendSMS(number=instruction.patient_information.get_telephone_e164()).send()
 
     send_patient_mail(
         report_link_info['scheme'],
