@@ -63,7 +63,7 @@ class OrganisationGeneralPracticeAdmin(CustomImportExportModelAdmin):
         }),
         ('Organisation Status', {
             'fields': (
-                'accept_policy', 'live'
+                'accept_policy', 'live', 'live_timechecked'
             )
         })
     )

@@ -55,11 +55,13 @@ def count_instructions(user, gp_practice_code, client_organisation):
     paid_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_PAID).count()
     complete_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_COMPLETE).count()
     rejected_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_REJECT).count()
+    finalise_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_FINALISE).count()
     overall_instructions_number = {
         'All': all_count,
         'New': new_count,
         'In Progress': progress_count,
         'Paid': paid_count,
+        'Finalise': finalise_count,
         'Completed': complete_count,
         'Rejected': rejected_count
     }
@@ -794,7 +796,3 @@ def api_get_address(request, address):
     json_response = response.json()
     json_response['addresses'].sort(key=natural_keys)
     return JsonResponse(json_response)
-
-
-def handler404(request, exception, template_name=None):
-    return redirect('instructions:view_pipeline')

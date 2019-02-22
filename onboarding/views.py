@@ -86,6 +86,7 @@ def sign_up(request):
 def emis_setup(request, practice_code):
     header_title = "Sign up: eMR with EMISweb - please make sure to only minimise this browser tab, do not close this screen "
     gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
+    reload_status = 0
     if request.user.get_my_organisation() != gp_organisation:
         return redirect('accounts:login')
 
@@ -106,6 +107,7 @@ def emis_setup(request, practice_code):
                     'message_2': message_2,
                     'message_3': message_3
                 })
+            reload_status = 1
 
     surgery_update_form = SurgeryUpdateForm(initial={
         'surgery_name': gp_organisation.name,
@@ -119,7 +121,8 @@ def emis_setup(request, practice_code):
         'organisation_code': gp_organisation.operating_system_organisation_code,
         'practice_code': gp_organisation.practcode,
         'practice_password': gp_organisation.operating_system_salt_and_encrypted_password,
-        'surgery_update_form': surgery_update_form
+        'surgery_update_form': surgery_update_form,
+        'reload_status': reload_status
     })
 
 

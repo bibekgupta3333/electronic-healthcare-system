@@ -99,17 +99,17 @@ class TemplateViewsTest(TemplateTestCase):
         response = self.client.get('/template/edit-template/1')
         self.assertEqual(200, response.status_code)
 
-    def test_edit_returns_302_if_template_does_not_exist(self):
+    def test_edit_returns_404_if_template_does_not_exist(self):
         response = self.client.get('/template/edit-template/3')
-        self.assertEqual(302, response.status_code)
+        self.assertEqual(404, response.status_code)
 
     def test_remove_template(self):
         response = self.client.get('/template/remove-template/2')
         self.assertEqual(302, response.status_code)
 
-    def test_view_returns_302_if_template_does_not_exist(self):
+    def test_view_returns_404_if_template_does_not_exist(self):
         response = self.client.get('/template/remove-template/3')
-        self.assertEqual(302, response.status_code)
+        self.assertEqual(404, response.status_code)
 
 
 class GetTemplateDataTest(TemplateTestCase):
@@ -119,4 +119,4 @@ class GetTemplateDataTest(TemplateTestCase):
 
     def test_get_template_returns_302_if_template_does_not_exist(self):
         response = self.client.get('/template/get-template-data/3')
-        self.assertEqual(302, response.status_code)
+        self.assertEqual(404, response.status_code)
