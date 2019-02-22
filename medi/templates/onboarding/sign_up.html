@@ -248,27 +248,24 @@
             </div>
         </div>
     </form>
-    <div class="modal fade pdf-modal" id="acceptTCs" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
-        <div class="modal-dialog policy-modal" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title">T&amp;Cs</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-            </div>
-            <div class="modal-body">
-                <div class="iframe" id="iframe">
-                    <object data="{% static 'documents/TCs2.pdf' %}#zoom=100" height="400px" width="100%">
-                        <embed data="/{% static 'documents/TCs2.pdf' %}" />
-                    </object>
+    <div class="modal fade pdf-modal" id="acceptTCs" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog policy-modal" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <div class="container">
+                        <div class="col-12 text-center">
+                            <embed src="{% static 'documents/MediTCs.pdf' %}" width="100%" height="450px" alt="pdf"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="goBack" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Go back</button>
+                    <button id="acceptPolicy" type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Accept</button>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button id="goBack" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Go back</button>
-                <button id="acceptPolicy" type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Accept</button>
-            </div>
-        </div>
         </div>
     </div>
 
