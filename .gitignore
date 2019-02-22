@@ -114,5 +114,8 @@ Dockerfile
 config/nginx/
 docker-compose.yml
 
+# Celery
+medi/celery.py
+
 #Media files
 medi/media

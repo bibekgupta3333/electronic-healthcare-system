@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'django_crontab',
     'django_clamd',
     'axes',
+    'django_celery_results',
 
     # app
     'accounts',
@@ -259,6 +260,7 @@ TWO_FACTOR_ENABLED = True
 #Set false for disable celery
 CELERY_ENABLED = True
 CELERY_BROKER_URL = 'amqp://localhost'
+CELERY_RESULT_BACKEND = 'django-db'
 
 MDX_URL = 'https://mdx.medi2data.com'
 EMR_URM = 'https://emr.medi2data.com'
