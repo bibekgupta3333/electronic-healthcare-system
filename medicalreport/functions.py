@@ -21,7 +21,6 @@ from .models import AdditionalMedicationRecords, AdditionalAllergies, Amendments
 from medicalreport.reports import MedicalReport
 from report.models import PatientReportAuth
 from report.tasks import generate_medicalreport_with_attachment
-from report.mobile import SendSMS
 
 
 UI_DATE_FORMAT = '%m/%d/%Y'
@@ -101,7 +100,7 @@ def create_or_update_redaction_record(request, instruction):
                 amendments_for_record.prepared_by = submit_form.cleaned_data.get('prepared_by')
 
             if status == 'submit':
-                instruction.status = models.INSTRUCTION_STATUS_COMPLETE
+                instruction.status = models.INSTRUCTION_STATUS_FINALISE
                 instruction.completed_signed_off_timestamp = timezone.now()
                 messages.success(request, 'Completed Medical Report')
 
@@ -289,5 +288,4 @@ def create_patient_report(request, instruction):
     else:
         generate_medicalreport_with_attachment(instruction.id, report_link_info)
     send_surgery_email(instruction)
-    SendSMS(number=instruction.patient_information.get_telephone_e164()).send()
 

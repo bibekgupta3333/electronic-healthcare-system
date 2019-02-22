@@ -94,7 +94,44 @@ function validateBTN( progressPercent ) {
     }
 }
 
-function changeAttr( status ){
+function fromReload() {
+    $('#id_label').removeClass('text-danger');
+    $('#progress_bar').removeClass('bg-danger');
+
+    $('#id_label').addClass('text-success');
+    $('#progress_bar').addClass('bg-success');
+
+    $('#progress_percent').text('90%');
+    $('#progress_bar').attr('aria-valuenow', '90');
+    $('#progress_bar').css('width', '90%');
+
+    picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2004.png';
+    titleCaption = 'c) Enter the username and password below, and give the user a suitable role where it can read records';
+    $('#setup-min-pic').attr('href', picPath );
+    $('#setup-full-pic').attr('src', picPath );
+    $('#setup-caption').text( titleCaption );
+    $('#username-block').show();
+
+    $('#step2-block').show();
+    picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2011.png';
+    titleCaption = 'g) Click "Activate Application" at the top';
+    $('#setup-min-pic_2').attr('href', picPath );
+    $('#setup-full-pic_2').attr('src', picPath );
+    $('#setup-caption_2').text( titleCaption );
+
+    $('#step3-block').show();
+    picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2018.png';
+    titleCaption = 'n) Click "OK". Setup is complete';
+    $('#setup-min-pic_3').attr('href', picPath );
+    $('#setup-full-pic_3').attr('src', picPath );
+    $('#setup-caption_3').text( titleCaption );
+
+    $('#step4-block').show();
+    $('#main-btn-block').hide();
+    $('#secon-btn-block').show();
+}
+
+function changeAttr( status ) {
     var picPath, titleCaption;
     var percent = parseInt( $('#progress_bar').attr('aria-valuenow') );
     switch( percent ) {

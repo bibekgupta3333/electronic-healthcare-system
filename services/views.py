@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from .emisapiservices import services
 from .dummy_models import DummyPatient, DummyPractice, DummySnomedConcept
@@ -65,3 +65,25 @@ def handle_error(request, code):
     return render(request, 'errors/handle_errors_emis.html', {
         'code': code,
     })
+
+
+def handler_404(request, exception, template_name='handle_errors.html'):
+    status_code = 404
+    message = 'Page not found. Please try agian later or contact the admin.'
+    response = render(request, 'errors/handle_errors.html', {
+        'code': status_code,
+        'message': message
+    })
+    response.status_code = status_code
+    return response
+
+
+def handler_500(request, exception, template_name='handle_errors.html'):
+    status_code = 500
+    message = 'Page is Error. Please try agian later or contact the admin.'
+    response = render(request, 'errors/handle_errors.html', {
+        'code': status_code,
+        'message': message
+    })
+    response.status_code = status_code
+    return response
