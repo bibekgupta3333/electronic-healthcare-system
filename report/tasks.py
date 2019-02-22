@@ -10,6 +10,7 @@ from medicalreport.models import AmendmentsForRecord
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.emisapiservices import services
 from instructions.models import Instruction
+from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE
 
 from celery import shared_task
 from PIL import Image
@@ -139,6 +140,9 @@ def generate_medicalreport_with_attachment(instruction_id, report_link_info):
         report_link_info['unique_url'],
         instruction
     )
+
+    instruction.status = INSTRUCTION_STATUS_COMPLETE
+    instruction.save()
 
     end_time = timezone.now()
     total_time = end_time - start_time
