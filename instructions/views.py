@@ -794,7 +794,3 @@ def api_get_address(request, address):
     json_response = response.json()
     json_response['addresses'].sort(key=natural_keys)
     return JsonResponse(json_response)
-
-
-def handler404(request, exception, template_name=None):
-    return redirect('instructions:view_pipeline')

@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.conf.urls import handler404, handler500
 
 from django.urls import path, include
 from django.conf import settings
@@ -23,6 +24,7 @@ from instructions.views import instruction_pipeline_view
 from accounts.functions import notify_password_changed
 from django.contrib.auth import views as auth_views
 from accounts import views as account_views
+
 
 admin.site.site_header = 'MediData administration'
 admin.site.site_title = 'MediData administration'
@@ -51,4 +53,5 @@ urlpatterns = [
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += staticfiles_urlpatterns()
 
-handler404 = 'instructions.views.handler404'
+handler404 = 'services.views.handler_404'
+handler500 = 'services.views.handler_500'
