@@ -135,7 +135,7 @@
                                     <div class="col-md-8">
                                         {% bootstrap_field patient_form.patient_telephone_mobile size='small' show_label=false placeholder='' %}
                                         {% bootstrap_field patient_form.patient_telephone_code %}
-                                        <small class="form-text text-muted">
+                                        <small class="form-text text-muted" id="help-msg-phone1">
                                             Mobile Phone number is max 11 characters. 
                                         </small>
                                     </div>
@@ -147,7 +147,7 @@
                                     <div class="col-md-8">
                                         {% bootstrap_field patient_form.patient_alternate_phone size='small' show_label=false placeholder='' %}
                                         {% bootstrap_field patient_form.patient_alternate_code %}
-                                        <small class="form-text text-muted">
+                                        <small class="form-text text-muted" id="help-msg-phone2">
                                             Mobile Phone number is max 11 characters. 
                                         </small>
                                     </div>
@@ -331,8 +331,45 @@
             else if($('#id_patient_email').val() !='' && $('#confirm_email').val() =='') {
                 setTimeout(function(){$("#confirmDialog").popup('show')}, 300);
             }
+            else if($('#id_patient_telephone_mobile').val().length > 11) {
+                $('#id_patient_telephone_mobile').addClass('is-invalid');
+                $('#help-msg-phone1').removeClass('text-muted');
+                $('#help-msg-phone1').addClass('text-danger');
+            }
+            else if($('#id_patient_alternate_phone').val().length > 11) {
+                $('#id_patient_alternate_phone').addClass('is-invalid');
+                $('#help-msg-phone2').removeClass('text-muted');
+                $('#help-msg-phone2').addClass('text-danger');
+            }
+            else if( $('#id_patient_telephone_mobile').val().length > 11 && $('#id_patient_alternate_phone').val().length > 11 ) {
+                return false;
+            }
             else {
                 $('#consentContactForm').submit();
+            }
+        });
+
+        $('#id_patient_telephone_mobile').change( function() {
+            if( $('#id_patient_telephone_mobile').val().length > 11) {
+                $('#id_patient_telephone_mobile').addClass('is-invalid');
+                $('#help-msg-phone1').removeClass('text-muted');
+                $('#help-msg-phone1').addClass('text-danger');
+            } else {
+                $('#id_patient_telephone_mobile').removeClass('is-invalid');
+                $('#help-msg-phone1').addClass('text-muted');
+                $('#help-msg-phone1').removeClass('text-danger');
+            }
+        });
+
+        $('#id_patient_alternate_phone').change( function() {
+            if( $('#id_patient_alternate_phone').val().length > 11) {
+                $('#id_patient_alternate_phone').addClass('is-invalid');
+                $('#help-msg-phone2').removeClass('text-muted');
+                $('#help-msg-phone2').addClass('text-danger');
+            } else {
+                $('#id_patient_alternate_phone').removeClass('is-invalid');
+                $('#help-msg-phone2').addClass('text-muted');
+                $('#help-msg-phone2').removeClass('text-danger');
             }
         });
 
