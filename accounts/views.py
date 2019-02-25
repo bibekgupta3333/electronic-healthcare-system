@@ -1,4 +1,6 @@
-from django.shortcuts import render
+import datetime
+
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordResetForm
@@ -13,13 +15,16 @@ from django.contrib.auth.forms import AuthenticationForm as LoginForm
 from permissions.forms import InstructionPermissionForm, GroupPermissionForm
 from permissions.models import InstructionPermission
 from common.functions import multi_getattr, verify_password as verify_pass
-from payment.models import OrganisationFee
+from payment.models import OrganisationFee, InstructionVolumeFee
 from django_tables2 import RequestConfig
 from accounts.forms import AllUserForm, NewGPForm, NewClientForm, NewMediForm,\
-        UserProfileForm, UserProfileBaseForm, PracticePreferencesForm,\
-        TwoFactorForm
-from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences,\
-        GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
+        UserProfileForm, UserProfileBaseForm
+from instructions.models import Instruction
+from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE
+
+from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences, ClientUser
+from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
+from .forms import PracticePreferencesForm, TwoFactorForm
 from permissions.functions import access_user_management
 from organisations.models import OrganisationGeneralPractice
 from onboarding.views import generate_password
@@ -32,75 +37,125 @@ from .functions import change_role, remove_user, get_table_data,\
         get_post_new_user_data, get_user_type_form, reset_password,\
         check_ip_from_n3_hscn, get_client_ip
 
-
 @login_required(login_url='/accounts/login')
 def account_view(request):
     header_title = 'Account'
     user = request.user
-    gp_user = GeneralPracticeUser.objects.get(pk=user.userprofilebase.generalpracticeuser.pk)
-    gp_organisation = gp_user.organisation
-    practice_code = gp_organisation.practcode
-    try:
-        practice_preferences = PracticePreferences.objects.get(gp_organisation=gp_organisation)
-    except PracticePreferences.DoesNotExist:
-        practice_preferences = PracticePreferences()
-        practice_preferences.gp_organisation = gp_organisation
-        practice_preferences.notification = 'NEW'
-        practice_preferences.save()
 
-    if request.is_ajax():
-        gp_preferences_form = PracticePreferencesForm(request.POST, instance=practice_preferences)
-        if gp_preferences_form.is_valid():
-            gp_preferences_form.save()
-            return JsonResponse({'message': 'Preferences have been saved.'})
+    if request.user.type == 'GP':
+        gp_user = GeneralPracticeUser.objects.get(pk=user.userprofilebase.generalpracticeuser.pk)
+        gp_organisation = gp_user.organisation
+        try:
+            practice_preferences = PracticePreferences.objects.get(gp_organisation=gp_organisation)
+        except PracticePreferences.DoesNotExist:
+            practice_preferences = PracticePreferences()
+            practice_preferences.gp_organisation = gp_organisation
+            practice_preferences.notification = 'NEW'
+            practice_preferences.save()
 
-    gp_preferences_form = PracticePreferencesForm(instance=practice_preferences)
+        if request.is_ajax():
+            gp_preferences_form = PracticePreferencesForm(request.POST, instance=practice_preferences)
+            if gp_preferences_form.is_valid():
+                gp_preferences_form.save()
+                return JsonResponse({'message': 'Preferences have been saved.'})
 
-    organisation = multi_getattr(user, 'userprofilebase.generalpracticeuser.organisation', default=None)
-    organisation_fee = OrganisationFee.objects.filter(gp_practice=organisation).first()
-    organisation_fee_data = list()
+        gp_preferences_form = PracticePreferencesForm(instance=practice_preferences)
 
-    if organisation_fee:
-        organisation_fee_data.append({
-            'days': organisation_fee.max_day_lvl_1,
-            'amount': organisation_fee.amount_rate_lvl_1,
-            'label': 'Received within %s days'%organisation_fee.max_day_lvl_1
-        })
-        organisation_fee_data.append({
-            'days': organisation_fee.max_day_lvl_2,
-            'amount': organisation_fee.amount_rate_lvl_2,
-            'label': 'Received within %s-%s days'%(organisation_fee.max_day_lvl_1+1, organisation_fee.max_day_lvl_2)
-        })
-        organisation_fee_data.append({
-            'days': organisation_fee.max_day_lvl_3,
-            'amount': organisation_fee.amount_rate_lvl_3,
-            'label': 'Received within %s-%s days'%(organisation_fee.max_day_lvl_2+1, organisation_fee.max_day_lvl_3)
-        })
-        organisation_fee_data.append({
-            'days': organisation_fee.max_day_lvl_4,
-            'amount': organisation_fee.amount_rate_lvl_4,
-            'label': 'Received after %s days'%organisation_fee.max_day_lvl_3
-        })
+        organisation = multi_getattr(user, 'userprofilebase.generalpracticeuser.organisation', default=None)
+        organisation_fee = OrganisationFee.objects.filter(gp_practice=organisation).first()
+        organisation_fee_data = list()
 
-    if request.method == "POST":
-        new_organisation_password = generate_password(initial_range=1, body_rage=12, tail_rage=1)
-        gp_organisation.set_operating_system_salt_and_encrypted_password(new_organisation_password)
-        gp_organisation.save()
+        if organisation_fee:
+            organisation_fee_data.append({
+                'days': organisation_fee.max_day_lvl_1,
+                'amount': organisation_fee.amount_rate_lvl_1,
+                'label': 'Received within %s days'%organisation_fee.max_day_lvl_1
+            })
+            organisation_fee_data.append({
+                'days': organisation_fee.max_day_lvl_2,
+                'amount': organisation_fee.amount_rate_lvl_2,
+                'label': 'Received within %s-%s days'%(organisation_fee.max_day_lvl_1+1, organisation_fee.max_day_lvl_2)
+            })
+            organisation_fee_data.append({
+                'days': organisation_fee.max_day_lvl_3,
+                'amount': organisation_fee.amount_rate_lvl_3,
+                'label': 'Received within %s-%s days'%(organisation_fee.max_day_lvl_2+1, organisation_fee.max_day_lvl_3)
+            })
+            organisation_fee_data.append({
+                'days': organisation_fee.max_day_lvl_4,
+                'amount': organisation_fee.amount_rate_lvl_4,
+                'label': 'Received after %s days'%organisation_fee.max_day_lvl_3
+            })
 
         return render(request, 'accounts/accounts_view.html', {
             'header_title': header_title,
             'organisation_fee_data': organisation_fee_data,
-            'gp_preferences_form': gp_preferences_form,
-            'new_password': new_organisation_password,
-            'practice_code': practice_code
+            'gp_preferences_form': gp_preferences_form
         })
 
-    return render(request, 'accounts/accounts_view.html', {
-        'header_title': header_title,
-        'organisation_fee_data': organisation_fee_data,
-        'gp_preferences_form': gp_preferences_form,
-        'practice_code': practice_code
-    })
+    client_fee = InstructionVolumeFee.objects.get(client_organisation = user.get_my_organisation())
+    client_volume_data = list()
+    client_fee_data = list()
+
+    if client_fee:
+        #   Volume Data
+        client_volume_data.append({
+            'amount': client_fee.max_volume_band_lowest,
+            'label': 'Max volume of Lowest band : '
+        })
+        client_volume_data.append({
+            'amount': client_fee.max_volume_band_low,
+            'label': 'Max volume of Low band : '
+        })
+        client_volume_data.append({
+            'amount': client_fee.max_volume_band_medium,
+            'label': 'Max volume of Medium band : '
+        })
+        client_volume_data.append({
+            'amount': client_fee.max_volume_band_top,
+            'label': 'Max volume of Top band : '
+        })
+        
+        #   Fee Data
+        client_fee_data.append({
+            'amount': client_fee.fee_rate_lowest,
+            'label': 'Earnings for Lowest band : '
+        })
+        client_fee_data.append({
+            'amount': client_fee.fee_rate_low,
+            'label': 'Earnings for Low band : '
+        })
+        client_fee_data.append({
+            'amount': client_fee.fee_rate_medium,
+            'label': 'Earnings for Medium band : '
+        })
+        client_fee_data.append({
+            'amount': client_fee.fee_rate_top,
+            'label': 'Earnings for Top band : '
+        })
+
+        #   Tax Data
+        client_fee_data.append({
+            'amount': client_fee.vat,
+            'label': 'VAT : ',
+            'status': 'tax'
+        })
+
+    currentYear = datetime.datetime.now().year
+    client = ClientUser.objects.filter( organisation = user.get_my_organisation() ).first()
+    countInstructions =  Instruction.objects.filter( created__year = currentYear, status = INSTRUCTION_STATUS_COMPLETE, client_user = client ).count()
+
+    createTime = user.get_my_organisation().created_time
+    annivasaryDataStr = str( createTime.day ) + ' / ' + str( createTime.month ) + ' / ' + str( createTime.year + 1 ) 
+
+    return render( request, 'accounts/accounts_view_client.html', {
+        'header_title' : header_title,
+        # 'gp_preferences_form': client_preferences_form,
+        'client_volume_data': client_volume_data,
+        'client_fee_data' : client_fee_data,
+        'completeNum' : countInstructions,
+        'annivasaryData' : annivasaryDataStr
+    })        
 
 
 @login_required(login_url='/accounts/login')

@@ -318,7 +318,9 @@
                 {% if selected_surgery_name %} ["{{ selected_surgery_name }}"] {% else %} [''] {% endif %},
                 "{% url 'organisations:sign_up_autocomplete' %}"
             );
+
             setUpTel('id_telephone_mobile', 'id_telephone_code');
+
             $('#id_emis_org_code').prop('required', true);
             $('#id_operating_system').change(function () {
                 if($(this).val() != 'EMISWeb'){
@@ -390,6 +392,18 @@
                           $('#id_address').select2({
                               data: formattedData
                            });
+
+                          if(formattedData.length){
+                              var selectedData = formattedData[0].split(',');
+                              $('#id_address_line1').val(selectedData[0]);
+                              $('#id_address_line2').val(selectedData[1]);
+                              $('#id_address_line3').val(selectedData[2]);
+                              $('#id_address_line4').val(selectedData[3]);
+                              $('#id_city').val(selectedData[5]);
+                              $('#id_county').val(selectedData[6]);
+                              $('#id_address').val(selectedData.join(','));
+                          }
+
                           $('#id_address').on('select2:select', function (e) {
                               var selected = e.params.data;
                               var selectedData;
@@ -408,7 +422,7 @@
                               $('#id_address').val(selectedData.join(','));
                           });
                       }
-                  })
+                  });
                }
             });
 
