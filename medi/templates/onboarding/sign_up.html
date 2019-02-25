@@ -42,7 +42,7 @@
                     </div>
                     <div class="row form-group">
                         <div class="col-md-6">
-                            <div class="row">
+                            <div class="row" id="practice_form">
                                 <div class="col-md-4 title-pos font-weight-bold">Practice Code <span class="red">*</span></div>
                                 {% bootstrap_field surgery_form.practice_code show_label=False form_group_class='col-md-7' placeholder='' %}
                             </div>
@@ -495,6 +495,11 @@
                 }
             });
             $('#id_postcode').trigger('change');
+
+            $('#id_practice_code').change( function() {
+                $('#practice_form').find('.invalid-feedback').remove();
+            });
+
             $(document).on({
                 mouseover: function(){
                     $.ajax({
