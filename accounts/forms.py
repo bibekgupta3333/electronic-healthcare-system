@@ -59,6 +59,11 @@ class InstructionPatientForm(forms.ModelForm):
             raise forms.ValidationError('{email} already used by user that is not Patient'.format(email=email))
         return email
 
+    def clean_patient_telephone_mobile(self):
+        patient_telephone_mobile = self.cleaned_data.get('patient_telephone_mobile')
+        print('phone : ' + patient_telephone_mobile)
+        return patient_telephone_mobile
+
     @classmethod
     def str_to_date(cls, day, month, year):
         return '/'.join([day, month, year])
