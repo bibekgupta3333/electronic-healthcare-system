@@ -269,7 +269,7 @@ def send_surgery_email(instruction):
         fail_silently=True,
         html_message=loader.render_to_string('medicalreport/surgery_email.html',
                                              {
-                                                 'name': instruction.patient.user.first_name,
+                                                 'name': instruction.patient_information.user.first_name,
                                                  'gp': instruction.gp_user.user.first_name,
                                              }
                                              ))
