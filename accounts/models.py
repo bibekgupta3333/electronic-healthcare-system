@@ -376,7 +376,6 @@ class PracticePreferences(models.Model):
     def __str__(self):
         return self.gp_organisation.name + " Preferences"
 
-
 class Patient(UserProfileBase):
     organisation_gp = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE, null=True)
     nhs_number = models.CharField(max_length=10, blank=True)

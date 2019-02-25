@@ -12,6 +12,7 @@ class OrganisationBase(models.Model):
     trading_name = models.CharField(max_length=255)
     legal_name = models.CharField(max_length=255)
     address = models.TextField(max_length=255)
+    created_time = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = 'Organisation'

@@ -38,7 +38,7 @@
                         <a href="{% url 'template:view_templates' %}"><i class="fas fa-wrench"></i>Templates</a>
                     </li>
                 {% endif %}
-                {% if perms.payment.view_organisationfee and user.type != 'CLT' %}
+                {% if perms.payment.view_organisationfee or user.get_my_role == 'Client Admin'%}
                     <li class="{% if request.resolver_match.url_name == 'view_account' %}active{% endif %}">
                         <a href="{% url 'accounts:view_account' %}" ><i class="fas fa-money-check-alt"></i>Account</a>
                     </li>

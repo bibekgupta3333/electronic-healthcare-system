@@ -217,6 +217,12 @@ class Instruction(TimeStampedModel, models.Model):
     def get_type(self):
         return self.type
 
+    def get_str_date_range(self):
+        if self.date_range_from == None:
+            return None
+        str_date_range = str(self.date_range_from) + ' - ' + str(self.date_range_to)
+        return str_date_range
+
 
 class InstructionAdditionQuestion(models.Model):
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE, related_name='addition_questions')
