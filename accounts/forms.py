@@ -60,9 +60,10 @@ class InstructionPatientForm(forms.ModelForm):
         return email
 
     def clean_patient_telephone_mobile(self):
+        print('Naked !')
         patient_telephone_mobile = self.cleaned_data.get('patient_telephone_mobile')
-        print('phone : ' + patient_telephone_mobile)
-        return patient_telephone_mobile
+        if len(patient_telephone_mobile) > 11:
+            raise forms.ValidationError('{patient_telephone_mobile} is incorrect.'.format(patient_telephone_mobile=patient_telephone_mobile))
 
     @classmethod
     def str_to_date(cls, day, month, year):
