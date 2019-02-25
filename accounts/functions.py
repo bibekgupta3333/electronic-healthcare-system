@@ -276,9 +276,9 @@ def notify_password_reset(func):
     def wrapper(request, *args, **kwargs):
         if request.method == 'POST':
             email = request.POST.get("email")
-            user = User.objects.get(email=email)
+            user = User.objects.filter(email=email).first()
             surgery_email = None
-            if user.type == GENERAL_PRACTICE_USER and hasattr(user, 'userprofilebase') and\
+            if user and user.type == GENERAL_PRACTICE_USER and hasattr(user, 'userprofilebase') and\
                 hasattr(user.userprofilebase, 'generalpracticeuser') and\
                 user.userprofilebase.generalpracticeuser.organisation:
                 surgery_email = user.userprofilebase.generalpracticeuser.organisation.organisation_email
