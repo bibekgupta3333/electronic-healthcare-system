@@ -26,6 +26,7 @@ from .forms import AllocateInstructionForm
 from permissions.functions import check_permission, check_user_type
 from payment.functions import calculate_instruction_fee
 from typing import List
+from silk.profiling.profiler import silk_profile
 
 
 logger = logging.getLogger('timestamp')
@@ -127,6 +128,7 @@ def set_patient_emis_number(request, instruction_id):
 
 @login_required(login_url='/accounts/login')
 @check_permission
+@silk_profile(name='Edit Report')
 @check_user_type(GENERAL_PRACTICE_USER)
 def edit_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
@@ -205,6 +207,7 @@ def update_report(request, instruction_id):
         return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
+@silk_profile(name='Preview Report')
 @login_required(login_url='/accounts/login')
 def submit_report(request, instruction_id):
     header_title = "Preview and Submit Report"
@@ -251,6 +254,7 @@ def view_report(request, instruction_id):
     return HttpResponse(instruction.medical_report, content_type='application/pdf')
 
 
+@silk_profile(name='Final Report')
 @login_required(login_url='/accounts/login')
 @check_permission
 def final_report(request, instruction_id):
