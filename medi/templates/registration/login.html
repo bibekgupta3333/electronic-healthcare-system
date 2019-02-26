@@ -13,11 +13,12 @@
     <div class="outer">
         <div class="middle">
             <div class="inner text-center">
-                {% if request.get_host == 'localhost:8000' %}
-                    <img class="mt-4 mb-4 w-75 medi-logo" src="{% static 'images/logo/eMR_med.png' %}">
-                {% else %}
+                {% if request.get_host == 'https://mdx.medi2data.com' %}
                     <img class="mt-4 mb-4 w-75 medi-logo" src="{% static 'images/logo/mdX_med.png' %}">
+                {% else %}
+                    <img class="mt-4 mb-4 w-75 medi-logo" src="{% static 'images/logo/eMR_med.png' %}">
                 {% endif %}
+            </div>
                 <form method="POST">
                     {% csrf_token %}
                     <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
