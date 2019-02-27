@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'django_clamd',
     'axes',
     'django_celery_results',
+    'silk',
 
     # app
     'accounts',
@@ -81,6 +82,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'silk.middleware.SilkyMiddleware',
 ]
 
 ROOT_URLCONF = 'medi.urls'
@@ -265,3 +267,7 @@ CELERY_RESULT_BACKEND = 'django-db'
 
 MDX_URL = 'https://mdx.medi2data.com'
 EMR_URM = 'https://emr.medi2data.com'
+
+SILKY_PYTHON_PROFILER = True
+SILKY_PYTHON_PROFILER_BINARY = True
+SILKY_AUTHENTICATION = True
