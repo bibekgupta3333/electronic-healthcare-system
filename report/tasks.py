@@ -12,6 +12,7 @@ from services.emisapiservices import services
 from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE
 from report.mobile import SendSMS
+from silk.profiling.profiler import silk_profile
 
 from celery import shared_task
 from PIL import Image
@@ -44,6 +45,7 @@ def send_patient_mail(scheme, host,  unique_url, instruction):
 
 
 @shared_task(bind=True)
+@silk_profile(name='Create Patient')
 def generate_medicalreport_with_attachment(self, instruction_id, report_link_info):
     start_time = timezone.now()
 
@@ -56,7 +58,7 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
         output = PyPDF2.PdfFileWriter()
 
         # add each page of medical report to output file
-        medical_report = PyPDF2.PdfFileReader('asdfadsfa')
+        medical_report = PyPDF2.PdfFileReader(instruction.medical_report)
         for page_num in range(medical_report.getNumPages()):
             output.addPage(medical_report.getPage(page_num))
 

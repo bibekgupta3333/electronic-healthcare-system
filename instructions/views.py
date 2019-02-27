@@ -20,11 +20,11 @@ from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice
 from organisations.views import get_gporganisation_data
 from medicalreport.views import get_patient_registration
-from common.functions import multi_getattr
-from common.functions import get_url_page
+from common.functions import multi_getattr, get_url_page
 from snomedct.models import SnomedConcept
 from permissions.functions import check_permission
 from .print_consents import MDXDualConsent
+from silk.profiling.profiler import silk_profile
 
 import pytz
 from itertools import chain
@@ -151,6 +151,7 @@ def create_snomed_relations(instruction, condition_of_interests):
             InstructionConditionsOfInterest.objects.create(instruction=instruction, snomedct=snomedct)
 
 
+@silk_profile(name='Pipline View')
 @login_required(login_url='/accounts/login')
 def instruction_pipeline_view(request):
     header_title = "Instructions Pipeline"
@@ -220,6 +221,7 @@ def instruction_pipeline_view(request):
     return response
 
 
+@silk_profile(name='New Instruction')
 @login_required(login_url='/accounts/login')
 @check_permission
 def new_instruction(request):
@@ -493,6 +495,7 @@ def upload_consent(request, instruction_id):
         })
 
 
+@silk_profile(name='Review Instruction')
 @login_required(login_url='/accounts/login')
 @check_permission
 def review_instruction(request, instruction_id):
@@ -575,6 +578,7 @@ def review_instruction(request, instruction_id):
     })
 
 
+@silk_profile(name='View Reject')
 @login_required(login_url='/accounts/login')
 @check_permission
 def view_reject(request, instruction_id):
@@ -643,6 +647,7 @@ def view_reject(request, instruction_id):
     })
 
 
+@silk_profile(name='Consent Contact View')
 @login_required(login_url='/accounts/login')
 @check_permission
 def consent_contact(request, instruction_id, patient_emis_number):
