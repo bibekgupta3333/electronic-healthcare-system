@@ -62,6 +62,9 @@ class InstructionPatient(models.Model):
             phone = phone[1:]
         return phone
 
+    def get_full_name(self):
+        return ' '.join([self.get_patient_title_display(), self.patient_first_name, self.patient_last_name])
+
 
 class Instruction(TimeStampedModel, models.Model):
     client_user = models.ForeignKey(ClientUser, on_delete=models.CASCADE, verbose_name='Client', null=True)

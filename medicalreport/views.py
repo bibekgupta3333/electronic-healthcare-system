@@ -6,6 +6,7 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.cache import cache_page
 from services.emisapiservices import services
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.xml.medical_record import MedicalRecord
@@ -15,10 +16,8 @@ from services.xml.registration import Registration
 from medicalreport.forms import MedicalReportFinaliseSubmitForm
 from medicalreport.reports import AttachmentReport
 from instructions.models import Instruction, InstructionPatient
-from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT,\
-    INSTRUCTION_STATUS_COMPLETE
+from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT
 from .functions import create_or_update_redaction_record, create_patient_report
-from medicalreport.reports import MedicalReport
 from accounts.models import GENERAL_PRACTICE_USER
 from accounts.functions import create_or_update_patient_user
 from organisations.models import OrganisationGeneralPractice
@@ -26,6 +25,7 @@ from .forms import AllocateInstructionForm
 from permissions.functions import check_permission, check_user_type
 from payment.functions import calculate_instruction_fee
 from typing import List
+from silk.profiling.profiler import silk_profile
 
 
 logger = logging.getLogger('timestamp')
@@ -106,6 +106,7 @@ def select_patient(request, instruction_id, patient_emis_number):
     return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
+@cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
 @check_user_type(GENERAL_PRACTICE_USER)
@@ -127,6 +128,7 @@ def set_patient_emis_number(request, instruction_id):
 
 @login_required(login_url='/accounts/login')
 @check_permission
+@silk_profile(name='Edit Report')
 @check_user_type(GENERAL_PRACTICE_USER)
 def edit_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
@@ -162,6 +164,7 @@ def edit_report(request, instruction_id):
     relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
     inst_gp_user = instruction.gp_user.user
     cur_user = request.user
+
     response =  render(request, 'medicalreport/medicalreport_edit.html', {
         'user': request.user,
         'medical_record': medical_record_decorator,
@@ -170,7 +173,8 @@ def edit_report(request, instruction_id):
         'finalise_submit_form': finalise_submit_form,
         'questions': questions,
         'relations': relations,
-        'show_alert': True if inst_gp_user == cur_user else False
+        'show_alert': True if inst_gp_user == cur_user else False,
+        'patient_full_name': instruction.patient_information.get_full_name()
     })
     end_time = timezone.now()
     total_time = end_time - start_time
@@ -205,6 +209,7 @@ def update_report(request, instruction_id):
         return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
+@silk_profile(name='Preview Report')
 @login_required(login_url='/accounts/login')
 def submit_report(request, instruction_id):
     header_title = "Preview and Submit Report"
@@ -241,7 +246,8 @@ def submit_report(request, instruction_id):
         'redaction': redaction,
         'relations': relations,
         'instruction': instruction,
-        'finalise_submit_form': finalise_submit_form
+        'finalise_submit_form': finalise_submit_form,
+        'patient_full_name': instruction.patient_information.get_full_name()
     })
 
 
@@ -251,6 +257,8 @@ def view_report(request, instruction_id):
     return HttpResponse(instruction.medical_report, content_type='application/pdf')
 
 
+@silk_profile(name='Final Report')
+@cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
 def final_report(request, instruction_id):

@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'django_clamd',
     'axes',
     'django_celery_results',
+    'silk',
 
     # app
     'accounts',
@@ -81,6 +82,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'silk.middleware.SilkyMiddleware',
 ]
 
 ROOT_URLCONF = 'medi.urls'
@@ -149,7 +151,8 @@ AUTHENTICATION_BACKENDS = [
 #django-axes CACHES
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
     },
     'axes_cache': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
@@ -264,3 +267,7 @@ CELERY_RESULT_BACKEND = 'django-db'
 
 MDX_URL = 'https://mdx.medi2data.com'
 EMR_URM = 'https://emr.medi2data.com'
+
+SILKY_PYTHON_PROFILER = True
+SILKY_PYTHON_PROFILER_BINARY = True
+SILKY_AUTHENTICATION = True

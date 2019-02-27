@@ -15,6 +15,7 @@ from django.urls import reverse
 import reportlab.lib.pagesizes as pdf_sizes
 from PIL import Image
 from django.conf import settings
+from silk.profiling.profiler import silk_profile
 import subprocess
 
 
@@ -71,6 +72,7 @@ class MedicalReport:
             return response
 
     @staticmethod
+    @silk_profile(name='Get PDF Medical Report Method')
     def get_pdf_file(params: dict):
         template = get_template(REPORT_DIR)
         html = template.render(params)
