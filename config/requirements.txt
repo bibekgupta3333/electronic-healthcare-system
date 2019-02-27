@@ -64,6 +64,7 @@ pycryptodome==3.7.0
 pydotplus==2.0.2
 pyparsing==2.2.0
 python-dateutil==2.7.3
+python-memcached==1.59
 pytz==2018.5
 PyYAML==3.13
 raven==6.9.0

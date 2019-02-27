@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.http import HttpRequest, JsonResponse, HttpResponseRedirect
 from django_tables2 import RequestConfig, Column
+from django.views.decorators.cache import cache_page
 from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest, Setting, InstructionPatient
 from .tables import InstructionTable
 from .model_choices import *
@@ -222,6 +223,7 @@ def instruction_pipeline_view(request):
 
 
 @silk_profile(name='New Instruction')
+@cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
 def new_instruction(request):
@@ -496,6 +498,7 @@ def upload_consent(request, instruction_id):
 
 
 @silk_profile(name='Review Instruction')
+@cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
 def review_instruction(request, instruction_id):
@@ -579,6 +582,7 @@ def review_instruction(request, instruction_id):
 
 
 @silk_profile(name='View Reject')
+@cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
 def view_reject(request, instruction_id):

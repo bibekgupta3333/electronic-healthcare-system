@@ -3,6 +3,7 @@
 {% load medi_report_tags %}
 {% load bootstrap4 %}
 {% load get_permissions %}
+{% load cache %}
 {% bootstrap_css %}
 {% bootstrap_javascript jquery='full' %}
 {% bootstrap_messages %}
@@ -16,6 +17,7 @@
 {% block Content %}
     <div class="container">
         <div id="overlay"></div>
+        {% cache 300 patient_info_top instruction %}
         <div class="container-fluid callout callout--top">
             {% patient_info %}
         </div>
@@ -24,9 +26,11 @@
         {% else %}
             <h1>Provisional Report Contents</h1>
         {% endif %}
+        {% endcache %}
         <form action="{% url 'medicalreport:update_report' instruction.id %}" method="post" id="medicalReportForm">
             {% csrf_token %}
             {% if not redaction.instruction_checked and show_alert %}
+                {% cache 300 sensitive_information %}
                 <div class="modal fade" id="form-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content sensitive-information-instructions alert-warning">
@@ -49,6 +53,7 @@
                         </div>
                     </div>
                 </div>
+                {% endcache %}
             {% endif %}
             <div class="row">
                 <div class="col-md-6">
@@ -103,11 +108,12 @@
         </form>
     </div>
 
+    {% cache 300 patient_info_modal instruction %}
     <a href="javascript:;" class="btn btn-primary" id="patient-info-open-modal">Instruction Information</a>
     <div class="patientInfo" id="patientInfo">
         {% patient_info %}
     </div>
-
+    {% endcache %}
 {% endblock %}
 
 {% block Script %}
