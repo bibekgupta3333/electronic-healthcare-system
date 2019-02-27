@@ -751,10 +751,6 @@ def consent_contact(request, instruction_id, patient_emis_number):
         'path': consent_path
     }
 
-    patient_first_name = instruction.patient_information.patient_first_name
-    patient_last_name = instruction.patient_information.patient_last_name
-    patient_full_name = patient_first_name + ' ' + patient_last_name
-     
     return render(request, 'instructions/consent_contact.html', {
         'patient_form': patient_form,
         'instruction': instruction,
@@ -764,7 +760,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
         'sars_consent_form_data': sars_consent_form_data,
         'mdx_consent_form_data': mdx_consent_form_data,
         'reject_types': INSTRUCTION_REJECT_TYPE,
-        'patient_full_name' : patient_full_name
+        'patient_full_name' : instruction.patient_information.get_full_name()
     })
 
 

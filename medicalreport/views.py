@@ -165,10 +165,6 @@ def edit_report(request, instruction_id):
     inst_gp_user = instruction.gp_user.user
     cur_user = request.user
 
-    patient_first_name = instruction.patient_information.patient_first_name
-    patient_last_name = instruction.patient_information.patient_last_name
-    patient_full_name = patient_first_name + ' ' + patient_last_name
-
     response =  render(request, 'medicalreport/medicalreport_edit.html', {
         'user': request.user,
         'medical_record': medical_record_decorator,
@@ -178,7 +174,7 @@ def edit_report(request, instruction_id):
         'questions': questions,
         'relations': relations,
         'show_alert': True if inst_gp_user == cur_user else False.request,
-        'patient_full_name': patient_full_name
+        'patient_full_name': instruction.patient_information.get_full_name()
     })
     end_time = timezone.now()
     total_time = end_time - start_time
@@ -244,10 +240,6 @@ def submit_report(request, instruction_id):
         },
         user=request.user)
 
-    patient_first_name = instruction.patient_information.patient_first_name
-    patient_last_name = instruction.patient_information.patient_last_name
-    patient_full_name = patient_first_name + ' ' + patient_last_name
-
     return render(request, 'medicalreport/medicalreport_submit.html', {
         'header_title': header_title,
         'attachments': attachments,
@@ -255,7 +247,7 @@ def submit_report(request, instruction_id):
         'relations': relations,
         'instruction': instruction,
         'finalise_submit_form': finalise_submit_form,
-        'patient_full_name': patient_full_name
+        'patient_full_name': instruction.patient_information.get_full_name()
     })
 
 
