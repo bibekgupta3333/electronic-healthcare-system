@@ -6,6 +6,7 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.cache import cache_page
 from services.emisapiservices import services
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.xml.medical_record import MedicalRecord
@@ -15,10 +16,8 @@ from services.xml.registration import Registration
 from medicalreport.forms import MedicalReportFinaliseSubmitForm
 from medicalreport.reports import AttachmentReport
 from instructions.models import Instruction, InstructionPatient
-from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT,\
-    INSTRUCTION_STATUS_COMPLETE
+from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT
 from .functions import create_or_update_redaction_record, create_patient_report
-from medicalreport.reports import MedicalReport
 from accounts.models import GENERAL_PRACTICE_USER
 from accounts.functions import create_or_update_patient_user
 from organisations.models import OrganisationGeneralPractice
@@ -106,6 +105,7 @@ def select_patient(request, instruction_id, patient_emis_number):
     return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
+@cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
 @check_user_type(GENERAL_PRACTICE_USER)
@@ -251,6 +251,7 @@ def view_report(request, instruction_id):
     return HttpResponse(instruction.medical_report, content_type='application/pdf')
 
 
+@cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
 def final_report(request, instruction_id):
