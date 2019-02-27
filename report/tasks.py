@@ -24,6 +24,8 @@ import reportlab.lib.pagesizes as pdf_sizes
 import logging
 import io
 import uuid
+import glob
+import os
 
 logger = logging.getLogger(__name__)
 time_logger = logging.getLogger('timestamp')
@@ -64,7 +66,11 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
 
         # create list of PdfFileReader obj from raw bytes of xml data
         attachments_pdf = []
+        unique_file_name = []
+        folder = settings.BASE_DIR + '/static/generic_pdf/'
         for attachment in medical_record_decorator.attachments():
+            unique = uuid.uuid4().hex
+            unique_file_name.append(unique)
             xpaths = attachment.xpaths()
             if redaction.redacted(xpaths) is not True:
                 raw_xml_or_status_code = services.GetAttachment(
@@ -76,21 +82,19 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                 file_type = file_name.split('.')[-1]
                 raw_attachment = Base64Attachment(raw_xml_or_status_code).data()
                 buffer = io.BytesIO(raw_attachment)
-                folder = settings.BASE_DIR + '/static/generic_pdf/'
                 try:
                     if file_type == 'pdf':
                         attachments_pdf.append(PyPDF2.PdfFileReader(buffer))
                     elif file_type in ['doc', 'docx', 'rtf']:
-                        tmp_file = 'temp1.' + file_type
+                        tmp_file = 'temp_%s.' % unique + file_type
                         f = open(folder + tmp_file, 'wb')
                         f.write(buffer.getvalue())
                         f.close()
                         subprocess.call(
-                            (
-                                        "export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
+                            ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
                             shell=True
                         )
-                        pdf = open(folder + 'temp1.pdf', 'rb')
+                        pdf = open(folder + 'temp_%s.pdf' % unique, 'rb')
                         attachments_pdf.append(PyPDF2.PdfFileReader(pdf))
                     elif file_type in ['jpg', 'jpeg', 'png', 'tiff']:
                         image = Image.open(buffer)
@@ -119,8 +123,8 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                             c.save()
                             attachments_pdf.append(PyPDF2.PdfFileReader(out_pdf_io))
                         else:
-                            pdf_bytes = img2pdf.convert('imgtemp1.pdf')
-                            f = open(folder + 'imgtemp1.pdf', 'wb')
+                            pdf_bytes = img2pdf.convert('img_temp_%s.pdf' % unique)
+                            f = open(folder + 'img_temp_%s.pdf' % unique, 'wb')
                             f.write(pdf_bytes)
                             attachments_pdf.append(PyPDF2.PdfFileReader(f))
                             image.close()
@@ -141,6 +145,11 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
         uuid_hex = uuid.uuid4().hex
         instruction.medical_with_attachment_report.save('report_with_attachments_%s.pdf' % uuid_hex,
                                                         ContentFile(pdf_page_buf.getvalue()))
+
+        # remove temp files
+        for unique in unique_file_name:
+            for file_path in glob.glob(folder+'*{unique}*'.format(unique=unique)):
+                os.remove(file_path)
     except Exception as e:
         # waiting for 5 min to retry
         raise self.retry(countdown=60*5, exc=e, max_retires=2)
