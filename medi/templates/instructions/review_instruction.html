@@ -211,6 +211,19 @@
             </div>
         </div>
     {% endif %}
+    {% if request.user.type == 'CLT'%}
+        <div class="row ml-1 mt-4 ">
+            <div class="col-md-6">&nbsp;</div>
+            <div class="col-md-3">
+                <a href="{% url 'instructions:new_instruction' %}" class="btn btn-primary btn-lg btn-block" id="backButton"><i class="fas fa-edit"></i>&nbsp;&nbsp;Edit</a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'medicalreport:set_patient_emis_number' instruction_id=instruction_id %}"
+                class="btn btn-danger btn-lg btn-block" id="confirmPatientButton">Delete&nbsp;&nbsp;<i class="far fa-trash-alt"></i>
+                </a>
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}
 
 {% block Script %}
