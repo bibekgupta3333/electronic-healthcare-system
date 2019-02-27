@@ -62,6 +62,9 @@ class InstructionPatient(models.Model):
             phone = phone[1:]
         return phone
 
+    def get_full_name(self):
+        return ' '.join([self.get_patient_title_display(), self.patient_first_name, self.patient_last_name])
+
 
 class Instruction(TimeStampedModel, models.Model):
     client_user = models.ForeignKey(ClientUser, on_delete=models.CASCADE, verbose_name='Client', null=True)
@@ -216,6 +219,12 @@ class Instruction(TimeStampedModel, models.Model):
 
     def get_type(self):
         return self.type
+
+    def get_str_date_range(self):
+        if self.date_range_from == None:
+            return None
+        str_date_range = str(self.date_range_from) + ' - ' + str(self.date_range_to)
+        return str_date_range
 
 
 class InstructionAdditionQuestion(models.Model):

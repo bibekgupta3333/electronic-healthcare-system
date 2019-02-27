@@ -40,7 +40,7 @@ class InstructionVolumeFee(models.Model):
     fee_rate_low = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='Earnings for Low band(£)')
     fee_rate_medium = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='Earnings for Medium band(£)')
     fee_rate_top = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='Earnings for Top band(£)')
-    vat = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='VAT(%)', default=0)
+    vat = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='VAT(%)', default=20)
 
     class Meta:
         verbose_name = 'Client Instruction Volume Fee structure'

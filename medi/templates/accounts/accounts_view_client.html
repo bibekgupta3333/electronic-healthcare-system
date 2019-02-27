@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% bootstrap_messages %}
+
+{% block ExtraHead %}
+    <link href="{% static 'css/accounts/view_account.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/instructions/new_instruction.css' %}" rel="stylesheet"/>
+    <link rel="stylesheet" href="{% static 'css/pretty-checkbox.min.css' %}">
+{% endblock %}
+
+{% block Content %}
+    <div class="card-deck instruction">
+        <form method="POST" id="preferencesForm" action="{% url 'accounts:view_account' %}" class="col-md-12 px-0">
+            {% csrf_token %}
+            <div class="card contactPreferences mt-2">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Contact Preferences</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mt-2">
+                        <div class="col-md-4"><label>Incoming Report Request Notifications: </label></div>
+                        <div class="col-md-6">
+                            {% comment %} {% bootstrap_field client_preferences_form.notification size='small' show_label=false %} {% endcomment %}
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-4"><label>MediData can contact me for feedback about the platform </label></div>
+                        <div class="col-md-8">
+                            <div class="pretty p-default">
+                                {% comment %} {{ client_preferences_form.contact_feedback }} {% endcomment %}
+                                <div class="state p-primary"><label></label></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-4"><label>Please contact me for updates on features and other developments </label></div>
+                        <div class="col-md-8">
+                            <div class="pretty p-default">
+                                {% comment %} {{ client_preferences_form.contact_updates }} {% endcomment %}
+                                <div class="state p-primary"><label></label></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card contactPreferences mt-4">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Client Fee Payment</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mt-2 mb-3">
+                                    <h6 ><b>Client Instruction Fees rate</b></h6>
+                                </div>
+                                <div class="mt-2 mb-4">
+                                    {% lorem %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                {% for volume_data in client_volume_data %}
+                                    <div class="row FeeLevel">
+                                        <div class="col-md-4">
+                                        {{ volume_data.label }}
+                                        </div>
+                                        <div class="col-md-7">
+                                            <input type="text" class="form-control" value="{{ volume_data.amount }}" readonly="true">
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-6">
+                                {% for fee_data in client_fee_data %}
+                                    <div class="row FeeLevel">
+                                        <div class="col-md-4 rowTitle">
+                                        {{ fee_data.label }}
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="row">
+                                            {% if fee_data.status %}
+                                                <input type="text" class="form-control currency display-inline" value="%" readonly="true">
+                                            {% else %}
+                                                <input type="text" class="form-control currency display-inline" value="£" readonly="true">
+                                            {% endif %}
+                                            <input type="text" class="form-control feeData display-inline col-md-8" value="{{ fee_data.amount }}" readonly="true">
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">&nbsp;</div>
+                    <div class="col-md-12 OrgaisationFee">
+                        <label>Number instruction completed in this year : <strong>{{ completeNum }}</strong></label>
+                        <br>
+                        <label>Client anniversary date : <strong class="text-danger">{{ annivasaryData }}</strong></label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

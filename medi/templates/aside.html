@@ -4,7 +4,11 @@
     <nav class="navigation navbar-dark">
         <div class="sidebar-header">
             <div class="logo">
-                <img src="{% static "images/logo/eMR_med.png" %}">
+                {% if request.get_host == 'https://mdx.medi2data.com' %}
+                    <img src="{% static "images/logo/mdX_med.png" %}">
+                {% else %}
+                    <img src="{% static "images/logo/eMR_med.png" %}">
+                {% endif %}
             </div>
             <div class="profile">
                 <h3>{{ user.first_name }}  {{ user.last_name }}</h3>
@@ -38,7 +42,7 @@
                         <a href="{% url 'template:view_templates' %}"><i class="fas fa-wrench"></i>Templates</a>
                     </li>
                 {% endif %}
-                {% if perms.payment.view_organisationfee and user.type != 'CLT' %}
+                {% if perms.payment.view_organisationfee or user.get_my_role == 'Client Admin'%}
                     <li class="{% if request.resolver_match.url_name == 'view_account' %}active{% endif %}">
                         <a href="{% url 'accounts:view_account' %}" ><i class="fas fa-money-check-alt"></i>Account</a>
                     </li>
