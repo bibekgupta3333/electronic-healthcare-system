@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load bootstrap4 %}
 {% load static %}
+{% load cache %}
 {% bootstrap_css %}
 {% bootstrap_javascript jquery='full' %}
 {% bootstrap_messages %}
@@ -23,6 +24,7 @@
     <div class="card-deck instruction">        
         <form method="POST" id="consentContactForm" enctype="multipart/form-data" class="col-md-12 px-0">
             {% csrf_token %}
+            {% cache 300 patient_information patient_form %}
             <div class="col-md-12">
                 <div class="card InstructionPatientForm">
                     <div class="card-header">
@@ -59,6 +61,7 @@
                     </div>
                 </div>
             </div>
+            {% endcache %}
             <div class="col-md-12 mt-4">
                 <input type="hidden" name="next_step" id="id_next_step" value="" />
                 <div class="card">
