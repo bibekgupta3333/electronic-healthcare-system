@@ -78,7 +78,7 @@ def handler_404(request, exception=None, template_name='handle_errors.html'):
     return response
 
 
-def handler_500(request, exception=None, template_name='handle_errors.html'):
+def handler_500(request, template_name='handle_errors.html'):
     status_code = 500
     message = 'Page is Error. Please try agian later or contact the admin.'
     response = render(request, 'errors/handle_errors.html', {
