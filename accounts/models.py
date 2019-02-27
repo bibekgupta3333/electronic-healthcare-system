@@ -390,5 +390,4 @@ class Patient(UserProfileBase):
         verbose_name = 'Patient User'
 
     def __str__(self):
-        return self.user.first_name
-        
+        return self.user.first_name        
