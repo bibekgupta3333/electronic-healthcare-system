@@ -38,8 +38,9 @@ def check_permission(func):
                 instruction_id = request.GET.get('instruction_id')
             else:
                 return func(request, *args, **kwargs)
-        user = User.objects.get(pk=request.user.pk)
-        instruction = get_object_or_404(Instruction, pk=instruction_id)
+        user = request.user
+        instruction = Instruction.objects.filter(pk=instruction_id).select_related(
+            "gp_user", "patient", "gp_practice")[0]
         client_user = instruction.client_user
         gp_user = instruction.gp_user
         patient = instruction.patient
