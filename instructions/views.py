@@ -395,6 +395,8 @@ def new_instruction(request):
                 'first_name': patient_instruction.patient_first_name,
                 'last_name': patient_instruction.patient_last_name,
                 'address_postcode': patient_instruction.patient_postcode,
+                'patient_postcode': patient_instruction.patient_postcode,
+                'patient_address_number': patient_instruction.patient_address_number,
                 'edit_patient': True
             }
         )
@@ -456,7 +458,7 @@ def new_instruction(request):
             'selected_gp_adr_line1': patient_instruction.patient_address_line1,
             'selected_gp_adr_line2': patient_instruction.patient_address_line2,
             'selected_gp_adr_line3': patient_instruction.patient_address_line3,
-            'selected_gp_adr_county': patient_instruction.patient_county
+            'selected_gp_adr_county': patient_instruction.patient_county,
         })
     return render(request, 'instructions/new_instruction.html', {
         'header_title': header_title,
@@ -520,6 +522,7 @@ def review_instruction(request, instruction_id):
             'patient_dob': date_format
         }
     )
+    # 
     gp_practice_code = instruction.gp_practice.pk
     gp_practice_request = HttpRequest()
     gp_practice_request.GET['code'] = gp_practice_code
