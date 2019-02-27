@@ -4,6 +4,7 @@ from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_REJECT, INSTRUCTION_STATUS_COMPLETE,\
         INSTRUCTION_STATUS_PROGRESS, INSTRUCTION_STATUS_NEW
 from django.shortcuts import get_object_or_404
+from django.http import Http404
 from permissions.models import InstructionPermission
 from permissions.model_choices import INSTRUCTION_PERMISSIONS
 from django.contrib.auth.models import Group, Permission
@@ -39,8 +40,12 @@ def check_permission(func):
             else:
                 return func(request, *args, **kwargs)
         user = request.user
-        instruction = Instruction.objects.filter(pk=instruction_id).select_related(
-            "gp_user", "patient", "gp_practice")[0]
+        try:
+            instruction = Instruction.objects.filter(pk=instruction_id).select_related(
+                "gp_user", "patient", "gp_practice")[0]
+        except IndexError:
+            raise Http404('No Instruction matches the given query.')
+
         client_user = instruction.client_user
         gp_user = instruction.gp_user
         patient = instruction.patient
