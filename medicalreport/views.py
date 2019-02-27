@@ -173,7 +173,7 @@ def edit_report(request, instruction_id):
         'finalise_submit_form': finalise_submit_form,
         'questions': questions,
         'relations': relations,
-        'show_alert': True if inst_gp_user == cur_user else False.request,
+        'show_alert': True if inst_gp_user == cur_user else False,
         'patient_full_name': instruction.patient_information.get_full_name()
     })
     end_time = timezone.now()
