@@ -64,9 +64,11 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
 
         # create list of PdfFileReader obj from raw bytes of xml data
         attachments_pdf = []
-        unique_file_name = [uuid.uuid4().hex for i in range(len(medical_record_decorator.attachments()))]
+        unique_file_name = []
         folder = settings.BASE_DIR + '/static/generic_pdf/'
-        for attachment, unique in zip(medical_record_decorator.attachments(), unique_file_name):
+        for attachment in medical_record_decorator.attachments():
+            unique = uuid.uuid4().hex
+            unique_file_name.append(unique)
             xpaths = attachment.xpaths()
             if redaction.redacted(xpaths) is not True:
                 raw_xml_or_status_code = services.GetAttachment(
