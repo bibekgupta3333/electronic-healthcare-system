@@ -164,6 +164,7 @@ def edit_report(request, instruction_id):
     relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
     inst_gp_user = instruction.gp_user.user
     cur_user = request.user
+
     response =  render(request, 'medicalreport/medicalreport_edit.html', {
         'user': request.user,
         'medical_record': medical_record_decorator,
@@ -172,7 +173,8 @@ def edit_report(request, instruction_id):
         'finalise_submit_form': finalise_submit_form,
         'questions': questions,
         'relations': relations,
-        'show_alert': True if inst_gp_user == cur_user else False
+        'show_alert': True if inst_gp_user == cur_user else False,
+        'patient_full_name': instruction.patient_information.get_full_name()
     })
     end_time = timezone.now()
     total_time = end_time - start_time
@@ -244,7 +246,8 @@ def submit_report(request, instruction_id):
         'redaction': redaction,
         'relations': relations,
         'instruction': instruction,
-        'finalise_submit_form': finalise_submit_form
+        'finalise_submit_form': finalise_submit_form,
+        'patient_full_name': instruction.patient_information.get_full_name()
     })
 
 

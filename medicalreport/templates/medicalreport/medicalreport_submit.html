@@ -156,7 +156,32 @@
             </div>
         </form>
     </div>
+
+    <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg bg-info">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="col-12 text-center mt-2">
+                            <img src="{% static 'images/custom_images/loading.gif'%}" class="img-fluid">
+                            <div class="col-12">&nbsp;</div>
+                            <h4>Patient : <strong>{{ patient_full_name }}</strong></h4>
+                            <h4 class="mt-2">The medical record or report will be generated soon.</h4>
+                            <label class="text-danger mt-4">Please don't leave this page. Process is running ....</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 {% block Script %}
     <script src="{% static 'medicalreport/js/medicalreport.js' %}"></script>
+    <script>
+        $('#submitConfirmButton').click( function() {
+            $('#loadingModal').modal({
+                backdrop: "static"
+            });
+        });
+    </script>
 {% endblock %}
