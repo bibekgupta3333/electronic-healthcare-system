@@ -56,7 +56,7 @@ INSTALLED_APPS = [
     'django_clamd',
     'axes',
     'django_celery_results',
-    'silk',
+    #'silk',
 
     # app
     'accounts',
@@ -82,7 +82,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'silk.middleware.SilkyMiddleware',
+    #'silk.middleware.SilkyMiddleware',
 ]
 
 ROOT_URLCONF = 'medi.urls'

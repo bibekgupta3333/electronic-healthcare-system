@@ -2,7 +2,8 @@
 from django.core.mail import send_mail
 from django.template import loader
 from django.shortcuts import redirect
-
+from django.conf import settings
+from zipfile import ZipFile, ZIP_DEFLATED
 from .models import PatientReportAuth
 
 import json
@@ -54,3 +55,14 @@ def validate_pin(response, pin,  patient_auth, access_type, third_party_authoris
                     third_party_authorisation.count = 0
                 third_party_authorisation.save()
     return False
+
+
+def get_zip_medical_report(instruction):
+    path_patient = instruction.patient_information.__str__()
+    path = settings.MEDIA_ROOT + '/patient_attachments/' + path_patient + '/'
+    attachments = instruction.download_attachments
+    with ZipFile(path + 'medicalreports.zip','w', ZIP_DEFLATED) as zip:
+        zip.write(instruction.medical_with_attachment_report.path, 'medical_report.pdf')
+        for attachment in attachments.split(','):
+            zip.write(path + attachment, attachment)
+    return open(path + 'medicalreports.zip', 'rb')

@@ -50,7 +50,7 @@ urlpatterns = [
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('resource_centre/', include('help.urls', namespace='help')),
 ]
-urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
+#urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += staticfiles_urlpatterns()
 
