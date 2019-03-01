@@ -93,7 +93,7 @@ class AttachmentReport:
             return self.render_pdf()
         elif self.file_type in ["rtf", "doc", "docx"]:
             return self.render_pdf_with_libreoffice()
-        elif self.file_type in ["jpg", "jpeg", "png", "tiff"]:
+        elif self.file_type in ["jpg", "jpeg", "png", "tiff", "tif"]:
             return self.render_image()
         else:
             return self.render_error()

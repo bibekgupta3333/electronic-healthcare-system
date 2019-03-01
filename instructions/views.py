@@ -315,8 +315,11 @@ def new_instruction(request):
                 )
 
             if instruction.type == AMRA_TYPE and not instruction.consent_form:
-                message = 'Your instruction has request consent form. Please upload or accept consent form in this link {}'\
-                    .format(request.get_host() + '/instruction/upload-consent/' + str(instruction.id) + '/')
+                message = 'Your instruction has request consent form. Please upload or accept consent form in this link {protocol}://{link}'\
+                    .format(
+                        protocol=request.scheme,
+                        link=request.get_host() + '/instruction/upload-consent/' + str(instruction.id) + '/'
+                    )
                 send_mail(
                     'Request consent',
                     message,
