@@ -1,7 +1,7 @@
 import os
 
 from celery import Celery
-from config.environ_vars import *
+#from config.environ_vars import *
 
 if os.environ.get('DJANGO_SETTINGS_MODULE'):
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', os.environ.get('DJANGO_SETTINGS_MODULE'))
