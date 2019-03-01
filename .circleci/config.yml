@@ -74,12 +74,12 @@ jobs:
           name: Deploy UAT
           working_directory: ~/repo
           command: |
-            ssh $UAT_USER@$UAT_HOST "$UAT_COMMAND"
+            ssh -p 8022 $UAT_USER@$UAT_HOST "$UAT_COMMAND"
       - run:
           name: Restart server
           working_directory: ~/repo
           command: |
-            ssh $UAT_USER@$UAT_HOST "$UAT_RESTART"
+            ssh -p 8022 $UAT_USER@$UAT_HOST "$UAT_RESTART"
 workflows:
   version: 2
   build-and-deploy:
