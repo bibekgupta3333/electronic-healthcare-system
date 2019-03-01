@@ -14,7 +14,7 @@ from django.utils import timezone
 from instructions.models import Instruction
 from .models import PatientReportAuth, ThirdPartyAuthorisation
 from .forms import AccessCodeForm, ThirdPartyAuthorisationForm
-from .functions import validate_pin
+from .functions import validate_pin, get_zip_medical_report
 
 from report.mobile import AuthMobile
 
@@ -229,8 +229,8 @@ def get_report(request, access_type):
             instruction = get_object_or_404(Instruction, id=report_auth.instruction_id)
             path_file = instruction.medical_with_attachment_report.path
             if request.POST.get('button') == 'Download Report':
-                response = StreamingHttpResponse(FileWrapper(open(path_file, 'rb')), content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename="medical_report.pdf"'
+                response = StreamingHttpResponse(FileWrapper(get_zip_medical_report(instruction)), content_type='application/octet-stream')
+                response['Content-Disposition'] = 'attachment; filename="medical_report.zip"'
                 return response
 
             elif request.POST.get('button') == 'View Report':

@@ -57,7 +57,8 @@ class InstructionTable(tables.Table):
             'Paid': 'badge-info',
             'Completed': 'badge-success',
             'Rejected': 'badge-danger',
-            'Finalise': 'badge-secondary'
+            'Finalise': 'badge-secondary',
+            'Generated Fail': 'badge-dark'
         }
         url = 'instructions:review_instruction'
         view_report = view_complete_report(self.user.id, record.pk)

@@ -25,7 +25,7 @@ from common.functions import multi_getattr, get_url_page
 from snomedct.models import SnomedConcept
 from permissions.functions import check_permission
 from .print_consents import MDXDualConsent
-from silk.profiling.profiler import silk_profile
+#from silk.profiling.profiler import silk_profile
 
 import pytz
 from itertools import chain
@@ -57,12 +57,14 @@ def count_instructions(user, gp_practice_code, client_organisation):
     complete_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_COMPLETE).count()
     rejected_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_REJECT).count()
     finalise_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_FINALISE).count()
+    fail_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_FAIL).count()
     overall_instructions_number = {
         'All': all_count,
         'New': new_count,
         'In Progress': progress_count,
         'Paid': paid_count,
         'Finalise': finalise_count,
+        'Generated Fail': fail_count,
         'Completed': complete_count,
         'Rejected': rejected_count
     }
@@ -152,7 +154,7 @@ def create_snomed_relations(instruction, condition_of_interests):
             InstructionConditionsOfInterest.objects.create(instruction=instruction, snomedct=snomedct)
 
 
-@silk_profile(name='Pipline View')
+#@silk_profile(name='Pipline View')
 @login_required(login_url='/accounts/login')
 def instruction_pipeline_view(request):
     header_title = "Instructions Pipeline"
@@ -222,7 +224,7 @@ def instruction_pipeline_view(request):
     return response
 
 
-@silk_profile(name='New Instruction')
+#@silk_profile(name='New Instruction')
 @cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
@@ -500,7 +502,7 @@ def upload_consent(request, instruction_id):
         })
 
 
-@silk_profile(name='Review Instruction')
+#@silk_profile(name='Review Instruction')
 @cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
@@ -584,7 +586,7 @@ def review_instruction(request, instruction_id):
     })
 
 
-@silk_profile(name='View Reject')
+#@silk_profile(name='View Reject')
 @cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
@@ -722,7 +724,7 @@ def view_fail(request, instruction_id):
         'instruction_id': instruction.id,
     })
 
-@silk_profile(name='Consent Contact View')
+#@silk_profile(name='Consent Contact View')
 @login_required(login_url='/accounts/login')
 @check_permission
 def consent_contact(request, instruction_id, patient_emis_number):
