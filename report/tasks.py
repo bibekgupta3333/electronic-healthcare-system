@@ -12,7 +12,7 @@ from services.emisapiservices import services
 from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE
 from report.mobile import SendSMS
-from silk.profiling.profiler import silk_profile
+#from silk.profiling.profiler import silk_profile
 
 from celery import shared_task
 from PIL import Image
@@ -26,6 +26,7 @@ import io
 import uuid
 import glob
 import os
+import re
 
 logger = logging.getLogger(__name__)
 time_logger = logging.getLogger('timestamp')
@@ -47,7 +48,7 @@ def send_patient_mail(scheme, host,  unique_url, instruction):
 
 
 @shared_task(bind=True)
-@silk_profile(name='Create Patient')
+#@silk_profile(name='Create Patient')
 def generate_medicalreport_with_attachment(self, instruction_id, report_link_info):
     start_time = timezone.now()
 
@@ -67,15 +68,17 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
         # create list of PdfFileReader obj from raw bytes of xml data
         attachments_pdf = []
         unique_file_name = []
+        download_attachments = []
         folder = settings.BASE_DIR + '/static/generic_pdf/'
         for attachment in medical_record_decorator.attachments():
             unique = uuid.uuid4().hex
             unique_file_name.append(unique)
             xpaths = attachment.xpaths()
+            attachment_id = attachment.dds_identifier()
             if redaction.redacted(xpaths) is not True:
                 raw_xml_or_status_code = services.GetAttachment(
                     instruction.patient_information.patient_emis_number,
-                    attachment.dds_identifier(),
+                    attachment_id,
                     gp_organisation=instruction.gp_practice).call()
 
                 file_name = Base64Attachment(raw_xml_or_status_code).filename()
@@ -96,7 +99,7 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                         )
                         pdf = open(folder + 'temp_%s.pdf' % unique, 'rb')
                         attachments_pdf.append(PyPDF2.PdfFileReader(pdf))
-                    elif file_type in ['jpg', 'jpeg', 'png', 'tiff']:
+                    elif file_type in ['jpg', 'jpeg', 'png', 'tiff', 'tif']:
                         image = Image.open(buffer)
                         image_format = image.format
                         if image_format == "TIFF":
@@ -129,6 +132,20 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                             attachments_pdf.append(PyPDF2.PdfFileReader(f))
                             image.close()
                             f.close()
+                    else:
+                        file_name = Base64Attachment(raw_xml_or_status_code).filename()
+                        path_patient = instruction.patient_information.__str__()
+                        save_path = settings.MEDIA_ROOT + '/patient_attachments/' + path_patient + '/'
+                        buffer = io.BytesIO()
+                        buffer.write(raw_attachment)
+                        if not os.path.exists(os.path.dirname(save_path)):
+                            os.makedirs(os.path.dirname(save_path))
+                        save_file = file_name.split('\\')[-1]
+                        f = open(save_path + save_file, 'wb')
+                        f.write(buffer.getvalue())
+                        f.close()
+                        download_attachments.append(save_file)
+
                 except Exception as e:
                     logger.error(e)
 
@@ -163,6 +180,7 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
             instruction
         )
 
+        instruction.download_attachments = ",".join(download_attachments)
         instruction.status = INSTRUCTION_STATUS_COMPLETE
         instruction.save()
 

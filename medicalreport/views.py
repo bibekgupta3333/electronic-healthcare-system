@@ -25,7 +25,7 @@ from .forms import AllocateInstructionForm
 from permissions.functions import check_permission, check_user_type
 from payment.functions import calculate_instruction_fee
 from typing import List
-from silk.profiling.profiler import silk_profile
+#from silk.profiling.profiler import silk_profile
 
 
 logger = logging.getLogger('timestamp')
@@ -37,9 +37,18 @@ def view_attachment(request, instruction_id, path_file):
     raw_xml_or_status_code = services.GetAttachment(instruction.patient_information.patient_emis_number, path_file, gp_organisation=instruction.gp_practice).call()
     if isinstance(raw_xml_or_status_code, int):
         return redirect('services:handle_error', code=raw_xml_or_status_code)
-    attachment_report = AttachmentReport(raw_xml_or_status_code)
+    attachment_report = AttachmentReport(instruction, raw_xml_or_status_code, path_file)
     return attachment_report.render()
 
+
+@login_required(login_url='/accounts/login')
+def download_attachment(request, instruction_id, path_file):
+    instruction = get_object_or_404(Instruction, pk=instruction_id)
+    raw_xml_or_status_code = services.GetAttachment(instruction.patient_information.patient_emis_number, path_file, gp_organisation=instruction.gp_practice).call()
+    if isinstance(raw_xml_or_status_code, int):
+        return redirect('services:handle_error', code=raw_xml_or_status_code)
+    attachment_report = AttachmentReport(instruction, raw_xml_or_status_code, path_file)
+    return attachment_report.download()
 
 def get_matched_patient(patient: InstructionPatient, gp_organisation: OrganisationGeneralPractice) -> List[Registration]:
     raw_xml_or_status_code = services.GetPatientList(patient, gp_organisation=gp_organisation).call()
@@ -128,7 +137,7 @@ def set_patient_emis_number(request, instruction_id):
 
 @login_required(login_url='/accounts/login')
 @check_permission
-@silk_profile(name='Edit Report')
+#@silk_profile(name='Edit Report')
 @check_user_type(GENERAL_PRACTICE_USER)
 def edit_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
@@ -209,7 +218,7 @@ def update_report(request, instruction_id):
         return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
-@silk_profile(name='Preview Report')
+#@silk_profile(name='Preview Report')
 @login_required(login_url='/accounts/login')
 def submit_report(request, instruction_id):
     header_title = "Preview and Submit Report"
@@ -257,7 +266,7 @@ def view_report(request, instruction_id):
     return HttpResponse(instruction.medical_report, content_type='application/pdf')
 
 
-@silk_profile(name='Final Report')
+#@silk_profile(name='Final Report')
 @cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
