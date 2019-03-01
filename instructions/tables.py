@@ -71,6 +71,8 @@ class InstructionTable(tables.Table):
                 return format_html('<a><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
         elif value == 'Rejected':
             url = 'instructions:view_reject'
+        elif value == 'Generated Fail':
+            url = 'instructions:view_fail'
         elif value == 'In Progress' and self.user.type == models.GENERAL_PRACTICE_USER and not record.saved:
             url = 'medicalreport:edit_report'
         elif value == 'In Progress' and self.user.type == models.GENERAL_PRACTICE_USER and record.saved:
