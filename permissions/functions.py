@@ -8,7 +8,7 @@ from django.http import Http404
 from permissions.models import InstructionPermission
 from permissions.model_choices import INSTRUCTION_PERMISSIONS
 from django.contrib.auth.models import Group, Permission
-from silk.profiling.profiler import silk_profile
+#from silk.profiling.profiler import silk_profile
 
 
 decorator_with_arguments = lambda decorator: lambda *args, **kwargs: lambda func: decorator(func, *args, **kwargs)
@@ -31,7 +31,7 @@ def check_status_with_url(is_valid, path, status):
 
 
 def check_permission(func):
-    @silk_profile(name='Check&Call: check_permission')
+    #@silk_profile(name='Check&Call: check_permission')
     def check_and_call(request, *args, **kwargs):
         instruction_id = kwargs.get("instruction_id")
         if not instruction_id:
@@ -87,7 +87,7 @@ def check_permission(func):
 
 @decorator_with_arguments
 def access_user_management(func, perm):
-    @silk_profile(name='Check&Call: access_user_management')
+    #@silk_profile(name='Check&Call: access_user_management')
     def check_and_call(request, *args, **kwargs):
         if not request.user.has_perm(perm):
             return redirect('instructions:view_pipeline')
@@ -130,7 +130,7 @@ def set_default_gp_perm(group, role):
 
 @decorator_with_arguments
 def check_user_type(func, user_type):
-    @silk_profile(name='Check&Call: check_user_type')
+    #@silk_profile(name='Check&Call: check_user_type')
     def check_and_call(request, *args, **kwargs):
         if request.user.type != user_type:
             return redirect('instructions:view_pipeline')

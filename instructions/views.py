@@ -25,7 +25,7 @@ from common.functions import multi_getattr, get_url_page
 from snomedct.models import SnomedConcept
 from permissions.functions import check_permission
 from .print_consents import MDXDualConsent
-from silk.profiling.profiler import silk_profile
+#from silk.profiling.profiler import silk_profile
 
 import pytz
 from itertools import chain
@@ -152,7 +152,7 @@ def create_snomed_relations(instruction, condition_of_interests):
             InstructionConditionsOfInterest.objects.create(instruction=instruction, snomedct=snomedct)
 
 
-@silk_profile(name='Pipline View')
+#@silk_profile(name='Pipline View')
 @login_required(login_url='/accounts/login')
 def instruction_pipeline_view(request):
     header_title = "Instructions Pipeline"
@@ -222,7 +222,7 @@ def instruction_pipeline_view(request):
     return response
 
 
-@silk_profile(name='New Instruction')
+#@silk_profile(name='New Instruction')
 @cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
@@ -315,8 +315,11 @@ def new_instruction(request):
                 )
 
             if instruction.type == AMRA_TYPE and not instruction.consent_form:
-                message = 'Your instruction has request consent form. Please upload or accept consent form in this link {}'\
-                    .format(request.get_host() + '/instruction/upload-consent/' + str(instruction.id) + '/')
+                message = 'Your instruction has request consent form. Please upload or accept consent form in this link {protocol}://{link}'\
+                    .format(
+                        protocol=request.scheme,
+                        link=request.get_host() + '/instruction/upload-consent/' + str(instruction.id) + '/'
+                    )
                 send_mail(
                     'Request consent',
                     message,
@@ -497,7 +500,7 @@ def upload_consent(request, instruction_id):
         })
 
 
-@silk_profile(name='Review Instruction')
+#@silk_profile(name='Review Instruction')
 @cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
@@ -581,7 +584,7 @@ def review_instruction(request, instruction_id):
     })
 
 
-@silk_profile(name='View Reject')
+#@silk_profile(name='View Reject')
 @cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
@@ -651,7 +654,7 @@ def view_reject(request, instruction_id):
     })
 
 
-@silk_profile(name='Consent Contact View')
+#@silk_profile(name='Consent Contact View')
 @login_required(login_url='/accounts/login')
 @check_permission
 def consent_contact(request, instruction_id, patient_emis_number):

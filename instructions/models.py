@@ -95,6 +95,7 @@ class Instruction(TimeStampedModel, models.Model):
     medical_report = models.FileField(upload_to='medical_reports', null=True, blank=True)
     medical_xml_report = models.FileField(upload_to='medical_xml_reports', null=True, blank=True)
     medical_with_attachment_report = models.FileField(upload_to='medical_with_attachment_reports', null=True, blank=True)
+    download_attachments = models.TextField(blank=True)
     saved = models.BooleanField(default=False)
     deactivated = models.BooleanField(default=False, verbose_name="Deactivated at patient request")
     medi_ref = models.IntegerField(null=True, blank=True)
