@@ -29,7 +29,7 @@
                 <button class='btn btn-warning btn-lg btn-block text-dark' type="button"><i class="fas fa-redo-alt"></i>&nbsp;&nbsp;Retry Generete</button>
             </div>
             <div class="col-4">
-                <a href="{% url 'medicalreport:edit_report' instruction_id=instruction.id %}">
+                <a href="{% url 'medicalreport:edit_report' instruction.id %}">
                     <button class='btn btn-primary btn-lg btn-block text-white' type="button">
                         <i class="fas fa-edit"></i>&nbsp;&nbsp;Edit Instruction
                     </button>
@@ -196,9 +196,11 @@
                     </div>
                     <div class="modal-footer">
                         <div class="col-12">
-                            <form action="#" method="POST">
+                            <form action="{% url 'instructions:view_fail' instruction.id %}" method="POST">
+                                {% csrf_token %}
                                 <div class="row">
                                     <div class="col-6">
+                                        <input name="rejected_reason" type="hidden" value="4"/>
                                         <button class="btn btn-lg btn-block btn-danger" type="submit">
                                             <i class="fas fa-check"></i>&nbsp;&nbsp;Confirm Reject
                                         </button>

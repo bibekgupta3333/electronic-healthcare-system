@@ -659,6 +659,11 @@ def view_reject(request, instruction_id):
 def view_fail(request, instruction_id):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     patient_instruction = instruction.patient_information
+
+    if request.method == "POST":
+        instruction.reject(request, request.POST)
+        return HttpResponseRedirect("%s?%s"%(reverse('instructions:view_pipeline'),"status=%s&type=allType"%INSTRUCTION_STATUS_REJECT))
+
     # Initial Patient Form
     patient_form = InstructionPatientForm(
         instance=patient_instruction,
