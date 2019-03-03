@@ -154,7 +154,10 @@ class SurgeryEmailForm(forms.ModelForm):
 
 class BankDetailsEmrSetUpStage2Form(forms.Form):
     default_rate_band = OrganisationFeeRate.objects.filter(default=True)
-    base_rate_band = default_rate_band.filter(base=True).first()
+    try:
+        base_rate_band = default_rate_band.filter(base=True).first()
+    except:
+        base_rate_band = None
     level_1_payments = base_rate_band.amount_rate_lvl_2 if base_rate_band else 0
     level_2_payments = base_rate_band.amount_rate_lvl_3 if base_rate_band else 0
     level_3_payments = base_rate_band.amount_rate_lvl_4 if base_rate_band else 0
