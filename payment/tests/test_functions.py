@@ -3,7 +3,7 @@ from accounts.models import ClientUser, GeneralPracticeUser
 from organisations.models import OrganisationClient, OrganisationGeneralPractice
 from instructions import model_choices
 from instructions.models import Instruction
-from payment.models import InstructionVolumeFee, OrganisationFee
+from payment.models import InstructionVolumeFee, OrganisationFeeRate, GpOrganisationFee
 from model_mommy import mommy
 from django.test import TestCase
 from django.utils import timezone
@@ -41,8 +41,7 @@ class CalculateInstructionFeeBaseTest(TestCase):
         )
 
         self.organisation_fee = mommy.make(
-            OrganisationFee,
-            gp_practice=self.gp_practice,
+            OrganisationFeeRate,
             max_day_lvl_1=3,
             max_day_lvl_2=6,
             max_day_lvl_3=8,
@@ -51,6 +50,12 @@ class CalculateInstructionFeeBaseTest(TestCase):
             amount_rate_lvl_2=50,
             amount_rate_lvl_3=30,
             amount_rate_lvl_4=20
+        )
+
+        self.gp_fee_relation = mommy.make(
+            GpOrganisationFee,
+            gp_practice=self.gp_practice,
+            organisation_fee=self.organisation_fee
         )
 
         self.instruction_volume_fee = mommy.make(

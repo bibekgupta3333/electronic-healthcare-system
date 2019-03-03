@@ -12,14 +12,21 @@ import decimal
 class FunctionsOnboardingTest(TestCase):
 
     def setUp(self):
+        self.organisation_fee = mommy.make(
+            OrganisationFeeRate,
+            name='TEST BAND',
+            base=True,
+            default=True
+        )
+
         self.bank_detail_form = BankDetailsEmrSetUpStage2Form({
             'bank_account_name': 'Test Bank account Name',
             'bank_account_number': '11-22-33',
             'bank_account_sort_code': '123456',
-            'received_within_3_days': 60.00,
-            'received_within_4_to_7_days': 51.00,
-            'received_within_8_to_11_days': 45.90,
-            'received_after_11_days': 38.56,
+            'received_within_3_days': self.organisation_fee.pk,
+            'received_within_4_to_7_days': 50,
+            'received_within_8_to_11_days': 40,
+            'received_after_11_days': 30,
             'completed_by': 'Completer Man',
             'job_title': 'Tet Job Title'
         })
@@ -34,14 +41,14 @@ class FunctionsOnboardingTest(TestCase):
         organisation_fee = create_gp_payments_fee(self.bank_detail_form, self.gp_practice)
 
         self.assertEqual(True, GpOrganisationFee.objects.filter(id=organisation_fee.id).exists())
-        self.assertEqual(decimal.Decimal(60.00), organisation_fee.amount_rate_lvl_1)
-        self.assertEqual(decimal.Decimal(51.00), organisation_fee.amount_rate_lvl_2)
+        self.assertEqual(self.organisation_fee.amount_rate_lvl_1, organisation_fee.amount_rate_lvl_1)
+        self.assertEqual(self.organisation_fee.amount_rate_lvl_2, organisation_fee.amount_rate_lvl_2)
         self.assertEqual(
-            decimal.Decimal(45.90).quantize(decimal.Decimal('.01'), rounding=decimal.ROUND_UP),
+            self.organisation_fee.amount_rate_lvl_3,
             organisation_fee.amount_rate_lvl_3
         )
         self.assertEqual(
-            decimal.Decimal(38.56).quantize(decimal.Decimal('.01'), rounding=decimal.ROUND_DOWN),
+            self.organisation_fee.amount_rate_lvl_4,
             organisation_fee.amount_rate_lvl_4
         )
 
