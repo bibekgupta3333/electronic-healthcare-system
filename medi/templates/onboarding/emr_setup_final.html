@@ -286,7 +286,10 @@
                     $('#id_form-'+ i +'-mobile_code').val('');
                 }
             }
-        })
+        });
+
+        $('#id_received_within_3_days').trigger('change');
+
     });
     </script>
 {% endblock %}

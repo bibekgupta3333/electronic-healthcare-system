@@ -6,7 +6,7 @@ from .models import InstructionVolumeFee, GpOrganisationFee
 
 def calculate_instruction_fee(instruction):
     gp_practice = instruction.gp_practice
-    time_delta = instruction.completed_signed_off_timestamp - instruction.created
+    time_delta = instruction.completed_signed_off_timestamp - instruction.fee_calculation_start_date
     organisation_fee = GpOrganisationFee.objects.filter(gp_practice=gp_practice).first()
     organisation_fee_rate = 0
     if organisation_fee:
