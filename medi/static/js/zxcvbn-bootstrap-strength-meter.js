@@ -37,31 +37,39 @@
 				var scorePercentage = (result.score + 1) * 20;
 				$(progressBar).css('width', scorePercentage + '%');
 
-				if (result.score == 0) {
-					//weak
-					$(progressBar).removeClass(settings.allProgressBarClasses).addClass(settings.progressBarClass0);
-					$(progressBar).html(settings.ratings[0]);
+				if (password.length < 8){
+					if (result.score == 0) {
+						//weak
+						$(progressBar).removeClass(settings.allProgressBarClasses).addClass(settings.progressBarClass0);
+						$(progressBar).html(settings.ratings[0]);
+					}
+					else {
+						//normal
+						$(progressBar).css('width', 40 + '%');
+						$(progressBar).removeClass(settings.allProgressBarClasses).addClass(settings.progressBarClass1);
+						$(progressBar).html(settings.ratings[1]);
+					}
 				}
-				else if (result.score == 1) {
-					//normal
-					$(progressBar).removeClass(settings.allProgressBarClasses).addClass(settings.progressBarClass1);
-					$(progressBar).html(settings.ratings[1]);
-				}
-				else if (result.score == 2) {
+				else if (password.length >= 8){
+					console.log('here');
+					if (result.score == 2) {
 					//medium
-					$(progressBar).removeClass(settings.allProgressBarClasses).addClass(settings.progressBarClass2);
-					$(progressBar).html(settings.ratings[2]);
+						$(progressBar).removeClass(settings.allProgressBarClasses).addClass(settings.progressBarClass2);
+						$(progressBar).html(settings.ratings[2]);
+					}
+					else if (result.score == 3) {
+						//strong
+						$(progressBar).removeClass(settings.allProgressBarClasses).addClass(settings.progressBarClass3);
+						$(progressBar).html(settings.ratings[3]);
+					}
+					else if (result.score == 4) {
+						//very strong
+						$(progressBar).removeClass(settings.allProgressBarClasses).addClass(settings.progressBarClass4);
+						$(progressBar).html(settings.ratings[4]);
+					}
+
 				}
-				else if (result.score == 3) {
-					//strong
-					$(progressBar).removeClass(settings.allProgressBarClasses).addClass(settings.progressBarClass3);
-					$(progressBar).html(settings.ratings[3]);
-				}
-				else if (result.score == 4) {
-					//very strong
-					$(progressBar).removeClass(settings.allProgressBarClasses).addClass(settings.progressBarClass4);
-					$(progressBar).html(settings.ratings[4]);
-				}
+
 			}
 			else {
 				$(progressBar).css('width', '0%');
