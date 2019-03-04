@@ -200,7 +200,7 @@
                                 {% csrf_token %}
                                 <div class="row">
                                     <div class="col-6">
-                                        <input name="rejected_reason" type="hidden" value="4"/>
+                                        <input name="rejected_reason" type="hidden" value="{{ reject_reason_value }}"/>
                                         <button class="btn btn-lg btn-block btn-danger" type="submit">
                                             <i class="fas fa-check"></i>&nbsp;&nbsp;Confirm Reject
                                         </button>

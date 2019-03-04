@@ -672,7 +672,7 @@ def view_fail(request, instruction_id):
             'patient_first_name': patient_instruction.patient_first_name,
             'patient_last_name': patient_instruction.patient_last_name,
             'patient_postcode': patient_instruction.patient_postcode,
-            'patient_address_number': patient_instruction.patient_address_number,
+            'patient_address_number': patient_instruction.patient_address_number
         }
     )
 
@@ -727,6 +727,7 @@ def view_fail(request, instruction_id):
         'consent_form_data': consent_form_data,
         'instruction': instruction,
         'instruction_id': instruction.id,
+        'reject_reason_value': GENERATOR_FAIL
     })
 
 #@silk_profile(name='Consent Contact View')
