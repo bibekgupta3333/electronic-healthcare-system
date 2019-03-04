@@ -4,6 +4,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.template import loader
 from django.core.mail import send_mail
+from django.template.loader import get_template
 
 from services.xml.base64_attachment import Base64Attachment
 from medicalreport.models import AmendmentsForRecord
@@ -12,6 +13,7 @@ from services.emisapiservices import services
 from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE
 from report.mobile import SendSMS
+import xhtml2pdf.pisa as pisa
 #from silk.profiling.profiler import silk_profile
 
 from celery import shared_task
@@ -30,6 +32,8 @@ import re
 
 logger = logging.getLogger(__name__)
 time_logger = logging.getLogger('timestamp')
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPORT_DIR = BASE_DIR + '/medicalreport/templates/medicalreport/reports/unsupport_files.html'
 
 
 def send_patient_mail(scheme, host,  unique_url, instruction):
@@ -45,6 +49,23 @@ def send_patient_mail(scheme, host,  unique_url, instruction):
             'report_link': report_link
         })
     )
+
+
+def link_callback(uri, rel):
+    sUrl = settings.STATIC_URL
+    sRoot = settings.STATIC_ROOT
+
+    if uri.startswith(sUrl):
+        path = os.path.join(sRoot, uri.replace(sUrl, ""))
+    else:
+        path = sRoot
+
+    if sRoot == 'static':
+        path = BASE_DIR + '/medi/' + path
+
+    if not os.path.isfile(path):
+        raise Exception('static URI must start with %s' % (sUrl))
+    return path
 
 
 @shared_task(bind=True)
@@ -149,12 +170,21 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                 except Exception as e:
                     logger.error(e)
 
+        if download_attachments:
+            template = get_template(REPORT_DIR)
+            html = template.render({'attachments': download_attachments})
+            pdf_file = io.BytesIO()
+            pdf = pisa.pisaDocument(io.BytesIO(html.encode("UTF-8")), pdf_file, link_callback=link_callback)
+            if not pdf.err:
+                attachments_pdf.append(PyPDF2.PdfFileReader(pdf_file))
+
         # add each page of each attachment to output file
         for pdf in attachments_pdf:
             if pdf.isEncrypted:
                 pdf.decrypt(password='')
             for page_num in range(pdf.getNumPages()):
                 output.addPage(pdf.getPage(page_num))
+
 
         pdf_page_buf = io.BytesIO()
         output.write(pdf_page_buf)
