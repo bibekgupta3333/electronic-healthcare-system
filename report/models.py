@@ -56,3 +56,6 @@ class ThirdPartyAuthorisation(TimeStampedModel):
         return phone
 
 
+class ExceptionMerge(TimeStampedModel):
+    instruction = models.ForeignKey('instructions.Instruction', on_delete=models.CASCADE)
+    file_detail = models.TextField(blank=True, null=True)

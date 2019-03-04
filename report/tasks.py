@@ -10,8 +10,9 @@ from medicalreport.models import AmendmentsForRecord
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.emisapiservices import services
 from instructions.models import Instruction
-from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE
+from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_FAIL
 from report.mobile import SendSMS
+from report.models import ExceptionMerge
 #from silk.profiling.profiler import silk_profile
 
 from celery import shared_task
@@ -48,7 +49,6 @@ def send_patient_mail(scheme, host,  unique_url, instruction):
 
 
 @shared_task(bind=True)
-#@silk_profile(name='Create Patient')
 def generate_medicalreport_with_attachment(self, instruction_id, report_link_info):
     start_time = timezone.now()
 
@@ -69,11 +69,15 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
         attachments_pdf = []
         unique_file_name = []
         download_attachments = []
+
+        exception_detail = list()
+
         folder = settings.BASE_DIR + '/static/generic_pdf/'
         for attachment in medical_record_decorator.attachments():
             unique = uuid.uuid4().hex
             unique_file_name.append(unique)
             xpaths = attachment.xpaths()
+            discript = attachment.description()
             attachment_id = attachment.dds_identifier()
             if redaction.redacted(xpaths) is not True:
                 raw_xml_or_status_code = services.GetAttachment(
@@ -168,6 +172,20 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
             for file_path in glob.glob(folder+'*{unique}*'.format(unique=unique)):
                 os.remove(file_path)
     except Exception as e:
+        exception_detail.append(discript)
+        try:
+            exceptionMerge = ExceptionMerge.objects.get(instruction=instruction)
+            exceptionMerge.file_detail = exception_detail
+            exceptionMerge.save()
+        except:
+            exceptionMerge = ExceptionMerge()
+            exceptionMerge.instruction = instruction
+            exceptionMerge.file_detail = exception_detail
+            exceptionMerge.save()
+
+        instruction.status = INSTRUCTION_STATUS_FAIL
+        instruction.save()
+
         # waiting for 5 min to retry
         raise self.retry(countdown=60*5, exc=e, max_retires=2)
 
