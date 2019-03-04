@@ -90,3 +90,11 @@ def questions(context):
     return {
         'questions': context['instruction'].addition_questions.all()
     }
+
+@register.filter
+def check_file_white_list(attachment):
+    title = attachment.title()
+    file_type = title.split('.')[-1]
+    if file_type and file_type.lower() in ['pdf', 'doc', 'docx', 'tif', 'tiff', 'jpeg' ,'png', 'rtf', 'jpg']:
+        return True
+    return False
