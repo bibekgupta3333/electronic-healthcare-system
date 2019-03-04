@@ -38,13 +38,8 @@ class SendSMS:
         }
         self.number = kwargs.get('number')
         self.message = """
-        Dear Patient,
-        Your GP surgery has completed your SAR request for you to receive a copy of your medical record.
-        This can be securely accessed through a link in an email which has been sent to you with a subject title: 'Notification from your GP surgery'
-        This email may have landed in your ‘Junk mail’ and if so, drag the email from your Junk box to your normal email box and activate the link within the email and follow the security instructions.
-        Thank you
-        MediData Support Team
-        notifyus@medi2data.com
+        Your GP surgery has completed your SAR request. We have sent you an email to access a copy.
+        This may have landed in your ‘Junk mail’. Move to your inbox to activate the link.
         """
 
     def send(self):
