@@ -105,17 +105,14 @@ class AttachmentReport:
         attachment = Base64Attachment(self.raw_xml).data()
         buffer = BytesIO()
         buffer.write(attachment)
-        folder = settings.MEDIA_ROOT + '/patient_attachments/' + path_patient + '/'
-        if not os.path.exists(os.path.dirname(folder)):
-            os.makedirs(os.path.dirname(folder))
-        save_file = self.file_name.split('\\')[-1]
-        if not os.path.isfile(folder + save_file):
-            f = open(folder + save_file, 'wb')
-            f.write(buffer.getvalue())
-            f.close()
+        folder = BASE_DIR + '/medi/static/generic_pdf/'
+        save_file = 'tmp_attachments.' + self.file_type
+        f = open(folder + save_file, 'wb')
+        f.write(buffer.getvalue())
+        f.close()
         download_file = open(folder + save_file, 'rb')
         response = HttpResponse(download_file, content_type="application/octet-stream")
-        response['Content-Disposition'] = 'attachment; filename=' + save_file
+        response['Content-Disposition'] = 'attachment; filename=' + self.file_name.split('\\')[-1]
         return response
 
     def render_download_file(self):
