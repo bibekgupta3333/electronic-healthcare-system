@@ -25,6 +25,8 @@ from common.functions import multi_getattr, get_url_page
 from snomedct.models import SnomedConcept
 from permissions.functions import check_permission
 from .print_consents import MDXDualConsent
+from report.models import ExceptionMerge
+from medicalreport.functions import create_patient_report
 #from silk.profiling.profiler import silk_profile
 
 import pytz
@@ -658,76 +660,26 @@ def view_reject(request, instruction_id):
 @login_required(login_url='/accounts/login')
 def view_fail(request, instruction_id):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
-    patient_instruction = instruction.patient_information
 
     if request.method == "POST":
-        instruction.reject(request, request.POST)
-        return HttpResponseRedirect("%s?%s"%(reverse('instructions:view_pipeline'),"status=%s&type=allType"%INSTRUCTION_STATUS_REJECT))
+        if request.POST.get('next_step') == 'Reject':
+            instruction.reject(request, request.POST)
+            return HttpResponseRedirect("%s?%s"%(reverse('instructions:view_pipeline'),"status=%s&type=allType"%INSTRUCTION_STATUS_REJECT))
+        elif request.POST.get('next_step') == 'Edit':
+            instruction.status = INSTRUCTION_STATUS_PROGRESS
+            instruction.save()
+            return redirect('medicalreport:edit_report', instruction_id=instruction_id)
+        elif request.POST.get('next_step') == 'Retry':
+            create_patient_report(request, instruction)
+            instruction.status = INSTRUCTION_STATUS_FINALISE
+            instruction.save()
+            return redirect('instructions:view_pipeline')
 
-    # Initial Patient Form
-    patient_form = InstructionPatientForm(
-        instance=patient_instruction,
-        initial={
-            'patient_title': patient_instruction.get_patient_title_display(),
-            'patient_first_name': patient_instruction.patient_first_name,
-            'patient_last_name': patient_instruction.patient_last_name,
-            'patient_postcode': patient_instruction.patient_postcode,
-            'patient_address_number': patient_instruction.patient_address_number
-        }
-    )
-
-    gp_practice_code = instruction.gp_practice.pk
-    gp_practice_request = HttpRequest()
-    gp_practice_request.GET['code'] = gp_practice_code
-    nhs_address = get_gporganisation_data(gp_practice_request, need_dict=True)['address']
-    nhs_form = GeneralPracticeForm(
-        initial={
-            'gp_practice': instruction.gp_practice
-        }
-    )
-
-    # Initial GP Practitioner Form
-    gp_form = GPForm(
-        initial={
-            'gp_title': instruction.gp_title_from_client,
-            'initial': instruction.gp_initial_from_client,
-            'gp_last_name': instruction.gp_last_name_from_client,
-        }
-    )
-
-    # Initial Scope/Consent Form
-    scope_form = ScopeInstructionForm(user=request.user, initial={'type': instruction.type, })
-    reference_form = ReferenceForm(instance=instruction)
-
-    consent_type = 'pdf'
-    consent_extension = ''
-    consent_path = ''
-    if instruction.consent_form:
-        consent_extension = (instruction.consent_form.url).split('.')[1]
-        consent_path = instruction.consent_form.url
-    if consent_extension in ['jpeg', 'png', 'gif']:
-        consent_type = 'image'
-    consent_form_data = {
-        'type': consent_type,
-        'path': consent_path
-    }
-
-    condition_of_interest = [snomed.fsn_description for snomed in instruction.selected_snomed_concepts()]
-    addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.filter(instruction=instruction))
-
+    exceptionMerge = ExceptionMerge.objects.filter(instruction=instruction).first()
     return render(request, 'instructions/view_fail.html', {
-        'patient_form': patient_form,
-        'nhs_form': nhs_form,
-        'gp_form': gp_form,
-        'scope_form': scope_form,
-        'reference_form': reference_form,
-        'addition_question_formset': addition_question_formset,
-        'nhs_address': nhs_address,
-        'condition_of_interest': condition_of_interest,
-        'consent_form_data': consent_form_data,
         'instruction': instruction,
-        'instruction_id': instruction.id,
-        'reject_reason_value': GENERATOR_FAIL
+        'reject_reason_value': GENERATOR_FAIL,
+        'exceptionMerge': exceptionMerge
     })
 
 #@silk_profile(name='Consent Contact View')

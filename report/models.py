@@ -1,6 +1,7 @@
 from django.db import models
 from common.models import TimeStampedModel
 from accounts.models import Patient
+from django.contrib.postgres.fields import ArrayField
 
 
 class PatientReportAuth(TimeStampedModel):
@@ -58,4 +59,4 @@ class ThirdPartyAuthorisation(TimeStampedModel):
 
 class ExceptionMerge(TimeStampedModel):
     instruction = models.ForeignKey('instructions.Instruction', on_delete=models.CASCADE)
-    file_detail = models.TextField(blank=True, null=True)
+    file_detail = ArrayField(models.CharField(max_length=255, blank=True, null=True))
