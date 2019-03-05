@@ -113,7 +113,15 @@ MEDI_ADMIN_PERMISSIONS=[
     'add_templateadditionalcondition',
     'change_templateadditionalcondition',
     'delete_templateadditionalcondition',
-    'view_templateadditionalcondition'
+    'view_templateadditionalcondition',
+    'view_accessattempt',
+    'delete_accessattempt',
+    'change_accessattempt',
+    'add_accessattempt',
+    'view_accesslog',
+    'delete_accesslog',
+    'change_accesslog',
+    'add_accesslog'
 ]
 
 MEDI_TEAM_PERMISSIONS=[
@@ -142,7 +150,15 @@ MEDI_TEAM_PERMISSIONS=[
     'change_organisationgeneralpractice',
     'view_organisationfee',
     'view_thirdpartyauthorisation',
-    'view_patientreportauth'
+    'view_patientreportauth',
+    'view_accessattempt',
+    'delete_accessattempt',
+    'change_accessattempt',
+    'add_accessattempt',
+    'view_accesslog',
+    'delete_accesslog',
+    'change_accesslog',
+    'add_accesslog'
 ]
 
 INSTRUCTION_PERMISSIONS=[

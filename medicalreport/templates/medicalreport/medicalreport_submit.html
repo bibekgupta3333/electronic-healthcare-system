@@ -21,7 +21,7 @@
                 <div class="card">
                     <div class="card-body final-report">
                         <div class="row">
-                            {% include 'medicalreport/medical_rerport_with_attachments.html' %}
+                            {% include 'medicalreport/medical_report_with_attachments.html' %}
                         </div>
                     </div>
                 </div>
@@ -179,9 +179,11 @@
     <script src="{% static 'medicalreport/js/medicalreport.js' %}"></script>
     <script>
         $('#submitConfirmButton').click( function() {
-            $('#loadingModal').modal({
-                backdrop: "static"
-            });
+            if($('#accept_disclaimer').is(":checked")){
+                $('#loadingModal').modal({
+                    backdrop: "static"
+                });
+            }
         });
     </script>
 {% endblock %}
