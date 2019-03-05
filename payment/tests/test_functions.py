@@ -30,14 +30,16 @@ class CalculateInstructionFeeBaseTest(TestCase):
             gp_practice=self.gp_practice,
             client_user=self.client_user,
             created=timezone.now(),
-            completed_signed_off_timestamp=timezone.now()
+            completed_signed_off_timestamp=timezone.now(),
+            fee_calculation_start_date=timezone.now()
         )
         self.sars_instruction = mommy.make(
             Instruction, type=model_choices.SARS_TYPE,
             gp_practice=self.gp_practice,
             client_user=self.client_user,
             created=timezone.now(),
-            completed_signed_off_timestamp=timezone.now()
+            completed_signed_off_timestamp=timezone.now(),
+            fee_calculation_start_date=timezone.now()
         )
 
         self.organisation_fee = mommy.make(
