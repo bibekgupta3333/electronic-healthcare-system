@@ -202,7 +202,10 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
         raise self.retry(countdown=60*5, exc=e, max_retires=2)
 
     if instruction.medical_with_attachment_report:
-        SendSMS(number=instruction.patient_information.get_telephone_e164()).send()
+        msg_line_1 = "Your GP surgery has completed your SAR request. We have sent you an email to access a copy."
+        msg_line_2 = "This may have landed in your ‘Junk mail’. Move to your inbox to activate the link."
+        msg = "%s %s"%(msg_line_1, msg_line_2)
+        SendSMS(number=instruction.patient_information.get_telephone_e164()).send(msg)
         send_patient_mail(
             report_link_info['scheme'],
             report_link_info['host'],

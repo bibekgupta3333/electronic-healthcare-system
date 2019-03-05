@@ -37,12 +37,8 @@ class SendSMS:
             "Accept": "application/json"
         }
         self.number = kwargs.get('number')
-        self.message = """
-        Your GP surgery has completed your SAR request. We have sent you an email to access a copy.
-        This may have landed in your ‘Junk mail’. Move to your inbox to activate the link.
-        """
 
-    def send(self):
-        data = json.dumps({"to": self.number, "text": self.message, "platform":"web"})
+    def send(self, msg):
+        data = json.dumps({"to": self.number, "text": msg, "platform":"web"})
         response = requests.post(self.url + "send", data, headers=self.header)
         return response
