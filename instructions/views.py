@@ -225,7 +225,6 @@ def instruction_pipeline_view(request):
 
 
 #@silk_profile(name='New Instruction')
-@cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
 def new_instruction(request):
