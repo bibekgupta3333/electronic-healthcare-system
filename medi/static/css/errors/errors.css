@@ -13,6 +13,15 @@
     font-weight: bolder;
 }
 
+.message-sub {
+    font-size: 12px;
+    font-weight: bolder;
+}
+
 .message-secondary {
     font-size: 21px;
+}
+
+.icon-large {
+    font-size: 50px;
 }
