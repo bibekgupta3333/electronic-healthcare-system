@@ -64,7 +64,7 @@ class AutoRedactableTest(XMLTestCase):
     def test_auto_redact_by_conditions(self):
         self.assertEqual(4, len(self.medications))
         self.assertEqual(
-            1,
+            0,
             len(auto_redact_by_link_conditions(self.medications, self.instruction, self.medical_record))
         )
 
@@ -108,7 +108,7 @@ class AutoRedactableTest(XMLTestCase):
         test_date = date(2018, 1, 1)
         self.assertEqual(4, len(self.medications))
         self.assertEqual(
-            3,
+            0,
             len(auto_redact_medications(self.medications, self.instruction, self.medical_record, current_date=test_date))
         )
 

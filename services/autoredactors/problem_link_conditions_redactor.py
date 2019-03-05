@@ -24,7 +24,7 @@ class ProblemLinkConditionsRedactor:
         return bool(self.concepts or self.readcodes)
 
     def __snomed_concepts_match(self, model: XMLModelBase) -> bool:
-        concept_code_element = model.find(".//Code[MapScheme='SNOMED']/MapCode")
+        concept_code_element = model.find(".//Code[MapScheme='SNOMED']/MapCode") if model else None
         if concept_code_element:
             concept_code = concept_code_element.text
             if int(concept_code) in self.concepts:
@@ -32,7 +32,7 @@ class ProblemLinkConditionsRedactor:
         return False
 
     def __readcodes_match(self, model: XMLModelBase) -> bool:
-        readcode_element = model.find(".//Code[Scheme='READ2']/Value")
+        readcode_element = model.find(".//Code[Scheme='READ2']/Value") if model else None
         if readcode_element:
             readcode = readcode_element.text
             if readcode in self.readcodes:
