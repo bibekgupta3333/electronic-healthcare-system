@@ -37,17 +37,8 @@ class SendSMS:
             "Accept": "application/json"
         }
         self.number = kwargs.get('number')
-        self.message = """
-        Dear Patient,
-        Your GP surgery has completed your SAR request for you to receive a copy of your medical record.
-        This can be securely accessed through a link in an email which has been sent to you with a subject title: 'Notification from your GP surgery'
-        This email may have landed in your ‘Junk mail’ and if so, drag the email from your Junk box to your normal email box and activate the link within the email and follow the security instructions.
-        Thank you
-        MediData Support Team
-        notifyus@medi2data.com
-        """
 
-    def send(self):
-        data = json.dumps({"to": self.number, "text": self.message, "platform":"web"})
+    def send(self, msg):
+        data = json.dumps({"to": self.number, "text": msg, "platform":"web"})
         response = requests.post(self.url + "send", data, headers=self.header)
         return response
