@@ -51,7 +51,6 @@
 					}
 				}
 				else if (password.length >= 8){
-					console.log('here');
 					if (result.score == 2) {
 					//medium
 						$(progressBar).removeClass(settings.allProgressBarClasses).addClass(settings.progressBarClass2);
