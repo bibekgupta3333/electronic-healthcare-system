@@ -1,6 +1,7 @@
 import uuid
 import logging
 import os
+import glob
 from datetime import datetime
 from django.conf import settings
 from django.contrib import messages
@@ -18,7 +19,7 @@ from instructions import models
 from .forms import MedicalReportFinaliseSubmitForm
 from .models import AdditionalMedicationRecords, AdditionalAllergies, AmendmentsForRecord,\
         ReferencePhrases
-from medicalreport.reports import MedicalReport
+from medicalreport.reports import MedicalReport, TEMP_DIR
 from report.models import PatientReportAuth
 from report.tasks import generate_medicalreport_with_attachment
 
@@ -103,6 +104,7 @@ def create_or_update_redaction_record(request, instruction):
                 instruction.status = models.INSTRUCTION_STATUS_FINALISE
                 instruction.completed_signed_off_timestamp = timezone.now()
                 messages.success(request, 'Completed Medical Report')
+                delete_tmp_files(request, instruction)
 
             instruction.save()
             amendments_for_record.save()
@@ -153,6 +155,11 @@ def save_medical_report(request, instruction, amendments_for_record):
     end_time = timezone.now()
     total_time = end_time - start_time
     logger.info("[SAVING PDF AND XML] %s seconds with patient %s"%(total_time.seconds, instruction.patient_information.__str__()))
+
+
+def delete_tmp_files(request, instruction):
+    for f in glob.glob(TEMP_DIR + "%s_tmp*"%instruction.pk):
+        os.remove(f)
 
 
 def get_redaction_xpaths(request, amendments_for_record):

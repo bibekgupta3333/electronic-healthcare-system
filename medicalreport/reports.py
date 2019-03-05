@@ -21,6 +21,7 @@ import subprocess
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPORT_DIR = BASE_DIR + '/medicalreport/templates/medicalreport/reports/medicalreport.html'
+TEMP_DIR = BASE_DIR + '/medi/static/generic_pdf/'
 logger = logging.getLogger('timestamp')
 
 
@@ -105,12 +106,11 @@ class AttachmentReport:
         attachment = Base64Attachment(self.raw_xml).data()
         buffer = BytesIO()
         buffer.write(attachment)
-        folder = BASE_DIR + '/medi/static/generic_pdf/'
-        save_file = 'tmp_attachments.' + self.file_type
-        f = open(folder + save_file, 'wb')
+        save_file = '%s_tmp_attachments.%s'%(self.instruction.pk, self.file_type)
+        f = open(TEMP_DIR + save_file, 'wb')
         f.write(buffer.getvalue())
         f.close()
-        download_file = open(folder + save_file, 'rb')
+        download_file = open(TEMP_DIR + save_file, 'rb')
         response = HttpResponse(download_file, content_type="application/octet-stream")
         response['Content-Disposition'] = 'attachment; filename=' + self.file_name.split('\\')[-1]
         return response
@@ -139,16 +139,15 @@ class AttachmentReport:
         attachment = Base64Attachment(self.raw_xml).data()
         buffer = BytesIO()
         buffer.write(attachment)
-        folder = BASE_DIR + '/medi/static/generic_pdf/'
-        tmp_file = 'tmp.' + self.file_type
-        f = open(folder + tmp_file, 'wb')
+        tmp_file = '%s_tmp.%s'%(self.instruction.pk, self.file_type)
+        f = open(TEMP_DIR + tmp_file, 'wb')
         f.write(buffer.getvalue())
         f.close()
         subprocess.call(
-            ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
+            ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + TEMP_DIR + " " + TEMP_DIR + tmp_file),
             shell=True
         )
-        pdf = open(folder + 'tmp.pdf', 'rb')
+        pdf = open(TEMP_DIR + '%s_tmp.pdf'%self.instruction.pk, 'rb')
         response = HttpResponse(
             pdf,
             content_type="application/pdf",
