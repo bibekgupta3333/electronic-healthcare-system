@@ -694,12 +694,12 @@
       </Drug>
       <PrescriptionType>ACUTE</PrescriptionType>
       <IssueCount>1</IssueCount>
-        <ProblemLinkList>
+      <ProblemLinkList>
         <Link>
           <Target>
             <DBID>70</DBID>
             <RefID>70</RefID>
-            <GUID>370095</GUID>
+            <GUID>7256349</GUID>
             <FileStatus>0</FileStatus>
           </Target>
           <LinkType>0</LinkType>
@@ -726,7 +726,7 @@
           <Target>
             <DBID>70</DBID>
             <RefID>70</RefID>
-            <GUID>67890</GUID>
+            <GUID>7256349</GUID>
             <FileStatus>0</FileStatus>
           </Target>
           <LinkType>0</LinkType>
@@ -753,7 +753,7 @@
           <Target>
             <DBID>70</DBID>
             <RefID>70</RefID>
-            <GUID>67890</GUID>
+            <GUID>7256349</GUID>
             <FileStatus>0</FileStatus>
           </Target>
           <LinkType>0</LinkType>
@@ -778,7 +778,7 @@
           <Target>
             <DBID>70</DBID>
             <RefID>70</RefID>
-            <GUID>67890</GUID>
+            <GUID>7256349</GUID>
             <FileStatus>0</FileStatus>
           </Target>
           <LinkType>0</LinkType>
