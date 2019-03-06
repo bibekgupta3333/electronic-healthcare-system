@@ -11,9 +11,11 @@ from medicalreport.models import AmendmentsForRecord
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.emisapiservices import services
 from instructions.models import Instruction
-from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE
+from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_FAIL
 from report.mobile import SendSMS
+from report.models import ExceptionMerge
 import xhtml2pdf.pisa as pisa
+from medicalreport.templatetags.custom_filters import format_date_filter
 #from silk.profiling.profiler import silk_profile
 
 from celery import shared_task
@@ -69,7 +71,6 @@ def link_callback(uri, rel):
 
 
 @shared_task(bind=True)
-#@silk_profile(name='Create Patient')
 def generate_medicalreport_with_attachment(self, instruction_id, report_link_info):
     start_time = timezone.now()
 
@@ -90,23 +91,27 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
         attachments_pdf = []
         unique_file_name = []
         download_attachments = []
+        exception_detail = list()
         folder = settings.BASE_DIR + '/static/generic_pdf/'
         for attachment in medical_record_decorator.attachments():
-            unique = uuid.uuid4().hex
-            unique_file_name.append(unique)
-            xpaths = attachment.xpaths()
-            attachment_id = attachment.dds_identifier()
-            if redaction.redacted(xpaths) is not True:
-                raw_xml_or_status_code = services.GetAttachment(
-                    instruction.patient_information.patient_emis_number,
-                    attachment_id,
-                    gp_organisation=instruction.gp_practice).call()
+            try:
+                unique = uuid.uuid4().hex
+                unique_file_name.append(unique)
+                xpaths = attachment.xpaths()
+                description = attachment.description()
+                date = format_date_filter(attachment.parsed_date())
+                attachment_id = attachment.dds_identifier()
+                if redaction.redacted(xpaths) is not True:
+                    raw_xml_or_status_code = services.GetAttachment(
+                        instruction.patient_information.patient_emis_number,
+                        attachment_id,
+                        gp_organisation=instruction.gp_practice).call()
 
-                file_name = Base64Attachment(raw_xml_or_status_code).filename()
-                file_type = file_name.split('.')[-1]
-                raw_attachment = Base64Attachment(raw_xml_or_status_code).data()
-                buffer = io.BytesIO(raw_attachment)
-                try:
+                    file_name = Base64Attachment(raw_xml_or_status_code).filename()
+                    file_type = file_name.split('.')[-1]
+                    raw_attachment = Base64Attachment(raw_xml_or_status_code).data()
+                    buffer = io.BytesIO(raw_attachment)
+
                     if file_type == 'pdf':
                         attachments_pdf.append(PyPDF2.PdfFileReader(buffer))
                     elif file_type in ['doc', 'docx', 'rtf']:
@@ -167,9 +172,10 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                         f.close()
                         download_attachments.append(save_file)
 
-                except Exception as e:
-                    logger.error(e)
-
+            except Exception as e:
+                exception_detail.append(date + ' ' + description)
+                logger.error(e)
+                    
         if download_attachments:
             template = get_template(REPORT_DIR)
             html = template.render({'attachments': download_attachments})
@@ -185,7 +191,6 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
             for page_num in range(pdf.getNumPages()):
                 output.addPage(pdf.getPage(page_num))
 
-
         pdf_page_buf = io.BytesIO()
         output.write(pdf_page_buf)
 
@@ -197,25 +202,34 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
         for unique in unique_file_name:
             for file_path in glob.glob(folder+'*{unique}*'.format(unique=unique)):
                 os.remove(file_path)
+
     except Exception as e:
         # waiting for 5 min to retry
         raise self.retry(countdown=60*5, exc=e, max_retires=2)
 
-    if instruction.medical_with_attachment_report:
-        msg_line_1 = "Your GP surgery has completed your SAR request. We have sent you an email to access a copy."
-        msg_line_2 = "This may have landed in your ‘Junk mail’. Move to your inbox to activate the link."
-        msg = "%s %s"%(msg_line_1, msg_line_2)
-        SendSMS(number=instruction.patient_information.get_telephone_e164()).send(msg)
-        send_patient_mail(
-            report_link_info['scheme'],
-            report_link_info['host'],
-            report_link_info['unique_url'],
-            instruction
+    if exception_detail:
+        exception_merge, created = ExceptionMerge.objects.update_or_create(
+            instruction_id=instruction_id,
+            defaults={'file_detail': exception_detail},
         )
-
-        instruction.download_attachments = ",".join(download_attachments)
-        instruction.status = INSTRUCTION_STATUS_COMPLETE
+        instruction.status = INSTRUCTION_STATUS_FAIL
         instruction.save()
+    else:
+        if instruction.medical_with_attachment_report:
+            msg_line_1 = "Your GP surgery has completed your SAR request. We have sent you an email to access a copy."
+            msg_line_2 = "This may have landed in your 'Junk mail'. Move to your inbox to activate the link."
+            msg = "%s %s"%(msg_line_1, msg_line_2)
+            SendSMS(number=instruction.patient_information.get_telephone_e164()).send(msg)
+            send_patient_mail(
+                report_link_info['scheme'],
+                report_link_info['host'],
+                report_link_info['unique_url'],
+                instruction
+            )
+
+            instruction.download_attachments = ",".join(download_attachments)
+            instruction.status = INSTRUCTION_STATUS_COMPLETE
+            instruction.save()
 
     end_time = timezone.now()
     total_time = end_time - start_time
