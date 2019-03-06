@@ -46,7 +46,7 @@ def account_view(request):
         gp_user = GeneralPracticeUser.objects.get(pk=user.userprofilebase.generalpracticeuser.pk)
         gp_organisation = gp_user.organisation
         try:
-            practice_preferences = PracticePreferences.objects.filter(gp_organisation=gp_organisation).first()
+            practice_preferences = PracticePreferences.objects.filter(gp_organisation__practcode=gp_organisation.practcode).first()
         except PracticePreferences.DoesNotExist:
             practice_preferences = PracticePreferences()
             practice_preferences.gp_organisation = gp_organisation
@@ -62,7 +62,7 @@ def account_view(request):
         gp_preferences_form = PracticePreferencesForm(instance=practice_preferences)
 
         organisation = multi_getattr(user, 'userprofilebase.generalpracticeuser.organisation', default=None)
-        organisation_fee = OrganisationFee.objects.filter(gp_practice=organisation).first()
+        organisation_fee = OrganisationFee.objects.filter(gp_practice__practcode=organisation.practcode).first()
         organisation_fee_data = list()
 
         if organisation_fee:
