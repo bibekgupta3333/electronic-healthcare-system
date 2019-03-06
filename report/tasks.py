@@ -98,7 +98,7 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                 unique = uuid.uuid4().hex
                 unique_file_name.append(unique)
                 xpaths = attachment.xpaths()
-                discript = attachment.description()
+                description = attachment.description()
                 date = format_date_filter(attachment.parsed_date())
                 attachment_id = attachment.dds_identifier()
                 if redaction.redacted(xpaths) is not True:
@@ -173,7 +173,7 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                         download_attachments.append(save_file)
 
             except Exception as e:
-                exception_detail.append(date + ' ' + discript)
+                exception_detail.append(date + ' ' + description)
                 logger.error(e)
                     
         if download_attachments:
@@ -216,21 +216,20 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
         instruction.save()
     else:
         if instruction.medical_with_attachment_report:
-            if len(exception_detail) == 0:
-                msg_line_1 = "Your GP surgery has completed your SAR request. We have sent you an email to access a copy."
-                msg_line_2 = "This may have landed in your â€˜Junk mailâ€™. Move to your inbox to activate the link."
-                msg = "%s %s"%(msg_line_1, msg_line_2)
-                SendSMS(number=instruction.patient_information.get_telephone_e164()).send(msg)
-                send_patient_mail(
-                    report_link_info['scheme'],
-                    report_link_info['host'],
-                    report_link_info['unique_url'],
-                    instruction
-                )
+            msg_line_1 = "Your GP surgery has completed your SAR request. We have sent you an email to access a copy."
+            msg_line_2 = "This may have landed in your ‘Junk mail’. Move to your inbox to activate the link."
+            msg = "%s %s"%(msg_line_1, msg_line_2)
+            SendSMS(number=instruction.patient_information.get_telephone_e164()).send(msg)
+            send_patient_mail(
+                report_link_info['scheme'],
+                report_link_info['host'],
+                report_link_info['unique_url'],
+                instruction
+            )
 
-                instruction.download_attachments = ",".join(download_attachments)
-                instruction.status = INSTRUCTION_STATUS_COMPLETE
-                instruction.save()
+            instruction.download_attachments = ",".join(download_attachments)
+            instruction.status = INSTRUCTION_STATUS_COMPLETE
+            instruction.save()
 
     end_time = timezone.now()
     total_time = end_time - start_time
