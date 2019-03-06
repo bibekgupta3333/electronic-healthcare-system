@@ -142,7 +142,7 @@ class TestCountInstructions(TestInstructionBase):
             'Paid': 0,
             'Completed': 1,
             'Rejected': 0,
-            'Finalise': 0,
+            'Finalising': 0,
             'Generated Fail': 0
         }
         self.assertDictEqual(expected, result)
@@ -156,7 +156,7 @@ class TestCountInstructions(TestInstructionBase):
             'Paid': 0,
             'Completed': 0,
             'Rejected': 0,
-            'Finalise': 0,
+            'Finalising': 0,
             'Generated Fail': 0
         }
         self.assertDictEqual(expected, result)
