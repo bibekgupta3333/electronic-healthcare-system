@@ -104,3 +104,32 @@
         <label class="label-note">* you can download this file if you wish to amend or add to your practice letterhead</label>
     </div>
 </div>
+
+<!-- Dropdown 5 -->
+<div id="preview-52" class="another-block pdf-block">
+    <label class="label-title" id="previewTitle">Data Policy</label>
+    <div class="iframe" id="iframe">
+        <object data="{% static 'documents/DataPolicy.pdf' %}#view=FitH" height="500px" width="100%">
+            <embed data="{% static 'documents/DataPolicy.pdf' %}"/>
+        </object>
+    </div>
+    <a href="{% static 'documents/DataPolicy.pdf' %}" target="_blank">
+        <button type="button" class="btn btn-primary btn-block btn-lg">
+            <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
+        </button>
+    </a>
+</div>
+
+<div id="preview-53" class="another-block pdf-block">
+    <label class="label-title" id="previewTitle">Terms & Conditions</label>
+    <div class="iframe" id="iframe">
+        <object data="{% static 'documents/TermAndConditions.pdf' %}#view=FitH" height="500px" width="100%">
+            <embed data="{% static 'documents/TermAndConditions.pdf' %}"/>
+        </object>
+    </div>
+    <a href="{% static 'documents/TermAndConditions.pdf' %}" target="_blank">
+        <button type="button" class="btn btn-primary btn-block btn-lg">
+            <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
+        </button>
+    </a>
+</div>
