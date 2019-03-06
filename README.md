@@ -2,6 +2,8 @@
 
 #  Install Database
 
+You can do following this [link](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-18-04)
+
 **Step 1:** Install PostgreSQL
 
 **Step 2:** Create user and database on PostgreSQL
@@ -14,13 +16,26 @@
 
 **Step 3:** install python library with `pip install -r config/requirements.txt`
 
-**Step 4:** migrate database with `python mange_local.py migrate`
+**Step 4:** setup user and database in settigs **medi/settings/local_settings.py**
+
+```
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'medi',
+        'USER': 'medi',
+        'PASSWORD': 'medi',
+        'HOST': '',
+    }
+}
+```
+
+**Step 5:** migrate database with `python mange_local.py migrate`
 
 #  Initial Data
 
-**Step 1:** Import snomed data with `python manage.py loaddata initial_data/snomedct.json`
+**psql -U [USER] [DATABASE] < initial_data/initial.sql**
 
-**Step 2:** Import snomed data with `python manage.py loaddata initial_data/og.json`
 
 #  Run Django App
 
