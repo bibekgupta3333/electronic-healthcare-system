@@ -4,9 +4,11 @@ from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_REJECT, INSTRUCTION_STATUS_COMPLETE,\
         INSTRUCTION_STATUS_PROGRESS, INSTRUCTION_STATUS_NEW
 from django.shortcuts import get_object_or_404
+from django.http import Http404
 from permissions.models import InstructionPermission
 from permissions.model_choices import INSTRUCTION_PERMISSIONS
 from django.contrib.auth.models import Group, Permission
+#from silk.profiling.profiler import silk_profile
 
 
 decorator_with_arguments = lambda decorator: lambda *args, **kwargs: lambda func: decorator(func, *args, **kwargs)
@@ -29,6 +31,7 @@ def check_status_with_url(is_valid, path, status):
 
 
 def check_permission(func):
+    #@silk_profile(name='Check&Call: check_permission')
     def check_and_call(request, *args, **kwargs):
         instruction_id = kwargs.get("instruction_id")
         if not instruction_id:
@@ -36,8 +39,13 @@ def check_permission(func):
                 instruction_id = request.GET.get('instruction_id')
             else:
                 return func(request, *args, **kwargs)
-        user = User.objects.get(pk=request.user.pk)
-        instruction = get_object_or_404(Instruction, pk=instruction_id)
+        user = request.user
+        try:
+            instruction = Instruction.objects.filter(pk=instruction_id).select_related(
+                "gp_user", "patient", "gp_practice")[0]
+        except IndexError:
+            raise Http404('No Instruction matches the given query.')
+
         client_user = instruction.client_user
         gp_user = instruction.gp_user
         patient = instruction.patient
@@ -79,6 +87,7 @@ def check_permission(func):
 
 @decorator_with_arguments
 def access_user_management(func, perm):
+    #@silk_profile(name='Check&Call: access_user_management')
     def check_and_call(request, *args, **kwargs):
         if not request.user.has_perm(perm):
             return redirect('instructions:view_pipeline')
@@ -121,6 +130,7 @@ def set_default_gp_perm(group, role):
 
 @decorator_with_arguments
 def check_user_type(func, user_type):
+    #@silk_profile(name='Check&Call: check_user_type')
     def check_and_call(request, *args, **kwargs):
         if request.user.type != user_type:
             return redirect('instructions:view_pipeline')

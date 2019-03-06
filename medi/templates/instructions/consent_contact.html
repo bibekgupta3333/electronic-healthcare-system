@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load bootstrap4 %}
 {% load static %}
+{% load cache %}
 {% bootstrap_css %}
 {% bootstrap_javascript jquery='full' %}
 {% bootstrap_messages %}
@@ -23,6 +24,7 @@
     <div class="card-deck instruction">        
         <form method="POST" id="consentContactForm" enctype="multipart/form-data" class="col-md-12 px-0">
             {% csrf_token %}
+            {% cache 300 patient_information patient_form %}
             <div class="col-md-12">
                 <div class="card InstructionPatientForm">
                     <div class="card-header">
@@ -59,6 +61,7 @@
                     </div>
                 </div>
             </div>
+            {% endcache %}
             <div class="col-md-12 mt-4">
                 <input type="hidden" name="next_step" id="id_next_step" value="" />
                 <div class="card">
@@ -280,6 +283,23 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg bg-info">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="col-12 text-center mt-2">
+                            <img src="{% static 'images/custom_images/loading.gif'%}" class="img-fluid">
+                            <div class="col-12">&nbsp;</div>
+                            <h4>Patient : <strong>{{ patient_full_name }}</strong></h4>
+                            <h4 class="mt-2">The medical record or report will be generated soon.</h4>
+                            <label class="text-danger mt-4">Please don't leave this page. Process is running ....</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block Script %}
@@ -346,6 +366,9 @@
             }
             else {
                 $('#consentContactForm').submit();
+                $('#loadingModal').modal({
+                    backdrop: "static"
+                });
             }
         });
 

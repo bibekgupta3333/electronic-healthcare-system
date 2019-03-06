@@ -1,11 +1,21 @@
 from django.contrib import admin
 from .models import OrganisationFee, InstructionVolumeFee
 from .forms import OrganisationFeeForm, InstructionVolumeFeeForm
+from common.import_export import CustomExportMixin
 
 
-class OrganisationFeeAdmin(admin.ModelAdmin):
+class OrganisationFeeAdmin(CustomExportMixin, admin.ModelAdmin):
     form = OrganisationFeeForm
     raw_id_fields = ('gp_practice', )
+    list_display = (
+        'gp_practice', 'amount_rate_lvl_1', 'amount_rate_lvl_4',
+    )
+    list_filter = (
+        ('gp_practice', admin.RelatedOnlyFieldListFilter),
+    )
+    search_fields = (
+        'gp_practice__name', 'amount_rate_lvl_4', 'amount_rate_lvl_1'
+    )
 
     class Media:
         js = ('js/custom_admin/payment_fee_admin.js', )

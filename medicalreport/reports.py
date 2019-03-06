@@ -1,12 +1,12 @@
 import os
 import logging
+import re
 import xhtml2pdf.pisa as pisa
 from io import BytesIO
 from django.core.files.base import ContentFile
 from django.utils import timezone
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, render
 from django.http import HttpResponse
-from django.shortcuts import render_to_response
 from django.template.loader import get_template
 from services.xml.base64_attachment import Base64Attachment
 from services.emisapiservices import services
@@ -15,11 +15,13 @@ from django.urls import reverse
 import reportlab.lib.pagesizes as pdf_sizes
 from PIL import Image
 from django.conf import settings
+#from silk.profiling.profiler import silk_profile
 import subprocess
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPORT_DIR = BASE_DIR + '/medicalreport/templates/medicalreport/reports/medicalreport.html'
+TEMP_DIR = BASE_DIR + '/medi/static/generic_pdf/'
 logger = logging.getLogger('timestamp')
 
 
@@ -71,6 +73,7 @@ class MedicalReport:
             return response
 
     @staticmethod
+    #@silk_profile(name='Get PDF Medical Report Method')
     def get_pdf_file(params: dict):
         template = get_template(REPORT_DIR)
         html = template.render(params)
@@ -81,7 +84,9 @@ class MedicalReport:
 
 
 class AttachmentReport:
-    def __init__(self, raw_xml: str):
+    def __init__(self, instruction: object, raw_xml: str, path_file: str):
+        self.instruction = instruction
+        self.path_file = path_file
         self.raw_xml = raw_xml
         self.file_name = Base64Attachment(self.raw_xml).filename()
         self.file_type = self.file_name.split('.')[-1]
@@ -91,10 +96,31 @@ class AttachmentReport:
             return self.render_pdf()
         elif self.file_type in ["rtf", "doc", "docx"]:
             return self.render_pdf_with_libreoffice()
-        elif self.file_type in ["jpg", "jpeg", "png", "tiff"]:
+        elif self.file_type in ["jpg", "jpeg", "png", "tiff", "tif"]:
             return self.render_image()
         else:
-            return self.render_error()
+            return self.render_download_file()
+
+    def download(self):
+        path_patient = self.instruction.patient_information.__str__()
+        attachment = Base64Attachment(self.raw_xml).data()
+        buffer = BytesIO()
+        buffer.write(attachment)
+        save_file = '%s_tmp_attachments.%s'%(self.instruction.pk, self.file_type)
+        f = open(TEMP_DIR + save_file, 'wb')
+        f.write(buffer.getvalue())
+        f.close()
+        download_file = open(TEMP_DIR + save_file, 'rb')
+        response = HttpResponse(download_file, content_type="application/octet-stream")
+        response['Content-Disposition'] = 'attachment; filename=' + self.file_name.split('\\')[-1]
+        return response
+
+    def render_download_file(self):
+        link = reverse(
+            'medicalreport:download_attachment',
+            kwargs={'path_file': self.path_file, 'instruction_id': self.instruction.id}
+        )
+        return render_to_response('medicalreport/preview_and_download.html', {'link': link})
 
     def render_error(self):
         return render_to_response('errors/handle_errors_convert_file.html')
@@ -113,16 +139,15 @@ class AttachmentReport:
         attachment = Base64Attachment(self.raw_xml).data()
         buffer = BytesIO()
         buffer.write(attachment)
-        folder = BASE_DIR + '/medi/static/generic_pdf/'
-        tmp_file = 'tmp.' + self.file_type
-        f = open(folder + tmp_file, 'wb')
+        tmp_file = '%s_tmp.%s'%(self.instruction.pk, self.file_type)
+        f = open(TEMP_DIR + tmp_file, 'wb')
         f.write(buffer.getvalue())
         f.close()
         subprocess.call(
-            ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
+            ("/usr/local/bin/soffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
             shell=True
         )
-        pdf = open(folder + 'tmp.pdf', 'rb')
+        pdf = open(TEMP_DIR + '%s_tmp.pdf'%self.instruction.pk, 'rb')
         response = HttpResponse(
             pdf,
             content_type="application/pdf",
