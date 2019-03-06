@@ -65,24 +65,12 @@ function changeScreen( code ) {
 
         // Dropdown 5
         case 52:
-            filePath = '/static/documents/DataPolicy.pdf';
-            titlePreview = 'Data Policy';
-            $('#path1').attr('data', filePath + '#zoom=100' );
-            $('#path2').attr('data', filePath );
-            $('#previewTitle').text( titlePreview );
-            $('#linkPreviewModeId').attr('href', filePath );
-            $('#iframe').attr('src', $('#iframe').attr('src'));
             showDivControl('pdf');
+            $('#preview-52').show();
             break;
         case 53:
-            filePath = '/static/documents/TermAndConditions.pdf';
-            titlePreview = 'Term & Conditions';
-            $('#path1').attr('data', filePath + '#zoom=100' );
-            $('#path2').attr('data', filePath );
-            $('#previewTitle').text( titlePreview );
-            $('#linkPreviewModeId').attr('href', filePath );
-            $('#iframe').attr('src', $('#iframe').attr('src'));
             showDivControl('pdf');
+            $('#preview-53').show();
             break;
     }
 }
