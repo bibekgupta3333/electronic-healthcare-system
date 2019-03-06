@@ -191,7 +191,6 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
             for page_num in range(pdf.getNumPages()):
                 output.addPage(pdf.getPage(page_num))
 
-
         pdf_page_buf = io.BytesIO()
         output.write(pdf_page_buf)
 
@@ -208,36 +207,30 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
         # waiting for 5 min to retry
         raise self.retry(countdown=60*5, exc=e, max_retires=2)
 
-    if len(exception_detail) > 0:
-        try:
-            exceptionMerge = ExceptionMerge.objects.get(instruction=instruction)
-            exceptionMerge.file_detail = exception_detail
-            exceptionMerge.save()
-        except:
-            exceptionMerge = ExceptionMerge()
-            exceptionMerge.instruction = instruction
-            exceptionMerge.file_detail = exception_detail
-            exceptionMerge.save()
-
+    if exception_detail:
+        exception_merge, created = ExceptionMerge.objects.update_or_create(
+            instruction_id=instruction_id,
+            defaults={'file_detail': exception_detail},
+        )
         instruction.status = INSTRUCTION_STATUS_FAIL
         instruction.save()
+    else:
+        if instruction.medical_with_attachment_report:
+            if len(exception_detail) == 0:
+                msg_line_1 = "Your GP surgery has completed your SAR request. We have sent you an email to access a copy."
+                msg_line_2 = "This may have landed in your ‘Junk mail’. Move to your inbox to activate the link."
+                msg = "%s %s"%(msg_line_1, msg_line_2)
+                SendSMS(number=instruction.patient_information.get_telephone_e164()).send(msg)
+                send_patient_mail(
+                    report_link_info['scheme'],
+                    report_link_info['host'],
+                    report_link_info['unique_url'],
+                    instruction
+                )
 
-    if instruction.medical_with_attachment_report:
-        if len(exception_detail) == 0:
-            msg_line_1 = "Your GP surgery has completed your SAR request. We have sent you an email to access a copy."
-            msg_line_2 = "This may have landed in your ‘Junk mail’. Move to your inbox to activate the link."
-            msg = "%s %s"%(msg_line_1, msg_line_2)
-            SendSMS(number=instruction.patient_information.get_telephone_e164()).send(msg)
-            send_patient_mail(
-                report_link_info['scheme'],
-                report_link_info['host'],
-                report_link_info['unique_url'],
-                instruction
-            )
-
-            instruction.download_attachments = ",".join(download_attachments)
-            instruction.status = INSTRUCTION_STATUS_COMPLETE
-            instruction.save()
+                instruction.download_attachments = ",".join(download_attachments)
+                instruction.status = INSTRUCTION_STATUS_COMPLETE
+                instruction.save()
 
     end_time = timezone.now()
     total_time = end_time - start_time

@@ -674,11 +674,11 @@ def view_fail(request, instruction_id):
             instruction.save()
             return redirect('instructions:view_pipeline')
 
-    exceptionMerge = ExceptionMerge.objects.filter(instruction=instruction).first()
+    exception_merge = ExceptionMerge.objects.filter(instruction=instruction).first()
     return render(request, 'instructions/view_fail.html', {
         'instruction': instruction,
         'reject_reason_value': GENERATOR_FAIL,
-        'exceptionMerge': exceptionMerge
+        'exception_merge': exception_merge
     })
 
 #@silk_profile(name='Consent Contact View')

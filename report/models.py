@@ -60,3 +60,6 @@ class ThirdPartyAuthorisation(TimeStampedModel):
 class ExceptionMerge(TimeStampedModel):
     instruction = models.ForeignKey('instructions.Instruction', on_delete=models.CASCADE)
     file_detail = ArrayField(models.CharField(max_length=255, blank=True, null=True))
+
+    def __str__(self):
+        return self.file_detail
