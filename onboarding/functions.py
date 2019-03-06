@@ -1,7 +1,7 @@
 from accounts.models import User, GeneralPracticeUser
 from accounts.models import GENERAL_PRACTICE_USER
 from organisations.models import OrganisationGeneralPractice
-from payment.models import OrganisationFee
+from payment.models import GpOrganisationFee, OrganisationFeeRate
 from .forms import BankDetailsEmrSetUpStage2Form
 from accounts.models import PracticePreferences
 import random
@@ -64,22 +64,13 @@ def create_gp_user(gp_organisation: OrganisationGeneralPractice, user_form: dict
         return {}
 
 
-def create_gp_payments_fee(bank_details_form: BankDetailsEmrSetUpStage2Form, gp_organisation: OrganisationGeneralPractice) -> OrganisationFee:
-    organisation_fee = OrganisationFee.objects.update_or_create(
+def create_gp_payments_fee(bank_details_form: BankDetailsEmrSetUpStage2Form, gp_organisation: OrganisationGeneralPractice) -> OrganisationFeeRate:
+    gp_fee_relation = GpOrganisationFee.objects.update_or_create(
         gp_practice=gp_organisation,
-        defaults={
-            'max_day_lvl_1': 3,
-            'max_day_lvl_2': 6,
-            'max_day_lvl_3': 10,
-            'max_day_lvl_4': 11,
-            'amount_rate_lvl_1': bank_details_form.cleaned_data['received_within_5_days'],
-            'amount_rate_lvl_2': bank_details_form.cleaned_data['received_within_6_to_10_days'],
-            'amount_rate_lvl_3': bank_details_form.cleaned_data['received_within_11_to_15_days'],
-            'amount_rate_lvl_4': bank_details_form.cleaned_data['received_after_15_days'],
-        }
+        organisation_fee=bank_details_form.cleaned_data['received_within_3_days']
     )
 
-    return organisation_fee[0]
+    return bank_details_form.cleaned_data['received_within_3_days']
 
 
 def update_gp_organisation_bank_details(bank_details_form: BankDetailsEmrSetUpStage2Form, gp_organisation: OrganisationGeneralPractice) -> OrganisationGeneralPractice:
