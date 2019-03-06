@@ -3,7 +3,6 @@ import urllib
 import requests
 import logging
 from django.utils import timezone
-from ..models import EmisAPIConfig
 from organisations.models import OrganisationGeneralPractice
 from accounts.models import Patient
 from requests import HTTPError
@@ -14,18 +13,10 @@ logger = logging.getLogger('timestamp')
 
 
 class EmisAPIServiceBase:
-    def __init__(self, gp_organisation=None):
-        if not gp_organisation:
-            emis_api_config = EmisAPIConfig.objects.first()
-            if emis_api_config is None:
-                raise ValueError('Unable to get EMIS API Configuration')
-            self.emis_username = emis_api_config.emis_username
-            self.emis_password = emis_api_config.emis_password
-            self.emis_organisation_code = emis_api_config.emis_organisation_id
-        else:
-            self.emis_username = gp_organisation.operating_system_username
-            self.emis_password = gp_organisation.operating_system_salt_and_encrypted_password
-            self.emis_organisation_code = gp_organisation.operating_system_organisation_code
+    def __init__(self, gp_organisation):
+        self.emis_username = gp_organisation.operating_system_username
+        self.emis_password = gp_organisation.operating_system_salt_and_encrypted_password
+        self.emis_organisation_code = gp_organisation.operating_system_organisation_code
 
     def uri(self) -> str:
         raise NotImplementedError(
