@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.http import HttpRequest, JsonResponse, HttpResponseRedirect
 from django_tables2 import RequestConfig, Column
+from django.views.decorators.cache import cache_page
 from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest, Setting, InstructionPatient
 from .tables import InstructionTable
 from .model_choices import *
@@ -20,11 +21,11 @@ from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice
 from organisations.views import get_gporganisation_data
 from medicalreport.views import get_patient_registration
-from common.functions import multi_getattr
-from common.functions import get_url_page
+from common.functions import multi_getattr, get_url_page
 from snomedct.models import SnomedConcept
 from permissions.functions import check_permission
 from .print_consents import MDXDualConsent
+#from silk.profiling.profiler import silk_profile
 
 import pytz
 from itertools import chain
@@ -56,12 +57,14 @@ def count_instructions(user, gp_practice_code, client_organisation):
     complete_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_COMPLETE).count()
     rejected_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_REJECT).count()
     finalise_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_FINALISE).count()
+    fail_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_FAIL).count()
     overall_instructions_number = {
         'All': all_count,
         'New': new_count,
         'In Progress': progress_count,
         'Paid': paid_count,
         'Finalise': finalise_count,
+        'Generated Fail': fail_count,
         'Completed': complete_count,
         'Rejected': rejected_count
     }
@@ -151,6 +154,7 @@ def create_snomed_relations(instruction, condition_of_interests):
             InstructionConditionsOfInterest.objects.create(instruction=instruction, snomedct=snomedct)
 
 
+#@silk_profile(name='Pipline View')
 @login_required(login_url='/accounts/login')
 def instruction_pipeline_view(request):
     header_title = "Instructions Pipeline"
@@ -220,6 +224,7 @@ def instruction_pipeline_view(request):
     return response
 
 
+#@silk_profile(name='New Instruction')
 @login_required(login_url='/accounts/login')
 @check_permission
 def new_instruction(request):
@@ -311,8 +316,11 @@ def new_instruction(request):
                 )
 
             if instruction.type == AMRA_TYPE and not instruction.consent_form:
-                message = 'Your instruction has request consent form. Please upload or accept consent form in this link {}'\
-                    .format(request.get_host() + '/instruction/upload-consent/' + str(instruction.id) + '/')
+                message = 'Your instruction has request consent form. Please upload or accept consent form in this link {protocol}://{link}'\
+                    .format(
+                        protocol=request.scheme,
+                        link=request.get_host() + '/instruction/upload-consent/' + str(instruction.id) + '/'
+                    )
                 send_mail(
                     'Request consent',
                     message,
@@ -493,6 +501,8 @@ def upload_consent(request, instruction_id):
         })
 
 
+#@silk_profile(name='Review Instruction')
+@cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
 def review_instruction(request, instruction_id):
@@ -575,6 +585,8 @@ def review_instruction(request, instruction_id):
     })
 
 
+#@silk_profile(name='View Reject')
+@cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
 def view_reject(request, instruction_id):
@@ -642,7 +654,76 @@ def view_reject(request, instruction_id):
         'instruction_id': instruction.id,
     })
 
+@login_required(login_url='/accounts/login')
+def view_fail(request, instruction_id):
+    instruction = get_object_or_404(Instruction, pk=instruction_id)
+    patient_instruction = instruction.patient_information
+    # Initial Patient Form
+    patient_form = InstructionPatientForm(
+        instance=patient_instruction,
+        initial={
+            'patient_title': patient_instruction.get_patient_title_display(),
+            'patient_first_name': patient_instruction.patient_first_name,
+            'patient_last_name': patient_instruction.patient_last_name,
+            'patient_postcode': patient_instruction.patient_postcode,
+            'patient_address_number': patient_instruction.patient_address_number,
+        }
+    )
 
+    gp_practice_code = instruction.gp_practice.pk
+    gp_practice_request = HttpRequest()
+    gp_practice_request.GET['code'] = gp_practice_code
+    nhs_address = get_gporganisation_data(gp_practice_request, need_dict=True)['address']
+    nhs_form = GeneralPracticeForm(
+        initial={
+            'gp_practice': instruction.gp_practice
+        }
+    )
+
+    # Initial GP Practitioner Form
+    gp_form = GPForm(
+        initial={
+            'gp_title': instruction.gp_title_from_client,
+            'initial': instruction.gp_initial_from_client,
+            'gp_last_name': instruction.gp_last_name_from_client,
+        }
+    )
+
+    # Initial Scope/Consent Form
+    scope_form = ScopeInstructionForm(user=request.user, initial={'type': instruction.type, })
+    reference_form = ReferenceForm(instance=instruction)
+
+    consent_type = 'pdf'
+    consent_extension = ''
+    consent_path = ''
+    if instruction.consent_form:
+        consent_extension = (instruction.consent_form.url).split('.')[1]
+        consent_path = instruction.consent_form.url
+    if consent_extension in ['jpeg', 'png', 'gif']:
+        consent_type = 'image'
+    consent_form_data = {
+        'type': consent_type,
+        'path': consent_path
+    }
+
+    condition_of_interest = [snomed.fsn_description for snomed in instruction.selected_snomed_concepts()]
+    addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.filter(instruction=instruction))
+
+    return render(request, 'instructions/view_fail.html', {
+        'patient_form': patient_form,
+        'nhs_form': nhs_form,
+        'gp_form': gp_form,
+        'scope_form': scope_form,
+        'reference_form': reference_form,
+        'addition_question_formset': addition_question_formset,
+        'nhs_address': nhs_address,
+        'condition_of_interest': condition_of_interest,
+        'consent_form_data': consent_form_data,
+        'instruction': instruction,
+        'instruction_id': instruction.id,
+    })
+
+#@silk_profile(name='Consent Contact View')
 @login_required(login_url='/accounts/login')
 @check_permission
 def consent_contact(request, instruction_id, patient_emis_number):
@@ -750,7 +831,8 @@ def consent_contact(request, instruction_id, patient_emis_number):
         'mdx_consent_form': mdx_consent_form,
         'sars_consent_form_data': sars_consent_form_data,
         'mdx_consent_form_data': mdx_consent_form_data,
-        'reject_types': INSTRUCTION_REJECT_TYPE
+        'reject_types': INSTRUCTION_REJECT_TYPE,
+        'patient_full_name' : instruction.patient_information.get_full_name()
     })
 
 

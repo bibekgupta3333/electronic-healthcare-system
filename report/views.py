@@ -14,7 +14,7 @@ from django.utils import timezone
 from instructions.models import Instruction
 from .models import PatientReportAuth, ThirdPartyAuthorisation
 from .forms import AccessCodeForm, ThirdPartyAuthorisationForm
-from .functions import validate_pin
+from .functions import validate_pin, get_zip_medical_report
 
 from report.mobile import AuthMobile
 
@@ -229,8 +229,8 @@ def get_report(request, access_type):
             instruction = get_object_or_404(Instruction, id=report_auth.instruction_id)
             path_file = instruction.medical_with_attachment_report.path
             if request.POST.get('button') == 'Download Report':
-                response = StreamingHttpResponse(FileWrapper(open(path_file, 'rb')), content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename="medical_report.pdf"'
+                response = StreamingHttpResponse(FileWrapper(get_zip_medical_report(instruction)), content_type='application/octet-stream')
+                response['Content-Disposition'] = 'attachment; filename="medical_report.zip"'
                 return response
 
             elif request.POST.get('button') == 'View Report':
@@ -353,6 +353,7 @@ def summry_report(request):
                     'incomeList' : incomeList
                 })
 
+
 def add_third_party_authorisation(request, report_auth_id):
     report_auth = get_object_or_404(PatientReportAuth, id=report_auth_id)
     third_party_form = ThirdPartyAuthorisationForm()
@@ -450,9 +451,27 @@ def extend_authorisation(request, third_party_authorisation_id):
 
 def renew_authorisation(request, third_party_authorisation_id):
     third_party_authorisation = get_object_or_404(ThirdPartyAuthorisation, id=third_party_authorisation_id)
+    report_auth = third_party_authorisation.patient_report_auth
 
     third_party_authorisation.expired_date = datetime.datetime.now().date() + datetime.timedelta(days=30)
     third_party_authorisation.expired = False
     third_party_authorisation.save()
+
+    send_mail(
+        'Medical Report Authorisation',
+        'Your access on SAR report from {patient_name} has been extended. Please click {link} to access the report'.format(
+            patient_name=report_auth.patient.user.first_name,
+            link=request.scheme + '://' + request.get_host() + reverse(
+                'report:request-code', kwargs={
+                    'instruction_id': report_auth.instruction.id,
+                    'access_type': PatientReportAuth.ACCESS_TYPE_THIRD_PARTY,
+                    'url': third_party_authorisation.unique
+                }
+            )
+        ),
+        'Medidata',
+        [third_party_authorisation.email],
+        fail_silently=True
+    )
 
     return redirect('report:select-report', access_type=PatientReportAuth.ACCESS_TYPE_PATIENT)
