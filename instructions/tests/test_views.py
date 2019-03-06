@@ -15,7 +15,6 @@ from organisations.models import OrganisationGeneralPractice, OrganisationClient
 from instructions.tables import InstructionTable
 from instructions.views import count_instructions, calculate_next_prev, create_addition_question, create_snomed_relations
 from instructions.forms import AdditionQuestionFormset
-from services.models import EmisAPIConfig
 
 from datetime import datetime
 from unittest.mock import Mock
@@ -25,11 +24,6 @@ class TestInstructionBase(TestCase):
 
     def setUp(self):
         self.factory = RequestFactory()
-        self.emis_api_config = EmisAPIConfig.objects.create(
-            emis_organisation_id='29390',
-            emis_username='michaeljtbrooks',
-            emis_password='Medidata2018'
-        )
         self.gp_practice_1 = mommy.make(
             OrganisationGeneralPractice,
             practcode='TEST0001',

@@ -127,8 +127,8 @@
                             <div class="card-body">
                                 <div class="btn-group-vertical col-12">
                                     <a class="btn btn-block disabled" href="#" role="button">End user-license</a>
-                                    <a class="btn btn-block disabled" href="#" role="button">Data Policy</a>
-                                    <a class="btn btn-block disabled" href="#" role="button">Terms & Conditions</a>
+                                    <a class="btn btn-block" href="#" role="button" onclick="return changeScreen(52);">Data Policy</a>
+                                    <a class="btn btn-block" href="#" role="button" onclick="return changeScreen(53);">Terms & Conditions</a>
                                     <a class="btn btn-block disabled" href="#" role="button">Data Security Document</a>
                                 </div>
                             </div>
@@ -148,7 +148,7 @@
                 </div>
                 <a href="{% static 'documents/Welcome to your Resource Centre.RF (002).pdf' %}" target="_blank" id="linkPreviewModeId">
                     <button type="button" class="btn btn-primary btn-block btn-lg">
-                        <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
+                        <i class="fas fa-search"></i>&nbsp;&nbsp;Click to preview
                     </button>
                 </a>
             </div>

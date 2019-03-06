@@ -144,7 +144,7 @@ class AttachmentReport:
         f.write(buffer.getvalue())
         f.close()
         subprocess.call(
-            ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + TEMP_DIR + " " + TEMP_DIR + tmp_file),
+            ("/usr/local/bin/soffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
             shell=True
         )
         pdf = open(TEMP_DIR + '%s_tmp.pdf'%self.instruction.pk, 'rb')
