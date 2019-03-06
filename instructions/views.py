@@ -65,7 +65,7 @@ def count_instructions(user, gp_practice_code, client_organisation):
         'New': new_count,
         'In Progress': progress_count,
         'Paid': paid_count,
-        'Finalise': finalise_count,
+        'Finalising': finalise_count,
         'Generated Fail': fail_count,
         'Completed': complete_count,
         'Rejected': rejected_count
