@@ -30,7 +30,7 @@ DATABASES = {
 }
 ```
 
-**Step 5:** migrate database with `python mange_local.py migrate`
+**Step 5:** migrate database with `python manage_local.py migrate`
 
 #  Initial Data
 
