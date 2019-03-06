@@ -62,4 +62,4 @@ class ExceptionMerge(TimeStampedModel):
     file_detail = ArrayField(models.CharField(max_length=255, blank=True, null=True))
 
     def __str__(self):
-        return self.file_detail
+        return ' '.join(['Exception in instructions : ', self.pk])
