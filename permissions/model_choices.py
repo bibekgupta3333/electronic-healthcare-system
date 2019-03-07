@@ -8,11 +8,13 @@ MANAGER_PERMISSIONS=[
     'view_instructionpermission',
     'add_instructionpermission',
     'change_instructionpermission',
-    'delete_instructionpermission'
+    'delete_instructionpermission',
+    'view_account_pages'
 ]
 
 GP_PERMISSIONS=[
     'view_instruction',
+    'view_account_pages'
 ]
 
 OTHER_PERMISSIONS=[
@@ -173,4 +175,5 @@ INSTRUCTION_PERMISSIONS=[
     'view_completed_amra',
     'view_completed_sars',
     'view_summary_report',
+    'view_account_pages'
 ]
