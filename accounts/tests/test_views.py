@@ -2,7 +2,7 @@ from django.test import TestCase, RequestFactory
 from django.shortcuts import reverse
 from django.test import Client
 from model_mommy import mommy
-from payment.models import OrganisationFee
+from payment.models import OrganisationFeeRate, GpOrganisationFee
 
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 from accounts.models import ClientUser, GeneralPracticeUser, MedidataUser, User, GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
@@ -35,8 +35,7 @@ class TestAccountBase(TestCase):
         )
 
         self.organisation_fee = mommy.make(
-            OrganisationFee,
-            gp_practice=self.gp_organisation,
+            OrganisationFeeRate,
             max_day_lvl_1=3,
             max_day_lvl_2=7,
             max_day_lvl_3=10,
@@ -45,6 +44,12 @@ class TestAccountBase(TestCase):
             amount_rate_lvl_2=60,
             amount_rate_lvl_3=50,
             amount_rate_lvl_4=40
+        )
+
+        self.gp_fee_relation = mommy.make(
+            GpOrganisationFee,
+            gp_practice=self.gp_organisation,
+            organisation_fee=self.organisation_fee
         )
 
         # create user

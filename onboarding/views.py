@@ -150,8 +150,20 @@ def emr_setup_final(request, practice_code=None):
 
     UserEmrSetUpStage2Formset = formset_factory(UserEmrSetUpStage2Form, validate_min=True, extra=4)
     user_formset = UserEmrSetUpStage2Formset()
-    bank_details_form = BankDetailsEmrSetUpStage2Form()
+    initial_band_model = OrganisationFeeRate.objects.filter(base=True).first()
+    bank_details_form = BankDetailsEmrSetUpStage2Form(initial={
+        'received_within_3_days': initial_band_model.pk if initial_band_model else ''
+    })
     surgery_email_form = SurgeryEmailForm(instance=gp_organisation)
+
+    band_fee_rate_data = {}
+    for fee_structure in OrganisationFeeRate.objects.filter(default=True):
+        band_fee_rate_data[fee_structure.pk] = [
+            float(fee_structure.amount_rate_lvl_1),
+            float(fee_structure.amount_rate_lvl_2),
+            float(fee_structure.amount_rate_lvl_3),
+            float(fee_structure.amount_rate_lvl_4),
+        ]
 
     if request.method == "POST":
         home_page_link = request.scheme + '://' + get_url_page('home', request=request)
@@ -212,7 +224,8 @@ def emr_setup_final(request, practice_code=None):
         'surgery_form': surgery_form,
         'user_formset': user_formset,
         'bank_details_form': bank_details_form,
-        'surgery_email_form': surgery_email_form
+        'surgery_email_form': surgery_email_form,
+        'band_fee_rate_data': band_fee_rate_data
     })
 
 
