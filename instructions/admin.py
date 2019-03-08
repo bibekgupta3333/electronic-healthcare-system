@@ -191,7 +191,7 @@ class InstructionResource(resources.ModelResource):
             'Paid': model_choices.INSTRUCTION_STATUS_PAID,
             'Completed': model_choices.INSTRUCTION_STATUS_COMPLETE,
             'Rejected': model_choices.INSTRUCTION_STATUS_REJECT,
-            'Finalise': model_choices.INSTRUCTION_STATUS_FINALISE,
+            'Finalising': model_choices.INSTRUCTION_STATUS_FINALISE,
         }
         row['status'] = instuction_staus_mapping[row['status']]
 

@@ -15,7 +15,6 @@ from organisations.models import OrganisationGeneralPractice, OrganisationClient
 from instructions.tables import InstructionTable
 from instructions.views import count_instructions, calculate_next_prev, create_addition_question, create_snomed_relations
 from instructions.forms import AdditionQuestionFormset
-from services.models import EmisAPIConfig
 
 from datetime import datetime
 from unittest.mock import Mock
@@ -25,18 +24,13 @@ class TestInstructionBase(TestCase):
 
     def setUp(self):
         self.factory = RequestFactory()
-        self.emis_api_config = EmisAPIConfig.objects.create(
-            emis_organisation_id='29390',
-            emis_username='michaeljtbrooks',
-            emis_password='Medidata2018'
-        )
         self.gp_practice_1 = mommy.make(
             OrganisationGeneralPractice,
             practcode='TEST0001',
             name='Test Surgery',
             operating_system_organisation_code=29390,
             operating_system_username='michaeljtbrooks',
-            operating_system_salt_and_encrypted_password='Medidata2018',
+            operating_system_salt_and_encrypted_password='Medidata2019',
         )
         self.gp_user = mommy.make(User, email='gp_user1@gmail.com', password='test1234', type=account_models.GENERAL_PRACTICE_USER)
         self.gp_manager_1 = mommy.make(
@@ -148,7 +142,7 @@ class TestCountInstructions(TestInstructionBase):
             'Paid': 0,
             'Completed': 1,
             'Rejected': 0,
-            'Finalise': 0,
+            'Finalising': 0,
             'Generated Fail': 0
         }
         self.assertDictEqual(expected, result)
@@ -162,7 +156,7 @@ class TestCountInstructions(TestInstructionBase):
             'Paid': 0,
             'Completed': 0,
             'Rejected': 0,
-            'Finalise': 0,
+            'Finalising': 0,
             'Generated Fail': 0
         }
         self.assertDictEqual(expected, result)

@@ -8,7 +8,7 @@ inst_statusDict["In Progress"] = 1;
 inst_statusDict["Completed"] = 2;
 inst_statusDict["Rejected"] = 3;
 inst_statusDict["Paid"] = 4;
-inst_statusDict["Finalise"] = 5;
+inst_statusDict["Finalising"] = 5;
 inst_statusDict["Generated Fail"] = 6;
 
 gpuser_roleDict["All"] = -1;

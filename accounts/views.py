@@ -15,7 +15,7 @@ from django.contrib.auth.forms import AuthenticationForm as LoginForm
 from permissions.forms import InstructionPermissionForm, GroupPermissionForm
 from permissions.models import InstructionPermission
 from common.functions import multi_getattr, verify_password as verify_pass
-from payment.models import OrganisationFee, InstructionVolumeFee
+from payment.models import GpOrganisationFee, InstructionVolumeFee
 from django_tables2 import RequestConfig
 from accounts.forms import AllUserForm, NewGPForm, NewClientForm, NewMediForm,\
         UserProfileForm, UserProfileBaseForm
@@ -37,6 +37,7 @@ from .functions import change_role, remove_user, get_table_data,\
         get_post_new_user_data, get_user_type_form, reset_password,\
         check_ip_from_n3_hscn, get_client_ip
 
+
 @login_required(login_url='/accounts/login')
 def account_view(request):
     header_title = 'Account'
@@ -46,7 +47,7 @@ def account_view(request):
         gp_user = GeneralPracticeUser.objects.get(pk=user.userprofilebase.generalpracticeuser.pk)
         gp_organisation = gp_user.organisation
         try:
-            practice_preferences = PracticePreferences.objects.get(gp_organisation=gp_organisation)
+            practice_preferences = PracticePreferences.objects.filter(gp_organisation__practcode=gp_organisation.practcode).first()
         except PracticePreferences.DoesNotExist:
             practice_preferences = PracticePreferences()
             practice_preferences.gp_organisation = gp_organisation
@@ -60,10 +61,12 @@ def account_view(request):
                 return JsonResponse({'message': 'Preferences have been saved.'})
 
         gp_preferences_form = PracticePreferencesForm(instance=practice_preferences)
-
         organisation = multi_getattr(user, 'userprofilebase.generalpracticeuser.organisation', default=None)
-        organisation_fee = OrganisationFee.objects.filter(gp_practice=organisation).first()
+        gp_fee_relation = GpOrganisationFee.objects.filter(gp_practice=organisation).first()
         organisation_fee_data = list()
+        organisation_fee = None
+        if gp_fee_relation:
+            organisation_fee = gp_fee_relation.organisation_fee
 
         if organisation_fee:
             organisation_fee_data.append({
@@ -93,7 +96,7 @@ def account_view(request):
             'gp_preferences_form': gp_preferences_form
         })
 
-    client_fee = InstructionVolumeFee.objects.get(client_organisation = user.get_my_organisation())
+    client_fee = InstructionVolumeFee.objects.filter(client_organisation_id = user.get_my_organisation().id).first()
     client_volume_data = list()
     client_fee_data = list()
 
@@ -142,19 +145,19 @@ def account_view(request):
         })
 
     currentYear = datetime.datetime.now().year
-    client = ClientUser.objects.filter( organisation = user.get_my_organisation() ).first()
+    client = ClientUser.objects.filter( organisation_id = user.get_my_organisation().id ).first()
     countInstructions =  Instruction.objects.filter( created__year = currentYear, status = INSTRUCTION_STATUS_COMPLETE, client_user = client ).count()
 
     createTime = user.get_my_organisation().created_time
-    annivasaryDataStr = str( createTime.day ) + ' / ' + str( createTime.month ) + ' / ' + str( createTime.year + 1 ) 
+    anniversaryDataStr = str( createTime.day ) + ' / ' + str( createTime.month ) + ' / ' + str( createTime.year + 1 )
 
     return render( request, 'accounts/accounts_view_client.html', {
-        'header_title' : header_title,
+        'header_title': header_title,
         # 'gp_preferences_form': client_preferences_form,
         'client_volume_data': client_volume_data,
-        'client_fee_data' : client_fee_data,
-        'completeNum' : countInstructions,
-        'annivasaryData' : annivasaryDataStr
+        'client_fee_data': client_fee_data,
+        'completeNum': countInstructions,
+        'anniversaryData': anniversaryDataStr
     })        
 
 

@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.html import format_html
 
-from .models import OrganisationFee, InstructionVolumeFee
+from .models import OrganisationFeeRate, InstructionVolumeFee
 from common.functions import get_url_page
 
 
@@ -9,7 +9,7 @@ class OrganisationFeeForm(forms.ModelForm):
     max_day_lvl_4 = forms.IntegerField(required=False, label='Lowest payment band after day:', widget=forms.NumberInput(attrs={'class': 'vIntegerField'}))
 
     class Meta:
-        model = OrganisationFee
+        model = OrganisationFeeRate
         fields = '__all__'
 
     def clean(self):
@@ -28,7 +28,7 @@ class OrganisationFeeForm(forms.ModelForm):
                 raise forms.ValidationError("Day are incorrect: Max day lvl 4 must more than Max day lvl 3")
 
             organisation_gp = self.cleaned_data['gp_practice']
-            organisation_fee = OrganisationFee.objects.filter(gp_practice=organisation_gp).first()
+            organisation_fee = OrganisationFeeRate.objects.filter(gp_practice=organisation_gp).first()
             owning_gp = ''
             if self.initial:
                 owning_gp = self.initial['gp_practice']

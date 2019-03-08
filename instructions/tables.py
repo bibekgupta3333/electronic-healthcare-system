@@ -57,7 +57,7 @@ class InstructionTable(tables.Table):
             'Paid': 'badge-info',
             'Completed': 'badge-success',
             'Rejected': 'badge-danger',
-            'Finalise': 'badge-secondary',
+            'Finalising': 'badge-secondary',
             'Generated Fail': 'badge-dark'
         }
         url = 'instructions:review_instruction'
