@@ -50,8 +50,8 @@ def sign_up(request):
                     'message_3': message_3
                 })
             if gp_organisation.practcode[:4] == 'TEST':
-                gp_organisation.operating_system_username = 'michaeljtbrooks'
-                gp_organisation.operating_system_salt_and_encrypted_password = 'Medidata2018'
+                gp_organisation.operating_system_username = 'team_mohara'
+                gp_organisation.operating_system_salt_and_encrypted_password = 'Medidata2019'
             else:
                 password = generate_password(initial_range=1, body_rage=12, tail_rage=1)
                 gp_organisation.operating_system_salt_and_encrypted_password = password
