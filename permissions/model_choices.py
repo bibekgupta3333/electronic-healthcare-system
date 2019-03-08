@@ -8,13 +8,11 @@ MANAGER_PERMISSIONS=[
     'view_instructionpermission',
     'add_instructionpermission',
     'change_instructionpermission',
-    'delete_instructionpermission',
-    'view_account_pages'
+    'delete_instructionpermission'
 ]
 
 GP_PERMISSIONS=[
-    'view_instruction',
-    'view_account_pages'
+    'view_instruction'
 ]
 
 OTHER_PERMISSIONS=[
