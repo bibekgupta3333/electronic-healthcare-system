@@ -16,16 +16,7 @@
 
 {% block Content %}
         <div class="row" >
-            <div class="col-md-3">
-                {% if request.user.type == 'GP' %}
-                    {% if perms.instructions.create_sars %}
-                        <a href="{% url 'instructions:new_instruction' %}" class="btn btn-primary" id="addInstructionButton">New SARs Instruction</a>
-                    {% endif %}
-                {% else %}
-                    <a href="{% url 'instructions:new_instruction' %}" class="btn btn-primary" id="addInstructionButton">New Instruction</a>
-                {% endif %}
-            </div>
-            <div class="col-md-4 offset-md-5">
+            <div class="col-md-4 offset-md-8">
                 <form id="topsearchform" role="search" method="post" action="" class="" autocomplete="off">
                     {% csrf_token %}
                     <input id="search" name="search" type="search" placeholder="Search" class="form-control search" required="true">
@@ -36,7 +27,7 @@
             <div class="col-md-12">
                 {% for k, v in overall_instructions_number.items %}
                     <div class="number" id="{{ k|cut:' ' }}">
-                        <a href="#" onclick="instructionStatusFilter('{{ k }}', 'pipeline');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a>
+                        <a href="#" onclick="instructionStatusFilter('{{ k }}', 'payment');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a>
                     </div>
                 {% endfor %}
             </div>
@@ -67,8 +58,19 @@
                 {% bootstrap_pagination  page=table.page pages_to_show=5 size='small' %}
             </div>
         </div>
-
-
+        <div class="modal fade" id="feeNoteModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg bg-info">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="container">
+                            <div class="col-12 text-center mt-2">
+                                <p>Test</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 {% endblock %}
 
 {% block Script %}
@@ -128,6 +130,10 @@
             $('th a').click(function(e) {
                 e.preventDefault();
             });
+
+            $('.noteDetailButton').click(function () {
+                $('#feeNoteModal').modal();
+            })
         });
     </script>
 {% endblock %}

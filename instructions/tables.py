@@ -18,7 +18,10 @@ class InstructionTable(tables.Table):
             'id': 'instructionsTable'
         }
         model = Instruction
-        fields = ('client_user', 'gp_practice', 'type', 'patient_information', 'gp_user', 'cost', 'created', 'status')
+        fields = (
+            'client_user', 'gp_practice', 'type', 'patient_information', 'medi_ref', 'your_ref',
+            'gp_user', 'cost', 'created', 'completed_signed_off_timestamp', 'status', 'fee_note'
+        )
         template_name = 'django_tables2/semantic.html'
         row_attrs = {
             'data-id': lambda record: record.pk
@@ -29,6 +32,15 @@ class InstructionTable(tables.Table):
             self.columns.hide('client_user')
         elif request.user.type == models.GENERAL_PRACTICE_USER:
             self.columns.hide('gp_practice')
+
+        if request.resolver_match.url_name == 'view_pipeline':
+            self.columns.hide('medi_ref')
+            self.columns.hide('your_ref')
+            self.columns.hide('completed_signed_off_timestamp')
+        elif request.resolver_match.url_name == 'view_fee_payment_pipeline':
+            self.columns.hide('gp_user')
+            self.columns.hide('created')
+
         self.user = request.user
 
     def render_client_user(self, value):
@@ -80,4 +92,5 @@ class InstructionTable(tables.Table):
             return format_html('<a href='+reverse(url, args=[record.pk, record.patient_information.patient_emis_number])+'><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
         return format_html('<a href='+reverse(url, args=[record.pk])+'><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
 
-
+    def render_fee_note(self, record):
+        return format_html('<a href="#feeNoteModal"><h5><span class="feeNote badge noteDetailButton">View</span></h5></a>')

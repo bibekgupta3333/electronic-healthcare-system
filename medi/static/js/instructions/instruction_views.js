@@ -49,8 +49,12 @@ function getObjectKeyByValue(obj, val){
     }
 }
 
-function instructionStatusFilter(selected_status){
-    window.location = '/instruction/view-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
+function instructionStatusFilter(selected_status, page){
+    if(page == 'pipeline'){
+        window.location = '/instruction/view-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
+    } else if(page == 'payment'){
+        window.location = '/instruction/view-fee-payment-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
+    }
 }
 
 function gpuserStatusFilter(selected_status){
