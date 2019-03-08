@@ -1,6 +1,7 @@
 from django.db import models
 from common.models import TimeStampedModel
 from accounts.models import Patient
+from django.contrib.postgres.fields import ArrayField
 
 
 class PatientReportAuth(TimeStampedModel):
@@ -56,3 +57,9 @@ class ThirdPartyAuthorisation(TimeStampedModel):
         return phone
 
 
+class ExceptionMerge(TimeStampedModel):
+    instruction = models.ForeignKey('instructions.Instruction', on_delete=models.CASCADE)
+    file_detail = ArrayField(models.CharField(max_length=255, blank=True, null=True))
+
+    def __str__(self):
+        return ' '.join(['Exception in instructions : ', self.pk])

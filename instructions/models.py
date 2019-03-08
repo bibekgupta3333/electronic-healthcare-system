@@ -13,6 +13,9 @@ from snomedct.models import SnomedConcept, CommonSnomedConcepts
 from .model_choices import *
 from django.conf import settings
 from typing import Set
+
+import datetime
+
 PIPELINE_INSTRUCTION_LINK = get_url_page('instruction_pipeline')
 TITLE_CHOICE = account_models.TITLE_CHOICE
 
@@ -102,6 +105,7 @@ class Instruction(TimeStampedModel, models.Model):
     your_ref = models.CharField(max_length=80, null=True, blank=True)
     client_payment_reference = models.CharField(max_length=255, blank=True)
     gp_payment_reference = models.CharField(max_length=255, blank=True)
+    fee_calculation_start_date = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Instruction"
@@ -117,7 +121,9 @@ class Instruction(TimeStampedModel, models.Model):
             ('sign_off_sars', 'Sign off SARS'),
             ('view_completed_amra', 'View completed AMRA'),
             ('view_completed_sars', 'View completed SARS'),
-            ('view_summary_report', 'View summary report')
+            ('view_summary_report', 'View summary report'),
+            ('authorise_fee', 'Authorise Fee'),
+            ('amend_fee', 'Amend Fee'),
         )
 
     def __str__(self):
@@ -127,6 +133,14 @@ class Instruction(TimeStampedModel, models.Model):
         super().save(*args, **kwargs)
         if not self.medi_ref:
             self.medi_ref = settings.MEDI_REF_NUMBER + self.pk
+            self.save()
+
+        if not self.fee_calculation_start_date:
+            now = datetime.datetime.now()
+            if now.strftime("%A") == "Friday" and now.hour > 12:
+                self.fee_calculation_start_date = now + datetime.timedelta(days=2)
+            else:
+                self.fee_calculation_start_date = now
             self.save()
 
     def in_progress(self, context):

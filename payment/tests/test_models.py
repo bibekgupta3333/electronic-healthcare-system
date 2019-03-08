@@ -1,5 +1,5 @@
 from django.test import TestCase
-from ..models import OrganisationFee, InstructionVolumeFee
+from ..models import OrganisationFeeRate, InstructionVolumeFee
 from model_mommy import mommy
 from organisations.models import OrganisationGeneralPractice, OrganisationClient
 
@@ -13,8 +13,8 @@ class OrganisationFeeModelTest(TestCase):
         )
 
         self.organisation_fee = mommy.make(
-            OrganisationFee,
-            gp_practice=self.gp_practice,
+            OrganisationFeeRate,
+            name='TEST BAND',
             max_day_lvl_1=3,
             max_day_lvl_2=6,
             max_day_lvl_3=8,
@@ -26,13 +26,18 @@ class OrganisationFeeModelTest(TestCase):
         )
 
     def test_string_representation(self):
-        self.assertEqual(str(self.organisation_fee), "Fee Structure: {}".format(self.gp_practice))
+        self.assertEqual(
+            str(self.organisation_fee), "{band_name}: Top payment band is {top_payment}".format(
+                band_name=self.organisation_fee.name,
+                top_payment=self.organisation_fee.amount_rate_lvl_1
+            )
+        )
 
     def test_verbose_name(self):
-        self.assertEqual(str(OrganisationFee._meta.verbose_name), "GP Organisation Fee Structure")
+        self.assertEqual(str(OrganisationFeeRate._meta.verbose_name), "GP Organisation Fee Structure")
 
     def test_verbose_name_plural(self):
-        self.assertEqual(str(OrganisationFee._meta.verbose_name_plural), "GP Organisation Fee Structures")
+        self.assertEqual(str(OrganisationFeeRate._meta.verbose_name_plural), "GP Organisation Fee Structures")
 
     def test_get_fee_rate_method(self):
         fee_rate_1 = self.organisation_fee.get_fee_rate(2)
@@ -50,18 +55,17 @@ class OrganisationFeeModelTest(TestCase):
             OrganisationGeneralPractice,
             name="GP organisation"
         )
-        org_fee = OrganisationFee.objects.create(
-            gp_practice_id=gp_practice.pk,
+        org_fee = OrganisationFeeRate.objects.create(
             amount_rate_lvl_1=60.00,
             amount_rate_lvl_2=51.00,
             amount_rate_lvl_3=43.35,
             amount_rate_lvl_4=36.85
         )
 
-        self.assertEqual(org_fee.max_day_lvl_1, 5)
-        self.assertEqual(org_fee.max_day_lvl_2, 10)
-        self.assertEqual(org_fee.max_day_lvl_3, 15)
-        self.assertEqual(org_fee.max_day_lvl_4, 16)
+        self.assertEqual(org_fee.max_day_lvl_1, 3)
+        self.assertEqual(org_fee.max_day_lvl_2, 7)
+        self.assertEqual(org_fee.max_day_lvl_3, 11)
+        self.assertEqual(org_fee.max_day_lvl_4, 12)
 
 
 class InstructionVolumeFeeClientModelTest(TestCase):

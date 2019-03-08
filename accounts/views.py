@@ -15,7 +15,7 @@ from django.contrib.auth.forms import AuthenticationForm as LoginForm
 from permissions.forms import InstructionPermissionForm, GroupPermissionForm
 from permissions.models import InstructionPermission
 from common.functions import multi_getattr, verify_password as verify_pass
-from payment.models import OrganisationFee, InstructionVolumeFee
+from payment.models import GpOrganisationFee, InstructionVolumeFee, OrganisationFeeRate
 from django_tables2 import RequestConfig
 from accounts.forms import AllUserForm, NewGPForm, NewClientForm, NewMediForm,\
         UserProfileForm, UserProfileBaseForm
@@ -37,6 +37,7 @@ from .functions import change_role, remove_user, get_table_data,\
         get_post_new_user_data, get_user_type_form, reset_password,\
         check_ip_from_n3_hscn, get_client_ip
 
+
 @login_required(login_url='/accounts/login')
 def account_view(request):
     header_title = 'Account'
@@ -46,7 +47,7 @@ def account_view(request):
         gp_user = GeneralPracticeUser.objects.get(pk=user.userprofilebase.generalpracticeuser.pk)
         gp_organisation = gp_user.organisation
         try:
-            practice_preferences = PracticePreferences.objects.get(gp_organisation=gp_organisation)
+            practice_preferences = PracticePreferences.objects.filter(gp_organisation__practcode=gp_organisation.practcode).first()
         except PracticePreferences.DoesNotExist:
             practice_preferences = PracticePreferences()
             practice_preferences.gp_organisation = gp_organisation
@@ -54,19 +55,39 @@ def account_view(request):
             practice_preferences.save()
 
         if request.is_ajax():
+            if request.POST.get('is_fee_changed'):
+                new_organisation_fee_id = request.POST.get('organisation_fee_id')
+                GpOrganisationFee.objects.filter(gp_practice=gp_organisation).update(organisation_fee_id=int(new_organisation_fee_id))
+                return JsonResponse({'message': 'Preferences have been saved.'})
             gp_preferences_form = PracticePreferencesForm(request.POST, instance=practice_preferences)
             if gp_preferences_form.is_valid():
                 gp_preferences_form.save()
                 return JsonResponse({'message': 'Preferences have been saved.'})
 
         gp_preferences_form = PracticePreferencesForm(instance=practice_preferences)
-
         organisation = multi_getattr(user, 'userprofilebase.generalpracticeuser.organisation', default=None)
-        organisation_fee = OrganisationFee.objects.filter(gp_practice=organisation).first()
+        gp_fee_relation = GpOrganisationFee.objects.filter(gp_practice=organisation).first()
         organisation_fee_data = list()
+        organisation_fee = None
+        if gp_fee_relation:
+            organisation_fee = gp_fee_relation.organisation_fee
 
-        if organisation_fee:
+        has_authorise_fee_perm = gp_user.user.has_perm('instructions.authorise_fee')
+        has_amend_fee_perm = gp_user.user.has_perm('instructions.amend_fee')
+
+        band_fee_rate_data = []
+        for fee_structure in OrganisationFeeRate.objects.filter(default=True):
+            band_fee_rate_data.append([
+                fee_structure.pk,
+                float(fee_structure.amount_rate_lvl_1),
+                float(fee_structure.amount_rate_lvl_2),
+                float(fee_structure.amount_rate_lvl_3),
+                float(fee_structure.amount_rate_lvl_4),
+            ])
+
+        if organisation_fee and (has_authorise_fee_perm or has_amend_fee_perm):
             organisation_fee_data.append({
+                'pk': organisation_fee.pk,
                 'days': organisation_fee.max_day_lvl_1,
                 'amount': organisation_fee.amount_rate_lvl_1,
                 'label': 'Received within %s days'%organisation_fee.max_day_lvl_1
@@ -90,10 +111,12 @@ def account_view(request):
         return render(request, 'accounts/accounts_view.html', {
             'header_title': header_title,
             'organisation_fee_data': organisation_fee_data,
-            'gp_preferences_form': gp_preferences_form
+            'gp_preferences_form': gp_preferences_form,
+            'has_amend_fee_perm': has_amend_fee_perm,
+            'band_fee_rate_data': band_fee_rate_data,
         })
 
-    client_fee = InstructionVolumeFee.objects.get(client_organisation = user.get_my_organisation())
+    client_fee = InstructionVolumeFee.objects.filter(client_organisation_id = user.get_my_organisation().id).first()
     client_volume_data = list()
     client_fee_data = list()
 
@@ -142,19 +165,19 @@ def account_view(request):
         })
 
     currentYear = datetime.datetime.now().year
-    client = ClientUser.objects.filter( organisation = user.get_my_organisation() ).first()
+    client = ClientUser.objects.filter( organisation_id = user.get_my_organisation().id ).first()
     countInstructions =  Instruction.objects.filter( created__year = currentYear, status = INSTRUCTION_STATUS_COMPLETE, client_user = client ).count()
 
     createTime = user.get_my_organisation().created_time
-    annivasaryDataStr = str( createTime.day ) + ' / ' + str( createTime.month ) + ' / ' + str( createTime.year + 1 ) 
+    anniversaryDataStr = str( createTime.day ) + ' / ' + str( createTime.month ) + ' / ' + str( createTime.year + 1 )
 
     return render( request, 'accounts/accounts_view_client.html', {
-        'header_title' : header_title,
+        'header_title': header_title,
         # 'gp_preferences_form': client_preferences_form,
         'client_volume_data': client_volume_data,
-        'client_fee_data' : client_fee_data,
-        'completeNum' : countInstructions,
-        'annivasaryData' : annivasaryDataStr
+        'client_fee_data': client_fee_data,
+        'completeNum': countInstructions,
+        'anniversaryData': anniversaryDataStr
     })        
 
 

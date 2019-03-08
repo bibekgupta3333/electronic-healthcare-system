@@ -66,3 +66,7 @@ function setDefaultData() {
   }
   $("#userForm").show();
 }
+
+function toggleUserTableHeadChk(source) {
+  $('td.chkbox input:checkbox').prop('checked', source.checked);
+}
