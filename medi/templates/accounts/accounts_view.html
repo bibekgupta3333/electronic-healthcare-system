@@ -81,7 +81,7 @@
                                     <div class="col-md-9">
                                         <div class="row">
                                             <input type="text" class="form-control currency display-inline" value="£" readonly="true">
-                                            {% if has_amend_fee_perm and data.days == 3 %}
+                                            {% if has_amend_fee_perm and forloop.counter == 1 %}
                                             <select name="organisation_fee_id" id="first_fee" class="form-control feeData" title="">
                                                 {% for band_fee in band_fee_rate_data %}
                                                 <option value="{{ band_fee.0 }}" {% if band_fee.0 == data.pk %}selected{% endif %}>{{ band_fee.1 }}</option>
