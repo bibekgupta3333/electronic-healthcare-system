@@ -15,7 +15,7 @@ from django.contrib.auth.forms import AuthenticationForm as LoginForm
 from permissions.forms import InstructionPermissionForm, GroupPermissionForm
 from permissions.models import InstructionPermission
 from common.functions import multi_getattr, verify_password as verify_pass
-from payment.models import GpOrganisationFee, InstructionVolumeFee
+from payment.models import GpOrganisationFee, InstructionVolumeFee, OrganisationFeeRate
 from django_tables2 import RequestConfig
 from accounts.forms import AllUserForm, NewGPForm, NewClientForm, NewMediForm,\
         UserProfileForm, UserProfileBaseForm
@@ -55,6 +55,10 @@ def account_view(request):
             practice_preferences.save()
 
         if request.is_ajax():
+            if request.POST.get('is_fee_changed'):
+                new_organisation_fee_id = request.POST.get('organisation_fee_id')
+                GpOrganisationFee.objects.filter(gp_practice=gp_organisation).update(organisation_fee_id=int(new_organisation_fee_id))
+                return JsonResponse({'message': 'Preferences have been saved.'})
             gp_preferences_form = PracticePreferencesForm(request.POST, instance=practice_preferences)
             if gp_preferences_form.is_valid():
                 gp_preferences_form.save()
@@ -68,8 +72,22 @@ def account_view(request):
         if gp_fee_relation:
             organisation_fee = gp_fee_relation.organisation_fee
 
-        if organisation_fee:
+        has_authorise_fee_perm = gp_user.user.has_perm('instructions.authorise_fee')
+        has_amend_fee_perm = gp_user.user.has_perm('instructions.amend_fee')
+
+        band_fee_rate_data = []
+        for fee_structure in OrganisationFeeRate.objects.filter(default=True):
+            band_fee_rate_data.append([
+                fee_structure.pk,
+                float(fee_structure.amount_rate_lvl_1),
+                float(fee_structure.amount_rate_lvl_2),
+                float(fee_structure.amount_rate_lvl_3),
+                float(fee_structure.amount_rate_lvl_4),
+            ])
+
+        if organisation_fee and (has_authorise_fee_perm or has_amend_fee_perm):
             organisation_fee_data.append({
+                'pk': organisation_fee.pk,
                 'days': organisation_fee.max_day_lvl_1,
                 'amount': organisation_fee.amount_rate_lvl_1,
                 'label': 'Received within %s days'%organisation_fee.max_day_lvl_1
@@ -93,7 +111,9 @@ def account_view(request):
         return render(request, 'accounts/accounts_view.html', {
             'header_title': header_title,
             'organisation_fee_data': organisation_fee_data,
-            'gp_preferences_form': gp_preferences_form
+            'gp_preferences_form': gp_preferences_form,
+            'has_amend_fee_perm': has_amend_fee_perm,
+            'band_fee_rate_data': band_fee_rate_data,
         })
 
     client_fee = InstructionVolumeFee.objects.get(client_organisation = user.get_my_organisation())

@@ -123,6 +123,8 @@ def generate_gp_permission(organisation):
 def set_default_gp_perm(group, role):
     for codename in INSTRUCTION_PERMISSIONS:
         if codename == 'view_summary_report' and role != GeneralPracticeUser.PRACTICE_MANAGER: continue
+        if codename == 'authorise_fee' and role != GeneralPracticeUser.PRACTICE_MANAGER and role != GeneralPracticeUser.GENERAL_PRACTICE: continue
+        if codename == 'amend_fee' and role != GeneralPracticeUser.PRACTICE_MANAGER and role != GeneralPracticeUser.GENERAL_PRACTICE: continue
         perm = Permission.objects.get(codename=codename)
         group.permissions.add(perm)
     group.save()
