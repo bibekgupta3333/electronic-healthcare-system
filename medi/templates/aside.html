@@ -42,14 +42,14 @@
                         <a href="{% url 'template:view_templates' %}"><i class="fas fa-wrench"></i>Templates</a>
                     </li>
                 {% endif %}
-                {% if perms.payment.view_organisationfee or user.get_my_role == 'Client Admin'%}
+                {% if perms.instructions.view_account_pages or user.get_my_role == 'Client Admin'%}
                     <li class="{% if request.resolver_match.url_name == 'view_account' %}active{% endif %}">
                         <a href="{% url 'accounts:view_account' %}" ><i class="fas fa-money-check-alt"></i>Account</a>
                     </li>
                 {% endif %}
                 {% if perms.instructions.view_summary_report %}
                     <li class="{% if request.resolver_match.url_name == 'summary-report' %}active{% endif %}">
-                        <a href="{% url 'report:summary-report' %}"><i class="fas fa-chart-bar"></i>Reporting</a>
+                        <a href="{% url 'report:summary-report' %}"><i class="fas fa-chart-bar"></i>Dashboard</a>
                     </li>
                 {% endif %}
                 <li class="{% if request.resolver_match.url_name == 'resource_centre' %}active{% endif %}">
