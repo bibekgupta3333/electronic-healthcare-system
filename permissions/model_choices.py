@@ -12,7 +12,7 @@ MANAGER_PERMISSIONS=[
 ]
 
 GP_PERMISSIONS=[
-    'view_instruction',
+    'view_instruction'
 ]
 
 OTHER_PERMISSIONS=[
@@ -173,6 +173,7 @@ INSTRUCTION_PERMISSIONS=[
     'view_completed_amra',
     'view_completed_sars',
     'view_summary_report',
+    'view_account_pages'
     'authorise_fee',
     'amend_fee',
 ]

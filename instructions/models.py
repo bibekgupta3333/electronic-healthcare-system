@@ -122,6 +122,7 @@ class Instruction(TimeStampedModel, models.Model):
             ('view_completed_amra', 'View completed AMRA'),
             ('view_completed_sars', 'View completed SARS'),
             ('view_summary_report', 'View summary report'),
+            ('view_account_pages', 'view account page'),
             ('authorise_fee', 'Authorise Fee'),
             ('amend_fee', 'Amend Fee'),
         )
