@@ -345,16 +345,6 @@
             else if($('#id_patient_email').val() !='' && $('#confirm_email').val() =='') {
                 setTimeout(function(){$("#confirmDialog").popup('show')}, 300);
             }
-            else if($('#id_patient_telephone_mobile').val().length > 11) {
-                $('#id_patient_telephone_mobile').addClass('is-invalid');
-                $('#help-msg-phone1').removeClass('text-muted');
-                $('#help-msg-phone1').addClass('text-danger');
-            }
-            else if($('#id_patient_alternate_phone').val().length > 11) {
-                $('#id_patient_alternate_phone').addClass('is-invalid');
-                $('#help-msg-phone2').removeClass('text-muted');
-                $('#help-msg-phone2').addClass('text-danger');
-            }
             else if( $('#id_patient_telephone_mobile').val().length > 11 && $('#id_patient_alternate_phone').val().length > 11 ) {
                 return false;
             }
