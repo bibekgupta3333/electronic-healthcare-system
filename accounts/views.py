@@ -47,7 +47,7 @@ def account_view(request):
         gp_user = GeneralPracticeUser.objects.get(pk=user.userprofilebase.generalpracticeuser.pk)
         gp_organisation = gp_user.organisation
         try:
-            practice_preferences = PracticePreferences.objects.get(gp_organisation=gp_organisation)
+            practice_preferences = PracticePreferences.objects.filter(gp_organisation__practcode=gp_organisation.practcode).first()
         except PracticePreferences.DoesNotExist:
             practice_preferences = PracticePreferences()
             practice_preferences.gp_organisation = gp_organisation
@@ -116,7 +116,7 @@ def account_view(request):
             'band_fee_rate_data': band_fee_rate_data,
         })
 
-    client_fee = InstructionVolumeFee.objects.get(client_organisation = user.get_my_organisation())
+    client_fee = InstructionVolumeFee.objects.filter(client_organisation_id = user.get_my_organisation().id).first()
     client_volume_data = list()
     client_fee_data = list()
 
@@ -165,7 +165,7 @@ def account_view(request):
         })
 
     currentYear = datetime.datetime.now().year
-    client = ClientUser.objects.filter( organisation = user.get_my_organisation() ).first()
+    client = ClientUser.objects.filter( organisation_id = user.get_my_organisation().id ).first()
     countInstructions =  Instruction.objects.filter( created__year = currentYear, status = INSTRUCTION_STATUS_COMPLETE, client_user = client ).count()
 
     createTime = user.get_my_organisation().created_time

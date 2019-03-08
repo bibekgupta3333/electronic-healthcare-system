@@ -72,6 +72,10 @@ function changeScreen( code ) {
             showDivControl('pdf');
             $('#preview-53').show();
             break;
+        case 54:
+            showDivControl('pdf');
+            $('#preview-54').show();
+            break;
     }
 }
 

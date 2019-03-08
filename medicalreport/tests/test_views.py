@@ -50,7 +50,7 @@ class EmisAPITestCase(TestCase):
             practcode='99999',
             operating_system_organisation_code=29390,
             operating_system_username='michaeljtbrooks',
-            operating_system_salt_and_encrypted_password='Medidata2018',
+            operating_system_salt_and_encrypted_password='Medidata2019',
         )
         self.gp_user = mommy.make(GeneralPracticeUser, user=user, organisation=gp_practice)
         self.gp_practice = gp_practice
