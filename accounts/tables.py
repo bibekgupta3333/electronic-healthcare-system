@@ -3,7 +3,7 @@ from .models import User
 
 
 class UserTable(tables.Table):
-    chkbox = tables.CheckBoxColumn(attrs={'id': 'check_all'}, accessor="email")
+    chkbox = tables.CheckBoxColumn(attrs={'id': 'check_all', "th__input": {"onclick": "toggleUserTableHeadChk(this)"}}, accessor="email")
     role = tables.Column(verbose_name='Role', accessor="userprofilebase")
     organisation = tables.Column(verbose_name='Organisation', accessor="userprofilebase")
     email = tables.Column(verbose_name='Email', accessor='email')
