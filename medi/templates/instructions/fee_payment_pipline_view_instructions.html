@@ -63,8 +63,51 @@
                 <div class="modal-content">
                     <div class="modal-body">
                         <div class="container">
-                            <div class="col-12 text-center mt-2">
-                                <p>Test</p>
+                            <div class="col-12 mt-2">
+                                <table class="table">
+                                    <tbody>
+                                        <tr>
+                                            <th>Surgery Name: </th>
+                                            <td id="surgeryName"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Surgery Address: </th>
+                                            <td id="surgeryAddress"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Client Name: </th>
+                                            <td id="clientName"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Client Ref: </th>
+                                            <td id="clientRef"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Patient Name: </th>
+                                            <td id="patientName"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Medi Ref: </th>
+                                            <td id="mediRef"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Date instruction received: </th>
+                                            <td id="RecievedDate"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Date instruction completed: </th>
+                                            <td id="CompletedDate"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>GP fee: </th>
+                                            <td id="gpFee"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Date of Fee Note: </th>
+                                            <td id="noteDate"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -132,6 +175,16 @@
             });
 
             $('.noteDetailButton').click(function () {
+                $('#surgeryName').text($(this).data('surgeryname'));
+                $('#surgeryAddress').text($(this).data('surgeryaddress'));
+                $('#clientName').text($(this).data('clientname'));
+                $('#clientRef').text($(this).data('clientref'));
+                $('#patientName').text($(this).data('patientname'));
+                $('#mediRef').text($(this).data('mediref'));
+                $('#RecievedDate').text($(this).data('receiveddate'));
+                $('#CompletedDate').text($(this).data('completeddate'));
+                $('#gpFee').text($(this).data('gpfee'));
+                $('#noteDate').text($(this).data('completeddate'));
                 $('#feeNoteModal').modal();
             })
         });

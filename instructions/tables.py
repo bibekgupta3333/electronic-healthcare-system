@@ -93,4 +93,37 @@ class InstructionTable(tables.Table):
         return format_html('<a href='+reverse(url, args=[record.pk])+'><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
 
     def render_fee_note(self, record):
-        return format_html('<a href="#feeNoteModal"><h5><span class="feeNote badge noteDetailButton">View</span></h5></a>')
+        gp_practice = record.gp_practice
+        client_user = record.client_user
+        trading_name = client_user.organisation.trading_name if client_user else '-'
+        return format_html(
+            "<a href='#feeNoteModal'>"
+            "<h5><span class='feeNote badge noteDetailButton'"
+            "data-surgeryName='{}'"
+            "data-surgeryAddress='{}'"
+            "data-clientName='{}'"
+            "data-clientRef='{}'"
+            "data-patientName='{}'"
+            "data-mediRef='{}'"
+            "data-receivedDate='{}'"
+            "data-completedDate='{}'"
+            "data-gpFee='{}'>"
+            "View</span></h5>"
+            "</a>",
+            gp_practice.name,
+            ' '.join([
+                    gp_practice.billing_address_street,
+                    gp_practice.billing_address_line_2,
+                    gp_practice.billing_address_line_3,
+                    gp_practice.billing_address_city,
+                    gp_practice.billing_address_state,
+                    gp_practice.billing_address_postalcode,
+                ]),
+            trading_name,
+            record.your_ref if record.your_ref else '-',
+            record.patient_information,
+            record.medi_ref,
+            record.created.strftime("%d/%m/%Y"),
+            record.completed_signed_off_timestamp.strftime("%d/%m/%Y") if record.completed_signed_off_timestamp else '-',
+            record.gp_earns,
+        )
