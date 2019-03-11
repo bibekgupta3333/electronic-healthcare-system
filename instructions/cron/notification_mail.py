@@ -2,7 +2,7 @@ from django.core.mail import send_mail
 from django.utils import timezone
 from django.shortcuts import reverse
 from instructions.models import Instruction, InstructionReminder
-from instructions.model_choices import INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS
+from instructions.model_choices import INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS, SARS_TYPE
 from accounts.models import User, PracticePreferences, GeneralPracticeUser
 from common.functions import get_url_page
 
@@ -15,7 +15,8 @@ from django.conf import settings
 def instruction_notification_email_job():
     now = timezone.now()
     new_or_pending_instructions = Instruction.objects.filter(
-        status__in=(INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS)
+        status__in=(INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS),
+        type=SARS_TYPE
     )
 
     date_period_admin = [3, 7, 14]
