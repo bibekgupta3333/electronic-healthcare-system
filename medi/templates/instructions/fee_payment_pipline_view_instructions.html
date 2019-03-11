@@ -12,15 +12,15 @@
      <!-- Jquery DataTables -->
     <link rel="stylesheet" href="{% static 'css/dataTables/jquery.dataTables.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/instructions/pipeline_views_instructions.css' %}">
+    <link href="{% static 'css/bootstrap-datepicker.min.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block Content %}
+    <form method="POST">
+        {% csrf_token %}
         <div class="row" >
             <div class="col-md-4 offset-md-8">
-                <form id="topsearchform" role="search" method="post" action="" class="" autocomplete="off">
-                    {% csrf_token %}
-                    <input id="search" name="search" type="search" placeholder="Search" class="form-control search" required="true">
-                </form>
+                <input id="search" name="search" type="search" placeholder="Search" class="form-control search">
             </div>
         </div>
         <div class="row overall-number">
@@ -44,8 +44,17 @@
             <div class="col-md-3">
                 <!--{% bootstrap_button 'Apply' button_type="button" button_class="btn-primary"%} -->
             </div>
-            <div class="col-md-2 offset-md-5">
-                <select class="form-control" id="filterInstructionType" onchange="typeFilter();">
+            <div class="col-md-5">
+                <div class="row">
+
+                        {% csrf_token %}
+                        {% bootstrap_field date_range_form.from_date  form_group_class='col-md-5 p-0 input-group dob' show_label=False %}
+                        {% bootstrap_field date_range_form.to_date   form_group_class='col-md-5 input-group dob' show_label=False %}
+                        {% bootstrap_button 'Search' button_type="submit" button_class="btn-primary"  %}
+                </div>
+            </div>
+            <div class="col-md-2">
+                <select class="form-control" id="filterInstructionType" onchange="typeFilter('payment');">
                     <option value="allType">All Types</option>
                     <option value="AMRA">AMRA</option>
                     <option value="SARS">SARS</option>
@@ -114,13 +123,16 @@
                 </div>
             </div>
         </div>
+    </form>
 {% endblock %}
 
 {% block Script %}
     <script src="{% static 'js/dataTables/jquery.dataTables.min.js' %}"></script>
     <script src="{% static 'js/dataTables/dataTables.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
     <script src="{% static 'js/instructions/instruction_views.js' %}"></script>
     <script src="{% static 'js/js.cookie.js' %}"></script>
+    <script src="{% static 'js/instructions/new_instruction.js' %}"></script>
     <script>
         $(document).ready(function () {
             $('#instructionsTable').DataTable();
@@ -186,7 +198,38 @@
                 $('#gpFee').text($(this).data('gpfee'));
                 $('#noteDate').text($(this).data('completeddate'));
                 $('#feeNoteModal').modal();
-            })
+            });
+
+            var start = new Date(1900, 1, 1);
+            var end = new Date();
+
+            $('#id_from_date').datepicker({
+                clearBtn: true,
+                startDate : start,
+                endDate   : end,
+                autoclose : true,
+                format: 'dd/mm/yyyy',
+            }).on('changeDate', function(){
+                if($(this).val()){
+                    $('#id_to_date').datepicker('setStartDate', new Date(reformatted_date($(this).val())));
+                }else {
+                    $('#id_to_date').datepicker('setStartDate', start);
+                }
+            });
+
+            $('#id_to_date').datepicker({
+                clearBtn: true,
+                startDate : start,
+                endDate   : end,
+                autoclose : true,
+                format: 'dd/mm/yyyy',
+            }).on('changeDate', function(){
+                if($(this).val()){
+                    $('#id_from_date').datepicker('setEndDate', new Date(reformatted_date($(this).val())));
+                }else {
+                    $('#id_from_date').datepicker('setEndDate', end);
+                }
+            });
         });
     </script>
 {% endblock %}

@@ -69,11 +69,15 @@ function clientuserStatusFilter(selected_status){
     window.location = '/accounts/view-users/?status=' + clientuser_roleDict[selected_status] + '&type=' + $('#filterUserType').val() + '&user_type=CLT';
 }
 
-function typeFilter(){
+function typeFilter(page){
     if(getUrlParameter('status')){
         status = getUrlParameter('status');
     }
-    window.location = '/instruction/view-pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val();
+    if(page == 'pipeline'){
+        window.location = '/instruction/view-pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val();
+    } else if(page == 'payment'){
+        window.location = '/instruction/view-fee-payment-pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val();
+    }
 }
 
 function userTypeFilter() {

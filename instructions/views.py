@@ -12,7 +12,7 @@ from .models import Instruction, InstructionAdditionQuestion, InstructionConditi
 from .tables import InstructionTable
 from .model_choices import *
 from .forms import ScopeInstructionForm, AdditionQuestionFormset, SarsConsentForm, MdxConsentForm,\
-        ReferenceForm, ConsentForm, InstructionDateRangeForm
+        ReferenceForm, ConsentForm, InstructionDateRangeForm, DateRangeSearchForm
 from accounts.models import User, GeneralPracticeUser, PracticePreferences
 from accounts.models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from accounts.forms import InstructionPatientForm, GPForm
@@ -35,6 +35,7 @@ import ast
 import requests
 import json
 import re
+import dateutil
 
 from django.conf import settings
 PIPELINE_INSTRUCTION_LINK = get_url_page('instruction_pipeline')
@@ -237,12 +238,15 @@ def instruction_pipeline_view(request):
 def instruction_fee_payment_view(request):
     header_title = "Instructions Pipeline"
     user = request.user
+    date_range_form = DateRangeSearchForm()
 
     if user.type == GENERAL_PRACTICE_USER:
         gp_practice = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation', default=None)
         if gp_practice and not gp_practice.is_active():
             return redirect('onboarding:emis_setup', practice_code=gp_practice.pk)
 
+    filter_type = ''
+    filter_status = -1
     if 'status' in request.GET:
         filter_type = request.GET.get('type', '')
         filter_status = request.GET.get('status', -1)
@@ -253,12 +257,9 @@ def instruction_fee_payment_view(request):
 
         if filter_type == 'undefined':
             filter_type = 'allType'
-    else:
-        filter_type = request.COOKIES.get('type', '')
-        filter_status = int(request.COOKIES.get('status', -1))
 
     if filter_type and filter_type != 'allType':
-        instruction_query_set = Instruction.objects.filter(type=filter_type)
+        instruction_query_set = Instruction.objects.filter(type=filter_type, status__in=[INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_PAID])
     else:
         instruction_query_set = Instruction.objects.filter(status__in=[INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_PAID])
 
@@ -284,6 +285,11 @@ def instruction_fee_payment_view(request):
                 gp_practice_id=gp_practice_code
             )
 
+    if request.method == 'POST':
+        from_date = dateutil.parser.parse(request.POST.get('from_date', '')).replace(tzinfo=pytz.UTC)
+        to_date = dateutil.parser.parse(request.POST.get('to_date', '')).replace(tzinfo=pytz.UTC)
+        instruction_query_set = instruction_query_set.filter(completed_signed_off_timestamp__range=[from_date, to_date])
+
     table = InstructionTable(instruction_query_set, extra_columns=[
         ('cost', Column(empty_values=(), verbose_name=cost_column_name)),
         ('fee_note', Column(empty_values=(), verbose_name='Fee Note', default='---'))
@@ -296,11 +302,10 @@ def instruction_fee_payment_view(request):
         'table': table,
         'overall_instructions_number': overall_instructions_number,
         'header_title': header_title,
-        'next_prev_data': calculate_next_prev(table.page, filter_status=filter_status, filter_type=filter_type)
+        'next_prev_data': calculate_next_prev(table.page, filter_status=filter_status, filter_type=filter_type),
+        'date_range_form': date_range_form,
     })
 
-    response.set_cookie('status', filter_status)
-    response.set_cookie('type', filter_type)
     return response
 
 
