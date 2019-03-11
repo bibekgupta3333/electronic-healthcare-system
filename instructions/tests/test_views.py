@@ -134,7 +134,7 @@ class TestInstructionBase(TestCase):
 
 class TestCountInstructions(TestInstructionBase):
     def test_count_instructions_of_gp_organisation(self):
-        result = count_instructions(self.gp_user, self.gp_practice_1.pk, None)
+        result = count_instructions(self.gp_user, self.gp_practice_1.pk, None, page='')
         expected = {
             'All': 3,
             'New': 1,
@@ -148,7 +148,7 @@ class TestCountInstructions(TestInstructionBase):
         self.assertDictEqual(expected, result)
 
     def test_count_instructions_of_client_organisations(self):
-        result = count_instructions(self.client_user, None, self.client_organisation)
+        result = count_instructions(self.client_user, None, self.client_organisation, page='')
         expected = {
             'All': 2,
             'New': 1,

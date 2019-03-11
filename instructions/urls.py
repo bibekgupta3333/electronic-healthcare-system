@@ -4,6 +4,7 @@ from . import views
 app_name = 'instructions'
 urlpatterns = (
     path('view-pipeline/', views.instruction_pipeline_view, name='view_pipeline'),
+    path('view-fee-payment-pipeline/', views.instruction_fee_payment_view, name='view_fee_payment_pipeline'),
     path('new-instruction/', views.new_instruction, name='new_instruction'),
     path('view-reject/<int:instruction_id>/', views.view_reject, name='view_reject'),
     path('upload-consent/<int:instruction_id>/', views.upload_consent, name='upload_consent'),

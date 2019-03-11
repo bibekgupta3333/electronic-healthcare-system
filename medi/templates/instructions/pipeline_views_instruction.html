@@ -36,7 +36,7 @@
             <div class="col-md-12">
                 {% for k, v in overall_instructions_number.items %}
                     <div class="number" id="{{ k|cut:' ' }}">
-                        <a href="#" onclick="instructionStatusFilter('{{ k }}');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a>
+                        <a href="#" onclick="instructionStatusFilter('{{ k }}', 'pipeline');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a>
                     </div>
                 {% endfor %}
             </div>
@@ -54,7 +54,7 @@
                 <!--{% bootstrap_button 'Apply' button_type="button" button_class="btn-primary"%} -->
             </div>
             <div class="col-md-2 offset-md-5">
-                <select class="form-control" id="filterInstructionType" onchange="typeFilter();">
+                <select class="form-control" id="filterInstructionType" onchange="typeFilter('pipeline');">
                     <option value="allType">All Types</option>
                     <option value="AMRA">AMRA</option>
                     <option value="SARS">SARS</option>
