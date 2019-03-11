@@ -18,15 +18,17 @@ def instruction_notification_email_job():
         status__in=(INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS)
     )
 
+    date_period_admin = [3, 7, 14]
+    date_period_surgery = [7, 14, 21, 30]
     for instruction in new_or_pending_instructions:
         diff_date = now - instruction.created
-        if diff_date.days == 3 or diff_date.days == 7 or diff_date.days == 14:
+        if diff_date.days in date_period_admin or diff_date.days in date_period_surgery:
             gp_managers = User.objects.filter(
                 userprofilebase__generalpracticeuser__organisation=instruction.gp_practice.pk,
                 userprofilebase__generalpracticeuser__role=GeneralPracticeUser.PRACTICE_MANAGER
             ).values('email')
             try:
-                if gp_managers:
+                if gp_managers and diff_date.days in date_period_admin:
                     send_mail(
                         'Pending Instruction',
                         'You have a pending or not started instruction. Click here {link} to see it.'.format(
@@ -38,7 +40,7 @@ def instruction_notification_email_job():
                         auth_user=settings.EMAIL_HOST_USER,
                         auth_password=settings.EMAIL_HOST_PASSWORD,
                     )
-                if instruction.gp_practice and instruction.gp_practice.organisation_email:
+                if instruction.gp_practice and instruction.gp_practice.organisation_email and diff_date.days in date_period_surgery:
                     send_mail(
                         'Pending Instruction',
                         'You have a pending or not started instruction.',
