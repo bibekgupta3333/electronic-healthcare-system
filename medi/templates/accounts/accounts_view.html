@@ -80,8 +80,16 @@
                                     </div>
                                     <div class="col-md-9">
                                         <div class="row">
-                                          <input type="text" class="form-control currency display-inline" value="£" readonly="true">
-                                          <input type="text" class="form-control feeData display-inline" value="{{ data.amount }}" readonly="true">
+                                            <input type="text" class="form-control currency display-inline" value="£" readonly="true">
+                                            {% if has_amend_fee_perm and forloop.counter == 1 %}
+                                            <select name="organisation_fee_id" id="first_fee" class="form-control feeData" title="">
+                                                {% for band_fee in band_fee_rate_data %}
+                                                <option value="{{ band_fee.0 }}" {% if band_fee.0 == data.pk %}selected{% endif %}>{{ band_fee.1 }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            {% else %}
+                                            <input type="text" id="fee_within_{{ data.days }}" class="form-control feeData display-inline" value="{{ data.amount }}" readonly="true">
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -163,6 +171,29 @@
                 .fail(function(){
                     create_alert('Something went wrong, please try again.', 'error');
                 });
+            });
+
+            var band_fee_rate_data = {{ band_fee_rate_data }};
+            $('#first_fee').on('change', function () {
+                {% for data in organisation_fee_data %}
+                    {% if forloop.counter != 1 %}
+                    $('#fee_within_{{ data.days }}').val(Number(band_fee_rate_data.filter(function(band_fee) { return band_fee[0] == $('#first_fee').val(); })[0][{{ forloop.counter }}]).toFixed(2));
+                    {% endif %}
+                {% endfor %}
+                $.ajax({
+                    url: "{% url 'accounts:view_account' %}",
+                    type: 'POST',
+                    data : $('#preferencesForm').serialize()+"&is_fee_changed=1"
+                })
+                .done(function(){
+                    create_alert('Notification setting has been changed.', 'success');
+                })
+                .fail(function(){
+                    create_alert('Something went wrong, please try again.', 'error');
+                });
+            });
+            $("#first_fee > option").each(function() {
+                $(this).text(Number(this.text).toFixed(2));
             });
         });
     </script>

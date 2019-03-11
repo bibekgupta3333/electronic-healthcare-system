@@ -72,6 +72,10 @@ function changeScreen( code ) {
             showDivControl('pdf');
             $('#preview-53').show();
             break;
+        case 54:
+            showDivControl('pdf');
+            $('#preview-54').show();
+            break;
     }
 }
 
@@ -102,9 +106,14 @@ $('.choice-5').click(function() {
     $('#symbol-5').removeClass(oldClass);
     $('#symbol-5').addClass(newClass);
 });
+$('.choice-6').click(function() {
+    cleanSymbol()
+    $('#symbol-6').removeClass(oldClass);
+    $('#symbol-6').addClass(newClass);
+});
 
 function cleanSymbol() {
-    var maxId = 5;
+    var maxId = 6;
     for( i = 0; i <= maxId; i++ ) {
         var idStr = '#symbol-' + i;
         $(idStr).addClass(oldClass);

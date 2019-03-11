@@ -218,9 +218,6 @@
                 $(this).html('<input type="checkbox">');
             });
 
-            $("th input:checkbox").click(function(){
-                $('input:checkbox').not(this).prop('checked', this.checked);
-            });
             $(".page-link").each(function () {
                 var type = getUrlParameter('type');
                 var status = getUrlParameter('status');
