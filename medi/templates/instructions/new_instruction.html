@@ -50,7 +50,22 @@
         </div>
         <input type="hidden" id="instruction_id" name="instruction_id" value="{{ instruction_id }}" />
         <div class="card-deck instruction">
-            <div class="pr-0 {% if request.user.type == 'CLT' %} col-md-6 {% else %} col-md-12 {% endif %}">
+            {% if request.user.type == 'CLT' %}
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header"><h5>References</h5></div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-2">Your reference:</div>
+                                {% bootstrap_field reference_form.your_ref size='small' form_group_class='form-group col-md-4' show_label=False placeholder='' %}
+                                <div class="col-md-2">MediRef:</div>
+                                {% bootstrap_field reference_form.medi_ref size='small' form_group_class='form-group col-md-4' show_label=False %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            <div class="pr-0 {% if request.user.type == 'CLT' %} col-md-6 mt-4 {% else %} col-md-12 {% endif %}">
                 <div class="card mr-2">
                     <div class="card-header">
                         <div class="row">
@@ -98,7 +113,7 @@
                 </div>
             </div>
             {% if request.user.type == 'CLT' %}
-                <div class="col-md-6 ">
+                <div class="col-md-6 mt-4">
                     <div class="card ">
                         <div class="card-header"><h5>GP and GP Practice</h5></div>
                         <div class="card-body">
@@ -147,19 +162,6 @@
                                     {% bootstrap_field scope_form.addition_condition size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
                                     {{scope_form.addition_condition_title}}
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-12 mt-4">
-                    <div class="card">
-                        <div class="card-header"><h5>References</h5></div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-2">Your reference:</div>
-                                {% bootstrap_field reference_form.your_ref size='small' form_group_class='form-group col-md-4' show_label=False placeholder='' %}
-                                <div class="col-md-2">MediRef:</div>
-                                {% bootstrap_field reference_form.medi_ref size='small' form_group_class='form-group col-md-4' show_label=False %}
                             </div>
                         </div>
                     </div>
