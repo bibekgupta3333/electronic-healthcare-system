@@ -28,7 +28,7 @@ class TestRenderTables(TestCase):
         self.client_organisation = mommy.make(OrganisationClient, trading_name=self.client_name)
         self.client_user = mommy.make(
             ClientUser, organisation=self.client_organisation,
-            role=ClientUser.CLIENT_ADMIN,
+            role=ClientUser.CLIENT_MANAGER,
         )
         self.instruction_patient = mommy.make(
             InstructionPatient,

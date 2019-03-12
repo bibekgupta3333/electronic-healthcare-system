@@ -77,7 +77,7 @@ class TestAccountBase(TestCase):
                                                         password='medi2018', type=MEDIDATA_USER)
 
         # create claim organisation's user
-        ClientUser.objects.create(user=self.claim_user_admin, organisation=self.claim_organisation, role=ClientUser.CLIENT_ADMIN)
+        ClientUser.objects.create(user=self.claim_user_admin, organisation=self.claim_organisation, role=ClientUser.CLIENT_MANAGER)
         ClientUser.objects.create(user=self.claim_user2, organisation=self.claim_organisation)
         ClientUser.objects.create(user=self.claim_user3, organisation=self.claim_organisation)
 
