@@ -171,6 +171,7 @@ class User(AbstractUser):
 
     def can_do_sars(self):
         client_organisation = multi_getattr(self, 'userprofilebase.clientuser.organisation', default=None)
+        gp_organisation = multi_getattr(self, 'userprofilebase.generalpracticeuser.organisation', default=None)
         org = OrganisationClient
         types = [
             org.BROKER, org.SOLICITOR, org.OUTSOURCER,
@@ -178,6 +179,8 @@ class User(AbstractUser):
             org.RESEARCH, org.OTHER
         ]
         if client_organisation and client_organisation.type in types:
+            return True
+        elif gp_organisation:
             return True
         return False
 

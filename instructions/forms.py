@@ -81,11 +81,6 @@ class ScopeInstructionForm(forms.Form):
                             Q(organisation=client_organisation) | Q(organisation__isnull=True)),
                         required=False)
 
-            gp_organisation = multi_getattr(user, 'userprofilebase.generalpracticeuser.organisation', default=None)
-            if gp_organisation:
-                del FORM_INSTRUCTION_TYPE_CHOICES[0]
-                del FORM_INSTRUCTION_TYPE_CHOICES[0]
-
             self.fields['type'] = forms.ChoiceField(
                 choices=FORM_INSTRUCTION_TYPE_CHOICES,
                 widget=forms.RadioSelect(
