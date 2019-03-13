@@ -411,10 +411,8 @@
                 var optionID = $(this).attr('id');
                 if(optionID !== undefined){
                     var templateID = optionID.split('-')[optionID.split("-").length-1];
-                    console.log('test', $(this).get(0).scrollWidth, $(this).get(0).clientWidth);
                     if ($(this).get(0).scrollWidth >= $(this).get(0).clientWidth) {
                         var descriptionEL = $('#template_' + templateID);
-                        console.log('aaaa', descriptionEL);
                         descriptionEL.show()
                         descriptionEL.css({
                            'left': ($(this).offset().left + $(this).outerWidth(true)) + 2,
