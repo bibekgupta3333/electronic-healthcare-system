@@ -3,7 +3,7 @@ from django.contrib.auth.models import BaseUserManager, AbstractUser, Permission
 from django.template import loader
 from django.utils.translation import gettext_lazy as _
 from permissions.model_choices import MANAGER_PERMISSIONS, GP_PERMISSIONS,\
-        OTHER_PERMISSIONS, CLIENT_PERMISSIONS, MEDI_PERMISSIONS, ADMIN_PERMISSIONS,\
+        OTHER_PERMISSIONS, CLIENT_ADMIN_PERMISSIONS, MEDI_PERMISSIONS, CLIENT_MANAGER_PERMISSIONS,\
         MEDI_ADMIN_PERMISSIONS, MEDI_TEAM_PERMISSIONS
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 from common.models import TimeStampedModel
@@ -115,10 +115,10 @@ class User(AbstractUser):
             return 'Medidata User'
         elif self.type == CLIENT_USER and hasattr(profile, 'clientuser'):
             role = profile.clientuser.role
-            if role == ClientUser.CLIENT_ADMIN:
-                return 'Client Admin'
+            if role == ClientUser.CLIENT_MANAGER:
+                return 'Client Manager'
             else:
-                return 'Client User'
+                return 'Client Administrator'
         elif self.type == GENERAL_PRACTICE_USER and hasattr(profile, 'generalpracticeuser'):
             role = profile.generalpracticeuser.role
             if role == GeneralPracticeUser.PRACTICE_MANAGER:
@@ -239,13 +239,13 @@ class MedidataUser(UserProfileBase):
 
 
 class ClientUser(UserProfileBase):
-    CLIENT_ADMIN = 0
-    CLIENT_USER = 1
+    CLIENT_MANAGER = 0
+    CLIENT_ADMIN = 1
 
     ROLE_CHOICES = (
         ('', '----'),
-        (CLIENT_ADMIN, 'Client Admin'),
-        (CLIENT_USER, 'Client')
+        (CLIENT_MANAGER, 'Client Manager'),
+        (CLIENT_ADMIN, 'Client Administrator')
     )
 
     role = models.IntegerField(choices=ROLE_CHOICES, null=True, blank=True, verbose_name='Role')
@@ -271,16 +271,16 @@ class ClientUser(UserProfileBase):
 
     def update_permission(self):
         self.remove_permission()
-        if self.role == self.CLIENT_ADMIN:
-            self.update_permission_admin()
+        if self.role == self.CLIENT_MANAGER:
+            self.update_permission_manager()
         else:
-            self.update_permission_client()
+            self.update_permission_admin()
+
+    def update_permission_manager(self):
+        self.set_permission(CLIENT_MANAGER_PERMISSIONS)
 
     def update_permission_admin(self):
-        self.set_permission(ADMIN_PERMISSIONS)
-
-    def update_permission_client(self):
-        self.set_permission(CLIENT_PERMISSIONS)
+        self.set_permission(CLIENT_ADMIN_PERMISSIONS)
 
 
 class GeneralPracticeUser(UserProfileBase):
