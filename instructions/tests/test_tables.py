@@ -14,6 +14,8 @@ from instructions.model_choices import INSTRUCTION_STATUS_PROGRESS, AMRA_TYPE
 from instructions.tables import InstructionTable
 from django.urls import resolve
 
+from instructions.views import get_table_fee_sensitive
+
 
 class TestRenderTables(TestCase):
     def setUp(self):
@@ -66,10 +68,12 @@ class TestRenderTables(TestCase):
         request.resolver_match = resolve('/instruction/view-pipeline/')
 
         instruction_query_set = Instruction.objects.all()
-        table = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name='Income £'))])
+        table_all = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name='Income £'))])
+        RequestConfig(request, paginate={'per_page': 5}).configure(table_all)
 
-        RequestConfig(request, paginate={'per_page': 5}).configure(table)
-        response = render(request, 'instructions/pipeline_views_instruction.html',  {'table': table})
+        self.request.GET = dict()
+        table_fee = get_table_fee_sensitive(self.request, self.user, self.gp_practice.practcode)
+        response = render(request, 'instructions/pipeline_views_instruction.html',  {'table_all': table_all, 'table_fee': table_fee})
         
         result_html_str = str(response.content)
         expected_client_name = '<td class="client_user">' + self.client_name + '</td>'
@@ -88,3 +92,5 @@ class TestRenderTables(TestCase):
         self.assertInHTML(expected_cost, result_html_str)
         self.assertInHTML(expected_created, result_html_str)
         self.assertInHTML(expected_status, result_html_str)
+
+        
