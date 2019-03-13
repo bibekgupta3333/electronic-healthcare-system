@@ -261,6 +261,11 @@
         </div>
       </div>
     </div>
+
+    <!-- Hidden tooltip -->
+    {% for template in templates %}
+      <p id="template_{{template.pk}}" class="tooltip">{{template.description}}</p>
+    {% endfor %}
 {% endblock %}
 
 {% block Script %}
@@ -400,7 +405,26 @@
             });
 
             $('#id_template').select2();
-            
+            $('#id_template').on('select2:close', function() {
+                $('.tooltip').hide();
+            });
+
+            $(document).on('mouseenter', '#select2-id_template-results .select2-results__option', function(){
+                var optionID = $(this).attr('id');
+                if(optionID !== undefined){
+                    var templateID = optionID.split('-')[optionID.split("-").length-1];
+                    if ($(this).get(0).scrollWidth >= $(this).get(0).clientWidth) {
+                        var descriptionEL = $('#template_' + templateID);
+                        descriptionEL.show()
+                        descriptionEL.css({
+                           'left': ($(this).offset().left + $(this).outerWidth(true)) + 2,
+                           'top': parseFloat($(this).offset().top) + 5
+                        });
+                    }
+                }
+            }).on('mouseleave', '#select2-id_template-results .select2-results__option', function(e){
+                $('.tooltip').hide();
+            });
             $('#id_template').on('change', function () {
                 $.ajax({
                   url: "{% url 'template:get_template_data' template_id=0 %}".replace('0',$(this).val()),
