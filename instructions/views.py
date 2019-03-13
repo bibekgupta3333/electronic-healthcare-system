@@ -285,7 +285,7 @@ def instruction_pipeline_view(request):
         filter_type = request.COOKIES.get('type', '')
         filter_status = int(request.COOKIES.get('status', -1))
 
-    if filter_type != 'allType':
+    if filter_type and filter_type != 'allType':
         instruction_query_set = Instruction.objects.filter(type=filter_type)
     else:
         instruction_query_set = Instruction.objects.all()
