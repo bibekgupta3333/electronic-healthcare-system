@@ -143,7 +143,7 @@
                                 <div class="col-md-2 d-flex">Type of Instruction*:</div>
                                 {% bootstrap_field scope_form.type size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
                             </div>
-                            <div class="row">
+                            <div class="row" id="template_form">
                                 <div class="col-md-2 rowTitle">Set from Template?</div>
                                 {% bootstrap_field scope_form.template size='small' form_group_class='form-group col-md-6 px-0' show_label=False %}
                             </div>
@@ -285,15 +285,18 @@
             $("#id_type_2").click( function() {
                 $('#consent_main_block').hide();
                 $('#questions_main_block').hide();
+                $('#template_form').hide();
                 $('.checkbox input[type="checkbox"]').prop("checked", false);
             });
             $("#id_type_1").click( function() {
                 $('#consent_main_block').show();
                 $('#questions_main_block').show();
+                $('#template_form').show();
             });
             $("#id_type_0").click( function() {
                 $('#consent_main_block').show();
                 $('#questions_main_block').show();
+                $('#template_form').show();
             });
 
             var template_data = null;
