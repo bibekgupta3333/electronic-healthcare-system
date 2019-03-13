@@ -143,7 +143,7 @@
                                 <div class="col-md-2 d-flex">Type of Instruction*:</div>
                                 {% bootstrap_field scope_form.type size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
                             </div>
-                            <div class="row" id="template_form">
+                            <div class="row d-none" id="template_form">
                                 <div class="col-md-2 rowTitle">Set from Template?</div>
                                 {% bootstrap_field scope_form.template size='small' form_group_class='form-group col-md-6 px-0' show_label=False %}
                             </div>
@@ -282,21 +282,19 @@
             {% endif %}
 
             // Function for hidden field if choose SARS type.
-            $("#id_type_2").click( function() {
-                $('#consent_main_block').hide();
-                $('#questions_main_block').hide();
-                $('#template_form').hide();
-                $('.checkbox input[type="checkbox"]').prop("checked", false);
-            });
-            $("#id_type_1").click( function() {
-                $('#consent_main_block').show();
-                $('#questions_main_block').show();
-                $('#template_form').show();
-            });
-            $("#id_type_0").click( function() {
-                $('#consent_main_block').show();
-                $('#questions_main_block').show();
-                $('#template_form').show();
+            $('input[name="type"]').on('change', function() {
+                var type = $(this).val();
+                if(type == 'AMRA'){
+                    $('#consent_main_block').show();
+                    $('#questions_main_block').show();
+                    $('#template_form').removeClass('d-none');
+                    $('#template_form').find('.select2-container--default').css('width', '100%');
+                }else{
+                    $('#consent_main_block').hide();
+                    $('#questions_main_block').hide();
+                    $('#template_form').addClass('d-none');
+                    $('.checkbox input[type="checkbox"]').prop("checked", false);
+                }
             });
 
             var template_data = null;
@@ -458,8 +456,6 @@
                           });
                       };
                       if(data.conditions){
-                          $('#id_type').find("input[name=type][value=AMRA]").prop('checked', true);
-                          $('.instructionType').trigger('change');
                           data.conditions.forEach(function(condition, index) {
                               $('#id_addition_condition').append(new Option(condition["text"], condition["id"], true, true)).trigger('change');
                           });
@@ -647,6 +643,10 @@
 
             if('{{scope_form.type.value}}' != 'None') {
                 $('.instructionType').trigger('change').trigger('change');
+                if($('#id_template').val() != ""){
+                    $('#id_template').trigger('change');
+                }
+                $('input[name="type"]:checked').trigger('change');
             }
 
             $("#template_modal_btn").click(function(){

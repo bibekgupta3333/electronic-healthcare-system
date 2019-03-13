@@ -8,6 +8,7 @@ from permissions.model_choices import MANAGER_PERMISSIONS, GP_PERMISSIONS,\
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 from common.models import TimeStampedModel
 from django.core.mail import send_mail
+from common.functions import multi_getattr
 
 SEX_CHOICES = (
     ('M', 'Male'),
@@ -147,6 +148,38 @@ class User(AbstractUser):
             user_profile = self.userprofilebase
             title = user_profile.get_title_display()
         return ' '.join([title, self.first_name, self.last_name])
+
+    def can_do_under(self):
+        client_organisation = multi_getattr(self, 'userprofilebase.clientuser.organisation', default=None)
+        org = OrganisationClient
+        types = [org.INSURER, org.REINSURER, org.OUTSOURCER]
+        if client_organisation and client_organisation.type in types:
+            return True
+        return False
+
+    def can_do_claim(self):
+        client_organisation = multi_getattr(self, 'userprofilebase.clientuser.organisation', default=None)
+        org = OrganisationClient
+        types = [
+            org.INSURER, org.REINSURER, org.BROKER, org.SOLICITOR,
+            org.OUTSOURCER, org.GOVERNMENT_AGENCY, org.PHARMACEUTICALS,
+            org.RESEARCH, org.OTHER
+        ]
+        if client_organisation and client_organisation.type in types:
+            return True
+        return False
+
+    def can_do_sars(self):
+        client_organisation = multi_getattr(self, 'userprofilebase.clientuser.organisation', default=None)
+        org = OrganisationClient
+        types = [
+            org.BROKER, org.SOLICITOR, org.OUTSOURCER,
+            org.GOVERNMENT_AGENCY, org.PHARMACEUTICALS,
+            org.RESEARCH, org.OTHER
+        ]
+        if client_organisation and client_organisation.type in types:
+            return True
+        return False
 
 
 class UserProfileBase(TimeStampedModel, models.Model):
