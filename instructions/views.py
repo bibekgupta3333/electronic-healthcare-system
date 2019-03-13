@@ -29,6 +29,7 @@ from report.models import ExceptionMerge
 from medicalreport.functions import create_patient_report
 #from silk.profiling.profiler import silk_profile
 
+from datetime import timedelta
 import pytz
 from itertools import chain
 import ast
@@ -80,6 +81,92 @@ def count_instructions(user, gp_practice_code, client_organisation, page=''):
             'Completed': complete_count,
         }
     return overall_instructions_number
+
+
+def count_fee_sensitive(user, gp_practice_code):
+    instruction_query_set = Instruction.objects.filter(type='AMRA')
+    instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
+
+    # Count date = 3
+    expected_date_3days = timezone.now() - timedelta(days=3)
+    to_expected_date_3days = expected_date_3days.replace(hour=23, minute=59, second=59)
+    from_expected_date_3days = expected_date_3days.replace(hour=00, minute=00, second=00)
+    new_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_NEW, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
+    progess_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_PROGRESS, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
+    final_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FINALISE, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
+    fail_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FAIL, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
+
+    # Count date = 7
+    expected_date_7days = timezone.now() - timedelta(days=7)
+    to_expected_date_7days = expected_date_7days.replace(hour=23, minute=59, second=59)
+    from_expected_date_7days = expected_date_7days.replace(hour=00, minute=00, second=00)
+    new_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_NEW, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
+    progess_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_PROGRESS, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
+    final_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FINALISE, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
+    fail_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FAIL, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
+
+    # Count date = 11
+    expected_date_11days = timezone.now() - timedelta(days=11)
+    to_expected_date_11days = expected_date_11days.replace(hour=23, minute=59, second=59)
+    from_expected_date_11days = expected_date_11days.replace(hour=00, minute=00, second=00)
+    new_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_NEW, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
+    progess_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_PROGRESS, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
+    final_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FINALISE, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
+    fail_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FAIL, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
+
+    new_total_count = new_count_3days + new_count_7days + new_count_11days
+    progress_total_count = progess_count_3days + progess_count_7days + progess_count_11days
+    final_total_count = final_count_3days + final_count_7days + final_count_11days
+    fail_total_count = fail_count_3days + fail_count_7days + fail_count_11days
+    all_total_count = new_total_count + progress_total_count + final_total_count + fail_total_count
+
+    fee_sensitive_number = {
+        'All': all_total_count,
+        'New': new_total_count,
+        'In Progress': progress_total_count,
+        'Finalising': final_total_count,
+        'Generated Fail': fail_total_count
+    }
+
+    return fee_sensitive_number
+
+
+def get_table_fee_sensitive(request, user, gp_practice_code):
+    cost_column_name = 'Income £'
+    instruction_query_set = Instruction.objects.filter(type='AMRA')
+    instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
+    instruction_query_set = instruction_query_set.filter(~Q(status=INSTRUCTION_STATUS_COMPLETE) & ~Q(status=INSTRUCTION_STATUS_REJECT) & ~Q(status=INSTRUCTION_STATUS_PAID))
+
+    table_number = request.GET.get('table', 1)
+    if int(table_number) == 2:
+        filter_status = request.GET.get('status', -1)
+        if int(filter_status) != -1:
+            instruction_query_set = instruction_query_set.filter(status=filter_status)
+
+    # Get Value for table range 3 days.
+    expected_date_3days = timezone.now() - timedelta(days=3)
+    to_expected_date_3days = expected_date_3days.replace(hour=23, minute=59, second=59)
+    from_expected_date_3days = expected_date_3days.replace(hour=00, minute=00, second=00)
+    instruction_query_set_3days = Q(created__range=(from_expected_date_3days, to_expected_date_3days))
+
+    # Get Value for table range 7 days.
+    expected_date_7days = timezone.now() - timedelta(days=7)
+    to_expected_date_7days = expected_date_7days.replace(hour=23, minute=59, second=59)
+    from_expected_date_7days = expected_date_7days.replace(hour=00, minute=00, second=00)
+    instruction_query_set_7days = Q(created__range=(from_expected_date_7days, to_expected_date_7days))
+
+    # Get Value for table range 11 days.
+    expected_date_11days = timezone.now() - timedelta(days=11)
+    to_expected_date_11days = expected_date_11days.replace(hour=23, minute=59, second=59)
+    from_expected_date_11days = expected_date_11days.replace(hour=00, minute=00, second=00)
+    instruction_query_set_11days = Q(created__range=(from_expected_date_11days, to_expected_date_11days))
+
+    instruction_query_set = instruction_query_set.filter(instruction_query_set_3days | instruction_query_set_7days | instruction_query_set_11days)
+    table_fee = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
+    table_fee.order_by = request.GET.get('sort', '-created')
+    table_fee.paginate(page=request.GET.get('page_t2', 1), per_page=5)
+
+    return table_fee
 
 
 def calculate_next_prev(page=None, **kwargs):
@@ -168,13 +255,20 @@ def create_snomed_relations(instruction, condition_of_interests):
 #@silk_profile(name='Pipline View')
 @login_required(login_url='/accounts/login')
 def instruction_pipeline_view(request):
+    gp_practice_code = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.pk', default=None)
     header_title = "Instructions Pipeline"
     user = request.user
+    table_num = request.GET.get('table', 'undefined')
+
+    if table_num == 'undefined':
+        table_num = 1
 
     if user.type == GENERAL_PRACTICE_USER:
         gp_practice = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation', default=None)
         if gp_practice and not gp_practice.is_active():
             return redirect('onboarding:emis_setup', practice_code=gp_practice.pk)
+
+        table_fee = get_table_fee_sensitive(request, user, gp_practice_code)
 
     if 'status' in request.GET:
         filter_type = request.GET.get('type', '')
@@ -190,17 +284,18 @@ def instruction_pipeline_view(request):
         filter_type = request.COOKIES.get('type', '')
         filter_status = int(request.COOKIES.get('status', -1))
 
-    if filter_type and filter_type != 'allType':
+    if filter_type != 'allType':
         instruction_query_set = Instruction.objects.filter(type=filter_type)
     else:
         instruction_query_set = Instruction.objects.all()
 
-    if filter_status != -1:
-        instruction_query_set = instruction_query_set.filter(status=filter_status)
+    if table_num == 1:
+        if filter_status != -1:
+            instruction_query_set = instruction_query_set.filter(status=filter_status)
 
-    gp_practice_code = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.pk', default=None)
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
     overall_instructions_number = count_instructions(request.user, gp_practice_code, client_organisation)
+    count_fee_sensitive_number = count_fee_sensitive(request.user, gp_practice_code)
     cost_column_name = 'Fee £'
     if request.user.type == CLIENT_USER:
         cost_column_name = 'Cost £'
@@ -217,16 +312,19 @@ def instruction_pipeline_view(request):
                 gp_practice_id=gp_practice_code
             )
 
-    table = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
-    table.order_by = request.GET.get('sort', '-created')
-    RequestConfig(request, paginate={'per_page': 5}).configure(table)
+    table_all = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
+    table_all.order_by = request.GET.get('sort', '-created')
+    RequestConfig(request, paginate={'per_page': 5}).configure(table_all)
 
     response = render(request, 'instructions/pipeline_views_instruction.html', {
         'user': user,
-        'table': table,
+        'table_all': table_all,
+        'table_fee': table_fee,
         'overall_instructions_number': overall_instructions_number,
+        'count_fee_sensitive_number': count_fee_sensitive_number,
         'header_title': header_title,
-        'next_prev_data': calculate_next_prev(table.page, filter_status=filter_status, filter_type=filter_type)
+        'next_prev_data_all': calculate_next_prev(table_all.page, filter_status=filter_status, filter_type=filter_type),
+        'next_prev_data_fee': calculate_next_prev(table_fee.page, filter_status=filter_status, filter_type=filter_type)
     })
 
     response.set_cookie('status', filter_status)

@@ -49,9 +49,13 @@ function getObjectKeyByValue(obj, val){
     }
 }
 
-function instructionStatusFilter(selected_status, page){
+function instructionStatusFilter(selected_status, page, tableNumber){
     if(page == 'pipeline'){
-        window.location = '/instruction/view-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
+        if( tableNumber == 2 ) {
+            window.location = '/instruction/view-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val() + '&table=2';
+        } else {
+            window.location = '/instruction/view-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
+        }
     } else if(page == 'payment'){
         window.location = '/instruction/view-fee-payment-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
     }
