@@ -18,29 +18,67 @@ def instruction_notification_email_job():
     instruction_notification_sars()
 
 
+def auto_reject_amra_after_23days():
+    email_user = 'auto_system@medidata.co'
+    auto_reject_user, created = User.objects.get_or_create(
+        email=email_user,
+        USERNAME_FIELD=email_user
+    )
+
+    instruction_query_set = Instruction.objects.filter(type='AMRA')
+    instruction_query_set = instruction_query_set.filter(~Q(status=INSTRUCTION_STATUS_COMPLETE) & ~Q(status=INSTRUCTION_STATUS_REJECT) & ~Q(status=INSTRUCTION_STATUS_PAID))
+
+    # Get Value for table range 23 days.
+    expected_date_23days = timezone.now() - timedelta(days=23)
+    to_expected_date_23days = expected_date_23days.replace(hour=23, minute=59, second=59)
+    from_expected_date_23days = expected_date_23days.replace(hour=00, minute=00, second=00)
+    instruction_query_set_23days = Q(fee_calculation_start_date__range=(from_expected_date_23days, to_expected_date_23days))
+    instruction_query_set = instruction_query_set.filter(instruction_query_set_23days)
+
+    for instruction in instruction_query_set:
+        instruction.status = INSTRUCTION_STATUS_REJECT
+        instruction.rejected_reason = LONG_TIMES
+        instruction.rejected_by = auto_reject_user
+        instruction.rejected_timestamp = timezone.now()
+        instruction.rejected_note = 'Instruction Too long'
+        instruction.save()
+
+
 def instruction_notification_amra():
     instruction_query_set = Instruction.objects.filter(type='AMRA')
     instruction_query_set = instruction_query_set.filter(~Q(status=INSTRUCTION_STATUS_COMPLETE) & ~Q(status=INSTRUCTION_STATUS_REJECT) & ~Q(status=INSTRUCTION_STATUS_PAID))
 
-     # Get Value for table range 3 days.
-    expected_date_3days = timezone.now() - timedelta(days=3)
-    to_expected_date_3days = expected_date_3days.replace(hour=23, minute=59, second=59)
-    from_expected_date_3days = expected_date_3days.replace(hour=00, minute=00, second=00)
-    instruction_query_set_3days = Q(created__range=(from_expected_date_3days, to_expected_date_3days))
+    # Get Value for table range 2 days.
+    expected_date_2days = timezone.now() - timedelta(days=2)
+    to_expected_date_2days = expected_date_2days.replace(hour=23, minute=59, second=59)
+    from_expected_date_2days = expected_date_2days.replace(hour=00, minute=00, second=00)
+    instruction_query_set_2days = Q(fee_calculation_start_date__range=(from_expected_date_2days, to_expected_date_2days))
 
-    # Get Value for table range 7 days.
-    expected_date_7days = timezone.now() - timedelta(days=7)
-    to_expected_date_7days = expected_date_7days.replace(hour=23, minute=59, second=59)
-    from_expected_date_7days = expected_date_7days.replace(hour=00, minute=00, second=00)
-    instruction_query_set_7days = Q(created__range=(from_expected_date_7days, to_expected_date_7days))
+    # Get Value for table range 6 days.
+    expected_date_6days = timezone.now() - timedelta(days=6)
+    to_expected_date_6days = expected_date_6days.replace(hour=23, minute=59, second=59)
+    from_expected_date_6days = expected_date_6days.replace(hour=00, minute=00, second=00)
+    instruction_query_set_6days = Q(fee_calculation_start_date__range=(from_expected_date_6days, to_expected_date_6days))
 
-    # Get Value for table range 11 days.
-    expected_date_11days = timezone.now() - timedelta(days=11)
-    to_expected_date_11days = expected_date_11days.replace(hour=23, minute=59, second=59)
-    from_expected_date_11days = expected_date_11days.replace(hour=00, minute=00, second=00)
-    instruction_query_set_11days = Q(created__range=(from_expected_date_11days, to_expected_date_11days))
+    # Get Value for table range 10 days.
+    expected_date_10days = timezone.now() - timedelta(days=10)
+    to_expected_date_10days = expected_date_10days.replace(hour=23, minute=59, second=59)
+    from_expected_date_10days = expected_date_10days.replace(hour=00, minute=00, second=00)
+    instruction_query_set_10days = Q(fee_calculation_start_date__range=(from_expected_date_10days, to_expected_date_10days))
 
-    instruction_query_set = instruction_query_set.filter(instruction_query_set_3days | instruction_query_set_7days | instruction_query_set_11days)
+    # Get Value for table range 14 days.
+    expected_date_14days = timezone.now() - timedelta(days=14)
+    to_expected_date_14days = expected_date_14days.replace(hour=23, minute=59, second=59)
+    from_expected_date_14days = expected_date_14days.replace(hour=00, minute=00, second=00)
+    instruction_query_set_14days = Q(fee_calculation_start_date__range=(from_expected_date_14days, to_expected_date_14days))
+
+    # Get Value for table range 20 days.
+    expected_date_20days = timezone.now() - timedelta(days=20)
+    to_expected_date_20days = expected_date_20days.replace(hour=23, minute=59, second=59)
+    from_expected_date_20days = expected_date_20days.replace(hour=00, minute=00, second=00)
+    instruction_query_set_20days = Q(fee_calculation_start_date__range=(from_expected_date_20days, to_expected_date_20days))
+
+    instruction_query_set = instruction_query_set.filter(instruction_query_set_2days | instruction_query_set_6days | instruction_query_set_10days)
 
 
 def instruction_notification_sars():

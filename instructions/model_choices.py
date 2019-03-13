@@ -29,10 +29,12 @@ PATIENT_NO_LONGER_REGISTERED = 1
 CONSENT_INVALID = 2
 INAPPROPRIATE_SAR = 3
 GENERATOR_FAIL = 4
+LONG_TIMES = 5
 INSTRUCTION_REJECT_TYPE = (
     (PATIENT_NOT_FOUND, 'No suitable patient can be found'),
     (PATIENT_NO_LONGER_REGISTERED, 'The patient is no longer registered at this practice'),
     (CONSENT_INVALID, 'The consent form is invalid'),
     (INAPPROPRIATE_SAR, 'Inappropriate instruction for Subject Access Request'),
-    (GENERATOR_FAIL, 'The instruction has generated fail')
+    (GENERATOR_FAIL, 'The instruction has generated fail'),
+    (LONG_TIMES, 'Instruction Too long')
 )
