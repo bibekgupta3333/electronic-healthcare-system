@@ -27,6 +27,7 @@ from permissions.functions import check_permission
 from .print_consents import MDXDualConsent
 from report.models import ExceptionMerge
 from medicalreport.functions import create_patient_report
+from template.models import TemplateInstruction
 #from silk.profiling.profiler import silk_profile
 
 from datetime import timedelta
@@ -417,6 +418,11 @@ def new_instruction(request):
     nhs_form = GeneralPracticeForm()
     reference_form = ReferenceForm()
     date_range_form = InstructionDateRangeForm()
+    client_organisation = multi_getattr(request.user, 'userprofilebase.clientuser.organisation', default=None)
+    if client_organisation:
+        templates = TemplateInstruction.objects.filter(Q(organisation=client_organisation) | Q(organisation__isnull=True))
+    else:
+        templates = TemplateInstruction.objects.filter(organisation__isnull=True)
 
     if request.method == "POST":
         request.POST._mutable = True
@@ -553,6 +559,7 @@ def new_instruction(request):
                 'nhs_form': nhs_form,
                 'gp_form': gp_form,
                 'scope_form': scope_form,
+                'templates': templates,
                 'date_range_form': date_range_form,
                 'reference_form': reference_form,
                 'addition_question_formset': addition_question_formset,
@@ -631,6 +638,7 @@ def new_instruction(request):
             'nhs_form': nhs_form,
             'gp_form': gp_form,
             'scope_form': scope_form,
+            'templates': templates,
             'date_range_form': date_range_form,
             'addition_question_formset': addition_question_formset,
             'nhs_address': nhs_address,
@@ -651,6 +659,7 @@ def new_instruction(request):
         'nhs_form': nhs_form,
         'gp_form': gp_form,
         'scope_form': scope_form,
+        'templates': templates,
         'date_range_form': date_range_form,
         'reference_form': reference_form,
         'addition_question_formset': addition_question_formset
@@ -685,7 +694,6 @@ def upload_consent(request, instruction_id):
 
 
 #@silk_profile(name='Review Instruction')
-@cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
 def review_instruction(request, instruction_id):
@@ -836,6 +844,7 @@ def view_reject(request, instruction_id):
         'instruction': instruction,
         'instruction_id': instruction.id,
     })
+
 
 @login_required(login_url='/accounts/login')
 def view_fail(request, instruction_id):

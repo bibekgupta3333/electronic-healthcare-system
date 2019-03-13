@@ -32,7 +32,7 @@ class reportAuthTestCase(TestCase):
         # create client user
         self.client_user = mommy.make(
             ClientUser, organisation=self.client_organisation,
-            role=ClientUser.CLIENT_ADMIN,
+            role=ClientUser.CLIENT_MANAGER,
         )
 
         # create gp org. & gp user.

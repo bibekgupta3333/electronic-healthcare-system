@@ -203,7 +203,7 @@ class InstructionAdmin(CustomImportExportModelAdmin):
     list_filter = ('type', DaysSinceFilter, ClientOrgFilter, GPOrgFilter)
     resource_class = InstructionResource
     raw_id_fields = ('gp_practice', )
-    readonly_fields = ('medi_ref',)
+    readonly_fields = ('medi_ref', 'get_client_org_name',)
     actions = ['export_status_report_as_csv', 'export_payment_as_csv', 'export_client_payment_as_csv']
     search_fields = [
         'type'
@@ -212,7 +212,7 @@ class InstructionAdmin(CustomImportExportModelAdmin):
     fieldsets = (
         ('Instruction Information', {
             'fields': (
-                'status', 'client_user', 'gp_user', 'patient_information', 'type', 'gp_practice', 'date_range_from', 'date_range_to', 'your_ref', 'medi_ref',
+                'status', 'get_client_org_name', 'client_user', 'gp_user', 'patient_information', 'type', 'gp_practice', 'date_range_from', 'date_range_to', 'your_ref', 'medi_ref',
                 'gp_title_from_client', 'gp_initial_from_client', 'gp_last_name_from_client', 'deactivated'
             )
         }),
