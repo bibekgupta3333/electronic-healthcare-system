@@ -719,9 +719,6 @@ def new_instruction(request):
         condition_of_interest = [snomed.fsn_description for snomed in instruction.selected_snomed_concepts()]
         addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.filter(instruction=instruction))
 
-        # Check status GP Org.
-        
-
         return render(request, 'instructions/new_instruction.html', {
             'header_title': header_title,
             'patient_form': patient_form,
