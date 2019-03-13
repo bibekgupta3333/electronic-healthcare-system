@@ -21,6 +21,12 @@ def get_gporganisation_data(request, **kwargs):
     if code:
         gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=code).first()
         if gp_organisation:
+            # Check the status
+            if gp_organisation.live:
+                status = 'live surgery'
+            else:
+                if gp_organisation.
+
             data = {
                 'name': gp_organisation.name,
                 'address': ' '.join(
@@ -32,7 +38,8 @@ def get_gporganisation_data(request, **kwargs):
                         gp_organisation.billing_address_state,
                         gp_organisation.billing_address_postalcode,
                     )
-                )
+                ),
+                'status': status
             }
 
     if kwargs.get('need_dict'):
