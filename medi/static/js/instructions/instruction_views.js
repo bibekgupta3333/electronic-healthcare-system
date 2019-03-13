@@ -49,8 +49,12 @@ function getObjectKeyByValue(obj, val){
     }
 }
 
-function instructionStatusFilter(selected_status){
-    window.location = '/instruction/view-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
+function instructionStatusFilter(selected_status, page){
+    if(page == 'pipeline'){
+        window.location = '/instruction/view-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
+    } else if(page == 'payment'){
+        window.location = '/instruction/view-fee-payment-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
+    }
 }
 
 function gpuserStatusFilter(selected_status){
@@ -65,11 +69,15 @@ function clientuserStatusFilter(selected_status){
     window.location = '/accounts/view-users/?status=' + clientuser_roleDict[selected_status] + '&type=' + $('#filterUserType').val() + '&user_type=CLT';
 }
 
-function typeFilter(){
+function typeFilter(page){
     if(getUrlParameter('status')){
         status = getUrlParameter('status');
     }
-    window.location = '/instruction/view-pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val();
+    if(page == 'pipeline'){
+        window.location = '/instruction/view-pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val();
+    } else if(page == 'payment'){
+        window.location = '/instruction/view-fee-payment-pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val();
+    }
 }
 
 function userTypeFilter() {
