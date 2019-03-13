@@ -73,7 +73,7 @@ class Instruction(TimeStampedModel, models.Model):
     client_user = models.ForeignKey(ClientUser, on_delete=models.CASCADE, verbose_name='Client', null=True)
     gp_user = models.ForeignKey(GeneralPracticeUser, on_delete=models.CASCADE, verbose_name='GP Allocated', null=True)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, null=True, verbose_name='Patient')
-    completed_signed_off_timestamp = models.DateTimeField(null=True, blank=True)
+    completed_signed_off_timestamp = models.DateTimeField(null=True, blank=True, verbose_name='Completed')
     rejected_timestamp = models.DateTimeField(null=True, blank=True)
     rejected_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     rejected_note = models.TextField(blank=True)
@@ -101,8 +101,8 @@ class Instruction(TimeStampedModel, models.Model):
     download_attachments = models.TextField(blank=True)
     saved = models.BooleanField(default=False)
     deactivated = models.BooleanField(default=False, verbose_name="Deactivated at patient request")
-    medi_ref = models.IntegerField(null=True, blank=True)
-    your_ref = models.CharField(max_length=80, null=True, blank=True)
+    medi_ref = models.IntegerField(null=True, blank=True, verbose_name="Medi Ref.")
+    your_ref = models.CharField(max_length=80, null=True, blank=True, verbose_name="Client Ref.")
     client_payment_reference = models.CharField(max_length=255, blank=True)
     gp_payment_reference = models.CharField(max_length=255, blank=True)
     fee_calculation_start_date = models.DateTimeField(null=True, blank=True)
@@ -242,6 +242,11 @@ class Instruction(TimeStampedModel, models.Model):
         str_date_range = str(self.date_range_from) + ' - ' + str(self.date_range_to)
         return str_date_range
 
+    def get_client_org_name(self):
+        return self.client_user.organisation.trading_name
+        
+    get_client_org_name.allow_tags = False
+    get_client_org_name.short_description = 'Client organisation name'
 
 class InstructionAdditionQuestion(models.Model):
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE, related_name='addition_questions')

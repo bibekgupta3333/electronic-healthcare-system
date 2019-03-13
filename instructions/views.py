@@ -12,7 +12,7 @@ from .models import Instruction, InstructionAdditionQuestion, InstructionConditi
 from .tables import InstructionTable
 from .model_choices import *
 from .forms import ScopeInstructionForm, AdditionQuestionFormset, SarsConsentForm, MdxConsentForm,\
-        ReferenceForm, ConsentForm, InstructionDateRangeForm
+        ReferenceForm, ConsentForm, InstructionDateRangeForm, DateRangeSearchForm
 from accounts.models import User, GeneralPracticeUser, PracticePreferences
 from accounts.models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from accounts.forms import InstructionPatientForm, GPForm
@@ -27,6 +27,7 @@ from permissions.functions import check_permission
 from .print_consents import MDXDualConsent
 from report.models import ExceptionMerge
 from medicalreport.functions import create_patient_report
+from template.models import TemplateInstruction
 #from silk.profiling.profiler import silk_profile
 
 import pytz
@@ -35,12 +36,13 @@ import ast
 import requests
 import json
 import re
+import dateutil
 
 from django.conf import settings
 PIPELINE_INSTRUCTION_LINK = get_url_page('instruction_pipeline')
 
 
-def count_instructions(user, gp_practice_code, client_organisation):
+def count_instructions(user, gp_practice_code, client_organisation, page=''):
     naive = parse_datetime("2000-01-1 00:00:00")
     origin_date = pytz.timezone("Europe/London").localize(naive, is_dst=None)
     query_condition = Q(created__gt=origin_date)
@@ -52,7 +54,6 @@ def count_instructions(user, gp_practice_code, client_organisation):
     elif user.type == CLIENT_USER:
         query_condition = Q(client_user__organisation=client_organisation)
 
-    all_count = Instruction.objects.filter(query_condition).count()
     new_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_NEW).count()
     progress_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_PROGRESS).count()
     paid_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_PAID).count()
@@ -60,16 +61,25 @@ def count_instructions(user, gp_practice_code, client_organisation):
     rejected_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_REJECT).count()
     finalise_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_FINALISE).count()
     fail_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_FAIL).count()
-    overall_instructions_number = {
-        'All': all_count,
-        'New': new_count,
-        'In Progress': progress_count,
-        'Paid': paid_count,
-        'Finalising': finalise_count,
-        'Generated Fail': fail_count,
-        'Completed': complete_count,
-        'Rejected': rejected_count
-    }
+    if not page:
+        all_count = Instruction.objects.filter(query_condition).count()
+        overall_instructions_number = {
+            'All': all_count,
+            'New': new_count,
+            'In Progress': progress_count,
+            'Paid': paid_count,
+            'Completed': complete_count,
+            'Rejected': rejected_count,
+            'Finalising': finalise_count,
+            'Generated Fail': fail_count,
+        }
+    elif page == 'fee_and_payment_pipeline':
+        all_count = Instruction.objects.filter(query_condition, status__in=[INSTRUCTION_STATUS_PAID, INSTRUCTION_STATUS_COMPLETE]).count()
+        overall_instructions_number = {
+            'All': all_count,
+            'Paid': paid_count,
+            'Completed': complete_count,
+        }
     return overall_instructions_number
 
 
@@ -195,7 +205,6 @@ def instruction_pipeline_view(request):
     cost_column_name = 'Fee £'
     if request.user.type == CLIENT_USER:
         cost_column_name = 'Cost £'
-        overall_instructions_number = count_instructions(request.user, gp_practice_code, client_organisation)
         instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
 
     if request.user.type == GENERAL_PRACTICE_USER:
@@ -226,6 +235,81 @@ def instruction_pipeline_view(request):
     return response
 
 
+@login_required(login_url='/accounts/login')
+def instruction_fee_payment_view(request):
+    header_title = "Instructions Pipeline"
+    user = request.user
+    date_range_form = DateRangeSearchForm()
+
+    if user.type == GENERAL_PRACTICE_USER:
+        gp_practice = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation', default=None)
+        if gp_practice and not gp_practice.is_active():
+            return redirect('onboarding:emis_setup', practice_code=gp_practice.pk)
+
+    filter_type = ''
+    filter_status = -1
+    if 'status' in request.GET:
+        filter_type = request.GET.get('type', '')
+        filter_status = request.GET.get('status', -1)
+        if filter_status == 'undefined':
+            filter_status = -1
+        else:
+            filter_status = int(filter_status)
+
+        if filter_type == 'undefined':
+            filter_type = 'allType'
+
+    if filter_type and filter_type != 'allType':
+        instruction_query_set = Instruction.objects.filter(type=filter_type, status__in=[INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_PAID])
+    else:
+        instruction_query_set = Instruction.objects.filter(status__in=[INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_PAID])
+
+    if filter_status != -1:
+        instruction_query_set = instruction_query_set.filter(status=filter_status)
+
+    gp_practice_code = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.pk', default=None)
+    client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
+    overall_instructions_number = count_instructions(request.user, gp_practice_code, client_organisation, page='fee_and_payment_pipeline')
+    cost_column_name = 'Fee £'
+    if request.user.type == CLIENT_USER:
+        cost_column_name = 'Cost £'
+        instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
+
+    if request.user.type == GENERAL_PRACTICE_USER:
+        cost_column_name = 'Income £'
+        gp_role = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.role')
+        if gp_role == GeneralPracticeUser.PRACTICE_MANAGER:
+            instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
+        elif request.user.has_perm('instructions.process_sars'):
+            instruction_query_set = instruction_query_set.filter(
+                Q(gp_user=user.userprofilebase.generalpracticeuser) | Q(gp_user__isnull=True),
+                gp_practice_id=gp_practice_code
+            )
+
+    if request.method == 'POST':
+        from_date = dateutil.parser.parse(request.POST.get('from_date', '')).replace(tzinfo=pytz.UTC)
+        to_date = dateutil.parser.parse(request.POST.get('to_date', '')).replace(tzinfo=pytz.UTC)
+        instruction_query_set = instruction_query_set.filter(completed_signed_off_timestamp__range=[from_date, to_date])
+
+    table = InstructionTable(instruction_query_set, extra_columns=[
+        ('cost', Column(empty_values=(), verbose_name=cost_column_name)),
+        ('fee_note', Column(empty_values=(), verbose_name='Fee Note', default='---'))
+    ])
+    table.order_by = request.GET.get('sort', '-created')
+    RequestConfig(request, paginate={'per_page': 5}).configure(table)
+
+    response = render(request, 'instructions/fee_payment_pipline_view_instructions.html', {
+        'user': user,
+        'table': table,
+        'overall_instructions_number': overall_instructions_number,
+        'header_title': header_title,
+        'next_prev_data': calculate_next_prev(table.page, filter_status=filter_status, filter_type=filter_type),
+        'date_range_form': date_range_form,
+    })
+
+    return response
+
+
 #@silk_profile(name='New Instruction')
 @login_required(login_url='/accounts/login')
 @check_permission
@@ -236,6 +320,11 @@ def new_instruction(request):
     nhs_form = GeneralPracticeForm()
     reference_form = ReferenceForm()
     date_range_form = InstructionDateRangeForm()
+    client_organisation = multi_getattr(request.user, 'userprofilebase.clientuser.organisation', default=None)
+    if client_organisation:
+        templates = TemplateInstruction.objects.filter(Q(organisation=client_organisation) | Q(organisation__isnull=True))
+    else:
+        templates = TemplateInstruction.objects.filter(organisation__isnull=True)
 
     if request.method == "POST":
         request.POST._mutable = True
@@ -372,6 +461,7 @@ def new_instruction(request):
                 'nhs_form': nhs_form,
                 'gp_form': gp_form,
                 'scope_form': scope_form,
+                'templates': templates,
                 'date_range_form': date_range_form,
                 'reference_form': reference_form,
                 'addition_question_formset': addition_question_formset,
@@ -450,6 +540,7 @@ def new_instruction(request):
             'nhs_form': nhs_form,
             'gp_form': gp_form,
             'scope_form': scope_form,
+            'templates': templates,
             'date_range_form': date_range_form,
             'addition_question_formset': addition_question_formset,
             'nhs_address': nhs_address,
@@ -470,6 +561,7 @@ def new_instruction(request):
         'nhs_form': nhs_form,
         'gp_form': gp_form,
         'scope_form': scope_form,
+        'templates': templates,
         'date_range_form': date_range_form,
         'reference_form': reference_form,
         'addition_question_formset': addition_question_formset
@@ -504,7 +596,6 @@ def upload_consent(request, instruction_id):
 
 
 #@silk_profile(name='Review Instruction')
-@cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
 def review_instruction(request, instruction_id):
@@ -655,6 +746,7 @@ def view_reject(request, instruction_id):
         'instruction': instruction,
         'instruction_id': instruction.id,
     })
+
 
 @login_required(login_url='/accounts/login')
 def view_fail(request, instruction_id):

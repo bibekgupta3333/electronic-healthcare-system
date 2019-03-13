@@ -17,7 +17,7 @@ class CalculateInstructionFeeBaseTest(TestCase):
         )
         self.client_user = mommy.make(
             ClientUser, organisation=self.client_organisation,
-            role=ClientUser.CLIENT_ADMIN,
+            role=ClientUser.CLIENT_MANAGER,
         )
         self.gp_practice = mommy.make(
             OrganisationGeneralPractice,
