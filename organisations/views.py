@@ -56,11 +56,23 @@ def get_nhs_autocomplete(request):
     }
     search = request.GET.get('search', '')
     if search:
-        organisation_gps = OrganisationGeneralPractice.objects.filter(live=True, accept_policy=True).filter(name__icontains=search)
-        nhs_gps = OrganisationGeneralPractice.objects.filter(Q(live=False) | Q(accept_policy=False)).filter(name__icontains=search)
+        organisation_gps = OrganisationGeneralPractice.objects.filter(
+            Q(name__icontains=search) |
+            Q(billing_address_postalcode__icontains=search) |
+            Q(billing_address_city__icontains=search) |
+            Q(billing_address_street__icontains=search),
+            live=True, accept_policy=True,
+        )
+        nhs_gps = OrganisationGeneralPractice.objects.filter(
+            Q(name__icontains=search) |
+            Q(billing_address_postalcode__icontains=search) |
+            Q(billing_address_city__icontains=search) |
+            Q(billing_address_street__icontains=search),
+            Q(live=False) | Q(accept_policy=False),
+        )
     else:
         organisation_gps = OrganisationGeneralPractice.objects.filter(live=True, accept_policy=True).all()[:10]
-        nhs_gps = OrganisationGeneralPractice.objects.filter(Q(live=False) | Q(accept_policy=False)).filter(name__icontains=search)[:10]
+        nhs_gps = OrganisationGeneralPractice.objects.filter(Q(live=False) | Q(accept_policy=False), name__icontains=search)[:10]
 
     if organisation_gps.exists():
         for organisation_gp in organisation_gps:
