@@ -1,10 +1,12 @@
 from django.core.mail import send_mail
 from django.utils import timezone
 from django.shortcuts import reverse
+from django.db.models import Q
 from instructions.models import Instruction, InstructionReminder
-from instructions.model_choices import INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS, SARS_TYPE
+from instructions.model_choices import *
 from accounts.models import User, PracticePreferences, GeneralPracticeUser
 from common.functions import get_url_page
+from datetime import timedelta
 
 from smtplib import SMTPException
 import logging
@@ -13,6 +15,35 @@ from django.conf import settings
 
 
 def instruction_notification_email_job():
+    instruction_notification_sars()
+
+
+def instruction_notification_amra():
+    instruction_query_set = Instruction.objects.filter(type='AMRA')
+    instruction_query_set = instruction_query_set.filter(~Q(status=INSTRUCTION_STATUS_COMPLETE) & ~Q(status=INSTRUCTION_STATUS_REJECT) & ~Q(status=INSTRUCTION_STATUS_PAID))
+
+     # Get Value for table range 3 days.
+    expected_date_3days = timezone.now() - timedelta(days=3)
+    to_expected_date_3days = expected_date_3days.replace(hour=23, minute=59, second=59)
+    from_expected_date_3days = expected_date_3days.replace(hour=00, minute=00, second=00)
+    instruction_query_set_3days = Q(created__range=(from_expected_date_3days, to_expected_date_3days))
+
+    # Get Value for table range 7 days.
+    expected_date_7days = timezone.now() - timedelta(days=7)
+    to_expected_date_7days = expected_date_7days.replace(hour=23, minute=59, second=59)
+    from_expected_date_7days = expected_date_7days.replace(hour=00, minute=00, second=00)
+    instruction_query_set_7days = Q(created__range=(from_expected_date_7days, to_expected_date_7days))
+
+    # Get Value for table range 11 days.
+    expected_date_11days = timezone.now() - timedelta(days=11)
+    to_expected_date_11days = expected_date_11days.replace(hour=23, minute=59, second=59)
+    from_expected_date_11days = expected_date_11days.replace(hour=00, minute=00, second=00)
+    instruction_query_set_11days = Q(created__range=(from_expected_date_11days, to_expected_date_11days))
+
+    instruction_query_set = instruction_query_set.filter(instruction_query_set_3days | instruction_query_set_7days | instruction_query_set_11days)
+
+
+def instruction_notification_sars():
     now = timezone.now()
     new_or_pending_instructions = Instruction.objects.filter(
         status__in=(INSTRUCTION_STATUS_NEW, INSTRUCTION_STATUS_PROGRESS),
