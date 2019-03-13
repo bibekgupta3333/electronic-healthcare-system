@@ -587,7 +587,6 @@ def upload_consent(request, instruction_id):
 
 
 #@silk_profile(name='Review Instruction')
-@cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
 def review_instruction(request, instruction_id):
@@ -738,6 +737,7 @@ def view_reject(request, instruction_id):
         'instruction': instruction,
         'instruction_id': instruction.id,
     })
+
 
 @login_required(login_url='/accounts/login')
 def view_fail(request, instruction_id):
