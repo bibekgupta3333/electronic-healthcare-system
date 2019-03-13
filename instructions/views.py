@@ -287,9 +287,10 @@ def instruction_fee_payment_view(request):
             )
 
     if request.method == 'POST':
-        from_date = dateutil.parser.parse(request.POST.get('from_date', '')).replace(tzinfo=pytz.UTC)
-        to_date = dateutil.parser.parse(request.POST.get('to_date', '')).replace(tzinfo=pytz.UTC)
-        instruction_query_set = instruction_query_set.filter(completed_signed_off_timestamp__range=[from_date, to_date])
+        if request.POST.get('from_date', '') and request.POST.get('to_date', ''):
+            from_date = dateutil.parser.parse(request.POST.get('from_date', '')).replace(tzinfo=pytz.UTC)
+            to_date = dateutil.parser.parse(request.POST.get('to_date', '')).replace(tzinfo=pytz.UTC)
+            instruction_query_set = instruction_query_set.filter(completed_signed_off_timestamp__range=[from_date, to_date])
 
     table = InstructionTable(instruction_query_set, extra_columns=[
         ('cost', Column(empty_values=(), verbose_name=cost_column_name)),
