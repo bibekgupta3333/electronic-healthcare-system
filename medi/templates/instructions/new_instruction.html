@@ -118,14 +118,16 @@
                         <div class="card-header"><h5>GP and GP Practice</h5></div>
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-3 rowTitle">Search GP Practice:</div>
-                                {% bootstrap_field nhs_form.gp_practice size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
-                                <input type="hidden" name="gp_practice_name" id="id_gp_practice_name" />
-                            </div>
-                            <div class="row " style="height: 130px">
                                 <div class="col-md-3 d-flex">GP Practice*:</div>
                                 <div class="col-md-6 p-0"><p id="nhsData"></p></div>
                             </div>
+                            <div class="col-md-12">&nbsp;</div>
+                            <div class="row">
+                                <div class="col-md-3 rowTitle">Search GP Practice:</div>
+                                {% bootstrap_field nhs_form.gp_practice size='small' form_group_class='form-group col-md-6' show_label=False %}
+                                <input type="hidden" name="gp_practice_name" id="id_gp_practice_name" />
+                            </div>
+                            <div class="col-md-12">&nbsp;</div>
                             <div class="row ">
                                 <div class="col-md-3 rowTitle">Named GP:</div>
                                 {% bootstrap_field gp_form.gp_title size='small' form_group_class='form-group col-md-2 p-0' %}
