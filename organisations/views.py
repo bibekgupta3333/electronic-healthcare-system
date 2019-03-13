@@ -17,6 +17,8 @@ def get_gporganisation_data(request, **kwargs):
     data = {
         'name': '',
         'address': '',
+        'status': '',
+        'status_class': ''
     }
     if code:
         gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=code).first()
@@ -24,8 +26,14 @@ def get_gporganisation_data(request, **kwargs):
             # Check the status
             if gp_organisation.live:
                 status = 'live surgery'
+                status_class = 'text-success'
             else:
-                if gp_organisation.
+                if gp_organisation.gp_operating_system == 'EMISWeb':
+                    status = 'Access not set-up'
+                    status_class = 'text-danger'
+                else:
+                    status = 'Not applicable'
+                    status_class = 'text-dark'
 
             data = {
                 'name': gp_organisation.name,
@@ -39,7 +47,8 @@ def get_gporganisation_data(request, **kwargs):
                         gp_organisation.billing_address_postalcode,
                     )
                 ),
-                'status': status
+                'status': status,
+                'status_class': status_class
             }
 
     if kwargs.get('need_dict'):
