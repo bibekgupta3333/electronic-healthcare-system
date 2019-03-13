@@ -8,6 +8,7 @@ from permissions.templatetags.get_permissions import view_complete_report
 
 class InstructionTable(tables.Table):
     patient_information = tables.Column()
+    client_ref = tables.Column(empty_values=(), default='-')
     created = tables.DateTimeColumn(format='D j M Y')
     status = tables.Column()
     user = None
@@ -19,7 +20,7 @@ class InstructionTable(tables.Table):
         }
         model = Instruction
         fields = (
-            'client_user', 'gp_practice', 'type', 'patient_information', 'medi_ref', 'your_ref',
+            'client_ref', 'client_user', 'gp_practice', 'type', 'patient_information', 'medi_ref', 'your_ref',
             'gp_user', 'cost', 'created', 'completed_signed_off_timestamp', 'status', 'fee_note'
         )
         template_name = 'django_tables2/semantic.html'
@@ -32,6 +33,7 @@ class InstructionTable(tables.Table):
             self.columns.hide('client_user')
         elif request.user.type == models.GENERAL_PRACTICE_USER:
             self.columns.hide('gp_practice')
+            self.columns.hide('client_ref')
 
         if request.resolver_match.url_name == 'view_pipeline':
             self.columns.hide('medi_ref')
@@ -41,8 +43,15 @@ class InstructionTable(tables.Table):
         elif request.resolver_match.url_name == 'view_fee_payment_pipeline':
             self.columns.hide('gp_user')
             self.columns.hide('created')
+            self.columns.hide('client_ref')
 
         self.user = request.user
+
+    def render_client_ref(self, record):
+        client_ref = record.your_ref
+        if not client_ref:
+            client_ref = "—"
+        return format_html(client_ref)
 
     def render_client_user(self, value):
         user = value.user

@@ -50,7 +50,22 @@
         </div>
         <input type="hidden" id="instruction_id" name="instruction_id" value="{{ instruction_id }}" />
         <div class="card-deck instruction">
-            <div class="pr-0 {% if request.user.type == 'CLT' %} col-md-6 {% else %} col-md-12 {% endif %}">
+            {% if request.user.type == 'CLT' %}
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header"><h5>References</h5></div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-2">Your reference:</div>
+                                {% bootstrap_field reference_form.your_ref size='small' form_group_class='form-group col-md-4' show_label=False placeholder='' %}
+                                <div class="col-md-2">MediRef:</div>
+                                {% bootstrap_field reference_form.medi_ref size='small' form_group_class='form-group col-md-4' show_label=False %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            <div class="pr-0 {% if request.user.type == 'CLT' %} col-md-6 mt-4 {% else %} col-md-12 {% endif %}">
                 <div class="card mr-2">
                     <div class="card-header">
                         <div class="row">
@@ -98,7 +113,7 @@
                 </div>
             </div>
             {% if request.user.type == 'CLT' %}
-                <div class="col-md-6 ">
+                <div class="col-md-6 mt-4">
                     <div class="card ">
                         <div class="card-header"><h5>GP and GP Practice</h5></div>
                         <div class="card-body">
@@ -128,7 +143,7 @@
                                 <div class="col-md-2 d-flex">Type of Instruction*:</div>
                                 {% bootstrap_field scope_form.type size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
                             </div>
-                            <div class="row">
+                            <div class="row" id="template_form">
                                 <div class="col-md-2 rowTitle">Set from Template?</div>
                                 {% bootstrap_field scope_form.template size='small' form_group_class='form-group col-md-6 px-0' show_label=False %}
                             </div>
@@ -147,19 +162,6 @@
                                     {% bootstrap_field scope_form.addition_condition size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
                                     {{scope_form.addition_condition_title}}
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-12 mt-4">
-                    <div class="card">
-                        <div class="card-header"><h5>References</h5></div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-2">Your reference:</div>
-                                {% bootstrap_field reference_form.your_ref size='small' form_group_class='form-group col-md-4' show_label=False placeholder='' %}
-                                <div class="col-md-2">MediRef:</div>
-                                {% bootstrap_field reference_form.medi_ref size='small' form_group_class='form-group col-md-4' show_label=False %}
                             </div>
                         </div>
                     </div>
@@ -259,6 +261,11 @@
         </div>
       </div>
     </div>
+
+    <!-- Hidden tooltip -->
+    {% for template in templates %}
+      <p id="template_{{template.pk}}" class="tooltip">{{template.description}}</p>
+    {% endfor %}
 {% endblock %}
 
 {% block Script %}
@@ -278,15 +285,18 @@
             $("#id_type_2").click( function() {
                 $('#consent_main_block').hide();
                 $('#questions_main_block').hide();
+                $('#template_form').hide();
                 $('.checkbox input[type="checkbox"]').prop("checked", false);
             });
             $("#id_type_1").click( function() {
                 $('#consent_main_block').show();
                 $('#questions_main_block').show();
+                $('#template_form').show();
             });
             $("#id_type_0").click( function() {
                 $('#consent_main_block').show();
                 $('#questions_main_block').show();
+                $('#template_form').show();
             });
 
             var template_data = null;
@@ -398,7 +408,26 @@
             });
 
             $('#id_template').select2();
-            
+            $('#id_template').on('select2:close', function() {
+                $('.tooltip').hide();
+            });
+
+            $(document).on('mouseenter', '#select2-id_template-results .select2-results__option', function(){
+                var optionID = $(this).attr('id');
+                if(optionID !== undefined){
+                    var templateID = optionID.split('-')[optionID.split("-").length-1];
+                    if ($(this).get(0).scrollWidth >= $(this).get(0).clientWidth) {
+                        var descriptionEL = $('#template_' + templateID);
+                        descriptionEL.show()
+                        descriptionEL.css({
+                           'left': ($(this).offset().left + $(this).outerWidth(true)) + 2,
+                           'top': parseFloat($(this).offset().top) + 5
+                        });
+                    }
+                }
+            }).on('mouseleave', '#select2-id_template-results .select2-results__option', function(e){
+                $('.tooltip').hide();
+            });
             $('#id_template').on('change', function () {
                 $.ajax({
                   url: "{% url 'template:get_template_data' template_id=0 %}".replace('0',$(this).val()),
