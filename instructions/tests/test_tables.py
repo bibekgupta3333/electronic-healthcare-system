@@ -12,6 +12,7 @@ from instructions.models import (
 )
 from instructions.model_choices import INSTRUCTION_STATUS_PROGRESS, AMRA_TYPE
 from instructions.tables import InstructionTable
+from django.urls import resolve
 
 
 class TestRenderTables(TestCase):
@@ -27,7 +28,7 @@ class TestRenderTables(TestCase):
         self.client_organisation = mommy.make(OrganisationClient, trading_name=self.client_name)
         self.client_user = mommy.make(
             ClientUser, organisation=self.client_organisation,
-            role=ClientUser.CLIENT_ADMIN,
+            role=ClientUser.CLIENT_MANAGER,
         )
         self.instruction_patient = mommy.make(
             InstructionPatient,
@@ -60,8 +61,9 @@ class TestRenderTables(TestCase):
         )
 
     def test_render(self):
-        request = self.request.get('view-pipeline')
+        request = self.request.get('/instruction/view-pipeline')
         request.user = self.user_test
+        request.resolver_match = resolve('/instruction/view-pipeline/')
 
         instruction_query_set = Instruction.objects.all()
         table = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name='Income £'))])

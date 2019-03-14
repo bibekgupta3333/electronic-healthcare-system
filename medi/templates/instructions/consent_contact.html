@@ -135,15 +135,19 @@
                                 </div>
                                 <div class="row mt-4">
                                     <div class="col-md-4 rowTitle">Mobile Phone</div>
-                                    {% bootstrap_field patient_form.patient_telephone_mobile size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
-                                    {% bootstrap_field patient_form.patient_telephone_code %}
+                                    <div class="col-md-8">
+                                        {% bootstrap_field patient_form.patient_telephone_mobile size='small' show_label=false placeholder='' %}
+                                        {% bootstrap_field patient_form.patient_telephone_code %}
+                                    </div>
                                 </div>
                                 <div class="row mt-4">
                                     <div class="col-md-4">
                                         <label for="id_patient_alternate_phone" class="col-form-label">Alternate Phone <br> (optional)</label>
                                     </div>
-                                    {% bootstrap_field patient_form.patient_alternate_phone size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
-                                    {% bootstrap_field patient_form.patient_alternate_code %}
+                                    <div class="col-md-8">
+                                        {% bootstrap_field patient_form.patient_alternate_phone size='small' show_label=false placeholder='' %}
+                                        {% bootstrap_field patient_form.patient_alternate_code %}
+                                    </div>
                                 </div>
                                 <div class="row mt-4">
                                     <div class="card">
@@ -340,6 +344,9 @@
             }
             else if($('#id_patient_email').val() !='' && $('#confirm_email').val() =='') {
                 setTimeout(function(){$("#confirmDialog").popup('show')}, 300);
+            }
+            else if( $('#id_patient_telephone_mobile').val().length > 11 && $('#id_patient_alternate_phone').val().length > 11 ) {
+                return false;
             }
             else {
                 $('#consentContactForm').submit();

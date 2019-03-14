@@ -115,7 +115,6 @@ def select_patient(request, instruction_id, patient_emis_number):
     return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
-@cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
 @check_user_type(GENERAL_PRACTICE_USER)

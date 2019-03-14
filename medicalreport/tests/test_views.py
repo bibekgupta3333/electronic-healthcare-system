@@ -12,7 +12,6 @@ from instructions.models import Instruction, InstructionPatient
 from instructions.model_choices import INSTRUCTION_STATUS_REJECT, INSTRUCTION_STATUS_PROGRESS,\
     INSTRUCTION_STATUS_COMPLETE, AMRA_TYPE
 from accounts.models import User, GeneralPracticeUser, Patient, GENERAL_PRACTICE_USER
-from services.models import EmisAPIConfig
 from snomedct.models import SnomedConcept
 from medicalreport.models import AmendmentsForRecord, ReferencePhrases
 from medicalreport.views import get_matched_patient
@@ -29,11 +28,6 @@ medical_xml_report = SimpleUploadedFile('report.xml', b'<MedicalRecord></Medical
 
 class EmisAPITestCase(TestCase):
     def setUp(self):
-        EmisAPIConfig.objects.create(
-            emis_organisation_id='29390',
-            emis_username='michaeljtbrooks',
-            emis_password='Medidata2018'
-        )
         patient_user = mommy.make(
             User, first_name='Alan', last_name='Ball')
         self.patient = mommy.make(
@@ -56,7 +50,7 @@ class EmisAPITestCase(TestCase):
             practcode='99999',
             operating_system_organisation_code=29390,
             operating_system_username='michaeljtbrooks',
-            operating_system_salt_and_encrypted_password='Medidata2018',
+            operating_system_salt_and_encrypted_password='Medidata2019',
         )
         self.gp_user = mommy.make(GeneralPracticeUser, user=user, organisation=gp_practice)
         self.gp_practice = gp_practice

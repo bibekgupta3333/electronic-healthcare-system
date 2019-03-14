@@ -4,7 +4,7 @@ MANAGER_PERMISSIONS=[
     'delete_user_management',
     'add_user_management',
     'view_instruction',
-    'view_organisationfee',
+    'view_organisationfeerate',
     'view_instructionpermission',
     'add_instructionpermission',
     'change_instructionpermission',
@@ -12,21 +12,21 @@ MANAGER_PERMISSIONS=[
 ]
 
 GP_PERMISSIONS=[
-    'view_instruction',
+    'view_instruction'
 ]
 
 OTHER_PERMISSIONS=[
     'view_instruction',
 ]
 
-CLIENT_PERMISSIONS=[
+CLIENT_ADMIN_PERMISSIONS=[
     'view_instruction',
     'add_instruction',
     'delete_instruction',
     'change_instruction'
 ]
 
-ADMIN_PERMISSIONS=[
+CLIENT_MANAGER_PERMISSIONS=[
     'view_user_management',
     'change_user_management',
     'delete_user_management',
@@ -35,7 +35,7 @@ ADMIN_PERMISSIONS=[
     'add_instruction',
     'delete_instruction',
     'change_instruction',
-    'view_organisationfee',
+    'view_organisationfeerate',
     'view_templateinstruction',
     'view_summary_report'
 ]
@@ -46,7 +46,7 @@ MEDI_PERMISSIONS=[
     'delete_user_management',
     'add_user_management',
     'view_instruction',
-    'view_organisationfee',
+    'view_organisationfeerate',
     'view_instructionpermission',
     'add_instructionpermission',
     'change_instructionpermission',
@@ -98,7 +98,7 @@ MEDI_ADMIN_PERMISSIONS=[
     'change_instructionvolumefee',
     'delete_instructionvolumefee',
     'view_instructionvolumefee',
-    'view_organisationfee',
+    'view_organisationfeerate',
     'view_instructionpermission',
     'view_thirdpartyauthorisation',
     'view_patientreportauth',
@@ -148,7 +148,7 @@ MEDI_TEAM_PERMISSIONS=[
     'view_organisationclient',
     'view_organisationgeneralpractice',
     'change_organisationgeneralpractice',
-    'view_organisationfee',
+    'view_organisationfeerate',
     'view_thirdpartyauthorisation',
     'view_patientreportauth',
     'view_accessattempt',
@@ -173,4 +173,7 @@ INSTRUCTION_PERMISSIONS=[
     'view_completed_amra',
     'view_completed_sars',
     'view_summary_report',
+    'view_account_pages'
+    'authorise_fee',
+    'amend_fee',
 ]

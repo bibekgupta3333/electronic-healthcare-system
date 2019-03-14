@@ -187,3 +187,14 @@ class InstructionAdminForm(forms.ModelForm):
     class Meta:
         model = Instruction
         fields = '__all__'
+
+
+class DateRangeSearchForm(forms.Form):
+    from_date = forms.DateField(
+        input_formats=DATE_INPUT_FORMATS, required=False,
+        widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': 'From'})
+    )
+    to_date = forms.DateField(
+        input_formats=DATE_INPUT_FORMATS, required=False,
+        widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': 'To'})
+    )
