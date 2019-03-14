@@ -123,6 +123,11 @@
                             </div>
                             <div class="col-md-12">&nbsp;</div>
                             <div class="row">
+                                <div class="col-md-3">Status GP Practice:</div>
+                                <strong><p id="statusGP"></p></strong>
+                            </div>
+                            <div class="col-md-12">&nbsp;</div>
+                            <div class="row">
                                 <div class="col-md-3 rowTitle">Search GP Practice:</div>
                                 {% bootstrap_field nhs_form.gp_practice size='small' form_group_class='form-group col-md-6' show_label=False %}
                                 <input type="hidden" name="gp_practice_name" id="id_gp_practice_name" />
@@ -536,6 +541,7 @@
             });
 
             $('#id_gp_practice').on('change', function () {
+                $('#statusGP').removeClass();
                 $.ajax({
                     type: "GET",
                     url: "{% url 'organisations:get_gporganisation_data' %}",
@@ -548,6 +554,8 @@
                             data.address
                         );
                         $('#id_gp_practice_name').val(data.name);
+                        $('#statusGP').addClass(data.status_class);
+                        $('#statusGP').text(data.status);
                     }
                 })
             });
