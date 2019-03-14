@@ -266,7 +266,7 @@ def summry_report(request):
     newList = list()
     progressList = list()
 
-    if request.user.type == CLIENT_ADMIN:
+    if request.user.type == CLIENT_USER:
         completeList = list()
         rejectList = list()
         paidList = list()
