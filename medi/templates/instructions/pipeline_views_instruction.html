@@ -30,8 +30,8 @@
                             {% endif %}
                         </div>
                         <div class="col-md-4">
-                            <form id="topsearchform" role="search" method="post" action="" class="" autocomplete="off">
-                                {% csrf_token %}
+                            <form id="topsearchform" role="search" method="get" action="" class="" autocomplete="off">
+                                {% comment %} {% csrf_token %} {% endcomment %}
                                 <div class="row">
                                     <div class="col-md-9">
                                         <input id="search" name="search" type="search" placeholder="Search" class="form-control search" required="true">

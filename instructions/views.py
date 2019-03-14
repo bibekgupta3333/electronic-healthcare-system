@@ -170,6 +170,38 @@ def get_table_fee_sensitive(request, user, gp_practice_code):
     return table_fee
 
 
+def search_pipeline(request, user, gp_practice_code=None, client_organisation=None):
+    instruction_query_set = Instruction.objects.all()
+    search_input = request.GET.get('search')
+
+    if request.user.type == CLIENT_USER:
+        cost_column_name = 'Cost £'
+        instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
+        instruction_query_set = instruction_query_set.filter(your_ref=search_input)
+        # instruction_query_set_client_ref = Q(your_ref=search_input)
+        # instruction_query_set_name = Q(patient_information__patient_first_name=search_input)
+        # instruction_query_set_last_name = Q(patient_information__patient_last_name=search_input)
+        # instruction_query_set = instruction_query_set.filter(instruction_query_set_client_ref | instruction_query_set_name | instruction_query_set_last_name)
+
+    elif request.user.type == GENERAL_PRACTICE_USER:
+        cost_column_name = 'Income £'
+        gp_role = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.role')
+        if gp_role == GeneralPracticeUser.PRACTICE_MANAGER:
+            instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
+        elif request.user.has_perm('instructions.process_sars'):
+            instruction_query_set = instruction_query_set.filter(
+                Q(gp_user=user.userprofilebase.generalpracticeuser) | Q(gp_user__isnull=True),
+                gp_practice_id=gp_practice_code
+            )
+
+    table_all = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
+    table_all.order_by = request.GET.get('sort', '-created')
+    table_all.paginate(page=request.GET.get('page_ts', 1), per_page=5)
+
+    return table_all
+
+
+
 def calculate_next_prev(page=None, **kwargs):
     if not page:
         return {
@@ -316,6 +348,13 @@ def instruction_pipeline_view(request):
     table_all = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
     table_all.order_by = request.GET.get('sort', '-created')
     RequestConfig(request, paginate={'per_page': 5}).configure(table_all)
+
+    search = request.GET.get('search', None)
+    if search:
+        if user.type == GENERAL_PRACTICE_USER:
+            table_all = search_pipeline(request, user, gp_practice_code)
+        else:
+            table_all = search_pipeline(request, user, client_organisation)
 
     if user.type == GENERAL_PRACTICE_USER:
         response = render(request, 'instructions/pipeline_views_instruction.html', {
