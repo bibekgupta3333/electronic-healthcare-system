@@ -18,44 +18,18 @@ def instruction_notification_email_job():
     instruction_notification_sars()
 
 
-def auto_reject_amra_after_23days():
-    email_user = 'auto_system@medidata.co'
-    auto_reject_user, created = User.objects.get_or_create(
-        email=email_user,
-        USERNAME_FIELD=email_user
-    )
-
-    instruction_query_set = Instruction.objects.filter(type='AMRA')
-    instruction_query_set = instruction_query_set.filter(~Q(status=INSTRUCTION_STATUS_COMPLETE) & ~Q(status=INSTRUCTION_STATUS_REJECT) & ~Q(status=INSTRUCTION_STATUS_PAID))
-
-    # Get Value for table range 23 days.
-    expected_date_23days = timezone.now() - timedelta(days=23)
-    to_expected_date_23days = expected_date_23days.replace(hour=23, minute=59, second=59)
-    from_expected_date_23days = expected_date_23days.replace(hour=00, minute=00, second=00)
-    instruction_query_set_23days = Q(fee_calculation_start_date__range=(from_expected_date_23days, to_expected_date_23days))
-    instruction_query_set = instruction_query_set.filter(instruction_query_set_23days)
-
-    for instruction in instruction_query_set:
-        instruction.status = INSTRUCTION_STATUS_REJECT
-        instruction.rejected_reason = LONG_TIMES
-        instruction.rejected_by = auto_reject_user
-        instruction.rejected_timestamp = timezone.now()
-        instruction.rejected_note = 'Instruction Too long'
-        instruction.save()
-
-
 def instruction_notification_amra():
-    instruction_query_set = Instruction.objects.filter(type='AMRA')
+    instruction_query_set = Instruction.objects.filter(type='SARS')
     instruction_query_set = instruction_query_set.filter(~Q(status=INSTRUCTION_STATUS_COMPLETE) & ~Q(status=INSTRUCTION_STATUS_REJECT) & ~Q(status=INSTRUCTION_STATUS_PAID))
 
     # Get Value for table range 2 days.
-    expected_date_2days = timezone.now() - timedelta(days=2)
+    expected_date_2days = timezone.now() - timedelta(days=0)
     to_expected_date_2days = expected_date_2days.replace(hour=23, minute=59, second=59)
     from_expected_date_2days = expected_date_2days.replace(hour=00, minute=00, second=00)
     instruction_query_set_2days = Q(fee_calculation_start_date__range=(from_expected_date_2days, to_expected_date_2days))
 
     # Get Value for table range 6 days.
-    expected_date_6days = timezone.now() - timedelta(days=6)
+    expected_date_6days = timezone.now() - timedelta(days=3)
     to_expected_date_6days = expected_date_6days.replace(hour=23, minute=59, second=59)
     from_expected_date_6days = expected_date_6days.replace(hour=00, minute=00, second=00)
     instruction_query_set_6days = Q(fee_calculation_start_date__range=(from_expected_date_6days, to_expected_date_6days))
@@ -78,7 +52,74 @@ def instruction_notification_amra():
     from_expected_date_20days = expected_date_20days.replace(hour=00, minute=00, second=00)
     instruction_query_set_20days = Q(fee_calculation_start_date__range=(from_expected_date_20days, to_expected_date_20days))
 
-    instruction_query_set = instruction_query_set.filter(instruction_query_set_2days | instruction_query_set_6days | instruction_query_set_10days)
+    # Get Value for table range 23 days.
+    expected_date_23days = timezone.now() - timedelta(days=23)
+    to_expected_date_23days = expected_date_23days.replace(hour=23, minute=59, second=59)
+    from_expected_date_23days = expected_date_23days.replace(hour=00, minute=00, second=00)
+    instruction_query_set_23days = Q(fee_calculation_start_date__range=(from_expected_date_23days, to_expected_date_23days))
+
+    instruction_query_set = instruction_query_set.filter(
+        instruction_query_set_2days | instruction_query_set_6days | instruction_query_set_10days | instruction_query_set_14days |
+        instruction_query_set_20days | instruction_query_set_23days)
+
+    import ipdb; ipdb.set_trace()
+    for instruction in instruction_query_set:
+        check_time = instruction.fee_calculation_start_date
+        if from_expected_date_23days <= check_time <= to_expected_date_23days:
+            auto_reject_amra_after_23days(instruction)
+        else:
+            send_email_amra(instruction)
+
+
+def send_email_amra(instruction):
+    instruction_link = ''
+    subject_email = 'Outstanding AMRA instruction'
+    text_email = '''
+                    <b>Please note this is an automated message. Do not reply to this message.</b><br><br>
+                    You have an outstanding AMRA instruction. Act now otherwise the fee that your Surgery is eligible to receive will reduce.<br>
+                    View the instruction here: ''' + instruction_link + ''' <br><br>
+                    Regards <br>
+                    The Medidata team
+                '''
+
+
+def auto_reject_amra_after_23days(instruction):
+    email_user = 'auto_system@medidata.co'
+    auto_reject_user, created = User.objects.get_or_create(
+        email=email_user,
+        USERNAME_FIELD=email_user
+    )
+
+    instruction.status = INSTRUCTION_STATUS_REJECT
+    instruction.rejected_reason = LONG_TIMES
+    instruction.rejected_by = auto_reject_user
+    instruction.rejected_timestamp = timezone.now()
+    instruction.rejected_note = 'Instruction Too long'
+    instruction.save()
+
+    instruction_link = settings.MDX_URL + reverse('instructions:view_reject', kwargs={'instruction_id': instruction.id})
+    instruction_med_ref = instruction.medi_ref
+    subject_reject_email = 'AMRA instruction not processed'
+    text_reject_email = '''
+                            <b>Please note this is an automated message. Do not reply to this message.</b><br><br>
+                            Your instruction ''' + instruction_med_ref + ''' was not processed by the Surgery within the required timeframe of 23 days, <br>
+                            and therefore has been cancelled. You can view your pipeline here: ''' + instruction_link + ''' <br><br>
+                            The Medidata team
+                        '''
+
+    # Send Email for client.
+    try:    
+        send_mail(
+            subject_reject_email,
+            text_reject_email,
+            'MediData',
+
+            fail_silently=True,
+            auth_user=settings.EMAIL_HOST_USER,
+            auth_password=settings.EMAIL_HOST_PASSWORD,
+        )
+    except:
+        pass
 
 
 def instruction_notification_sars():

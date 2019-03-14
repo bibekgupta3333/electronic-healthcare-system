@@ -30,6 +30,8 @@ from medicalreport.functions import create_patient_report
 from template.models import TemplateInstruction
 #from silk.profiling.profiler import silk_profile
 
+from instructions.cron.notification_mail import instruction_notification_amra
+
 from datetime import timedelta
 import pytz
 from itertools import chain
@@ -499,6 +501,7 @@ def instruction_fee_payment_view(request):
 @login_required(login_url='/accounts/login')
 @check_permission
 def new_instruction(request):
+    instruction_notification_amra()
     header_title = "Add New Instruction"
 
     gp_form = GPForm()
