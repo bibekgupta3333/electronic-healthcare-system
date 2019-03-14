@@ -24,7 +24,7 @@
                 {% endif %}
                 {% if perms.instructions.view_instruction %}
                     <li class="{% if request.resolver_match.url_name == 'view_pipeline' %}active{% endif %}">
-                        <a href="{% url 'instructions:view_pipeline' %}" ><i class="fas fa-tasks"></i>Instructions</a>
+                        <a href="{% url 'instructions:view_pipeline' %}" ><i class="fas fa-tasks"></i>Instruction Pipeline</a>
                     </li>
                 {% endif %}
                 {% if perms.organisations.view_user_management %}

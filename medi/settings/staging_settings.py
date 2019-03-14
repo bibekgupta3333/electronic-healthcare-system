@@ -54,6 +54,7 @@ LOGGING = {
     }
 }
 
+CLAMD_ENABLED = False
 EMIS_API_HOST = 'http://medi2data.net:9443'
 
 MDX_URL = 'http://medi.mohub.co'
