@@ -181,13 +181,13 @@ def count_model_search(request, client_organisation=None, gp_practice_code=None)
 
     if request.user.type == CLIENT_USER:
         instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
-        instruction_query_set_client_ref = Q(your_ref=search_input)
-        instruction_query_set_name = Q(patient_information__patient_first_name=search_input)
-        instruction_query_set_last_name = Q(patient_information__patient_last_name=search_input)
+        instruction_query_set_client_ref = Q(your_ref__istartswith=search_input)
+        instruction_query_set_name = Q(patient_information__patient_first_nam__istartswithe=search_input)
+        instruction_query_set_last_name = Q(patient_information__patient_last_name__istartswith=search_input)
         instruction_query_set = instruction_query_set.filter(Q(instruction_query_set_client_ref | instruction_query_set_name | instruction_query_set_last_name))
     else:
-        instruction_query_set_name = Q(patient_information__patient_first_name=search_input)
-        instruction_query_set_last_name = Q(patient_information__patient_last_name=search_input)
+        instruction_query_set_name = Q(patient_information__patient_first_name__istartswith=search_input)
+        instruction_query_set_last_name = Q(patient_information__patient_last_name__istartswith=search_input)
         instruction_query_set = instruction_query_set.filter(Q( instruction_query_set_name | instruction_query_set_last_name))
         instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
 
@@ -349,9 +349,9 @@ def instruction_pipeline_view(request):
         cost_column_name = 'Cost £'
         instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
         if search_input:
-            instruction_query_set_client_ref = Q(your_ref=search_input)
-            instruction_query_set_name = Q(patient_information__patient_first_name=search_input)
-            instruction_query_set_last_name = Q(patient_information__patient_last_name=search_input)
+            instruction_query_set_client_ref = Q(your_ref__istartswith=search_input)
+            instruction_query_set_name = Q(patient_information__patient_first_name__istartswith=search_input)
+            instruction_query_set_last_name = Q(patient_information__patient_last_name__istartswith=search_input)
             instruction_query_set = instruction_query_set.filter(instruction_query_set_client_ref | instruction_query_set_name | instruction_query_set_last_name)
             overall_instructions_number = count_model_search(request, client_organisation=client_organisation)
             search_status = True
@@ -368,8 +368,8 @@ def instruction_pipeline_view(request):
             )
         
         if search_input:
-            instruction_query_set_name = Q(patient_information__patient_first_name=search_input)
-            instruction_query_set_last_name = Q(patient_information__patient_last_name=search_input)
+            instruction_query_set_name = Q(patient_information__patient_first_name__istartswith=search_input)
+            instruction_query_set_last_name = Q(patient_information__patient_last_name__istartswith=search_input)
             instruction_query_set = instruction_query_set.filter(instruction_query_set_name | instruction_query_set_last_name)
             overall_instructions_number = count_model_search(request, gp_practice_code=gp_practice_code)
             search_status = True
