@@ -50,7 +50,7 @@ def sign_up(request):
                     'message_3': message_3
                 })
             if gp_organisation.practcode[:4] == 'TEST':
-                gp_organisation.operating_system_username = 'team_mohara'
+                gp_organisation.operating_system_username = 'michaeljtbrooks'
                 gp_organisation.operating_system_salt_and_encrypted_password = 'Medidata2019'
             else:
                 password = generate_password(initial_range=1, body_rage=12, tail_rage=1)
@@ -210,15 +210,7 @@ def emr_setup_final(request, practice_code=None):
                 gp_organisation.save()
             generate_gp_permission(gp_organisation)
 
-            messages.success(request, 'Create User Successful!')
-            login_link = request.build_absolute_uri(reverse('accounts:login',))
-            welcome_message1 = 'Onboarding Successful!'
-            welcome_message2 = 'Welcome to the eMR System'
-            return render(request, 'onboarding/emr_message.html', {
-                'welcome_message1': welcome_message1,
-                'welcome_message2': welcome_message2,
-                'login_link': login_link,
-            })
+            return redirect('onboarding:emis_setup_success')
 
     return render(request, 'onboarding/emr_setup_final.html', {
         'surgery_form': surgery_form,
@@ -226,6 +218,19 @@ def emr_setup_final(request, practice_code=None):
         'bank_details_form': bank_details_form,
         'surgery_email_form': surgery_email_form,
         'band_fee_rate_data': band_fee_rate_data
+    })
+
+
+@login_required(login_url='/accounts/login')
+def emis_setup_success(request):
+    messages.success(request, 'Create User Successful!')
+    login_link = request.build_absolute_uri(reverse('accounts:login',))
+    welcome_message1 = 'Onboarding Successful!'
+    welcome_message2 = 'Welcome to the eMR System'
+    return render(request, 'onboarding/emr_message.html', {
+        'welcome_message1': welcome_message1,
+        'welcome_message2': welcome_message2,
+        'login_link': login_link,
     })
 
 
