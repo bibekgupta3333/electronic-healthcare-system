@@ -307,6 +307,9 @@ def instruction_pipeline_view(request):
     search_input = request.GET.get('search', None)
     search_status = False
     search_pagination = None
+    table_fee = None
+    next_prev_data_all = {}
+    next_prev_data_fee = {}
 
     if table_num == 'undefined':
         table_num = 1
@@ -384,30 +387,22 @@ def instruction_pipeline_view(request):
         table_all.order_by = request.GET.get('sort', '-created')
         RequestConfig(request, paginate={'per_page': 5}).configure(table_all)
 
-    if user.type == GENERAL_PRACTICE_USER:
-        response = render(request, 'instructions/pipeline_views_instruction.html', {
-            'user': user,
-            'table_all': table_all,
-            'table_fee': table_fee,
-            'overall_instructions_number': overall_instructions_number,
-            'count_fee_sensitive_number': count_fee_sensitive_number,
-            'header_title': header_title,
-            'next_prev_data_all': calculate_next_prev(table_all.page, filter_status=filter_status, filter_type=filter_type),
-            'next_prev_data_fee': calculate_next_prev(table_fee.page, filter_status=filter_status, filter_type=filter_type),
-            'search_pagination': search_pagination,
-            'search_input': search_input if search_input else ''
-        })
-    else:
-        response = render(request, 'instructions/pipeline_views_instruction.html', {
-            'user': user,
-            'table_all': table_all,
-            'overall_instructions_number': overall_instructions_number,
-            'count_fee_sensitive_number': count_fee_sensitive_number,
-            'header_title': header_title,
-            'next_prev_data_all': calculate_next_prev(table_all.page, filter_status=filter_status, filter_type=filter_type),
-            'search_pagination': search_pagination,
-            'search_input': search_input if search_input else ''
-        })
+    if table_all:
+        next_prev_data_all = calculate_next_prev(table_all.page, filter_status=filter_status, filter_type=filter_type)
+
+    if table_fee:
+        next_prev_data_fee = calculate_next_prev(table_fee.page, filter_status=filter_status, filter_type=filter_type)
+
+    response = render(request, 'instructions/pipeline_views_instruction.html', {
+        'user': user,
+        'table_all': table_all,
+        'table_fee': table_fee,
+        'overall_instructions_number': overall_instructions_number,
+        'count_fee_sensitive_number': count_fee_sensitive_number,
+        'header_title': header_title,
+        'next_prev_data_all': next_prev_data_all,
+        'next_prev_data_fee': next_prev_data_fee
+    })
 
     response.set_cookie('status', filter_status)
     response.set_cookie('type', filter_type)
