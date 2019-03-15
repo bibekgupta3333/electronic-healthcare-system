@@ -236,7 +236,5 @@ class SurgerySARSFlow(SurgeryOnboard):
             self.fail("Medical report is missing")
         if not instruction.medical_xml_report:
             self.fail("Medical report xml is missing")
-        if not instruction.medical_with_attachment_report:
-            self.fail("Medical report with attachment is missing")
         if instruction.status not in [INSTRUCTION_STATUS_FINALISE, INSTRUCTION_STATUS_FAIL, INSTRUCTION_STATUS_COMPLETE]:
             self.fail("Instruction invalid status")
