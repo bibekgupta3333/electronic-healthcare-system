@@ -14,14 +14,14 @@ class TestAccountBase(TestCase):
             trading_name='Claim Organisation',
             legal_name='Claim Organisation',
             address='1, My Street, Kingston, New York 12401 United States',
-            type=OrganisationClient.INSURANCE_CLAIM
+            type=OrganisationClient.REINSURER
         )
 
         self.underwriter_organisation = OrganisationClient.objects.create(
             trading_name='Underwriter Organisation',
             legal_name='Underwriter Organisation',
             address='2, My Street, Kingston, New York 12401 United States',
-            type=OrganisationClient.INSURANCE_CLAIM
+            type=OrganisationClient.REINSURER
         )
 
         self.medidata_organisation = OrganisationMedidata.objects.create(
