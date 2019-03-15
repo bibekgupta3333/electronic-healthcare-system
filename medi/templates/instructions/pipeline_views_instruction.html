@@ -30,8 +30,8 @@
                             {% endif %}
                         </div>
                         <div class="col-md-4">
-                            <form id="topsearchform" role="search" method="post" action="" class="" autocomplete="off">
-                                {% csrf_token %}
+                            <form id="topsearchform" role="search" method="get" action="" class="" autocomplete="off">
+                                {% comment %} {% csrf_token %} {% endcomment %}
                                 <div class="row">
                                     <div class="col-md-8">
                                         <input id="search" name="search" type="search" placeholder="Search" class="form-control search" required="true">
@@ -102,7 +102,11 @@
                         <h5><i class="fas fa-question-circle"></i>&nbsp;&nbsp;<strong>Anything Else</strong></h5>
                     </div>
                     <div class="col-md-2 pt-1">
-                        <select class="form-control" id="filterInstructionType" onchange="typeFilter();">
+                        {% if search_pagination %}
+                            <select class="form-control" id="filterInstructionType" onchange="typeFilter('search');">
+                        {% else %}
+                            <select class="form-control" id="filterInstructionType" onchange="typeFilter('pipeline');">
+                        {% endif %}
                             <option value="allType">All Types</option>
                             <option value="AMRA">AMRA</option>
                             <option value="SARS">SARS</option>
@@ -116,7 +120,11 @@
                         {% for k, v in overall_instructions_number.items %}
                             <div class="number" id="{{ k|cut:' ' }}">
                                 {% comment %} <a href="#" onclick="instructionStatusFilter('{{ k }}');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a> {% endcomment %}
-                                <button class="btn btn-info" id="{{ k|cut:' ' }}" onclick="instructionStatusFilter('{{ k }}', 'pipeline', 1);">{{ k }} ({{ v }})</button>
+                                {% if search_pagination %}
+                                    <button class="btn btn-info" id="{{ k|cut:' ' }}" onclick="instructionStatusFilter('{{ k }}', 'pipeline', 3);">{{ k }} ({{ v }})</button>
+                                {% else %}
+                                    <button class="btn btn-info" id="{{ k|cut:' ' }}" onclick="instructionStatusFilter('{{ k }}', 'pipeline', 1);">{{ k }} ({{ v }})</button>
+                                {% endif %}
                             </div>
                         {% endfor %}
                     </div>
@@ -137,7 +145,11 @@
                 <div class="row mt-3">
                     <div class="col-md-12">
                         {% render_table table_all 'django_tables2/bootstrap.html' %}
-                        {% bootstrap_pagination  page=table_all.page pages_to_show=5 size='small' %}
+                        {% if search_pagination %}
+                            {% bootstrap_pagination  extra='search='|add:search_input parameter_name='page_ts' page=table_all.page pages_to_show=5 size='small' %}
+                        {% else %}
+                            {% bootstrap_pagination  page=table_all.page pages_to_show=5 size='small' %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -159,19 +171,22 @@
             $('th.gp_practice > a').text('GP Practice');
             $('th.gp_practice > a').click(false);
 
-            $("<li class='page-item {{ next_prev_data_all|keyvalue:'prev_disabled' }}'><a class='page-link'" +
-            "href='{% url 'instructions:view_pipeline' %}?page={{ next_prev_data_all|keyvalue:'prev_page' }}&status={{ next_prev_data_all|keyvalue:'status' }}&type={{ next_prev_data_all|keyvalue:'type' }}'>&lt;</a>/li").insertAfter('#all_block .prev');
-            $("<li class='page-item {{ next_prev_data_all|keyvalue:'next_disabled' }}'><a class='page-link'" +
-            "href='{% url 'instructions:view_pipeline' %}?page={{ next_prev_data_all|keyvalue:'next_page' }}&status={{ next_prev_data_all|keyvalue:'status' }}&type={{ next_prev_data_all|keyvalue:'type' }}'>&gt;</a></li>").insertBefore('#all_block .last');
-
             $("<li class='page-item {{ next_prev_data_fee|keyvalue:'prev_disabled' }}'><a class='page-link'" +
             "href='{% url 'instructions:view_pipeline' %}?page_t2={{ next_prev_data_fee|keyvalue:'prev_page' }}&status={{ next_prev_data_fee|keyvalue:'status' }}&type={{ next_prev_data_fee|keyvalue:'type' }}'>&lt;</a>/li").insertAfter('#fee_block .prev');
             $("<li class='page-item {{ next_prev_data_fee|keyvalue:'next_disabled' }}'><a class='page-link'" +
             "href='{% url 'instructions:view_pipeline' %}?page_t2={{ next_prev_data_fee|keyvalue:'next_page' }}&status={{ next_prev_data_fee|keyvalue:'status' }}&type={{ next_prev_data_fee|keyvalue:'type' }}'>&gt;</a></li>").insertBefore('#fee_block .last');
 
-            //$('input.search').on('keyup click', function () {
-            //   filterGlobal();
-            //} );
+            if( '{{ search_pagination }}' == 'search' ) {
+               $("<li class='page-item {{ next_prev_data_all|keyvalue:'prev_disabled' }}'><a class='page-link'" +
+                "href='{% url 'instructions:view_pipeline' %}?search={{search_input}}&page_ts={{ next_prev_data_all|keyvalue:'prev_page' }}&status={{ next_prev_data_all|keyvalue:'status' }}&type={{ next_prev_data_all|keyvalue:'type' }}'>&lt;</a>/li").insertAfter('#all_block .prev');
+                $("<li class='page-item {{ next_prev_data_all|keyvalue:'next_disabled' }}'><a class='page-link'" +
+                "href='{% url 'instructions:view_pipeline' %}?search={{search_input}}&page_ts={{ next_prev_data_all|keyvalue:'next_page' }}&status={{ next_prev_data_all|keyvalue:'status' }}&type={{ next_prev_data_all|keyvalue:'type' }}'>&gt;</a></li>").insertBefore('#all_block .last'); 
+            } else {
+                $("<li class='page-item {{ next_prev_data_all|keyvalue:'prev_disabled' }}'><a class='page-link'" +
+                "href='{% url 'instructions:view_pipeline' %}?page={{ next_prev_data_all|keyvalue:'prev_page' }}&status={{ next_prev_data_all|keyvalue:'status' }}&type={{ next_prev_data_all|keyvalue:'type' }}'>&lt;</a>/li").insertAfter('#all_block .prev');
+                $("<li class='page-item {{ next_prev_data_all|keyvalue:'next_disabled' }}'><a class='page-link'" +
+                "href='{% url 'instructions:view_pipeline' %}?page={{ next_prev_data_all|keyvalue:'next_page' }}&status={{ next_prev_data_all|keyvalue:'status' }}&type={{ next_prev_data_all|keyvalue:'type' }}'>&gt;</a></li>").insertBefore('#all_block .last');
+            }
 
             $('.pager').hide();
 
@@ -210,5 +225,32 @@
                 e.preventDefault();
             });
         });
+
+        function instructionStatusFilter(selected_status, page, tableNumber){
+            if(page == 'pipeline'){
+                if( tableNumber == 2 ) {
+                    window.location = '/instruction/view-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val() + '&table=2';
+                } else if( tableNumber == 3 ) {
+                    window.location = '/instruction/view-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val() + '&table=3&search={{search_input}}';
+                } else {
+                    window.location = '/instruction/view-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
+                }
+            } else if(page == 'payment'){
+                window.location = '/instruction/view-fee-payment-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
+            }
+        }
+
+        function typeFilter(page){
+            if(getUrlParameter('status')){
+                status = getUrlParameter('status');
+            }
+            if(page == 'pipeline'){
+                window.location = '/instruction/view-pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val();
+            } else if( page == 'payment'){
+                window.location = '/instruction/view-fee-payment-pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val();
+            } else if( page == 'search') {
+                window.location = '/instruction/view-pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val() + '&table=3&search={{search_input}}';
+            }
+        }
     </script>
 {% endblock %}

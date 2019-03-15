@@ -49,18 +49,6 @@ function getObjectKeyByValue(obj, val){
     }
 }
 
-function instructionStatusFilter(selected_status, page, tableNumber){
-    if(page == 'pipeline'){
-        if( tableNumber == 2 ) {
-            window.location = '/instruction/view-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val() + '&table=2';
-        } else {
-            window.location = '/instruction/view-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
-        }
-    } else if(page == 'payment'){
-        window.location = '/instruction/view-fee-payment-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
-    }
-}
-
 function gpuserStatusFilter(selected_status){
     window.location = '/accounts/view-users/?status=' + gpuser_roleDict[selected_status] + '&type=' + $('#filterUserType').val() + '&user_type=GP';
 }
@@ -71,17 +59,6 @@ function mediuserStatusFilter(selected_status){
 
 function clientuserStatusFilter(selected_status){
     window.location = '/accounts/view-users/?status=' + clientuser_roleDict[selected_status] + '&type=' + $('#filterUserType').val() + '&user_type=CLT';
-}
-
-function typeFilter(page){
-    if(getUrlParameter('status')){
-        status = getUrlParameter('status');
-    }
-    if(page == 'pipeline'){
-        window.location = '/instruction/view-pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val();
-    } else if(page == 'payment'){
-        window.location = '/instruction/view-fee-payment-pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val();
-    }
 }
 
 function userTypeFilter() {
