@@ -45,9 +45,7 @@ class TestInstructionBase(TestCase):
             trading_name='Test Client Organisation',
             legal_name='Test Client Organisation',
             address='East 143 Railway Street ARMAGH BT61 7HT',
-            type=OrganisationClient.INSURANCE_CLAIM,
-            can_create_amra=True,
-            can_create_sars=True
+            type=OrganisationClient.OUTSOURCER,
         )
         self.client_user = mommy.make(User, email='client_user1@gmail.com', password='test1234', type=account_models.CLIENT_USER)
         self.client_admin_1 = mommy.make(ClientUser, user=self.client_user, organisation=self.client_organisation)

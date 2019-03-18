@@ -54,8 +54,11 @@ LOGGING = {
     }
 }
 
-CLAMD_ENABLED = False
 EMIS_API_HOST = 'http://medi2data.net:9443'
 
 MDX_URL = 'http://medi.mohub.co'
 EMR_URL = 'http://medi.mohub.co'
+
+TWO_FACTOR_ENABLED=False
+CELERY_ENABLED=False
+CLAMD_ENABLED= False

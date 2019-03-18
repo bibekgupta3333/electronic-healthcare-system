@@ -170,6 +170,50 @@ def get_table_fee_sensitive(request, user, gp_practice_code):
     return table_fee
 
 
+def count_model_search(request, client_organisation=None, gp_practice_code=None):
+    search_input = request.GET.get('search')
+    filter_type = request.GET.get('type', '')
+    
+    if filter_type and filter_type != 'allType':
+        instruction_query_set = Instruction.objects.filter(type=filter_type)
+    else:
+        instruction_query_set = Instruction.objects.all()
+
+    if request.user.type == CLIENT_USER:
+        instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
+        instruction_query_set_client_ref = Q(your_ref__istartswith=search_input)
+        instruction_query_set_name = Q(patient_information__patient_first_nam__istartswithe=search_input)
+        instruction_query_set_last_name = Q(patient_information__patient_last_name__istartswith=search_input)
+        instruction_query_set = instruction_query_set.filter(Q(instruction_query_set_client_ref | instruction_query_set_name | instruction_query_set_last_name))
+    else:
+        instruction_query_set_name = Q(patient_information__patient_first_name__istartswith=search_input)
+        instruction_query_set_last_name = Q(patient_information__patient_last_name__istartswith=search_input)
+        instruction_query_set = instruction_query_set.filter(Q( instruction_query_set_name | instruction_query_set_last_name))
+        instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
+
+    new_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_NEW).count()
+    progress_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_PROGRESS).count()
+    paid_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_PAID).count()
+    complete_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_COMPLETE).count()
+    rejected_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_REJECT).count()
+    finalise_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_FINALISE).count()
+    fail_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_FAIL).count()
+    all_count = new_count + progress_count + paid_count + complete_count + rejected_count + finalise_count + fail_count
+
+    overall_instructions_number = {
+        'All': all_count,
+        'New': new_count,
+        'In Progress': progress_count,
+        'Paid': paid_count,
+        'Completed': complete_count,
+        'Rejected': rejected_count,
+        'Finalising': finalise_count,
+        'Generated Fail': fail_count,
+    }
+
+    return overall_instructions_number
+
+
 def calculate_next_prev(page=None, **kwargs):
     if not page:
         return {
@@ -260,6 +304,12 @@ def instruction_pipeline_view(request):
     header_title = "Instructions Pipeline"
     user = request.user
     table_num = request.GET.get('table', 'undefined')
+    search_input = request.GET.get('search', None)
+    search_status = False
+    search_pagination = None
+    table_fee = None
+    next_prev_data_all = {}
+    next_prev_data_fee = {}
 
     if table_num == 'undefined':
         table_num = 1
@@ -290,7 +340,7 @@ def instruction_pipeline_view(request):
     else:
         instruction_query_set = Instruction.objects.all()
 
-    if table_num == 1:
+    if table_num != 2:
         if filter_status != -1:
             instruction_query_set = instruction_query_set.filter(status=filter_status)
 
@@ -301,6 +351,13 @@ def instruction_pipeline_view(request):
     if request.user.type == CLIENT_USER:
         cost_column_name = 'Cost £'
         instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
+        if search_input:
+            instruction_query_set_client_ref = Q(your_ref__istartswith=search_input)
+            instruction_query_set_name = Q(patient_information__patient_first_name__istartswith=search_input)
+            instruction_query_set_last_name = Q(patient_information__patient_last_name__istartswith=search_input)
+            instruction_query_set = instruction_query_set.filter(instruction_query_set_client_ref | instruction_query_set_name | instruction_query_set_last_name)
+            overall_instructions_number = count_model_search(request, client_organisation=client_organisation)
+            search_status = True
 
     if request.user.type == GENERAL_PRACTICE_USER:
         cost_column_name = 'Income £'
@@ -312,31 +369,40 @@ def instruction_pipeline_view(request):
                 Q(gp_user=user.userprofilebase.generalpracticeuser) | Q(gp_user__isnull=True),
                 gp_practice_id=gp_practice_code
             )
+        
+        if search_input:
+            instruction_query_set_name = Q(patient_information__patient_first_name__istartswith=search_input)
+            instruction_query_set_last_name = Q(patient_information__patient_last_name__istartswith=search_input)
+            instruction_query_set = instruction_query_set.filter(instruction_query_set_name | instruction_query_set_last_name)
+            overall_instructions_number = count_model_search(request, gp_practice_code=gp_practice_code)
+            search_status = True
 
-    table_all = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
-    table_all.order_by = request.GET.get('sort', '-created')
-    RequestConfig(request, paginate={'per_page': 5}).configure(table_all)
-
-    if user.type == GENERAL_PRACTICE_USER:
-        response = render(request, 'instructions/pipeline_views_instruction.html', {
-            'user': user,
-            'table_all': table_all,
-            'table_fee': table_fee,
-            'overall_instructions_number': overall_instructions_number,
-            'count_fee_sensitive_number': count_fee_sensitive_number,
-            'header_title': header_title,
-            'next_prev_data_all': calculate_next_prev(table_all.page, filter_status=filter_status, filter_type=filter_type),
-            'next_prev_data_fee': calculate_next_prev(table_fee.page, filter_status=filter_status, filter_type=filter_type)
-        })
+    if search_status:
+        table_all = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
+        table_all.order_by = request.GET.get('sort', '-created')
+        table_all.paginate(page=request.GET.get('page_ts', 1), per_page=5)
+        search_pagination = 'search'
     else:
-        response = render(request, 'instructions/pipeline_views_instruction.html', {
-            'user': user,
-            'table_all': table_all,
-            'overall_instructions_number': overall_instructions_number,
-            'count_fee_sensitive_number': count_fee_sensitive_number,
-            'header_title': header_title,
-            'next_prev_data_all': calculate_next_prev(table_all.page, filter_status=filter_status, filter_type=filter_type),
-        })
+        table_all = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
+        table_all.order_by = request.GET.get('sort', '-created')
+        RequestConfig(request, paginate={'per_page': 5}).configure(table_all)
+
+    if table_all:
+        next_prev_data_all = calculate_next_prev(table_all.page, filter_status=filter_status, filter_type=filter_type)
+
+    if table_fee:
+        next_prev_data_fee = calculate_next_prev(table_fee.page, filter_status=filter_status, filter_type=filter_type)
+
+    response = render(request, 'instructions/pipeline_views_instruction.html', {
+        'user': user,
+        'table_all': table_all,
+        'table_fee': table_fee,
+        'overall_instructions_number': overall_instructions_number,
+        'count_fee_sensitive_number': count_fee_sensitive_number,
+        'header_title': header_title,
+        'next_prev_data_all': next_prev_data_all,
+        'next_prev_data_fee': next_prev_data_fee
+    })
 
     response.set_cookie('status', filter_status)
     response.set_cookie('type', filter_type)
