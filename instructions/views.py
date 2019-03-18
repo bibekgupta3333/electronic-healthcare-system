@@ -182,7 +182,7 @@ def count_model_search(request, client_organisation=None, gp_practice_code=None)
     if request.user.type == CLIENT_USER:
         instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
         instruction_query_set_client_ref = Q(your_ref__icontains=search_input)
-        instruction_query_set_name = Q(patient_information__patient_first_name__icontainse=search_input)
+        instruction_query_set_name = Q(patient_information__patient_first_name__icontains=search_input)
         instruction_query_set_last_name = Q(patient_information__patient_last_name__icontains=search_input)
         instruction_query_set = instruction_query_set.filter(Q(instruction_query_set_client_ref | instruction_query_set_name | instruction_query_set_last_name))
     else:
