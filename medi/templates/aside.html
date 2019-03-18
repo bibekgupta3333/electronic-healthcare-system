@@ -32,11 +32,6 @@
                         <a href="{% url 'accounts:view_users' %}"><i class="fas fa-users-cog"></i>User Management</a>
                     </li>
                 {% endif %}
-                {% if user.type == 'MEDI' %}
-                    <li>
-                        <a href="#" >Income</a>
-                    </li>
-                {% endif %}
                 {% if perms.template.view_templateinstruction and user.type != 'GP' %}
                     <li class="{% if request.resolver_match.url_name == 'view_templates' %}active{% endif %}">
                         <a href="{% url 'template:view_templates' %}"><i class="fas fa-wrench"></i>Templates</a>

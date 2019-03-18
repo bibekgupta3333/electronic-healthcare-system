@@ -18,7 +18,7 @@ gpuser_roleDict["Other Practice Staff"] = 2;
 
 clientuser_roleDict["All"] = -1;
 clientuser_roleDict["Client Manager"] = 0;
-clientuser_roleDict["Admin"] = 1;
+clientuser_roleDict["Client Administrator"] = 1;
 
 medidatauser_roleDict["Medidata"] = 0;
 
