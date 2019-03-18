@@ -173,7 +173,7 @@ INSTRUCTION_PERMISSIONS=[
     'view_completed_amra',
     'view_completed_sars',
     'view_summary_report',
-    'view_account_pages'
+    'view_account_pages',
     'authorise_fee',
-    'amend_fee',
+    'amend_fee'
 ]
