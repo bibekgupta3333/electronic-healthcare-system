@@ -33,5 +33,5 @@ class Attachment(XMLModelBase):
     # JT What about attachments inside an AttachmentList element? This xpath
     # will not be valid for those.
     def xpaths(self) -> List[str]:
-        xpath = ".//ConsultationElement[Attachment/GUID='{}']".format(self.guid())
+        xpath = ".//Attachment[GUID='{}']".format(self.guid())
         return [xpath]
