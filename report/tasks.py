@@ -111,6 +111,10 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                     file_type = file_name.split('.')[-1]
                     raw_attachment = Base64Attachment(raw_xml_or_status_code).data()
                     buffer = io.BytesIO(raw_attachment)
+                    path_patient = instruction.patient_information.__str__()
+                    save_path = settings.MEDIA_ROOT + '/patient_attachments/' + path_patient + '/'
+                    if not os.path.exists(os.path.dirname(save_path)):
+                        os.makedirs(os.path.dirname(save_path))
 
                     if file_type == 'pdf':
                         attachments_pdf.append(PyPDF2.PdfFileReader(buffer))
@@ -160,12 +164,8 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                             f.close()
                     else:
                         file_name = Base64Attachment(raw_xml_or_status_code).filename()
-                        path_patient = instruction.patient_information.__str__()
-                        save_path = settings.MEDIA_ROOT + '/patient_attachments/' + path_patient + '/'
                         buffer = io.BytesIO()
                         buffer.write(raw_attachment)
-                        if not os.path.exists(os.path.dirname(save_path)):
-                            os.makedirs(os.path.dirname(save_path))
                         save_file = file_name.split('\\')[-1]
                         f = open(save_path + save_file, 'wb')
                         f.write(buffer.getvalue())
