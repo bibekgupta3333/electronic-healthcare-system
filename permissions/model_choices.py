@@ -37,7 +37,8 @@ CLIENT_MANAGER_PERMISSIONS=[
     'change_instruction',
     'view_organisationfeerate',
     'view_templateinstruction',
-    'view_summary_report'
+    'view_summary_report',
+    'view_account_pages'
 ]
 
 MEDI_PERMISSIONS=[
