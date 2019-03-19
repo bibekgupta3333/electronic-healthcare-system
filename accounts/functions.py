@@ -115,7 +115,7 @@ def count_clientusers(queryset):
     overall_users_number = {
         'All': all_count,
         'Client Manager': admin_count,
-        'Admin': client_count
+        'Client Administrator': client_count
     }
     return overall_users_number
 
@@ -130,11 +130,11 @@ def count_users(queryset):
     medi_count = queryset.filter(type=MEDIDATA_USER).count()
     overall_users_number = {
         'All': all_count,
-        'Admin': admin_count,
-        'Client': client_count,
-        'Manager': pmanager_count,
+        'Client Manager': admin_count,
+        'Client Administrator': client_count,
+        'GP Manager': pmanager_count,
         'GP': gp_count,
-        'Practice Staff': sars_count,
+        'Other Practice Staff': sars_count,
         'Medidata': medi_count
     }
     return overall_users_number

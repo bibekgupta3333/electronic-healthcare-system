@@ -137,7 +137,7 @@ class Instruction(TimeStampedModel, models.Model):
             self.save()
 
         if not self.fee_calculation_start_date:
-            now = datetime.datetime.now()
+            now = timezone.now()
             if now.strftime("%A") == "Friday" and now.hour > 12:
                 self.fee_calculation_start_date = now + datetime.timedelta(days=2)
             else:
