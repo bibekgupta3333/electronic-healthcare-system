@@ -63,8 +63,7 @@ class EmisAPIServiceBase:
 
         if http_error_msg:
             event_logger.error('FAILED: calling EMIS, reason:{http_error_msg}'.format(http_error_msg=http_error_msg))
-            raise HTTPError(http_error_msg, response=r)
-
+            return r.status_code
         return r.text
 
 
