@@ -19,14 +19,14 @@ OTHER_PERMISSIONS=[
     'view_instruction',
 ]
 
-CLIENT_PERMISSIONS=[
+CLIENT_ADMIN_PERMISSIONS=[
     'view_instruction',
     'add_instruction',
     'delete_instruction',
     'change_instruction'
 ]
 
-ADMIN_PERMISSIONS=[
+CLIENT_MANAGER_PERMISSIONS=[
     'view_user_management',
     'change_user_management',
     'delete_user_management',
@@ -173,7 +173,7 @@ INSTRUCTION_PERMISSIONS=[
     'view_completed_amra',
     'view_completed_sars',
     'view_summary_report',
-    'view_account_pages'
+    'view_account_pages',
     'authorise_fee',
-    'amend_fee',
+    'amend_fee'
 ]

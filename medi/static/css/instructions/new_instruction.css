@@ -40,3 +40,14 @@
 .reject-reason {
   font-style: italic;
 }
+
+.tooltip {
+  display: none;
+  opacity: 1;
+  background-color: #d1ecf1;
+  border: 1px solid #bee5eb;
+  padding: 10px;
+  color: #0c5460;
+  max-width: 25%;
+  overflow-wrap: break-word;
+}

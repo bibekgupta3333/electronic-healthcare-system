@@ -137,7 +137,7 @@ class Instruction(TimeStampedModel, models.Model):
             self.save()
 
         if not self.fee_calculation_start_date:
-            now = datetime.datetime.now()
+            now = timezone.now()
             if now.strftime("%A") == "Friday" and now.hour > 12:
                 self.fee_calculation_start_date = now + datetime.timedelta(days=2)
             else:
@@ -242,6 +242,11 @@ class Instruction(TimeStampedModel, models.Model):
         str_date_range = str(self.date_range_from) + ' - ' + str(self.date_range_to)
         return str_date_range
 
+    def get_client_org_name(self):
+        return self.client_user.organisation.trading_name
+        
+    get_client_org_name.allow_tags = False
+    get_client_org_name.short_description = 'Client organisation name'
 
 class InstructionAdditionQuestion(models.Model):
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE, related_name='addition_questions')

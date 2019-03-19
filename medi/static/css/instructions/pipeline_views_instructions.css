@@ -12,3 +12,11 @@
   color: white;
   font-weight: bold;
 }
+
+.btn-info {
+  background-color: #48b5a2;
+}
+
+.btn-fee {
+  background-color: #296799;
+}
