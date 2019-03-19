@@ -28,6 +28,7 @@ from .print_consents import MDXDualConsent
 from report.models import ExceptionMerge
 from medicalreport.functions import create_patient_report
 from template.models import TemplateInstruction
+from payment.models import GpOrganisationFee
 #from silk.profiling.profiler import silk_profile
 
 from datetime import timedelta
@@ -248,6 +249,17 @@ def create_or_update_instruction(request, patient_instruction, scope_form=None, 
         instruction = get_object_or_404(Instruction, pk=instruction_id)
     else:
         instruction = Instruction()
+
+        fee_data = GpOrganisationFee.objects.filter(gp_practice=gp_practice).first()
+        instruction.ins_max_day_lvl_1 = fee_data.organisation_fee.max_day_lvl_1
+        instruction.ins_max_day_lvl_2 = fee_data.organisation_fee.max_day_lvl_2
+        instruction.ins_max_day_lvl_3 = fee_data.organisation_fee.max_day_lvl_3
+        instruction.ins_max_day_lvl_4 = fee_data.organisation_fee.max_day_lvl_4
+        instruction.ins_amount_rate_lvl_1 = fee_data.organisation_fee.amount_rate_lvl_1
+        instruction.ins_amount_rate_lvl_2 = fee_data.organisation_fee.amount_rate_lvl_2
+        instruction.ins_amount_rate_lvl_3 = fee_data.organisation_fee.amount_rate_lvl_3
+        instruction.ins_amount_rate_lvl_4 = fee_data.organisation_fee.amount_rate_lvl_4
+
     if request.user.type == CLIENT_USER:
         instruction.client_user = request.user.userprofilebase.clientuser
         instruction.type = scope_form.cleaned_data['type']

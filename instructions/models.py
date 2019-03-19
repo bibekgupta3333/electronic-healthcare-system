@@ -107,6 +107,15 @@ class Instruction(TimeStampedModel, models.Model):
     gp_payment_reference = models.CharField(max_length=255, blank=True)
     fee_calculation_start_date = models.DateTimeField(null=True, blank=True)
 
+    ins_max_day_lvl_1 = models.PositiveSmallIntegerField(default=3)
+    ins_max_day_lvl_2 = models.PositiveSmallIntegerField(default=7)
+    ins_max_day_lvl_3 = models.PositiveSmallIntegerField(default=11)
+    ins_max_day_lvl_4 = models.PositiveSmallIntegerField(default=12)
+    ins_amount_rate_lvl_1 = models.DecimalField(max_digits=5, decimal_places=2)
+    ins_amount_rate_lvl_2 = models.DecimalField(max_digits=5, decimal_places=2)
+    ins_amount_rate_lvl_3 = models.DecimalField(max_digits=5, decimal_places=2)
+    ins_amount_rate_lvl_4 = models.DecimalField(max_digits=5, decimal_places=2)
+
     class Meta:
         verbose_name = "Instruction"
         ordering = ('-created',)
@@ -233,9 +242,6 @@ class Instruction(TimeStampedModel, models.Model):
     def is_amra(self):
         return self.type == AMRA_TYPE
 
-    def get_type(self):
-        return self.type
-
     def get_str_date_range(self):
         if self.date_range_from == None:
             return None
@@ -247,6 +253,7 @@ class Instruction(TimeStampedModel, models.Model):
         
     get_client_org_name.allow_tags = False
     get_client_org_name.short_description = 'Client organisation name'
+    
 
 class InstructionAdditionQuestion(models.Model):
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE, related_name='addition_questions')

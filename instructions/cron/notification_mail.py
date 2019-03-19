@@ -24,56 +24,16 @@ def instruction_notification_amra():
     instruction_query_set = Instruction.objects.filter(type='AMRA')
     instruction_query_set = instruction_query_set.filter(~Q(status=INSTRUCTION_STATUS_COMPLETE) & ~Q(status=INSTRUCTION_STATUS_REJECT) & ~Q(status=INSTRUCTION_STATUS_PAID))
 
-    # Get Value for table range 2 days.
-    expected_date_2days = timezone.now() - timedelta(days=2)
-    to_expected_date_2days = expected_date_2days.replace(hour=23, minute=59, second=59)
-    from_expected_date_2days = expected_date_2days.replace(hour=00, minute=00, second=00)
-    instruction_query_set_2days = Q(fee_calculation_start_date__range=(from_expected_date_2days, to_expected_date_2days))
-
-    # Get Value for table range 6 days.
-    expected_date_6days = timezone.now() - timedelta(days=6)
-    to_expected_date_6days = expected_date_6days.replace(hour=23, minute=59, second=59)
-    from_expected_date_6days = expected_date_6days.replace(hour=00, minute=00, second=00)
-    instruction_query_set_6days = Q(fee_calculation_start_date__range=(from_expected_date_6days, to_expected_date_6days))
-
-    # Get Value for table range 10 days.
-    expected_date_10days = timezone.now() - timedelta(days=10)
-    to_expected_date_10days = expected_date_10days.replace(hour=23, minute=59, second=59)
-    from_expected_date_10days = expected_date_10days.replace(hour=00, minute=00, second=00)
-    instruction_query_set_10days = Q(fee_calculation_start_date__range=(from_expected_date_10days, to_expected_date_10days))
-
-    # Get Value for table range 14 days.
-    expected_date_14days = timezone.now() - timedelta(days=14)
-    to_expected_date_14days = expected_date_14days.replace(hour=23, minute=59, second=59)
-    from_expected_date_14days = expected_date_14days.replace(hour=00, minute=00, second=00)
-    instruction_query_set_14days = Q(fee_calculation_start_date__range=(from_expected_date_14days, to_expected_date_14days))
-
-    # Get Value for table range 20 days.
-    expected_date_20days = timezone.now() - timedelta(days=20)
-    to_expected_date_20days = expected_date_20days.replace(hour=23, minute=59, second=59)
-    from_expected_date_20days = expected_date_20days.replace(hour=00, minute=00, second=00)
-    instruction_query_set_20days = Q(fee_calculation_start_date__range=(from_expected_date_20days, to_expected_date_20days))
-
-    # Get Value for table range 23 days.
-    expected_date_23days = timezone.now() - timedelta(days=23)
-    to_expected_date_23days = expected_date_23days.replace(hour=23, minute=59, second=59)
-    from_expected_date_23days = expected_date_23days.replace(hour=00, minute=00, second=00)
-    instruction_query_set_23days = Q(fee_calculation_start_date__range=(from_expected_date_23days, to_expected_date_23days))
-
-    instruction_query_set = instruction_query_set.filter(
-        instruction_query_set_2days | instruction_query_set_6days | instruction_query_set_10days | instruction_query_set_14days |
-        instruction_query_set_20days | instruction_query_set_23days)
-
     for instruction in instruction_query_set:
-        check_time = instruction.fee_calculation_start_date
-        if from_expected_date_23days <= check_time <= to_expected_date_23days:
+        time_check = timezone.now() - instruction.fee_calculation_start_date
+        if time_check.days == 23:
             auto_reject_amra_after_23days(instruction)
         else:
             send_email_amra(instruction)
 
 
 def send_email_amra(instruction):
-    subject_reject_email = 'AMRA instruction not processed'
+    subject_email = 'AMRA instruction not processed'
 
     # Send Email for GP.
     gp_email = set()
@@ -90,8 +50,8 @@ def send_email_amra(instruction):
 
     try:
         send_mail(
-            subject_reject_email,
-            'Your instruction has been reject',
+            subject_email,
+            'Your instruction is not processed',
             'MediData',
             list(gp_email),
             fail_silently=True,
@@ -138,34 +98,6 @@ def auto_reject_amra_after_23days(instruction):
         )
     except SMTPException:
         logging.error('"AMRA" Send mail to client FAILED')
-
-    # Send Email for GP.
-    gp_email = set()
-    instruction_link = settings.EMR_URM + reverse('instructions:view_reject', kwargs={'instruction_id': instruction.id})
-    gp_managers = User.objects.filter(
-            userprofilebase__generalpracticeuser__organisation=instruction.gp_practice.pk,
-            userprofilebase__generalpracticeuser__role=GeneralPracticeUser.PRACTICE_MANAGER
-        ).values('email')
-    for email in gp_managers:
-        gp_email.add(email['email'])
-
-    if not instruction.gp_user == None:
-        gp_email.add(instruction.gp_user.user.email)
-
-    try:
-        send_mail(
-            subject_reject_email,
-            'Your instruction has been reject',
-            'MediData',
-            list(gp_email),
-            fail_silently=True,
-            html_message=loader.render_to_string('instructions/amra_reject_email.html', {
-                'med_ref': instruction_med_ref,
-                'link': instruction_link
-            })
-        )
-    except SMTPException:
-        logging.error('"AMRA" Send mail to GP FAILED')
 
 
 def instruction_notification_sars():
