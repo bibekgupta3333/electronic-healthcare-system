@@ -27,8 +27,8 @@ from payment.functions import calculate_instruction_fee
 from typing import List
 #from silk.profiling.profiler import silk_profile
 
-
 logger = logging.getLogger('timestamp')
+event_logger = logging.getLogger('medidata.event')
 
 
 @login_required(login_url='/accounts/login')
@@ -49,6 +49,7 @@ def download_attachment(request, instruction_id, path_file):
         return redirect('services:handle_error', code=raw_xml_or_status_code)
     attachment_report = AttachmentReport(instruction, raw_xml_or_status_code, path_file)
     return attachment_report.download()
+
 
 def get_matched_patient(patient: InstructionPatient, gp_organisation: OrganisationGeneralPractice) -> List[Registration]:
     raw_xml_or_status_code = services.GetPatientList(patient, gp_organisation=gp_organisation).call()
@@ -71,6 +72,12 @@ def get_patient_registration(patient_number, gp_organisation: OrganisationGenera
 def reject_request(request, instruction_id):
     instruction = Instruction.objects.get(id=instruction_id)
     instruction.reject(request, request.POST)
+    event_logger.info(
+        '{user}:{user_id} REJECT instruction ID {instruction_id}'.format(
+            user=request.user, user_id=request.user.id,
+            instruction_id=instruction_id
+        )
+    )
     return HttpResponseRedirect("%s?%s"%(reverse('instructions:view_pipeline'),"status=%s&type=allType"%INSTRUCTION_STATUS_REJECT))
 
 
@@ -102,8 +109,21 @@ def select_patient(request, instruction_id, patient_emis_number):
                     patient_instruction.save()
                     instruction.patient = patient_user
                     instruction.save()
+                    event_logger.info(
+                        '{user}:{user_id} ALLOCATED instruction ID {instruction_id} to self'.format(
+                            user=request.user, user_id=request.user.id,
+                            instruction_id=instruction_id,
+                        )
+                    )
                 else:
                     messages.success(request, 'Allocated to {gp_name} successful'.format(gp_name=gp_name))
+                    event_logger.info(
+                        '{user}:{user_id} ALLOCATED instruction ID {instruction_id} to {allocated_gp}'.format(
+                            user=request.user, user_id=request.user.id,
+                            instruction_id=instruction_id,
+                            allocated_gp=instruction.gp_user
+                        )
+                    )
                     return redirect('instructions:view_pipeline')
             elif allocate_option == AllocateInstructionForm.RETURN_TO_PIPELINE:
                 return redirect('instructions:view_pipeline')
@@ -112,6 +132,13 @@ def select_patient(request, instruction_id, patient_emis_number):
     instruction.in_progress(context={'gp_user': request.user.userprofilebase.generalpracticeuser})
     instruction.saved = False
     instruction.save()
+    event_logger.info(
+        '{user}:{user_id} SELECTED EMIS patient ID {patient_emis_number} on instruction ID {instruction_id}'.format(
+            user=request.user, user_id=request.user.id,
+            patient_emis_number=patient_emis_number,
+            instruction_id=instruction_id
+        )
+    )
     return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
@@ -124,6 +151,11 @@ def set_patient_emis_number(request, instruction_id):
     if isinstance(patient_list, HttpResponseRedirect):
         return patient_list
     allocate_instruction_form = AllocateInstructionForm(user=request.user, instruction_id=instruction_id)
+    event_logger.info(
+        '{user}:{user_id} ACCESS select EMIS patient List view'.format(
+            user=request.user, user_id=request.user.id,
+        )
+    )
 
     return render(request, 'medicalreport/patient_emis_number.html', {
         'patient_list': patient_list,
@@ -173,7 +205,13 @@ def edit_report(request, instruction_id):
     inst_gp_user = instruction.gp_user.user
     cur_user = request.user
 
-    response =  render(request, 'medicalreport/medicalreport_edit.html', {
+    event_logger.info(
+        '{user}:{user_id} ACCESS edit medical report view'.format(
+            user=request.user, user_id=request.user.id,
+        )
+    )
+
+    response = render(request, 'medicalreport/medicalreport_edit.html', {
         'user': request.user,
         'medical_record': medical_record_decorator,
         'redaction': redaction,
@@ -207,6 +245,12 @@ def update_report(request, instruction_id):
             is_valid = create_or_update_redaction_record(request, instruction)
             if is_valid:
                 if request.POST.get('event_flag') == 'submit':
+                    event_logger.info(
+                        '{user}:{user_id} SUBMITTED medical report of instruction ID {instruction_id}'.format(
+                            user=request.user, user_id=request.user.id,
+                            instruction_id=instruction_id
+                        )
+                    )
                     if instruction.client_user:
                         calculate_instruction_fee(instruction)
                     create_patient_report(request, instruction)
@@ -243,6 +287,13 @@ def submit_report(request, instruction_id):
             'instruction_checked': redaction.instruction_checked
         },
         user=request.user)
+
+    event_logger.info(
+        '{user}:{user_id} ACCESS preview/submit of instruction ID {instruction_id}'.format(
+            user=request.user, user_id=request.user.id,
+            instruction_id=instruction_id
+        )
+    )
 
     return render(request, 'medicalreport/medicalreport_submit.html', {
         'header_title': header_title,
@@ -285,4 +336,10 @@ def final_report(request, instruction_id):
     end_time = timezone.now()
     total_time = end_time - start_time
     logger.info("[RENDER PDF] %s seconds with patient %s"%(total_time.seconds, instruction.patient_information.__str__()))
+    event_logger.info(
+        '{user}:{user_id} ACCESS final report view of instruction ID {instruction_id}'.format(
+            user=request.user, user_id=request.user.id,
+            instruction_id=instruction_id
+        )
+    )
     return response
