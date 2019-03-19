@@ -72,7 +72,7 @@ def count_instructions(user, gp_practice_code, client_organisation, page=''):
             'Completed': complete_count,
             'Rejected': rejected_count,
             'Finalising': finalise_count,
-            'Generated Fail': fail_count,
+            'Fail': fail_count,
         }
     elif page == 'fee_and_payment_pipeline':
         all_count = Instruction.objects.filter(query_condition, status__in=[INSTRUCTION_STATUS_PAID, INSTRUCTION_STATUS_COMPLETE]).count()
@@ -126,7 +126,7 @@ def count_fee_sensitive(user, gp_practice_code):
         'New': new_total_count,
         'In Progress': progress_total_count,
         'Finalising': final_total_count,
-        'Generated Fail': fail_total_count
+        'Fail': fail_total_count
     }
 
     return fee_sensitive_number
@@ -208,7 +208,7 @@ def count_model_search(request, client_organisation=None, gp_practice_code=None)
         'Completed': complete_count,
         'Rejected': rejected_count,
         'Finalising': finalise_count,
-        'Generated Fail': fail_count,
+        'Fail': fail_count,
     }
 
     return overall_instructions_number
