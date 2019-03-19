@@ -16,7 +16,7 @@ from report.mobile import SendSMS
 from report.models import ExceptionMerge
 import xhtml2pdf.pisa as pisa
 from medicalreport.templatetags.custom_filters import format_date_filter
-#from silk.profiling.profiler import silk_profile
+# from silk.profiling.profiler import silk_profile
 
 from celery import shared_task
 from PIL import Image
@@ -34,6 +34,7 @@ import re
 
 logger = logging.getLogger(__name__)
 time_logger = logging.getLogger('timestamp')
+event_logger = logging.getLogger('medidata.event')
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPORT_DIR = BASE_DIR + '/medicalreport/templates/medicalreport/reports/unsupport_files.html'
 
