@@ -31,21 +31,45 @@ jobs:
           command: |
             . venv/bin/activate
             export DJANGO_SETTINGS_MODULE="medi.settings.test_settings"
-            python manage.py test --pattern="test_*.py" --exclude-tag=notimplemented
+            python manage.py test --pattern="test_*.py" --exclude-tag=end_to_end
       - store_artifacts:
           path: test-reports
           destination: test-reports
-  sonarqube:
+  test_end_to_end:
     docker:
-      - image: circleci/node:9
+      - image: circleci/python:3.6.5
+      - image: circleci/postgres:10.5
+        environment:
+          POSTGRES_USER: medi
+          POSTGRES_DB: medi
     working_directory: ~/repo
     steps:
       - checkout
+      - restore_cache:
+          key: medi-{{ checksum "config/requirements.txt" }}
       - run:
-          name: Run sonarqube
+          name: Install dependencies
           command: |
-            sudo npm install -g sonarqube-scanner
-            sudo sonar-scanner -Dsonar.projectKey=Medidata-$CIRCLE_BRANCH -Dsonar.projectName=MediData-$CIRCLE_BRANCH $SONAR_COMMAND
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r config/requirements.txt
+            sudo apt-get update
+            sudo apt-get install rabbitmq-server
+            sudo apt-get install memcached
+            sudo rabbitmq-server -detached
+      - save_cache:
+          key: medi-{{ checksum "config/requirements.txt" }}
+          paths:
+            - "venv"
+      - run:
+          name: Run tests
+          command: |
+            . venv/bin/activate
+            export DJANGO_SETTINGS_MODULE="medi.settings.test_settings"
+            python manage.py test --pattern="test_*.py" --tag=end_to_end
+      - store_artifacts:
+          path: test-reports
+          destination: test-reports
   deploy_staging:
     machine:
       enable: true
@@ -85,17 +109,11 @@ workflows:
   build-and-deploy:
     jobs:
       - build
-      - sonarqube:
-          filters:
-            branches:
-              only:
-                - master
-                - develop
-                - UAT
+      - test_end_to_end
       - deploy_staging:
           requires:
             - build
-            - sonarqube
+            - test_end_to_end
           filters:
             branches:
               only:
@@ -103,7 +121,7 @@ workflows:
       - deploy_uat:
           requires:
             - build
-            - sonarqube
+            - test_end_to_end
             - deploy_staging
           filters:
             branches:
