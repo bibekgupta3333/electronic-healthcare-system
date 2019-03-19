@@ -26,7 +26,7 @@
                                     <a href="{% url 'instructions:new_instruction' %}" class="btn btn-fee text-light" id="addInstructionButton">New SARs Instruction</a>
                                 {% endif %}
                             {% else %}
-                                <a href="{% url 'instructions:new_instruction' %}" class="btn btn-primary" id="addInstructionButton">New Instruction</a>
+                                <a href="{% url 'instructions:new_instruction' %}" class="btn btn-fee" id="addInstructionButton">New Instruction</a>
                             {% endif %}
                         </div>
                         <div class="col-md-4">
@@ -34,7 +34,7 @@
                                 {% comment %} {% csrf_token %} {% endcomment %}
                                 <div class="row">
                                     <div class="col-md-8">
-                                        <input id="search" name="search" type="search" placeholder="Search" class="form-control search" required="true">
+                                        <input id="search" name="search" type="search" placeholder="{% if request.user.type == 'GP' %}Patient name{% else %}Patient name, Reference{% endif %}" class="form-control search" required="true">
                                     </div>
                                     <div class="col-md-4">
                                         <button class="btn btn-fee text-light btn-block" type="submit" id="id_search_btn"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</button>

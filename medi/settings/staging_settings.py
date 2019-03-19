@@ -39,6 +39,15 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': 'medi_info.log',
+            'when': 'w0',
+            'interval': 1,
+            'backupCount': 10,
+            'formatter': 'simple'
+        }
     },
     'loggers': {
         'raven': {
@@ -51,6 +60,10 @@ LOGGING = {
             'handlers': ['sentry','console'],
             'propagate': False,
         },
+        'medidata.event': {
+            'level': 'INFO',
+            'handlers': ['file',],
+        }
     }
 }
 
