@@ -80,7 +80,7 @@ class InstructionTable(tables.Table):
             'Completed': 'badge-success',
             'Rejected': 'badge-danger',
             'Finalising': 'badge-secondary',
-            'Generated Fail': 'badge-dark'
+            'Fail': 'badge-dark'
         }
         url = 'instructions:review_instruction'
         view_report = view_complete_report(self.user.id, record.pk)
@@ -93,7 +93,7 @@ class InstructionTable(tables.Table):
                 return format_html('<a><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
         elif value == 'Rejected':
             url = 'instructions:view_reject'
-        elif value == 'Generated Fail':
+        elif value == 'Fail':
             url = 'instructions:view_fail'
         elif value == 'In Progress' and self.user.type == models.GENERAL_PRACTICE_USER and not record.saved:
             url = 'medicalreport:edit_report'
