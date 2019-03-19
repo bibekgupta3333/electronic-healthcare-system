@@ -47,6 +47,9 @@
                         <a href="{% url 'report:summary-report' %}"><i class="fas fa-chart-bar"></i>Dashboard</a>
                     </li>
                 {% endif %}
+                <li class="{% if request.resolver_match.url_name == 'view_fee_payment_pipeline' %}active{% endif %}">
+                    <a href="{% url 'instructions:view_fee_payment_pipeline' %}" ><i class="fas fa-tasks"></i>Fee and Payment</a>
+                </li>
                 <li class="{% if request.resolver_match.url_name == 'resource_centre' %}active{% endif %}">
                     <a href="{% url 'help:resource_centre' %}"><i class="far fa-question-circle"></i>Resource Centre</a>
                 </li>
