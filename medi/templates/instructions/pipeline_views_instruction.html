@@ -47,7 +47,7 @@
             </div>
         </div>
 
-        {% if false %}
+        {% if user.type == 'GP' and table_fee and next_prev_data_fee %}
             <div class="card mt-3" id="fee_block">
                 <div class="card-header text-light btn-fee">
                     <div class="row">
@@ -96,7 +96,7 @@
         {% endif %}
 
         <div class="card mt-4" id="all_block">
-            <div class="card-header text-light">
+            <div class="card-header text-light" style="background-color: #48b5a2">
                 <div class="row">
                     <div class="col-md-10 pt-2">
                     </div>
