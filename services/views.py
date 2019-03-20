@@ -67,6 +67,18 @@ def handle_error(request, code):
     })
 
 
+def handler_403(request, reason=''):
+    status_code = 403
+    message = 'Permission Denied. Please try agian later or contact the admin.'
+    response = render(request, 'errors/handle_errors.html', {
+        'code': status_code,
+        'message': message,
+        'reason': reason
+    })
+    response.status_code = status_code
+    return response
+
+
 def handler_404(request, exception=None, template_name='handle_errors.html'):
     status_code = 404
     message = 'Page not found. Please try agian later or contact the admin.'
