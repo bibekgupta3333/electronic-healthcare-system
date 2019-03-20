@@ -1,13 +1,16 @@
 
 from django.core.mail import send_mail
 from django.template import loader
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.conf import settings
 from zipfile import ZipFile, ZIP_DEFLATED
-from .models import PatientReportAuth
+from .models import PatientReportAuth, ThirdPartyAuthorisation
+from instructions.models import Instruction
 
 import json
 import logging
+import io
 
 event_logger = logging.getLogger('medidata.event')
 
@@ -26,7 +29,10 @@ def send_patient_mail(patient, gp_practice):
     )
 
 
-def validate_pin(response, pin,  patient_auth, access_type, third_party_authorisation=None, otp_type=''):
+def validate_pin(
+        response, pin: str,  patient_auth: PatientReportAuth,
+        access_type: str, third_party_authorisation: ThirdPartyAuthorisation=None, otp_type: str=''
+) -> bool:
     max_input = 3
     if response.status_code == 200:
         response_results_dict = json.loads(response.text)
@@ -75,7 +81,7 @@ def validate_pin(response, pin,  patient_auth, access_type, third_party_authoris
     return False
 
 
-def get_zip_medical_report(instruction):
+def get_zip_medical_report(instruction: Instruction) -> io.BinaryIO:
     path_patient = instruction.patient_information.__str__()
     path = settings.MEDIA_ROOT + '/patient_attachments/' + path_patient + '/'
     attachments = instruction.download_attachments

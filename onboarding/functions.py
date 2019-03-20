@@ -3,7 +3,6 @@ from accounts.models import GENERAL_PRACTICE_USER
 from organisations.models import OrganisationGeneralPractice
 from payment.models import GpOrganisationFee, OrganisationFeeRate
 from .forms import BankDetailsEmrSetUpStage2Form
-from accounts.models import PracticePreferences
 import random
 import string
 

@@ -43,15 +43,15 @@ class ThirdPartyAuthorisation(TimeStampedModel):
     def __str__(self):
         return self.company
 
-    def get_family_phone_e164(self):
+    def get_family_phone_e164(self) -> str:
         phone = self.get_phone_without_zero(self.family_phone_number)
         return "+{phone_code}{phone_number}".format(phone_code=self.family_phone_number_code, phone_number=phone)
 
-    def get_office_phone_e164(self):
+    def get_office_phone_e164(self) -> str:
         phone = self.get_phone_without_zero(self.office_phone_number)
         return "+{phone_code}{phone_number}".format(phone_code=self.office_phone_number_code, phone_number=phone)
 
-    def get_phone_without_zero(self, phone):
+    def get_phone_without_zero(self, phone: str) -> str:
         if phone and phone[0] == '0':
             phone = phone[1:]
         return phone

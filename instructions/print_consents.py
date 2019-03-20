@@ -12,7 +12,7 @@ BASE_DIR = settings.BASE_DIR
 MDXCONSENT_DIR = settings.MDXCONSENT_DIR
 
 
-def link_callback(uri, rel):
+def link_callback(uri: str, rel) -> str:
     sUrl = settings.STATIC_URL
     sRoot = settings.STATIC_ROOT
 
@@ -29,7 +29,7 @@ def link_callback(uri, rel):
 class MDXDualConsent:
 
     @staticmethod
-    def render(params: dict):
+    def render(params: dict) -> HttpResponse:
         template = get_template(MDXCONSENT_DIR)
         html = template.render(params)
         response = BytesIO()

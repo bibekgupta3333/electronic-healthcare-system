@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404, reverse
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http import HttpResponse, StreamingHttpResponse, HttpRequest, HttpResponseRedirect
 from wsgiref.util import FileWrapper
 from django.db.models import Sum, Q
 
@@ -9,13 +9,13 @@ from accounts.models import *
 from django.core.mail import send_mail
 from django.contrib import messages
 from django.template import loader
-from django.utils import timezone
 
 from instructions.models import Instruction
 from .models import PatientReportAuth, ThirdPartyAuthorisation
 from .forms import AccessCodeForm, ThirdPartyAuthorisationForm
 from .functions import validate_pin, get_zip_medical_report
 
+from typing import Union
 from report.mobile import AuthMobile
 
 import json
@@ -27,7 +27,7 @@ time_logger = logging.getLogger('timestamp')
 event_logger = logging.getLogger('medidata.event')
 
 
-def sar_request_code(request, instruction_id, access_type, url):
+def sar_request_code(request: HttpRequest, instruction_id: str, access_type: str, url: str) -> HttpResponse:
     error_message = None
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     third_party_authorisation = None
@@ -242,7 +242,7 @@ def sar_access_code(request, access_type, url):
     })
 
 
-def get_report(request, access_type):
+def get_report(request: HttpRequest, access_type:  str) -> Union[HttpResponse, StreamingHttpResponse]:
     if not request.COOKIES.get('verified_pin'):
         return redirect('report:session-expired')
 
@@ -291,16 +291,16 @@ def get_report(request, access_type):
     })
 
 
-def redirect_auth_limit(request):
+def redirect_auth_limit(request: HttpRequest) -> HttpResponse:
     error_message = 'You exceeded the limit'
     return render(request, 'patient/auth_3_exceed_limit.html', {'message': error_message})
 
 
-def session_expired(request):
+def session_expired(request: HttpRequest) -> HttpResponse:
     return render(request, 'patient/session_expired.html')
 
 
-def summry_report(request):
+def summry_report(request: HttpRequest) -> HttpResponse:
     if 'current_year' in request.GET:
         numYear = int(request.GET.get('current_year', None))
     else:
@@ -399,7 +399,7 @@ def summry_report(request):
                 })
 
 
-def add_third_party_authorisation(request, report_auth_id):
+def add_third_party_authorisation(request: HttpRequest, report_auth_id: str) -> HttpResponse:
     report_auth = get_object_or_404(PatientReportAuth, id=report_auth_id)
     third_party_form = ThirdPartyAuthorisationForm()
 
@@ -444,7 +444,7 @@ def add_third_party_authorisation(request, report_auth_id):
     })
 
 
-def cancel_authorisation(request, third_party_authorisation_id):
+def cancel_authorisation(request: HttpRequest, third_party_authorisation_id: str) -> HttpResponseRedirect:
     third_party_authorisation = get_object_or_404(ThirdPartyAuthorisation, id=third_party_authorisation_id)
     report_auth = third_party_authorisation.patient_report_auth
 
@@ -469,7 +469,7 @@ def cancel_authorisation(request, third_party_authorisation_id):
     return redirect('report:select-report', access_type=PatientReportAuth.ACCESS_TYPE_PATIENT)
 
 
-def extend_authorisation(request, third_party_authorisation_id):
+def extend_authorisation(request: HttpRequest, third_party_authorisation_id: str) -> HttpResponseRedirect:
     third_party_authorisation = get_object_or_404(ThirdPartyAuthorisation, id=third_party_authorisation_id)
     report_auth = third_party_authorisation.patient_report_auth
 
@@ -503,7 +503,7 @@ def extend_authorisation(request, third_party_authorisation_id):
     return redirect('report:select-report', access_type=PatientReportAuth.ACCESS_TYPE_PATIENT)
 
 
-def renew_authorisation(request, third_party_authorisation_id):
+def renew_authorisation(request: HttpRequest, third_party_authorisation_id: str) -> HttpResponseRedirect:
     third_party_authorisation = get_object_or_404(ThirdPartyAuthorisation, id=third_party_authorisation_id)
     report_auth = third_party_authorisation.patient_report_auth
 
