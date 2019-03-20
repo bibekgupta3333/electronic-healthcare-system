@@ -28,7 +28,10 @@ def instruction_notification_amra():
         time_check = timezone.now() - instruction.fee_calculation_start_date
         if time_check.days == 23:
             auto_reject_amra_after_23days(instruction)
-        else:
+        elif (time_check.days == instruction.ins_max_day_lvl_1) or\
+            (time_check.days == instruction.ins_max_day_lvl_2) or\
+            (time_check.days == instruction.ins_max_day_lvl_3) or\
+            (time_check.days == instruction.ins_max_day_lvl_4):
             send_email_amra(instruction)
 
 
