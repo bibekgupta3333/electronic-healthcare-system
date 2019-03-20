@@ -16,6 +16,10 @@ from permissions.functions import generate_gp_permission
 from common.functions import get_url_page
 import random
 import string
+import logging
+
+
+event_logger = logging.getLogger('medidata.event')
 
 
 def generate_password(initial_range: int, body_rage: int, tail_rage: int) -> str:
@@ -57,7 +61,7 @@ def sign_up(request):
                 gp_organisation.operating_system_salt_and_encrypted_password = password
                 gp_organisation.operating_system_username = 'medidata_access'
             gp_organisation.save()
-
+            event_logger.info('Onboarding: {gp_name}, sign up completed'.format(gp_name=gp_organisation.name))
             new_pm_user = authenticate(
                 request,
                 email=pm_form.cleaned_data['email1'],
@@ -97,6 +101,7 @@ def emis_setup(request, practice_code):
             gp_organisation.gp_operating_system = surgery_update_form.cleaned_data['operating_system']
             gp_organisation.save()
 
+            event_logger.info('Onboarding: {gp_name}, EDITED surgery information completed'.format(gp_name=gp_organisation.name))
             #   If User selected the another os. Will redirect to thank you Page.
             if not gp_organisation.gp_operating_system == 'EMISWeb':
                 message_1 = 'Thank you for completing part one of the eMR registration process. It’s great to have you on board.'
@@ -209,7 +214,7 @@ def emr_setup_final(request, practice_code=None):
                 gp_organisation.live =True
                 gp_organisation.save()
             generate_gp_permission(gp_organisation)
-
+            event_logger.info('Onboarding: {gp_name}, final setup completed'.format(gp_name=gp_organisation.name))
             return redirect('onboarding:emis_setup_success')
 
     return render(request, 'onboarding/emr_setup_final.html', {

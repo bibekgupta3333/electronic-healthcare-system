@@ -16,7 +16,7 @@ from report.mobile import SendSMS
 from report.models import ExceptionMerge
 import xhtml2pdf.pisa as pisa
 from medicalreport.templatetags.custom_filters import format_date_filter
-#from silk.profiling.profiler import silk_profile
+# from silk.profiling.profiler import silk_profile
 
 from celery import shared_task
 from PIL import Image
@@ -34,6 +34,7 @@ import re
 
 logger = logging.getLogger(__name__)
 time_logger = logging.getLogger('timestamp')
+event_logger = logging.getLogger('medidata.event')
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPORT_DIR = BASE_DIR + '/medicalreport/templates/medicalreport/reports/unsupport_files.html'
 
@@ -111,6 +112,10 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                     file_type = file_name.split('.')[-1]
                     raw_attachment = Base64Attachment(raw_xml_or_status_code).data()
                     buffer = io.BytesIO(raw_attachment)
+                    path_patient = instruction.patient_information.__str__()
+                    save_path = settings.MEDIA_ROOT + '/patient_attachments/' + path_patient + '/'
+                    if not os.path.exists(os.path.dirname(save_path)):
+                        os.makedirs(os.path.dirname(save_path))
 
                     if file_type == 'pdf':
                         attachments_pdf.append(PyPDF2.PdfFileReader(buffer))
@@ -160,12 +165,8 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                             f.close()
                     else:
                         file_name = Base64Attachment(raw_xml_or_status_code).filename()
-                        path_patient = instruction.patient_information.__str__()
-                        save_path = settings.MEDIA_ROOT + '/patient_attachments/' + path_patient + '/'
                         buffer = io.BytesIO()
                         buffer.write(raw_attachment)
-                        if not os.path.exists(os.path.dirname(save_path)):
-                            os.makedirs(os.path.dirname(save_path))
                         save_file = file_name.split('\\')[-1]
                         f = open(save_path + save_file, 'wb')
                         f.write(buffer.getvalue())
