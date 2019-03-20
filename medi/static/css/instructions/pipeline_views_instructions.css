@@ -3,7 +3,20 @@
   width: 128px;
 }
 
+.feeNote .badge {
+  width: 128px;
+  background-color: #00bba3;
+}
+
 #addInstructionButton {
   color: white;
   font-weight: bold;
+}
+
+.btn-info {
+  background-color: #48b5a2;
+}
+
+.btn-fee {
+  background-color: #296799;
 }

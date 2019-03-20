@@ -7,7 +7,6 @@ from model_mommy import mommy
 from services.emisapiservices.services import (
     EmisAPIServiceBase, GetAttachment, GetPatientList, GetMedicalRecord
 )
-from services.models import EmisAPIConfig
 from instructions.models import InstructionPatient, Instruction, SARS_TYPE
 from medicalreport.tests.test_views import EmisAPITestCase
 from organisations.models import OrganisationGeneralPractice
@@ -19,16 +18,18 @@ EMIS_API_HOST = settings.EMIS_API_HOST
 
 
 def generate_emis_api_config():
-    mommy.make(
-        EmisAPIConfig, emis_organisation_id='emis_id',
-        emis_username='emis_username', emis_password=''
+    return mommy.make(
+        OrganisationGeneralPractice,
+        operating_system_username='emis_username',
+        operating_system_organisation_code='emis_id',
+        _operating_system_salt_and_encrypted_password='password'
     )
 
 
 class EmisAPIServiceBaseTest(TestCase):
     def setUp(self):
-        generate_emis_api_config()
-        self.emis_api_service_base = EmisAPIServiceBase()
+        gp = generate_emis_api_config()
+        self.emis_api_service_base = EmisAPIServiceBase(gp)
 
     def test_uri_raises_error(self):
         self.assertRaises(NotImplementedError, self.emis_api_service_base.uri)
@@ -36,9 +37,9 @@ class EmisAPIServiceBaseTest(TestCase):
 
 class GetAttachmentTest(TestCase):
     def setUp(self):
-        generate_emis_api_config()
+        gp = generate_emis_api_config()
         self.get_attachment = GetAttachment(
-            patient_number='P123', attachment_identifier='attachment id', gp_organisation=None
+            patient_number='P123', attachment_identifier='attachment id', gp_organisation=gp
         )
 
     def test_uri(self):
@@ -48,21 +49,21 @@ class GetAttachmentTest(TestCase):
 
 class GetPatientListTest(TestCase):
     def setUp(self):
-        generate_emis_api_config()
+        gp = generate_emis_api_config()
         patient = mommy.make(
             InstructionPatient,
             patient_first_name='first_name',
             patient_last_name='last_name',
             patient_dob=date(1990, 1, 2)
         )
-        self.get_patient_list = GetPatientList(patient, gp_organisation=None)
+        self.get_patient_list = GetPatientList(patient, gp_organisation=gp)
         blank_patient = mommy.make(
             InstructionPatient,
             patient_first_name='',
             patient_last_name='',
             patient_dob=None
         )
-        self.get_patient_list_blank = GetPatientList(blank_patient, gp_organisation=None)
+        self.get_patient_list_blank = GetPatientList(blank_patient, gp_organisation=gp)
 
         self.instruction_patient = mommy.make(
             InstructionPatient,
@@ -122,8 +123,8 @@ class GetPatientListTest(TestCase):
 
 class GetMedicalRecordTest(EmisAPITestCase):
     def setUp(self):
-        generate_emis_api_config()
-        self.get_medical_record = GetMedicalRecord(patient_number='P123', gp_organisation=None)
+        gp = generate_emis_api_config()
+        self.get_medical_record = GetMedicalRecord(patient_number='P123', gp_organisation=gp)
 
     def test_uri(self):
         expected = f'{EMIS_API_HOST}/api/organisations/emis_id/patients/P123/medical_record'

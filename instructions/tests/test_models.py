@@ -24,7 +24,8 @@ class InstructionReminderTest(TestCase):
         self.now = timezone.now()
         self.gp_practice = mommy.make(OrganisationGeneralPractice, name='Test GP Practice', practcode='TEST0001')
         self.instruction = mommy.make(
-            Instruction, gp_practice=self.gp_practice
+            Instruction, gp_practice=self.gp_practice,
+            type=SARS_TYPE
         )
 
     def test_reminder_3_days(self):
@@ -45,6 +46,17 @@ class InstructionReminderTest(TestCase):
         instruction_notification_email_job()
         self.assertEqual(14, self.instruction.reminders.filter(reminder_day=14).first().reminder_day)
 
+    def test_reminder_21_days(self):
+        self.instruction.created=self.now-datetime.timedelta(days=21)
+        self.instruction.save()
+        instruction_notification_email_job()
+        self.assertEqual(21, self.instruction.reminders.filter(reminder_day=21).first().reminder_day)
+
+    def test_reminder_30_days(self):
+        self.instruction.created=self.now-datetime.timedelta(days=30)
+        self.instruction.save()
+        instruction_notification_email_job()
+        self.assertEqual(30, self.instruction.reminders.filter(reminder_day=30).first().reminder_day)
 
 class InstructionPatientTest(TestCase):
     def setUp(self):

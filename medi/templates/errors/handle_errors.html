@@ -1,8 +1,5 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load instruction_templatetags %}
-{% load get_permissions %}
-{% load render_table from django_tables2 %}
 {% load bootstrap4 %}
 {% bootstrap_css %}
 {% bootstrap_javascript jquery='full' %}
@@ -20,8 +17,10 @@
                 <div class="jumbotron text-center">
                     <h1 class="error-code">{{ code }}</h1>
                     <p class="message-head">{{ message }}</p>
-                    <p class="message-secondary">Click <a href="{% url 'instructions:view_pipeline' %}"><b>here</b></a>
-                        to return to your pipeline view</p>
+                    {% if request.user.is_authenticated %}
+                        <p class="message-secondary">Click <a href="{% url 'instructions:view_pipeline' %}"><b>here</b></a>
+                            to return to your pipeline view</p>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -113,12 +113,34 @@
                     </div>
                 </div>
 
+                <!-- Dropdown 6-->
+                <div class="card">
+                    <div class="card-header bg-primary" id="title6">
+                        <h5 class="mb-0">
+                            <button class="choice-6 btn btn-link text-light" type="button" data-toggle="collapse" data-target="#detail6" aria-expanded="false" aria-controls="detail6">
+                                <strong><i class="fas fa-caret-right" id="symbol-6"></i>&nbsp;&nbsp;Fee</strong>
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="detail6" class="collapse" aria-labelby="title6" data-parent="#menu1">
+                        <div class="card-body">
+                            <div class="card-body">
+                                <div class="btn-group-vertical col-12">
+                                    <a class="btn btn-block disabled" href="#" role="button">This is Fee choice. 1</a>
+                                    <a class="btn btn-block disabled" href="#" role="button">This is Fee choice. 2</a>
+                                    <a class="btn btn-block disabled" href="#" role="button">This is Fee choice. 3</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Dropdown 5-->
                 <div class="card">
                     <div class="card-header bg-primary" id="title5">
                         <h5 class="mb-0">
                             <button class="choice-5 btn btn-link text-light" type="button" data-toggle="collapse" data-target="#detail5" aria-expanded="false" aria-controls="detail5">
-                                <strong><i class="fas fa-caret-right" id="symbol-5"></i>&nbsp;&nbsp;Other</strong>
+                                <strong><i class="fas fa-caret-right" id="symbol-5"></i>&nbsp;&nbsp;Other Documents</strong>
                             </button>
                         </h5>
                     </div>
@@ -127,9 +149,9 @@
                             <div class="card-body">
                                 <div class="btn-group-vertical col-12">
                                     <a class="btn btn-block disabled" href="#" role="button">End user-license</a>
-                                    <a class="btn btn-block disabled" href="#" role="button">Data Policy</a>
-                                    <a class="btn btn-block disabled" href="#" role="button">Terms & Conditions</a>
-                                    <a class="btn btn-block disabled" href="#" role="button">Data Security Document</a>
+                                    <a class="btn btn-block" href="#" role="button" onclick="return changeScreen(52);">Data Policy</a>
+                                    <a class="btn btn-block" href="#" role="button" onclick="return changeScreen(53);">Terms & Conditions</a>
+                                    <a class="btn btn-block" href="#" role="button" onclick="return changeScreen(54);">IT environment and data security</a>
                                 </div>
                             </div>
                         </div>
@@ -148,7 +170,7 @@
                 </div>
                 <a href="{% static 'documents/Welcome to your Resource Centre.RF (002).pdf' %}" target="_blank" id="linkPreviewModeId">
                     <button type="button" class="btn btn-primary btn-block btn-lg">
-                        <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
+                        <i class="fas fa-search"></i>&nbsp;&nbsp;Click to preview
                     </button>
                 </a>
             </div>

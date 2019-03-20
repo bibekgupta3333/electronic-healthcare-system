@@ -17,10 +17,24 @@ def get_gporganisation_data(request, **kwargs):
     data = {
         'name': '',
         'address': '',
+        'status': '',
+        'status_class': ''
     }
     if code:
         gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=code).first()
         if gp_organisation:
+            # Check the status
+            if gp_organisation.live:
+                status = 'live surgery'
+                status_class = 'text-success'
+            else:
+                if gp_organisation.gp_operating_system == 'EMISWeb':
+                    status = 'Access not set-up'
+                    status_class = 'text-danger'
+                else:
+                    status = 'Not applicable'
+                    status_class = 'text-dark'
+
             data = {
                 'name': gp_organisation.name,
                 'address': ' '.join(
@@ -32,7 +46,9 @@ def get_gporganisation_data(request, **kwargs):
                         gp_organisation.billing_address_state,
                         gp_organisation.billing_address_postalcode,
                     )
-                )
+                ),
+                'status': status,
+                'status_class': status_class
             }
 
     if kwargs.get('need_dict'):
@@ -56,11 +72,23 @@ def get_nhs_autocomplete(request):
     }
     search = request.GET.get('search', '')
     if search:
-        organisation_gps = OrganisationGeneralPractice.objects.filter(live=True, accept_policy=True).filter(name__icontains=search)
-        nhs_gps = OrganisationGeneralPractice.objects.filter(Q(live=False) | Q(accept_policy=False)).filter(name__icontains=search)
+        organisation_gps = OrganisationGeneralPractice.objects.filter(
+            Q(name__icontains=search) |
+            Q(billing_address_postalcode__icontains=search) |
+            Q(billing_address_city__icontains=search) |
+            Q(billing_address_street__icontains=search),
+            live=True, accept_policy=True,
+        )
+        nhs_gps = OrganisationGeneralPractice.objects.filter(
+            Q(name__icontains=search) |
+            Q(billing_address_postalcode__icontains=search) |
+            Q(billing_address_city__icontains=search) |
+            Q(billing_address_street__icontains=search),
+            Q(live=False) | Q(accept_policy=False),
+        )
     else:
         organisation_gps = OrganisationGeneralPractice.objects.filter(live=True, accept_policy=True).all()[:10]
-        nhs_gps = OrganisationGeneralPractice.objects.filter(Q(live=False) | Q(accept_policy=False)).filter(name__icontains=search)[:10]
+        nhs_gps = OrganisationGeneralPractice.objects.filter(Q(live=False) | Q(accept_policy=False), name__icontains=search)[:10]
 
     if organisation_gps.exists():
         for organisation_gp in organisation_gps:

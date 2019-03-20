@@ -57,7 +57,7 @@ class Medication(XMLModelBase):
 
     def snomed_concepts(self) -> List[str]:
         return list(filter(None, [(
-            self.get_element_text("Drug/PreparationID[Scheme='SNOMED']/Value")
+            self.get_element_text("Drug/PreparationID[MapScheme='SNOMED']/MapCode")
             or self.get_element_text("Drug/PreparationID[Scheme='EMISPREPARATION'][MapScheme='SNOMED']/MapCode")
         )]))
 
@@ -72,3 +72,8 @@ class Medication(XMLModelBase):
 
     def is_profile_event(self) -> False:
         return False
+
+    def problem_linklist_guid(self) -> str:
+        return self.get_element_text("ProblemLinkList/Link/Target/GUID")
+
+

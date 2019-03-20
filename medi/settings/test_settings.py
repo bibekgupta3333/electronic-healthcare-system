@@ -54,4 +54,5 @@ LOGGING = {
     }
 }
 
+CLAMD_ENABLED = False
 EMIS_API_HOST = 'http://medi2data.net:9443'

@@ -4,8 +4,15 @@ from accounts import models as accounts_models
 
 from organisations.models import OrganisationGeneralPractice
 from common.fields import MyChoiceField
+from payment.models import OrganisationFeeRate
 
 import datetime
+
+
+class OrganisationFeeModelChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return obj.amount_rate_lvl_1
+
 
 class SurgeryForm(forms.Form):
     GP_OP_SYS_CHOICES = (
@@ -146,38 +153,30 @@ class SurgeryEmailForm(forms.ModelForm):
 
 
 class BankDetailsEmrSetUpStage2Form(forms.Form):
-    min_fee_payments = 60.00
-    level_1_payments = min_fee_payments*0.85
-    level_2_payments = level_1_payments*0.90
-    level_3_payments = level_2_payments*0.84
+    default_rate_band = OrganisationFeeRate.objects.filter(default=True)
+    try:
+        base_rate_band = default_rate_band.filter(base=True).first()
+    except:
+        base_rate_band = None
+    level_1_payments = base_rate_band.amount_rate_lvl_2 if base_rate_band else 0
+    level_2_payments = base_rate_band.amount_rate_lvl_3 if base_rate_band else 0
+    level_3_payments = base_rate_band.amount_rate_lvl_4 if base_rate_band else 0
 
     bank_account_name = forms.CharField(max_length=255, label='', required=False)
     bank_account_number = forms.CharField(max_length=50, label='', required=False)
     bank_account_sort_code = forms.CharField(max_length=50, label='', required=False)
-    received_within_5_days = forms.DecimalField(
-        initial=60.00, max_value=80, min_value=60, max_digits=4, label='',
-        widget=forms.NumberInput(attrs={'id': 'min_fee_payments'})
-    )
-    received_within_6_to_10_days = forms.DecimalField(
-        initial=level_1_payments, max_digits=4, label='',
+    received_within_3_days = OrganisationFeeModelChoiceField(OrganisationFeeRate.objects.filter(default=True), empty_label=None)
+    received_within_4_to_7_days = forms.DecimalField(
+        initial=level_1_payments, max_digits=4, label='Received within 4-7 days',
         widget=forms.NumberInput(attrs={'id': 'level_1_payments', 'readonly': True})
     )
-    received_within_11_to_15_days = forms.DecimalField(
-        initial=level_2_payments, max_digits=4, label='',
+    received_within_8_to_11_days = forms.DecimalField(
+        initial=level_2_payments, max_digits=4, label='Received within 8-11 days',
         widget=forms.NumberInput(attrs={'id': 'level_2_payments', 'readonly': True})
     )
-    received_after_15_days = forms.DecimalField(
-        initial=level_3_payments, max_digits=4, label='',
+    received_after_11_days = forms.DecimalField(
+        initial=level_3_payments, max_digits=4, label='Received after 11 days',
         widget=forms.NumberInput(attrs={'id': 'level_3_payments', 'readonly': True})
     )
     completed_by = forms.CharField(max_length=255, label='')
     job_title = forms.CharField(max_length=20, label='')
-
-    def clean(self):
-        super().clean()
-        self.cleaned_data['received_within_5_days'] = round(self.cleaned_data['received_within_5_days'], 2)
-        self.cleaned_data['received_within_6_to_10_days'] = round(self.cleaned_data['received_within_6_to_10_days'], 2)
-        self.cleaned_data['received_within_11_to_15_days'] = round(self.cleaned_data['received_within_11_to_15_days'], 2)
-        self.cleaned_data['received_after_15_days'] = round(self.cleaned_data['received_after_15_days'], 2)
-
-        return self.cleaned_data

@@ -12,7 +12,13 @@
         {% endif %}
         {% for attachment in attachments %}
             {% with header=attachment.parsed_date|format_date_filter|add:" - "|add:attachment.description %}
-                <li id="report-{{forloop.counter}}" class="reports" onclick="renderReport(this)"><i class="fas fa-paperclip"></i> {{header}}</li>
+                {% with attachment|check_file_white_list as white_list %}
+                    {% if white_list %}
+                        <li id="report-{{forloop.counter}}" class="reports" onclick="renderReport(this)"><i class="fas fa-paperclip"></i> {{header}}</li>
+                    {% else %}
+                        <li id="report-{{forloop.counter}}" class="reports download_attachment" onclick="renderReport(this)"><i class="fas fa-cloud-download-alt"></i> {{header}}</li>
+                    {% endif %}
+                {% endwith %}
             {% endwith %}
         {% endfor %}
     </ul>

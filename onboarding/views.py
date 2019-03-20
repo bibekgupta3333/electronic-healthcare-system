@@ -16,6 +16,10 @@ from permissions.functions import generate_gp_permission
 from common.functions import get_url_page
 import random
 import string
+import logging
+
+
+event_logger = logging.getLogger('medidata.event')
 
 
 def generate_password(initial_range: int, body_rage: int, tail_rage: int) -> str:
@@ -51,13 +55,13 @@ def sign_up(request):
                 })
             if gp_organisation.practcode[:4] == 'TEST':
                 gp_organisation.operating_system_username = 'michaeljtbrooks'
-                gp_organisation.operating_system_salt_and_encrypted_password = 'Medidata2018'
+                gp_organisation.operating_system_salt_and_encrypted_password = 'Medidata2019'
             else:
                 password = generate_password(initial_range=1, body_rage=12, tail_rage=1)
                 gp_organisation.operating_system_salt_and_encrypted_password = password
                 gp_organisation.operating_system_username = 'medidata_access'
             gp_organisation.save()
-
+            event_logger.info('Onboarding: {gp_name}, sign up completed'.format(gp_name=gp_organisation.name))
             new_pm_user = authenticate(
                 request,
                 email=pm_form.cleaned_data['email1'],
@@ -97,6 +101,7 @@ def emis_setup(request, practice_code):
             gp_organisation.gp_operating_system = surgery_update_form.cleaned_data['operating_system']
             gp_organisation.save()
 
+            event_logger.info('Onboarding: {gp_name}, EDITED surgery information completed'.format(gp_name=gp_organisation.name))
             #   If User selected the another os. Will redirect to thank you Page.
             if not gp_organisation.gp_operating_system == 'EMISWeb':
                 message_1 = 'Thank you for completing part one of the eMR registration process. It’s great to have you on board.'
@@ -150,8 +155,20 @@ def emr_setup_final(request, practice_code=None):
 
     UserEmrSetUpStage2Formset = formset_factory(UserEmrSetUpStage2Form, validate_min=True, extra=4)
     user_formset = UserEmrSetUpStage2Formset()
-    bank_details_form = BankDetailsEmrSetUpStage2Form()
+    initial_band_model = OrganisationFeeRate.objects.filter(base=True).first()
+    bank_details_form = BankDetailsEmrSetUpStage2Form(initial={
+        'received_within_3_days': initial_band_model.pk if initial_band_model else ''
+    })
     surgery_email_form = SurgeryEmailForm(instance=gp_organisation)
+
+    band_fee_rate_data = {}
+    for fee_structure in OrganisationFeeRate.objects.filter(default=True):
+        band_fee_rate_data[fee_structure.pk] = [
+            float(fee_structure.amount_rate_lvl_1),
+            float(fee_structure.amount_rate_lvl_2),
+            float(fee_structure.amount_rate_lvl_3),
+            float(fee_structure.amount_rate_lvl_4),
+        ]
 
     if request.method == "POST":
         home_page_link = request.scheme + '://' + get_url_page('home', request=request)
@@ -197,22 +214,28 @@ def emr_setup_final(request, practice_code=None):
                 gp_organisation.live =True
                 gp_organisation.save()
             generate_gp_permission(gp_organisation)
-
-            messages.success(request, 'Create User Successful!')
-            login_link = request.build_absolute_uri(reverse('accounts:login',))
-            welcome_message1 = 'Onboarding Successful!'
-            welcome_message2 = 'Welcome to the eMR System'
-            return render(request, 'onboarding/emr_message.html', {
-                'welcome_message1': welcome_message1,
-                'welcome_message2': welcome_message2,
-                'login_link': login_link,
-            })
+            event_logger.info('Onboarding: {gp_name}, final setup completed'.format(gp_name=gp_organisation.name))
+            return redirect('onboarding:emis_setup_success')
 
     return render(request, 'onboarding/emr_setup_final.html', {
         'surgery_form': surgery_form,
         'user_formset': user_formset,
         'bank_details_form': bank_details_form,
-        'surgery_email_form': surgery_email_form
+        'surgery_email_form': surgery_email_form,
+        'band_fee_rate_data': band_fee_rate_data
+    })
+
+
+@login_required(login_url='/accounts/login')
+def emis_setup_success(request):
+    messages.success(request, 'Create User Successful!')
+    login_link = request.build_absolute_uri(reverse('accounts:login',))
+    welcome_message1 = 'Onboarding Successful!'
+    welcome_message2 = 'Welcome to the eMR System'
+    return render(request, 'onboarding/emr_message.html', {
+        'welcome_message1': welcome_message1,
+        'welcome_message2': welcome_message2,
+        'login_link': login_link,
     })
 
 

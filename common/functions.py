@@ -31,7 +31,7 @@ def get_env_variable(name):
 
 
 def verify_password(password: str, first_name: str=None, last_name: str=None, email: str=None) -> dict:
-    max_score = 3
+    max_score = 2
     data = {
         'verified': True,
         'warning': []
@@ -41,6 +41,11 @@ def verify_password(password: str, first_name: str=None, last_name: str=None, em
         if results.get('score', 0) < max_score:
             data['verified'] = False
             data['warning'] = results.get('feedback').get('suggestions')
+
+        if len(password) < 8:
+            data['verified'] = False
+            data['warning'].append('Password must be at least 8 characters long')
+
     return data
 
 
