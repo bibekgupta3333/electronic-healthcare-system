@@ -111,10 +111,10 @@ class Instruction(TimeStampedModel, models.Model):
     ins_max_day_lvl_2 = models.PositiveSmallIntegerField(default=7)
     ins_max_day_lvl_3 = models.PositiveSmallIntegerField(default=11)
     ins_max_day_lvl_4 = models.PositiveSmallIntegerField(default=12)
-    ins_amount_rate_lvl_1 = models.DecimalField(max_digits=5, decimal_places=2)
-    ins_amount_rate_lvl_2 = models.DecimalField(max_digits=5, decimal_places=2)
-    ins_amount_rate_lvl_3 = models.DecimalField(max_digits=5, decimal_places=2)
-    ins_amount_rate_lvl_4 = models.DecimalField(max_digits=5, decimal_places=2)
+    ins_amount_rate_lvl_1 = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    ins_amount_rate_lvl_2 = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    ins_amount_rate_lvl_3 = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    ins_amount_rate_lvl_4 = models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
     class Meta:
         verbose_name = "Instruction"
