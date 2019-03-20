@@ -81,7 +81,7 @@ def validate_pin(
     return False
 
 
-def get_zip_medical_report(instruction: Instruction) -> io.BinaryIO:
+def get_zip_medical_report(instruction: Instruction):
     path_patient = instruction.patient_information.__str__()
     path = settings.MEDIA_ROOT + '/patient_attachments/' + path_patient + '/'
     attachments = instruction.download_attachments
