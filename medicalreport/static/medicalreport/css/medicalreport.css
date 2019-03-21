@@ -338,6 +338,10 @@ h1 {
     }
 }
 
+.download_attachment {
+    color: #00bba3;
+}
+
 .modal-content {
     color: #856404;
     background-color: #fff3cd;

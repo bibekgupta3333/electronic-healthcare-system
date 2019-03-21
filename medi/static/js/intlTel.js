@@ -47,6 +47,27 @@ function setUpTel(phoneID, codeID){
       $(this).parent().find(".selected-dial-code").html(code);
       $("#" + codeID).val($("#" + phoneID).parent().find(".selected-flag")[0].title.split("+")[1]);
     });
+    checkValidate(phoneID, codeID);
+    setDefaultHelpText(codeID);
     setDefaultCountry(phoneID, codeID, countryCode);
   });
+}
+
+function checkValidate(phoneID, codeID) {
+  $('#' + phoneID).change( function() {
+    if( $('#' + phoneID).val().length > 11) {
+        $('#' + phoneID).addClass('is-invalid');
+        $('#help-msg-' + codeID).removeClass('text-muted');
+        $('#help-msg-' + codeID).addClass('text-danger');
+    } else {
+        $('#' + phoneID).removeClass('is-invalid');
+        $('#help-msg-' + codeID).addClass('text-muted');
+        $('#help-msg-' + codeID).removeClass('text-danger');
+    }
+  });
+}
+
+function setDefaultHelpText(codeID) {
+  var helpDiv = '<small class="form-text text-muted" id="help-msg-' + codeID + '">Mobile Phone number is max 11 characters.</small>';
+  $( helpDiv ).insertAfter('#' + codeID);
 }

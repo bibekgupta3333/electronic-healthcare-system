@@ -6,6 +6,7 @@ from typing import List
 class Attachment(XMLModelBase):
     XPATH = './/Attachment'
     DESCRIPTION_XPATHS = ['DescriptiveText', 'DisplayTerm', 'Code/Term']
+    TITLE_XPATHS = 'Title'
 
     def __str__(self) -> str:
         return "Attachment"
@@ -17,6 +18,12 @@ class Attachment(XMLModelBase):
                 return desc.text
         return 'Attachment'
 
+    def title(self) -> str:
+        title = self.parsed_xml.find(self.TITLE_XPATHS)
+        if title is not None:
+            return title.text
+        return 'Title'
+
     def dds_identifier(self) -> str:
         return self.get_element_text('DDSIdentifier')
 
@@ -26,5 +33,5 @@ class Attachment(XMLModelBase):
     # JT What about attachments inside an AttachmentList element? This xpath
     # will not be valid for those.
     def xpaths(self) -> List[str]:
-        xpath = ".//ConsultationElement[Attachment/GUID='{}']".format(self.guid())
+        xpath = ".//Attachment[GUID='{}']".format(self.guid())
         return [xpath]

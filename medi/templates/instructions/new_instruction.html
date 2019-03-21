@@ -50,7 +50,22 @@
         </div>
         <input type="hidden" id="instruction_id" name="instruction_id" value="{{ instruction_id }}" />
         <div class="card-deck instruction">
-            <div class="pr-0 {% if request.user.type == 'CLT' %} col-md-6 {% else %} col-md-12 {% endif %}">
+            {% if request.user.type == 'CLT' %}
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header"><h5>References</h5></div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-2">Your reference:</div>
+                                {% bootstrap_field reference_form.your_ref size='small' form_group_class='form-group col-md-4' show_label=False placeholder='' %}
+                                <div class="col-md-2">MediRef:</div>
+                                {% bootstrap_field reference_form.medi_ref size='small' form_group_class='form-group col-md-4' show_label=False %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            <div class="pr-0 {% if request.user.type == 'CLT' %} col-md-6 mt-4 {% else %} col-md-12 {% endif %}">
                 <div class="card mr-2">
                     <div class="card-header">
                         <div class="row">
@@ -98,19 +113,26 @@
                 </div>
             </div>
             {% if request.user.type == 'CLT' %}
-                <div class="col-md-6 ">
+                <div class="col-md-6 mt-4">
                     <div class="card ">
-                        <div class="card-header"><h5>GP and GP Practice</h5></div>
+                        <div class="card-header"><h5>GP Practice</h5></div>
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-3 rowTitle">Search GP Practice:</div>
-                                {% bootstrap_field nhs_form.gp_practice size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
-                                <input type="hidden" name="gp_practice_name" id="id_gp_practice_name" />
-                            </div>
-                            <div class="row " style="height: 130px">
                                 <div class="col-md-3 d-flex">GP Practice*:</div>
                                 <div class="col-md-6 p-0"><p id="nhsData"></p></div>
                             </div>
+                            <div class="col-md-12">&nbsp;</div>
+                            <div class="row">
+                                <div class="col-md-3">Status GP Practice:</div>
+                                <strong><p id="statusGP"></p></strong>
+                            </div>
+                            <div class="col-md-12">&nbsp;</div>
+                            <div class="row">
+                                <div class="col-md-3 rowTitle">Search GP Practice:</div>
+                                {% bootstrap_field nhs_form.gp_practice size='small' form_group_class='form-group col-md-6' show_label=False %}
+                                <input type="hidden" name="gp_practice_name" id="id_gp_practice_name" />
+                            </div>
+                            <div class="col-md-12">&nbsp;</div>
                             <div class="row ">
                                 <div class="col-md-3 rowTitle">Named GP:</div>
                                 {% bootstrap_field gp_form.gp_title size='small' form_group_class='form-group col-md-2 p-0' %}
@@ -128,7 +150,7 @@
                                 <div class="col-md-2 d-flex">Type of Instruction*:</div>
                                 {% bootstrap_field scope_form.type size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
                             </div>
-                            <div class="row">
+                            <div class="row d-none" id="template_form">
                                 <div class="col-md-2 rowTitle">Set from Template?</div>
                                 {% bootstrap_field scope_form.template size='small' form_group_class='form-group col-md-6 px-0' show_label=False %}
                             </div>
@@ -147,19 +169,6 @@
                                     {% bootstrap_field scope_form.addition_condition size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
                                     {{scope_form.addition_condition_title}}
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-12 mt-4">
-                    <div class="card">
-                        <div class="card-header"><h5>References</h5></div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-2">Your reference:</div>
-                                {% bootstrap_field reference_form.your_ref size='small' form_group_class='form-group col-md-4' show_label=False placeholder='' %}
-                                <div class="col-md-2">MediRef:</div>
-                                {% bootstrap_field reference_form.medi_ref size='small' form_group_class='form-group col-md-4' show_label=False %}
                             </div>
                         </div>
                     </div>
@@ -259,6 +268,11 @@
         </div>
       </div>
     </div>
+
+    <!-- Hidden tooltip -->
+    {% for template in templates %}
+      <p id="template_{{template.pk}}" class="tooltip">{{template.description}}</p>
+    {% endfor %}
 {% endblock %}
 
 {% block Script %}
@@ -275,18 +289,19 @@
             {% endif %}
 
             // Function for hidden field if choose SARS type.
-            $("#id_type_2").click( function() {
-                $('#consent_main_block').hide();
-                $('#questions_main_block').hide();
-                $('.checkbox input[type="checkbox"]').prop("checked", false);
-            });
-            $("#id_type_1").click( function() {
-                $('#consent_main_block').show();
-                $('#questions_main_block').show();
-            });
-            $("#id_type_0").click( function() {
-                $('#consent_main_block').show();
-                $('#questions_main_block').show();
+            $('input[name="type"]').on('change', function() {
+                var type = $(this).val();
+                if(type == 'AMRA'){
+                    $('#consent_main_block').show();
+                    $('#questions_main_block').show();
+                    $('#template_form').removeClass('d-none');
+                    $('#template_form').find('.select2-container--default').css('width', '100%');
+                }else{
+                    $('#consent_main_block').hide();
+                    $('#questions_main_block').hide();
+                    $('#template_form').addClass('d-none');
+                    $('.checkbox input[type="checkbox"]').prop("checked", false);
+                }
             });
 
             var template_data = null;
@@ -398,7 +413,26 @@
             });
 
             $('#id_template').select2();
-            
+            $('#id_template').on('select2:close', function() {
+                $('.tooltip').hide();
+            });
+
+            $(document).on('mouseenter', '#select2-id_template-results .select2-results__option', function(){
+                var optionID = $(this).attr('id');
+                if(optionID !== undefined){
+                    var templateID = optionID.split('-')[optionID.split("-").length-1];
+                    if ($(this).get(0).scrollWidth >= $(this).get(0).clientWidth) {
+                        var descriptionEL = $('#template_' + templateID);
+                        descriptionEL.show()
+                        descriptionEL.css({
+                           'left': ($(this).offset().left + $(this).outerWidth(true)) + 2,
+                           'top': parseFloat($(this).offset().top) + 5
+                        });
+                    }
+                }
+            }).on('mouseleave', '#select2-id_template-results .select2-results__option', function(e){
+                $('.tooltip').hide();
+            });
             $('#id_template').on('change', function () {
                 $.ajax({
                   url: "{% url 'template:get_template_data' template_id=0 %}".replace('0',$(this).val()),
@@ -429,8 +463,6 @@
                           });
                       };
                       if(data.conditions){
-                          $('#id_type').find("input[name=type][value=AMRA]").prop('checked', true);
-                          $('.instructionType').trigger('change');
                           data.conditions.forEach(function(condition, index) {
                               $('#id_addition_condition').append(new Option(condition["text"], condition["id"], true, true)).trigger('change');
                           });
@@ -505,6 +537,7 @@
             });
 
             $('#id_gp_practice').on('change', function () {
+                $('#statusGP').removeClass();
                 $.ajax({
                     type: "GET",
                     url: "{% url 'organisations:get_gporganisation_data' %}",
@@ -517,6 +550,8 @@
                             data.address
                         );
                         $('#id_gp_practice_name').val(data.name);
+                        $('#statusGP').addClass(data.status_class);
+                        $('#statusGP').text(data.status);
                     }
                 })
             });
@@ -618,6 +653,10 @@
 
             if('{{scope_form.type.value}}' != 'None') {
                 $('.instructionType').trigger('change').trigger('change');
+                if($('#id_template').val() != ""){
+                    $('#id_template').trigger('change');
+                }
+                $('input[name="type"]:checked').trigger('change');
             }
 
             $("#template_modal_btn").click(function(){

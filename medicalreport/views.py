@@ -25,10 +25,10 @@ from .forms import AllocateInstructionForm
 from permissions.functions import check_permission, check_user_type
 from payment.functions import calculate_instruction_fee
 from typing import List
-from silk.profiling.profiler import silk_profile
-
+#from silk.profiling.profiler import silk_profile
 
 logger = logging.getLogger('timestamp')
+event_logger = logging.getLogger('medidata.event')
 
 
 @login_required(login_url='/accounts/login')
@@ -37,8 +37,18 @@ def view_attachment(request, instruction_id, path_file):
     raw_xml_or_status_code = services.GetAttachment(instruction.patient_information.patient_emis_number, path_file, gp_organisation=instruction.gp_practice).call()
     if isinstance(raw_xml_or_status_code, int):
         return redirect('services:handle_error', code=raw_xml_or_status_code)
-    attachment_report = AttachmentReport(raw_xml_or_status_code)
+    attachment_report = AttachmentReport(instruction, raw_xml_or_status_code, path_file)
     return attachment_report.render()
+
+
+@login_required(login_url='/accounts/login')
+def download_attachment(request, instruction_id, path_file):
+    instruction = get_object_or_404(Instruction, pk=instruction_id)
+    raw_xml_or_status_code = services.GetAttachment(instruction.patient_information.patient_emis_number, path_file, gp_organisation=instruction.gp_practice).call()
+    if isinstance(raw_xml_or_status_code, int):
+        return redirect('services:handle_error', code=raw_xml_or_status_code)
+    attachment_report = AttachmentReport(instruction, raw_xml_or_status_code, path_file)
+    return attachment_report.download()
 
 
 def get_matched_patient(patient: InstructionPatient, gp_organisation: OrganisationGeneralPractice) -> List[Registration]:
@@ -62,6 +72,12 @@ def get_patient_registration(patient_number, gp_organisation: OrganisationGenera
 def reject_request(request, instruction_id):
     instruction = Instruction.objects.get(id=instruction_id)
     instruction.reject(request, request.POST)
+    event_logger.info(
+        '{user}:{user_id} REJECT instruction ID {instruction_id}'.format(
+            user=request.user, user_id=request.user.id,
+            instruction_id=instruction_id
+        )
+    )
     return HttpResponseRedirect("%s?%s"%(reverse('instructions:view_pipeline'),"status=%s&type=allType"%INSTRUCTION_STATUS_REJECT))
 
 
@@ -93,8 +109,21 @@ def select_patient(request, instruction_id, patient_emis_number):
                     patient_instruction.save()
                     instruction.patient = patient_user
                     instruction.save()
+                    event_logger.info(
+                        '{user}:{user_id} ALLOCATED instruction ID {instruction_id} to self'.format(
+                            user=request.user, user_id=request.user.id,
+                            instruction_id=instruction_id,
+                        )
+                    )
                 else:
                     messages.success(request, 'Allocated to {gp_name} successful'.format(gp_name=gp_name))
+                    event_logger.info(
+                        '{user}:{user_id} ALLOCATED instruction ID {instruction_id} to {allocated_gp}'.format(
+                            user=request.user, user_id=request.user.id,
+                            instruction_id=instruction_id,
+                            allocated_gp=instruction.gp_user
+                        )
+                    )
                     return redirect('instructions:view_pipeline')
             elif allocate_option == AllocateInstructionForm.RETURN_TO_PIPELINE:
                 return redirect('instructions:view_pipeline')
@@ -103,10 +132,16 @@ def select_patient(request, instruction_id, patient_emis_number):
     instruction.in_progress(context={'gp_user': request.user.userprofilebase.generalpracticeuser})
     instruction.saved = False
     instruction.save()
+    event_logger.info(
+        '{user}:{user_id} SELECTED EMIS patient ID {patient_emis_number} on instruction ID {instruction_id}'.format(
+            user=request.user, user_id=request.user.id,
+            patient_emis_number=patient_emis_number,
+            instruction_id=instruction_id
+        )
+    )
     return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
-@cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
 @check_user_type(GENERAL_PRACTICE_USER)
@@ -116,6 +151,11 @@ def set_patient_emis_number(request, instruction_id):
     if isinstance(patient_list, HttpResponseRedirect):
         return patient_list
     allocate_instruction_form = AllocateInstructionForm(user=request.user, instruction_id=instruction_id)
+    event_logger.info(
+        '{user}:{user_id} ACCESS select EMIS patient List view'.format(
+            user=request.user, user_id=request.user.id,
+        )
+    )
 
     return render(request, 'medicalreport/patient_emis_number.html', {
         'patient_list': patient_list,
@@ -128,7 +168,7 @@ def set_patient_emis_number(request, instruction_id):
 
 @login_required(login_url='/accounts/login')
 @check_permission
-@silk_profile(name='Edit Report')
+#@silk_profile(name='Edit Report')
 @check_user_type(GENERAL_PRACTICE_USER)
 def edit_report(request, instruction_id):
     instruction = get_object_or_404(Instruction, id=instruction_id)
@@ -164,7 +204,14 @@ def edit_report(request, instruction_id):
     relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
     inst_gp_user = instruction.gp_user.user
     cur_user = request.user
-    response =  render(request, 'medicalreport/medicalreport_edit.html', {
+
+    event_logger.info(
+        '{user}:{user_id} ACCESS edit medical report view'.format(
+            user=request.user, user_id=request.user.id,
+        )
+    )
+
+    response = render(request, 'medicalreport/medicalreport_edit.html', {
         'user': request.user,
         'medical_record': medical_record_decorator,
         'redaction': redaction,
@@ -172,7 +219,8 @@ def edit_report(request, instruction_id):
         'finalise_submit_form': finalise_submit_form,
         'questions': questions,
         'relations': relations,
-        'show_alert': True if inst_gp_user == cur_user else False
+        'show_alert': True if inst_gp_user == cur_user else False,
+        'patient_full_name': instruction.patient_information.get_full_name()
     })
     end_time = timezone.now()
     total_time = end_time - start_time
@@ -197,6 +245,12 @@ def update_report(request, instruction_id):
             is_valid = create_or_update_redaction_record(request, instruction)
             if is_valid:
                 if request.POST.get('event_flag') == 'submit':
+                    event_logger.info(
+                        '{user}:{user_id} SUBMITTED medical report of instruction ID {instruction_id}'.format(
+                            user=request.user, user_id=request.user.id,
+                            instruction_id=instruction_id
+                        )
+                    )
                     if instruction.client_user:
                         calculate_instruction_fee(instruction)
                     create_patient_report(request, instruction)
@@ -207,18 +261,14 @@ def update_report(request, instruction_id):
         return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
-@silk_profile(name='Preview Report')
+#@silk_profile(name='Preview Report')
 @login_required(login_url='/accounts/login')
 def submit_report(request, instruction_id):
     header_title = "Preview and Submit Report"
     instruction = get_object_or_404(Instruction, id=instruction_id)
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
-    patient_emis_number = instruction.patient_information.patient_emis_number
-    raw_xml_or_status_code = services.GetMedicalRecord(patient_emis_number, instruction.gp_practice).call()
-    if isinstance(raw_xml_or_status_code, int):
-        return redirect('services:handle_error', code=raw_xml_or_status_code)
-    medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
+    medical_record_decorator = MedicalReportDecorator(instruction.medical_xml_report.read().decode('utf-8'), instruction)
     attachments = medical_record_decorator.attachments
     relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
     initial_prepared_by = request.user.userprofilebase.generalpracticeuser.pk
@@ -238,13 +288,21 @@ def submit_report(request, instruction_id):
         },
         user=request.user)
 
+    event_logger.info(
+        '{user}:{user_id} ACCESS preview/submit of instruction ID {instruction_id}'.format(
+            user=request.user, user_id=request.user.id,
+            instruction_id=instruction_id
+        )
+    )
+
     return render(request, 'medicalreport/medicalreport_submit.html', {
         'header_title': header_title,
         'attachments': attachments,
         'redaction': redaction,
         'relations': relations,
         'instruction': instruction,
-        'finalise_submit_form': finalise_submit_form
+        'finalise_submit_form': finalise_submit_form,
+        'patient_full_name': instruction.patient_information.get_full_name()
     })
 
 
@@ -254,8 +312,7 @@ def view_report(request, instruction_id):
     return HttpResponse(instruction.medical_report, content_type='application/pdf')
 
 
-@silk_profile(name='Final Report')
-@cache_page(300)
+#@silk_profile(name='Final Report')
 @login_required(login_url='/accounts/login')
 @check_permission
 def final_report(request, instruction_id):
@@ -279,4 +336,10 @@ def final_report(request, instruction_id):
     end_time = timezone.now()
     total_time = end_time - start_time
     logger.info("[RENDER PDF] %s seconds with patient %s"%(total_time.seconds, instruction.patient_information.__str__()))
+    event_logger.info(
+        '{user}:{user_id} ACCESS final report view of instruction ID {instruction_id}'.format(
+            user=request.user, user_id=request.user.id,
+            instruction_id=instruction_id
+        )
+    )
     return response

@@ -15,58 +15,146 @@
 {% endblock %}
 
 {% block Content %}
-        <div class="row" >
-            <div class="col-md-3">
-                {% if request.user.type == 'GP' %}
-                    {% if perms.instructions.create_sars %}
-                        <a href="{% url 'instructions:new_instruction' %}" class="btn btn-primary" id="addInstructionButton">New SARs Instruction</a>
-                    {% endif %}
-                {% else %}
-                    <a href="{% url 'instructions:new_instruction' %}" class="btn btn-primary" id="addInstructionButton">New Instruction</a>
-                {% endif %}
-            </div>
-            <div class="col-md-4 offset-md-5">
-                <form id="topsearchform" role="search" method="post" action="" class="" autocomplete="off">
-                    {% csrf_token %}
-                    <input id="search" name="search" type="search" placeholder="Search" class="form-control search" required="true">
-                </form>
-            </div>
-        </div>
-        <div class="row overall-number">
-            <div class="col-md-12">
-                {% for k, v in overall_instructions_number.items %}
-                    <div class="number" id="{{ k|cut:' ' }}">
-                        <a href="#" onclick="instructionStatusFilter('{{ k }}');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a>
+    <div>
+        <div class="card">
+            <div class="card-body">
+                <div class="container-fluid">
+                    <div class="row" >
+                        <div class="col-md-8">
+                            {% if request.user.type == 'GP' %}
+                                {% if perms.instructions.create_sars %}
+                                    <a href="{% url 'instructions:new_instruction' %}" class="btn btn-fee text-light" id="addInstructionButton">New SARs Instruction</a>
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'instructions:new_instruction' %}" class="btn btn-fee" id="addInstructionButton">New Instruction</a>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <form id="topsearchform" role="search" method="get" action="" class="" autocomplete="off">
+                                {% comment %} {% csrf_token %} {% endcomment %}
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <input id="search" name="search" type="search" placeholder="{% if request.user.type == 'GP' %}Patient name{% else %}Patient name, Reference{% endif %}" class="form-control search" required="true">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button class="btn btn-fee text-light btn-block" type="submit" id="id_search_btn"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                {% endfor %}
+                </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-2">
-                <!--
-                    <select class="form-control">
-                        <option>Bulk Action</option>
-                        <option>Tiny Action</option>
-                    </select>
-                -->
+
+        {% if user.type == 'GP' and table_fee and next_prev_data_fee %}
+            <div class="card mt-3" id="fee_block">
+                <div class="card-header text-light btn-fee">
+                    <div class="row">
+                        <div class="col-md-10 pt-2">
+                            <h5><i class="fas fa-exclamation-circle"></i>&nbsp;&nbsp;<strong>Fee Sensitive</strong></h5>
+                        </div>
+                        <div class="col-md-2 pt-1">
+                            <select class="form-control" disabled>
+                                <option>AMRA</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            {% for k, v in count_fee_sensitive_number.items %}
+                                <div class="number">
+                                    {% comment %} <a href="#" onclick="instructionStatusFilter('{{ k }}');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a> {% endcomment %}
+                                    <button class="btn btn-fee text-light" id="{{ k|cut:' ' }}_t2" onclick="instructionStatusFilter('{{ k }}', 'pipeline', 2);">{{ k }} ({{ v }})</button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2">
+                            <!--
+                                <select class="form-control">
+                                    <option>Bulk Action</option>
+                                    <option>Tiny Action</option>
+                                </select>
+                            -->
+                        </div>
+                        <div class="col-md-3">
+                            <!--{% bootstrap_button 'Apply' button_type="button" button_class="btn-primary"%} -->
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            {% render_table table_fee 'django_tables2/bootstrap.html' %}
+                            {% bootstrap_pagination  parameter_name='page_t2' page=table_fee.page pages_to_show=5 size='small' %}
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-3">
-                <!--{% bootstrap_button 'Apply' button_type="button" button_class="btn-primary"%} -->
+        {% endif %}
+
+        <div class="card mt-4" id="all_block">
+            <div class="card-header text-light" style="background-color: #48b5a2">
+                <div class="row">
+                    <div class="col-md-10 pt-2">
+                        <h5><i class="fas fa-question-circle"></i>&nbsp;&nbsp;<strong>Anything Else</strong></h5>
+                    </div>
+                    <div class="col-md-2 pt-1">
+                        {% if search_pagination %}
+                            <select class="form-control" id="filterInstructionType" onchange="typeFilter('search');">
+                        {% else %}
+                            <select class="form-control" id="filterInstructionType" onchange="typeFilter('pipeline');">
+                        {% endif %}
+                            <option value="allType">All Types</option>
+                            <option value="AMRA">AMRA</option>
+                            <option value="SARS">SARS</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-2 offset-md-5">
-                <select class="form-control" id="filterInstructionType" onchange="typeFilter();">
-                    <option value="allType">All Types</option>
-                    <option value="AMRA">AMRA</option>
-                    <option value="SARS">SARS</option>
-                </select>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        {% for k, v in overall_instructions_number.items %}
+                            <div class="number" id="{{ k|cut:' ' }}">
+                                {% comment %} <a href="#" onclick="instructionStatusFilter('{{ k }}');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a> {% endcomment %}
+                                {% if search_pagination %}
+                                    <button class="btn btn-info" id="{{ k|cut:' ' }}" onclick="instructionStatusFilter('{{ k }}', 'pipeline', 3);">{{ k }} ({{ v }})</button>
+                                {% else %}
+                                    <button class="btn btn-info" id="{{ k|cut:' ' }}" onclick="instructionStatusFilter('{{ k }}', 'pipeline', 1);">{{ k }} ({{ v }})</button>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        <!--
+                            <select class="form-control">
+                                <option>Bulk Action</option>
+                                <option>Tiny Action</option>
+                            </select>
+                        -->
+                    </div>
+                    <div class="col-md-3">
+                        <!--{% bootstrap_button 'Apply' button_type="button" button_class="btn-primary"%} -->
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        {% render_table table_all 'django_tables2/bootstrap.html' %}
+                        {% if search_pagination %}
+                            {% bootstrap_pagination  extra='search='|add:search_input parameter_name='page_ts' page=table_all.page pages_to_show=5 size='small' %}
+                        {% else %}
+                            {% bootstrap_pagination  page=table_all.page pages_to_show=5 size='small' %}
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-12">
-                {% render_table table 'django_tables2/bootstrap.html' %}
-                {% bootstrap_pagination  page=table.page pages_to_show=5 size='small' %}
-            </div>
-        </div>
+    </div>
 
 
 {% endblock %}
@@ -83,14 +171,22 @@
             $('th.gp_practice > a').text('GP Practice');
             $('th.gp_practice > a').click(false);
 
-            $("<li class='page-item {{ next_prev_data|keyvalue:'prev_disabled' }}'><a class='page-link'" +
-                "href='{% url 'instructions:view_pipeline' %}?page={{ next_prev_data|keyvalue:'prev_page' }}&status={{ next_prev_data|keyvalue:'status' }}&type={{ next_prev_data|keyvalue:'type' }}'>&lt;</a>/li").insertAfter('.prev');
-            $("<li class='page-item {{ next_prev_data|keyvalue:'next_disabled' }}'><a class='page-link'" +
-                "href='{% url 'instructions:view_pipeline' %}?page={{ next_prev_data|keyvalue:'next_page' }}&status={{ next_prev_data|keyvalue:'status' }}&type={{ next_prev_data|keyvalue:'type' }} '>&gt;</a></li>").insertBefore('.last');
+            $("<li class='page-item {{ next_prev_data_fee|keyvalue:'prev_disabled' }}'><a class='page-link'" +
+            "href='{% url 'instructions:view_pipeline' %}?page_t2={{ next_prev_data_fee|keyvalue:'prev_page' }}&status={{ next_prev_data_fee|keyvalue:'status' }}&type={{ next_prev_data_fee|keyvalue:'type' }}'>&lt;</a>/li").insertAfter('#fee_block .prev');
+            $("<li class='page-item {{ next_prev_data_fee|keyvalue:'next_disabled' }}'><a class='page-link'" +
+            "href='{% url 'instructions:view_pipeline' %}?page_t2={{ next_prev_data_fee|keyvalue:'next_page' }}&status={{ next_prev_data_fee|keyvalue:'status' }}&type={{ next_prev_data_fee|keyvalue:'type' }}'>&gt;</a></li>").insertBefore('#fee_block .last');
 
-            $('input.search').on('keyup click', function () {
-                filterGlobal();
-            } );
+            if( '{{ search_pagination }}' == 'search' ) {
+               $("<li class='page-item {{ next_prev_data_all|keyvalue:'prev_disabled' }}'><a class='page-link'" +
+                "href='{% url 'instructions:view_pipeline' %}?search={{search_input}}&page_ts={{ next_prev_data_all|keyvalue:'prev_page' }}&status={{ next_prev_data_all|keyvalue:'status' }}&type={{ next_prev_data_all|keyvalue:'type' }}'>&lt;</a>/li").insertAfter('#all_block .prev');
+                $("<li class='page-item {{ next_prev_data_all|keyvalue:'next_disabled' }}'><a class='page-link'" +
+                "href='{% url 'instructions:view_pipeline' %}?search={{search_input}}&page_ts={{ next_prev_data_all|keyvalue:'next_page' }}&status={{ next_prev_data_all|keyvalue:'status' }}&type={{ next_prev_data_all|keyvalue:'type' }}'>&gt;</a></li>").insertBefore('#all_block .last'); 
+            } else {
+                $("<li class='page-item {{ next_prev_data_all|keyvalue:'prev_disabled' }}'><a class='page-link'" +
+                "href='{% url 'instructions:view_pipeline' %}?page={{ next_prev_data_all|keyvalue:'prev_page' }}&status={{ next_prev_data_all|keyvalue:'status' }}&type={{ next_prev_data_all|keyvalue:'type' }}'>&lt;</a>/li").insertAfter('#all_block .prev');
+                $("<li class='page-item {{ next_prev_data_all|keyvalue:'next_disabled' }}'><a class='page-link'" +
+                "href='{% url 'instructions:view_pipeline' %}?page={{ next_prev_data_all|keyvalue:'next_page' }}&status={{ next_prev_data_all|keyvalue:'status' }}&type={{ next_prev_data_all|keyvalue:'type' }}'>&gt;</a></li>").insertBefore('#all_block .last');
+            }
 
             $('.pager').hide();
 
@@ -98,14 +194,14 @@
             if( cookieStatus != -1 ){
                 status = cookieStatus;
                 var key = getObjectKeyByValue(inst_statusDict, status);
-                $('#' + key.replace(' ', '')).css("background-color", "rgba(0, 0, 0, 0.1)");
+                $('#' + key.replace(' ', '')).button('toggle')
             } else {
                 if( getUrlParameter('status') ){
                     status = getUrlParameter('status');
                     var key = getObjectKeyByValue(inst_statusDict, status);
-                    $('#' + key.replace(' ', '')).css("background-color", "rgba(0, 0, 0, 0.1)");
+                    $('#' + key.replace(' ', '')).button('toggle')
                 } else {
-                    $('#All').css("background-color", "rgba(0, 0, 0, 0.1)");
+                    $('#All').button('toggle')
                 }
             }
 
@@ -129,5 +225,32 @@
                 e.preventDefault();
             });
         });
+
+        function instructionStatusFilter(selected_status, page, tableNumber){
+            if(page == 'pipeline'){
+                if( tableNumber == 2 ) {
+                    window.location = '/instruction/view-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val() + '&table=2';
+                } else if( tableNumber == 3 ) {
+                    window.location = '/instruction/view-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val() + '&table=3&search={{search_input}}';
+                } else {
+                    window.location = '/instruction/view-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
+                }
+            } else if(page == 'payment'){
+                window.location = '/instruction/view-fee-payment-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
+            }
+        }
+
+        function typeFilter(page){
+            if(getUrlParameter('status')){
+                status = getUrlParameter('status');
+            }
+            if(page == 'pipeline'){
+                window.location = '/instruction/view-pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val();
+            } else if( page == 'payment'){
+                window.location = '/instruction/view-fee-payment-pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val();
+            } else if( page == 'search') {
+                window.location = '/instruction/view-pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val() + '&table=3&search={{search_input}}';
+            }
+        }
     </script>
 {% endblock %}

@@ -101,7 +101,7 @@ def count_gpusers(queryset):
     sars_count = queryset.filter(userprofilebase__generalpracticeuser__role=2).count()
     overall_users_number = {
         'All': all_count,
-        'Manager': pmanager_count,
+        'GP Manager': pmanager_count,
         'GP': gp_count,
         'Other Practice Staff': sars_count
     }
@@ -114,8 +114,8 @@ def count_clientusers(queryset):
     client_count = queryset.filter(userprofilebase__clientuser__role=1).count()
     overall_users_number = {
         'All': all_count,
-        'Admin': admin_count,
-        'Client': client_count
+        'Client Manager': admin_count,
+        'Client Administrator': client_count
     }
     return overall_users_number
 
@@ -130,11 +130,11 @@ def count_users(queryset):
     medi_count = queryset.filter(type=MEDIDATA_USER).count()
     overall_users_number = {
         'All': all_count,
-        'Admin': admin_count,
-        'Client': client_count,
-        'Manager': pmanager_count,
+        'Client Manager': admin_count,
+        'Client Administrator': client_count,
+        'GP Manager': pmanager_count,
         'GP': gp_count,
-        'Practice Staff': sars_count,
+        'Other Practice Staff': sars_count,
         'Medidata': medi_count
     }
     return overall_users_number
@@ -246,7 +246,7 @@ def notify_admins(request):
             to_emails = [ client.email for client in User.objects.filter(
                 userprofilebase__in=profiles.alive(),
                 userprofilebase__clientuser__organisation=organisation,
-                userprofilebase__clientuser__role=ClientUser.CLIENT_ADMIN)
+                userprofilebase__clientuser__role=ClientUser.CLIENT_MANAGER)
             ]
         elif hasattr(user.userprofilebase, 'generalpracticeuser'):
             organisation = user.userprofilebase.generalpracticeuser.organisation
