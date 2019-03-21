@@ -546,9 +546,7 @@
                     },
                     dataType: 'json',
                     success: function (data) {
-                        $('#nhsData').text(
-                            data.address
-                        );
+                        $('#nhsData').text(data.address);
                         $('#id_gp_practice_name').val(data.name);
                         $('#statusGP').addClass(data.status_class);
                         $('#statusGP').text(data.status);
@@ -557,9 +555,13 @@
             });
 
             if ("{{selected_gp_code}}" != "") {
-                var option = new Option('{{selected_gp_name}}', '{{selected_gp_code}}', true, true);
-                $('#id_gp_practice').append(option).trigger('change');
+                var option = new Option('{{selected_gp_code}}', '{{selected_gp_code}}', true, true);
+                $('#id_gp_practice').append(option);
+                $('#statusGP').addClass('{{ gp_status_class }}');
+                $('#statusGP').text('{{ gp_status }}');
+                $('#nhsData').text('{{ gp_address }}');
             }
+
 
              $('#id_patient_postcode').on('change', function () {
                      var url = "{% url 'instructions:api_get_address' address='Address' %}".replace('Address', $(this).val());

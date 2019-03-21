@@ -674,6 +674,31 @@ def new_instruction(request):
     if instruction_id:
         instruction = get_object_or_404(Instruction, pk=instruction_id)
         patient_instruction = instruction.patient_information
+        gp_organisation = instruction.gp_practice
+        
+        # Initial GP Practice Block
+        gp_address = ' '.join(
+            (
+                gp_organisation.region,
+                gp_organisation.comm_area,
+                gp_organisation.billing_address_street,
+                gp_organisation.billing_address_city,
+                gp_organisation.billing_address_state,
+                gp_organisation.billing_address_postalcode,
+            )
+        )
+        if gp_organisation.live:
+            gp_status = 'live surgery'
+            gp_status_class = 'text-success'
+        else:
+            if gp_organisation.gp_operating_system == 'EMISWeb':
+                gp_status = 'Access not set-up'
+                gp_status_class = 'text-danger'
+            else:
+                gp_status = 'Not applicable'
+                gp_status_class = 'text-dark'
+        
+
         # Initial Patient Form
         patient_form = InstructionPatientForm(
             instance=patient_instruction,
@@ -694,11 +719,7 @@ def new_instruction(request):
         gp_practice_request = HttpRequest()
         gp_practice_request.GET['code'] = gp_practice_code
         nhs_address = get_gporganisation_data(gp_practice_request, need_dict=True)['address']
-        nhs_form = GeneralPracticeForm(
-            initial={
-                'gp_practice': instruction.gp_practice
-            }
-        )
+        nhs_form = GeneralPracticeForm()
         # Initial GP Practitioner Form
         gp_form = GPForm(
             initial={
@@ -746,6 +767,10 @@ def new_instruction(request):
             'selected_gp_adr_line2': patient_instruction.patient_address_line2,
             'selected_gp_adr_line3': patient_instruction.patient_address_line3,
             'selected_gp_adr_county': patient_instruction.patient_county,
+            'selected_gp_code': gp_organisation,
+            'gp_address': gp_address,
+            'gp_status': gp_status,
+            'gp_status_class': gp_status_class
         })
     event_logger.info(
         '{user}:{user_id} ACCESS NEW instruction view'.format(

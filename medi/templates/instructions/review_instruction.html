@@ -221,62 +221,93 @@
                 </form>
             </div>
             <div class="col-md-3">
-                <a href="{% url 'medicalreport:set_patient_emis_number' instruction_id=instruction_id %}"
-                class="btn btn-danger btn-lg btn-block" id="confirmPatientButton">Delete&nbsp;&nbsp;<i class="far fa-trash-alt"></i>
-                </a>
+                <button class="btn btn-danger btn-lg btn-block" id="cancelButton" type="button" data-toggle="modal" data-target="#cancelModal">
+                    <i class="far fa-trash-alt"></i>&nbsp;&nbsp;Cancel
+                </button>
             </div>
         </div>
     {% endif %}
+
+    <!-- Modal for confirm cancel -->
+    <div class="modal fade" id="cancelModal" role="dialog" aria-hidden="true" style="width:100%">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <div class="container">
+                        <div class="col-12 mt-3">
+                            <h3><i class="fas fa-exclamation-triangle"></i>&nbsp;&nbsp;Warning !</h3><br>
+                            <h5>Do you want to delete?</h5>
+                        </div>
+                        <div class="col-12">&nbsp;</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button class="btn btn-secondary btn-block btn-lg" type="button" data-dismiss="modal">
+                                    <i class="fas fa-times"></i>&nbsp;&nbsp;No
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-danger btn-block btn-lg" type="button">
+                                    <i class="fas fa-check"></i>&nbsp;&nbsp;Yes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}
 
 {% block Script %}
     <script>
-    $(document).ready(function () {
-        {% if request.user.type == 'GP' %}
-            $("#form-modal").modal({
-                backdrop: 'static'
-            });
-        {% endif %}
-
-        $('input').attr('readonly', true);
-        $("#id_consent_form").fileinput({
-            theme: 'fas',
-            showUpload: false,
-            {% if consent_form_data.path %}
-                initialPreview: [
-                   window.location.origin+'{{ consent_form_data.path }}'
-                ],
-                initialPreviewAsData: true,
-                initialPreviewConfig: [
-                    {type: "{{ consent_form_data.type }}", url: "{% static consent_form_data.path %}" }
-                ]
+        $(document).ready(function () {
+            {% if request.user.type == 'GP' %}
+                $("#form-modal").modal({
+                    backdrop: 'static'
+                });
             {% endif %}
-        });
 
-        let total_addition_form = $('#id_form-TOTAL_FORMS').val() - 1;
+            $('input').attr('readonly', true);
+            $("#id_consent_form").fileinput({
+                theme: 'fas',
+                showUpload: false,
+                {% if consent_form_data.path %}
+                    initialPreview: [
+                    window.location.origin+'{{ consent_form_data.path }}'
+                    ],
+                    initialPreviewAsData: true,
+                    initialPreviewConfig: [
+                        {type: "{{ consent_form_data.type }}", url: "{% static consent_form_data.path %}" }
+                    ]
+                {% endif %}
+            });
 
-        $('#id_patient_address_number').attr("data-toggle", "tooltip");
-        $('#id_form-'+ total_addition_form.toString() +'-question').remove();
-        $('button[title="View Details"]').removeAttr('disabled');
-        $('#id_patient_address_number').tooltip({
-            title: $('#id_patient_address_number').val()
+            let total_addition_form = $('#id_form-TOTAL_FORMS').val() - 1;
+
+            $('#id_patient_address_number').attr("data-toggle", "tooltip");
+            $('#id_form-'+ total_addition_form.toString() +'-question').remove();
+            $('button[title="View Details"]').removeAttr('disabled');
+            $('#id_patient_address_number').tooltip({
+                title: $('#id_patient_address_number').val()
+            });
+            
+            $("#warningCheckbox").click(function(){
+                if($(this).is(":checked")){
+                    setTimeout(function(){
+                        $("#form-modal").modal('hide');
+                    }, 600);
+                }
+            });
+
+            $('#btn-zoom-embed').click( function() {
+                $('#embed-image').hide();
+            });
         });
         
-        $("#warningCheckbox").click(function(){
-            if($(this).is(":checked")){
-                setTimeout(function(){
-                    $("#form-modal").modal('hide');
-                }, 600);
-            }
-        });
-
-        $('#btn-zoom-embed').click( function() {
-            $('#embed-image').hide();
-        });
-    });
-    function showEmbed() {
-        $('#embed-image').show();
-    }
+        function showEmbed() {
+            $('#embed-image').show();
+        }
     </script>
 
 {% endblock %}
