@@ -3,7 +3,7 @@ from django.template import loader
 from django.core.mail import send_mail
 from django.conf import settings
 from django.forms import formset_factory
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpRequest, HttpResponse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -30,7 +30,7 @@ def generate_password(initial_range: int, body_rage: int, tail_rage: int) -> str
     return password
 
 
-def sign_up(request):
+def sign_up(request: HttpRequest) -> HttpResponse:
     surgery_form = SurgeryForm()
     pm_form = PMForm()
 
@@ -87,7 +87,7 @@ def sign_up(request):
 
 
 @login_required(login_url='/accounts/login')
-def emis_setup(request, practice_code):
+def emis_setup(request: HttpRequest, practice_code: str) -> HttpResponse:
     header_title = "Sign up: eMR with EMISweb - please make sure to only minimise this browser tab, do not close this screen "
     gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
     reload_status = 0
@@ -132,7 +132,7 @@ def emis_setup(request, practice_code):
 
 
 @login_required(login_url='/accounts/login')
-def emr_setup_final(request, practice_code=None):
+def emr_setup_final(request: HttpRequest, practice_code: str=None) -> HttpResponse:
     gp_organisation = get_object_or_404(OrganisationGeneralPractice, pk=practice_code)
     if request.user.get_my_organisation() != gp_organisation:
         return redirect('accounts:login')
@@ -227,7 +227,7 @@ def emr_setup_final(request, practice_code=None):
 
 
 @login_required(login_url='/accounts/login')
-def emis_setup_success(request):
+def emis_setup_success(request: HttpRequest) -> HttpResponse:
     messages.success(request, 'Create User Successful!')
     login_link = request.build_absolute_uri(reverse('accounts:login',))
     welcome_message1 = 'Onboarding Successful!'
@@ -239,7 +239,7 @@ def emis_setup_success(request):
     })
 
 
-def ajax_emis_polling(request, practice_code):
+def ajax_emis_polling(request: HttpRequest, practice_code: str) -> JsonResponse:
     data = {
         'status': 401,
         'practice_code': ''

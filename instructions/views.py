@@ -18,7 +18,7 @@ from accounts.models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from accounts.forms import InstructionPatientForm, GPForm
 from accounts.functions import create_or_update_patient_user
 from organisations.forms import GeneralPracticeForm
-from organisations.models import OrganisationGeneralPractice
+from organisations.models import OrganisationGeneralPractice, OrganisationClient
 from organisations.views import get_gporganisation_data
 from medicalreport.views import get_patient_registration
 from common.functions import multi_getattr, get_url_page
@@ -33,6 +33,7 @@ from template.models import TemplateInstruction
 from datetime import timedelta
 import pytz
 from itertools import chain
+from typing import Dict, List
 import ast
 import requests
 import json
@@ -46,7 +47,7 @@ from django.conf import settings
 PIPELINE_INSTRUCTION_LINK = get_url_page('instruction_pipeline')
 
 
-def count_instructions(user, gp_practice_code, client_organisation, page=''):
+def count_instructions(user: User, gp_practice_code: str, client_organisation: OrganisationClient, page: str='') -> Dict[str, int]:
     naive = parse_datetime("2000-01-1 00:00:00")
     origin_date = pytz.timezone("Europe/London").localize(naive, is_dst=None)
     query_condition = Q(created__gt=origin_date)
@@ -65,7 +66,7 @@ def count_instructions(user, gp_practice_code, client_organisation, page=''):
     rejected_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_REJECT).count()
     finalise_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_FINALISE).count()
     fail_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_FAIL).count()
-    if not page:
+    if page == 'pipeline_view':
         all_count = Instruction.objects.filter(query_condition).count()
         overall_instructions_number = {
             'All': all_count,
@@ -84,10 +85,13 @@ def count_instructions(user, gp_practice_code, client_organisation, page=''):
             'Paid': paid_count,
             'Completed': complete_count,
         }
+    else:
+        overall_instructions_number = {}
+
     return overall_instructions_number
 
 
-def count_fee_sensitive(user, gp_practice_code):
+def count_fee_sensitive(gp_practice_code: str) -> Dict[str, int]:
     instruction_query_set = Instruction.objects.filter(type='AMRA')
     instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
 
@@ -135,7 +139,7 @@ def count_fee_sensitive(user, gp_practice_code):
     return fee_sensitive_number
 
 
-def get_table_fee_sensitive(request, user, gp_practice_code):
+def get_table_fee_sensitive(request: HttpRequest, gp_practice_code: str) -> InstructionTable:
     cost_column_name = 'Income £'
     instruction_query_set = Instruction.objects.filter(type='AMRA')
     instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
@@ -173,7 +177,7 @@ def get_table_fee_sensitive(request, user, gp_practice_code):
     return table_fee
 
 
-def count_model_search(request, client_organisation=None, gp_practice_code=None):
+def count_model_search(request: HttpRequest, client_organisation: OrganisationClient=None, gp_practice_code: str=None) -> Dict[str, int]:
     search_input = request.GET.get('search')
     filter_type = request.GET.get('type', '')
     
@@ -217,7 +221,7 @@ def count_model_search(request, client_organisation=None, gp_practice_code=None)
     return overall_instructions_number
 
 
-def calculate_next_prev(page=None, **kwargs):
+def calculate_next_prev(page=None, **kwargs) -> Dict[str, str]:
     if not page:
         return {
             'next_disabled': 'disabled',
@@ -246,7 +250,12 @@ def calculate_next_prev(page=None, **kwargs):
 
 
 @login_required(login_url='/accounts/login')
-def create_or_update_instruction(request, patient_instruction, scope_form=None, date_range_form=None, gp_practice=None, instruction_id=None) -> Instruction:
+def create_or_update_instruction(
+        request, patient_instruction: InstructionPatient,
+        scope_form: ScopeInstructionForm=None, date_range_form: InstructionDateRangeForm=None,
+        gp_practice: OrganisationGeneralPractice=None, instruction_id: int=None
+) -> Instruction:
+
     if instruction_id:
         instruction = get_object_or_404(Instruction, pk=instruction_id)
     else:
@@ -284,7 +293,7 @@ def create_or_update_instruction(request, patient_instruction, scope_form=None, 
     return instruction
 
 
-def create_addition_question(instruction, addition_question_formset):
+def create_addition_question(instruction: Instruction, addition_question_formset: AdditionQuestionFormset) -> None:
     for form in addition_question_formset:
         if form.is_valid() and form.cleaned_data:
             addition_question = form.save(commit=False)
@@ -292,7 +301,7 @@ def create_addition_question(instruction, addition_question_formset):
             addition_question.save()
 
 
-def create_snomed_relations(instruction, condition_of_interests):
+def create_snomed_relations(instruction: Instruction, condition_of_interests: List[str]) -> None:
     for condition_code in condition_of_interests:
         snomedct = SnomedConcept.objects.filter(external_id=condition_code)
         if snomedct.exists():
@@ -325,7 +334,7 @@ def instruction_pipeline_view(request):
         if gp_practice and not gp_practice.is_active():
             return redirect('onboarding:emis_setup', practice_code=gp_practice.pk)
 
-        table_fee = get_table_fee_sensitive(request, user, gp_practice_code)
+        table_fee = get_table_fee_sensitive(request, gp_practice_code)
 
     if 'status' in request.GET:
         filter_type = request.GET.get('type', '')
@@ -351,8 +360,8 @@ def instruction_pipeline_view(request):
             instruction_query_set = instruction_query_set.filter(status=filter_status)
 
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
-    overall_instructions_number = count_instructions(request.user, gp_practice_code, client_organisation)
-    count_fee_sensitive_number = count_fee_sensitive(request.user, gp_practice_code)
+    overall_instructions_number = count_instructions(request.user, gp_practice_code, client_organisation, 'pipeline_view')
+    count_fee_sensitive_number = count_fee_sensitive(gp_practice_code)
     cost_column_name = 'Fee £'
     if request.user.type == CLIENT_USER:
         cost_column_name = 'Cost £'
@@ -793,7 +802,7 @@ def upload_consent(request, instruction_id):
 #@silk_profile(name='Review Instruction')
 @login_required(login_url='/accounts/login')
 @check_permission
-def review_instruction(request, instruction_id):
+def review_instruction(request, instruction_id: str):
     header_title = "Instruction Reviewing"
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     patient_instruction = instruction.patient_information
@@ -884,7 +893,7 @@ def review_instruction(request, instruction_id):
 @cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
-def view_reject(request, instruction_id):
+def view_reject(request, instruction_id: str):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     patient_instruction = instruction.patient_information
     # Initial Patient Form
@@ -958,7 +967,7 @@ def view_reject(request, instruction_id):
 
 
 @login_required(login_url='/accounts/login')
-def view_fail(request, instruction_id):
+def view_fail(request, instruction_id: str):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
 
     if request.method == "POST":
@@ -1124,7 +1133,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
         'sars_consent_form_data': sars_consent_form_data,
         'mdx_consent_form_data': mdx_consent_form_data,
         'reject_types': INSTRUCTION_REJECT_TYPE,
-        'patient_full_name' : instruction.patient_information.get_full_name()
+        'patient_full_name': instruction.patient_information.get_full_name()
     })
 
 
@@ -1142,11 +1151,11 @@ def print_mdx_consent(request, instruction_id, patient_emis_number):
     return MDXDualConsent.render(params)
 
 
-def atoi(text):
+def atoi(text: str) -> int:
     return int(text) if text.isdigit() else text
 
 
-def natural_keys(text):
+def natural_keys(text: str) -> List[int]:
     if 'Road' in text.split(',')[0]:
         use_text = text.split(',')[0]
     elif 'Road' in text.split(',')[1]:
@@ -1161,7 +1170,7 @@ def natural_keys(text):
     return [atoi(c) for c in re.split(r'(\d+)', use_text)]
 
 
-def api_get_address(request, address):
+def api_get_address(request: HttpRequest, address: str) -> JsonResponse:
     if not address:
         return JsonResponse({'status': 'error', 'error': 'Address not found.'}, status=404)
 
