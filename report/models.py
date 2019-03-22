@@ -2,6 +2,7 @@ from django.db import models
 from common.models import TimeStampedModel
 from accounts.models import Patient
 from django.contrib.postgres.fields import ArrayField
+from instructions.models import Instruction
 
 
 class PatientReportAuth(TimeStampedModel):
@@ -63,3 +64,12 @@ class ExceptionMerge(TimeStampedModel):
 
     def __str__(self):
         return ' '.join(['Exception in instructions : ', self.pk])
+
+
+class UnsupportedAttachment(TimeStampedModel):
+    instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)
+    file_name = models.CharField(max_length=255)
+    file_type = models.CharField(max_length=10)
+
+    def __str__(self):
+        return self.file_name.split('\\')[-1]
