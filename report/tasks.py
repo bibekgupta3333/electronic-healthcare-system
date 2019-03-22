@@ -13,7 +13,7 @@ from services.emisapiservices import services
 from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_FAIL
 from report.mobile import SendSMS
-from report.models import ExceptionMerge
+from report.models import ExceptionMerge, UnsupportedAttachment
 import xhtml2pdf.pisa as pisa
 from medicalreport.templatetags.custom_filters import format_date_filter
 # from silk.profiling.profiler import silk_profile
@@ -164,6 +164,7 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                             image.close()
                             f.close()
                     else:
+                        # zipped unsupported file type
                         file_name = Base64Attachment(raw_xml_or_status_code).filename()
                         buffer = io.BytesIO()
                         buffer.write(raw_attachment)
@@ -172,6 +173,15 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                         f.write(buffer.getvalue())
                         f.close()
                         download_attachments.append(save_file)
+
+                        # keep unsupported file type
+                        UnsupportedAttachment.objects.get_or_create(
+                            instruction=instruction,
+                            file_name=file_name,
+                            defaults={
+                                'file_type': file_type,
+                            }
+                        )
 
             except Exception as e:
                 exception_detail.append(date + ' ' + description)
