@@ -72,7 +72,7 @@ class TestRenderTables(TestCase):
         RequestConfig(request, paginate={'per_page': 5}).configure(table_all)
 
         self.request.GET = dict()
-        table_fee = get_table_fee_sensitive(self.request, self.user, self.gp_practice.practcode)
+        table_fee = get_table_fee_sensitive(self.request, self.gp_practice.practcode)
         response = render(request, 'instructions/pipeline_views_instruction.html',  {'table_all': table_all, 'table_fee': table_fee})
         
         result_html_str = str(response.content)

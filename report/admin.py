@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import PatientReportAuth, ThirdPartyAuthorisation
+from .models import PatientReportAuth, ThirdPartyAuthorisation, UnsupportedAttachment
 from django.core.mail import send_mail
 
 
@@ -20,5 +20,10 @@ class ThirdPartyAuthorisationAdmin(admin.ModelAdmin):
             super().save_model(request, obj, form, change)
 
 
+class UnsupportedAttachmentAdmin(admin.ModelAdmin):
+
+    list_display = ('instruction', 'file_name', 'file_type')
+
 admin.site.register(PatientReportAuth)
 admin.site.register(ThirdPartyAuthorisation, ThirdPartyAuthorisationAdmin)
+admin.site.register(UnsupportedAttachment, UnsupportedAttachmentAdmin)
