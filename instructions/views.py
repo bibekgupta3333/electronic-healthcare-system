@@ -18,7 +18,7 @@ from accounts.models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from accounts.forms import InstructionPatientForm, GPForm
 from accounts.functions import create_or_update_patient_user
 from organisations.forms import GeneralPracticeForm
-from organisations.models import OrganisationGeneralPractice
+from organisations.models import OrganisationGeneralPractice, OrganisationClient
 from organisations.views import get_gporganisation_data
 from medicalreport.views import get_patient_registration
 from common.functions import multi_getattr, get_url_page
@@ -30,19 +30,24 @@ from medicalreport.functions import create_patient_report
 from template.models import TemplateInstruction
 #from silk.profiling.profiler import silk_profile
 
+from datetime import timedelta
 import pytz
 from itertools import chain
+from typing import Dict, List
 import ast
 import requests
 import json
 import re
 import dateutil
+import logging
+
+event_logger = logging.getLogger('medidata.event')
 
 from django.conf import settings
 PIPELINE_INSTRUCTION_LINK = get_url_page('instruction_pipeline')
 
 
-def count_instructions(user, gp_practice_code, client_organisation, page=''):
+def count_instructions(user: User, gp_practice_code: str, client_organisation: OrganisationClient, page: str='') -> Dict[str, int]:
     naive = parse_datetime("2000-01-1 00:00:00")
     origin_date = pytz.timezone("Europe/London").localize(naive, is_dst=None)
     query_condition = Q(created__gt=origin_date)
@@ -61,7 +66,7 @@ def count_instructions(user, gp_practice_code, client_organisation, page=''):
     rejected_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_REJECT).count()
     finalise_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_FINALISE).count()
     fail_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_FAIL).count()
-    if not page:
+    if page == 'pipeline_view':
         all_count = Instruction.objects.filter(query_condition).count()
         overall_instructions_number = {
             'All': all_count,
@@ -71,7 +76,7 @@ def count_instructions(user, gp_practice_code, client_organisation, page=''):
             'Completed': complete_count,
             'Rejected': rejected_count,
             'Finalising': finalise_count,
-            'Generated Fail': fail_count,
+            'Fail': fail_count,
         }
     elif page == 'fee_and_payment_pipeline':
         all_count = Instruction.objects.filter(query_condition, status__in=[INSTRUCTION_STATUS_PAID, INSTRUCTION_STATUS_COMPLETE]).count()
@@ -80,10 +85,143 @@ def count_instructions(user, gp_practice_code, client_organisation, page=''):
             'Paid': paid_count,
             'Completed': complete_count,
         }
+    else:
+        overall_instructions_number = {}
+
     return overall_instructions_number
 
 
-def calculate_next_prev(page=None, **kwargs):
+def count_fee_sensitive(gp_practice_code: str) -> Dict[str, int]:
+    instruction_query_set = Instruction.objects.filter(type='AMRA')
+    instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
+
+    # Count date = 3
+    expected_date_3days = timezone.now() - timedelta(days=3)
+    to_expected_date_3days = expected_date_3days.replace(hour=23, minute=59, second=59)
+    from_expected_date_3days = expected_date_3days.replace(hour=00, minute=00, second=00)
+    new_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_NEW, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
+    progess_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_PROGRESS, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
+    final_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FINALISE, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
+    fail_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FAIL, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
+
+    # Count date = 7
+    expected_date_7days = timezone.now() - timedelta(days=7)
+    to_expected_date_7days = expected_date_7days.replace(hour=23, minute=59, second=59)
+    from_expected_date_7days = expected_date_7days.replace(hour=00, minute=00, second=00)
+    new_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_NEW, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
+    progess_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_PROGRESS, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
+    final_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FINALISE, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
+    fail_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FAIL, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
+
+    # Count date = 11
+    expected_date_11days = timezone.now() - timedelta(days=11)
+    to_expected_date_11days = expected_date_11days.replace(hour=23, minute=59, second=59)
+    from_expected_date_11days = expected_date_11days.replace(hour=00, minute=00, second=00)
+    new_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_NEW, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
+    progess_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_PROGRESS, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
+    final_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FINALISE, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
+    fail_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FAIL, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
+
+    new_total_count = new_count_3days + new_count_7days + new_count_11days
+    progress_total_count = progess_count_3days + progess_count_7days + progess_count_11days
+    final_total_count = final_count_3days + final_count_7days + final_count_11days
+    fail_total_count = fail_count_3days + fail_count_7days + fail_count_11days
+    all_total_count = new_total_count + progress_total_count + final_total_count + fail_total_count
+
+    fee_sensitive_number = {
+        'All': all_total_count,
+        'New': new_total_count,
+        'In Progress': progress_total_count,
+        'Finalising': final_total_count,
+        'Fail': fail_total_count
+    }
+
+    return fee_sensitive_number
+
+
+def get_table_fee_sensitive(request: HttpRequest, gp_practice_code: str) -> InstructionTable:
+    cost_column_name = 'Income £'
+    instruction_query_set = Instruction.objects.filter(type='AMRA')
+    instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
+    instruction_query_set = instruction_query_set.filter(~Q(status=INSTRUCTION_STATUS_COMPLETE) & ~Q(status=INSTRUCTION_STATUS_REJECT) & ~Q(status=INSTRUCTION_STATUS_PAID))
+
+    table_number = request.GET.get('table', 1)
+    if int(table_number) == 2:
+        filter_status = request.GET.get('status', -1)
+        if int(filter_status) != -1:
+            instruction_query_set = instruction_query_set.filter(status=filter_status)
+
+    # Get Value for table range 3 days.
+    expected_date_3days = timezone.now() - timedelta(days=3)
+    to_expected_date_3days = expected_date_3days.replace(hour=23, minute=59, second=59)
+    from_expected_date_3days = expected_date_3days.replace(hour=00, minute=00, second=00)
+    instruction_query_set_3days = Q(created__range=(from_expected_date_3days, to_expected_date_3days))
+
+    # Get Value for table range 7 days.
+    expected_date_7days = timezone.now() - timedelta(days=7)
+    to_expected_date_7days = expected_date_7days.replace(hour=23, minute=59, second=59)
+    from_expected_date_7days = expected_date_7days.replace(hour=00, minute=00, second=00)
+    instruction_query_set_7days = Q(created__range=(from_expected_date_7days, to_expected_date_7days))
+
+    # Get Value for table range 11 days.
+    expected_date_11days = timezone.now() - timedelta(days=11)
+    to_expected_date_11days = expected_date_11days.replace(hour=23, minute=59, second=59)
+    from_expected_date_11days = expected_date_11days.replace(hour=00, minute=00, second=00)
+    instruction_query_set_11days = Q(created__range=(from_expected_date_11days, to_expected_date_11days))
+
+    instruction_query_set = instruction_query_set.filter(instruction_query_set_3days | instruction_query_set_7days | instruction_query_set_11days)
+    table_fee = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
+    table_fee.order_by = request.GET.get('sort', '-created')
+    table_fee.paginate(page=request.GET.get('page_t2', 1), per_page=5)
+
+    return table_fee
+
+
+def count_model_search(request: HttpRequest, client_organisation: OrganisationClient=None, gp_practice_code: str=None) -> Dict[str, int]:
+    search_input = request.GET.get('search')
+    filter_type = request.GET.get('type', '')
+    
+    if filter_type and filter_type != 'allType':
+        instruction_query_set = Instruction.objects.filter(type=filter_type)
+    else:
+        instruction_query_set = Instruction.objects.all()
+
+    if request.user.type == CLIENT_USER:
+        instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
+        instruction_query_set_client_ref = Q(your_ref__icontains=search_input)
+        instruction_query_set_name = Q(patient_information__patient_first_name__icontains=search_input)
+        instruction_query_set_last_name = Q(patient_information__patient_last_name__icontains=search_input)
+        instruction_query_set = instruction_query_set.filter(Q(instruction_query_set_client_ref | instruction_query_set_name | instruction_query_set_last_name))
+    else:
+        instruction_query_set_name = Q(patient_information__patient_first_name__icontains=search_input)
+        instruction_query_set_last_name = Q(patient_information__patient_last_name__icontains=search_input)
+        instruction_query_set = instruction_query_set.filter(Q( instruction_query_set_name | instruction_query_set_last_name))
+        instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
+
+    new_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_NEW).count()
+    progress_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_PROGRESS).count()
+    paid_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_PAID).count()
+    complete_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_COMPLETE).count()
+    rejected_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_REJECT).count()
+    finalise_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_FINALISE).count()
+    fail_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_FAIL).count()
+    all_count = new_count + progress_count + paid_count + complete_count + rejected_count + finalise_count + fail_count
+
+    overall_instructions_number = {
+        'All': all_count,
+        'New': new_count,
+        'In Progress': progress_count,
+        'Paid': paid_count,
+        'Completed': complete_count,
+        'Rejected': rejected_count,
+        'Finalising': finalise_count,
+        'Fail': fail_count,
+    }
+
+    return overall_instructions_number
+
+
+def calculate_next_prev(page=None, **kwargs) -> Dict[str, str]:
     if not page:
         return {
             'next_disabled': 'disabled',
@@ -112,7 +250,12 @@ def calculate_next_prev(page=None, **kwargs):
 
 
 @login_required(login_url='/accounts/login')
-def create_or_update_instruction(request, patient_instruction, scope_form=None, date_range_form=None, gp_practice=None, instruction_id=None) -> Instruction:
+def create_or_update_instruction(
+        request, patient_instruction: InstructionPatient,
+        scope_form: ScopeInstructionForm=None, date_range_form: InstructionDateRangeForm=None,
+        gp_practice: OrganisationGeneralPractice=None, instruction_id: int=None
+) -> Instruction:
+
     if instruction_id:
         instruction = get_object_or_404(Instruction, pk=instruction_id)
     else:
@@ -150,7 +293,7 @@ def create_or_update_instruction(request, patient_instruction, scope_form=None, 
     return instruction
 
 
-def create_addition_question(instruction, addition_question_formset):
+def create_addition_question(instruction: Instruction, addition_question_formset: AdditionQuestionFormset) -> None:
     for form in addition_question_formset:
         if form.is_valid() and form.cleaned_data:
             addition_question = form.save(commit=False)
@@ -158,7 +301,7 @@ def create_addition_question(instruction, addition_question_formset):
             addition_question.save()
 
 
-def create_snomed_relations(instruction, condition_of_interests):
+def create_snomed_relations(instruction: Instruction, condition_of_interests: List[str]) -> None:
     for condition_code in condition_of_interests:
         snomedct = SnomedConcept.objects.filter(external_id=condition_code)
         if snomedct.exists():
@@ -169,13 +312,29 @@ def create_snomed_relations(instruction, condition_of_interests):
 #@silk_profile(name='Pipline View')
 @login_required(login_url='/accounts/login')
 def instruction_pipeline_view(request):
+    event_logger.info(
+        '{user}:{user_id} ACCESS instruction pipeline view'.format(user=request.user, user_id=request.user.id)
+    )
+    gp_practice_code = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.pk', default=None)
     header_title = "Instructions Pipeline"
     user = request.user
+    table_num = request.GET.get('table', 'undefined')
+    search_input = request.GET.get('search', None)
+    search_status = False
+    search_pagination = None
+    table_fee = None
+    next_prev_data_all = {}
+    next_prev_data_fee = {}
+
+    if table_num == 'undefined':
+        table_num = 1
 
     if user.type == GENERAL_PRACTICE_USER:
         gp_practice = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation', default=None)
         if gp_practice and not gp_practice.is_active():
             return redirect('onboarding:emis_setup', practice_code=gp_practice.pk)
+
+        table_fee = get_table_fee_sensitive(request, gp_practice_code)
 
     if 'status' in request.GET:
         filter_type = request.GET.get('type', '')
@@ -196,16 +355,24 @@ def instruction_pipeline_view(request):
     else:
         instruction_query_set = Instruction.objects.all()
 
-    if filter_status != -1:
-        instruction_query_set = instruction_query_set.filter(status=filter_status)
+    if table_num != 2:
+        if filter_status != -1:
+            instruction_query_set = instruction_query_set.filter(status=filter_status)
 
-    gp_practice_code = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.pk', default=None)
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
-    overall_instructions_number = count_instructions(request.user, gp_practice_code, client_organisation)
+    overall_instructions_number = count_instructions(request.user, gp_practice_code, client_organisation, 'pipeline_view')
+    count_fee_sensitive_number = count_fee_sensitive(gp_practice_code)
     cost_column_name = 'Fee £'
     if request.user.type == CLIENT_USER:
         cost_column_name = 'Cost £'
         instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
+        if search_input:
+            instruction_query_set_client_ref = Q(your_ref__icontains=search_input)
+            instruction_query_set_name = Q(patient_information__patient_first_name__icontains=search_input)
+            instruction_query_set_last_name = Q(patient_information__patient_last_name__icontains=search_input)
+            instruction_query_set = instruction_query_set.filter(instruction_query_set_client_ref | instruction_query_set_name | instruction_query_set_last_name)
+            overall_instructions_number = count_model_search(request, client_organisation=client_organisation)
+            search_status = True
 
     if request.user.type == GENERAL_PRACTICE_USER:
         cost_column_name = 'Income £'
@@ -217,17 +384,39 @@ def instruction_pipeline_view(request):
                 Q(gp_user=user.userprofilebase.generalpracticeuser) | Q(gp_user__isnull=True),
                 gp_practice_id=gp_practice_code
             )
+        
+        if search_input:
+            instruction_query_set_name = Q(patient_information__patient_first_name__icontains=search_input)
+            instruction_query_set_last_name = Q(patient_information__patient_last_name__icontains=search_input)
+            instruction_query_set = instruction_query_set.filter(instruction_query_set_name | instruction_query_set_last_name)
+            overall_instructions_number = count_model_search(request, gp_practice_code=gp_practice_code)
+            search_status = True
 
-    table = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
-    table.order_by = request.GET.get('sort', '-created')
-    RequestConfig(request, paginate={'per_page': 5}).configure(table)
+    if search_status:
+        table_all = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
+        table_all.order_by = request.GET.get('sort', '-created')
+        table_all.paginate(page=request.GET.get('page_ts', 1), per_page=5)
+        search_pagination = 'search'
+    else:
+        table_all = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
+        table_all.order_by = request.GET.get('sort', '-created')
+        RequestConfig(request, paginate={'per_page': 5}).configure(table_all)
+
+    if table_all:
+        next_prev_data_all = calculate_next_prev(table_all.page, filter_status=filter_status, filter_type=filter_type)
+
+    if table_fee:
+        next_prev_data_fee = calculate_next_prev(table_fee.page, filter_status=filter_status, filter_type=filter_type)
 
     response = render(request, 'instructions/pipeline_views_instruction.html', {
         'user': user,
-        'table': table,
+        'table_all': table_all,
+        'table_fee': table_fee,
         'overall_instructions_number': overall_instructions_number,
+        'count_fee_sensitive_number': count_fee_sensitive_number,
         'header_title': header_title,
-        'next_prev_data': calculate_next_prev(table.page, filter_status=filter_status, filter_type=filter_type)
+        'next_prev_data_all': next_prev_data_all,
+        'next_prev_data_fee': next_prev_data_fee
     })
 
     response.set_cookie('status', filter_status)
@@ -237,6 +426,9 @@ def instruction_pipeline_view(request):
 
 @login_required(login_url='/accounts/login')
 def instruction_fee_payment_view(request):
+    event_logger.info(
+        '{user}:{user_id} ACCESS fee and payment pipeline view'.format(user=request.user, user_id=request.user.id)
+    )
     header_title = "Instructions Pipeline"
     user = request.user
     date_range_form = DateRangeSearchForm()
@@ -287,9 +479,10 @@ def instruction_fee_payment_view(request):
             )
 
     if request.method == 'POST':
-        from_date = dateutil.parser.parse(request.POST.get('from_date', '')).replace(tzinfo=pytz.UTC)
-        to_date = dateutil.parser.parse(request.POST.get('to_date', '')).replace(tzinfo=pytz.UTC)
-        instruction_query_set = instruction_query_set.filter(completed_signed_off_timestamp__range=[from_date, to_date])
+        if request.POST.get('from_date', '') and request.POST.get('to_date', ''):
+            from_date = dateutil.parser.parse(request.POST.get('from_date', '')).replace(tzinfo=pytz.UTC)
+            to_date = dateutil.parser.parse(request.POST.get('to_date', '')).replace(tzinfo=pytz.UTC)
+            instruction_query_set = instruction_query_set.filter(completed_signed_off_timestamp__range=[from_date, to_date])
 
     table = InstructionTable(instruction_query_set, extra_columns=[
         ('cost', Column(empty_values=(), verbose_name=cost_column_name)),
@@ -315,7 +508,6 @@ def instruction_fee_payment_view(request):
 @check_permission
 def new_instruction(request):
     header_title = "Add New Instruction"
-
     gp_form = GPForm()
     nhs_form = GeneralPracticeForm()
     reference_form = ReferenceForm()
@@ -446,6 +638,13 @@ def new_instruction(request):
                 fail_silently=True,
             )
             messages.success(request, 'Form submission successful')
+            event_logger.info(
+                '{user}:{user_id} {action} {instruction_type} instruction'.format(
+                    user=request.user, user_id=request.user.id,
+                    action='CREATED' if not instruction_id else 'EDITED',
+                    instruction_type=instruction.type,
+                )
+            )
             if instruction.type == SARS_TYPE and request.user.type == GENERAL_PRACTICE_USER:
                 return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction.id)
             else:
@@ -555,6 +754,11 @@ def new_instruction(request):
             'selected_gp_adr_line3': patient_instruction.patient_address_line3,
             'selected_gp_adr_county': patient_instruction.patient_county
         })
+    event_logger.info(
+        '{user}:{user_id} ACCESS NEW instruction view'.format(
+            user=request.user, user_id=request.user.id,
+        )
+    )
     return render(request, 'instructions/new_instruction.html', {
         'header_title': header_title,
         'patient_form': patient_form,
@@ -586,7 +790,7 @@ def upload_consent(request, instruction_id):
                 consent_form.save()
                 uploaded = True
             select_type = 'upload'
-    return render(request, 'instructions/upload_consent.html',{
+    return render(request, 'instructions/upload_consent.html', {
             'instruction': instruction,
             'consent_form': consent_form,
             'setting': setting,
@@ -598,7 +802,7 @@ def upload_consent(request, instruction_id):
 #@silk_profile(name='Review Instruction')
 @login_required(login_url='/accounts/login')
 @check_permission
-def review_instruction(request, instruction_id):
+def review_instruction(request, instruction_id: str):
     header_title = "Instruction Reviewing"
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     patient_instruction = instruction.patient_information
@@ -660,6 +864,13 @@ def review_instruction(request, instruction_id):
     elif request.user.has_perm('instructions.process_amra') and instruction.type == 'AMRA':
         can_process = True
 
+    event_logger.info(
+        '{user}:{user_id} ACCESS REVIEW instruction ID {instruction_id}'.format(
+            user=request.user, user_id=request.user.id,
+            instruction_id=instruction_id
+        )
+    )
+
     return render(request, 'instructions/review_instruction.html', {
         'header_title': header_title,
         'patient_form': patient_form,
@@ -682,7 +893,7 @@ def review_instruction(request, instruction_id):
 @cache_page(300)
 @login_required(login_url='/accounts/login')
 @check_permission
-def view_reject(request, instruction_id):
+def view_reject(request, instruction_id: str):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     patient_instruction = instruction.patient_information
     # Initial Patient Form
@@ -733,6 +944,13 @@ def view_reject(request, instruction_id):
     condition_of_interest = [snomed.fsn_description for snomed in instruction.selected_snomed_concepts()]
     addition_question_formset = AdditionQuestionFormset(queryset=InstructionAdditionQuestion.objects.filter(instruction=instruction))
 
+    event_logger.info(
+        '{user}:{user_id} ACCESS REJECT view instruction ID {instruction_id} view'.format(
+            user=request.user, user_id=request.user.id,
+            instruction_id=instruction_id
+        )
+    )
+
     return render(request, 'instructions/view_reject.html', {
         'patient_form': patient_form,
         'nhs_form': nhs_form,
@@ -749,12 +967,18 @@ def view_reject(request, instruction_id):
 
 
 @login_required(login_url='/accounts/login')
-def view_fail(request, instruction_id):
+def view_fail(request, instruction_id: str):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
 
     if request.method == "POST":
         if request.POST.get('next_step') == 'Reject':
             instruction.reject(request, request.POST)
+            event_logger.info(
+                '{user}:{user_id} REJECT instruction ID {instruction_id} on failed'.format(
+                    user=request.user, user_id=request.user.id,
+                    instruction_id=instruction_id
+                )
+            )
             return HttpResponseRedirect("%s?%s"%(reverse('instructions:view_pipeline'),"status=%s&type=allType"%INSTRUCTION_STATUS_REJECT))
         elif request.POST.get('next_step') == 'Edit':
             instruction.status = INSTRUCTION_STATUS_PROGRESS
@@ -764,14 +988,29 @@ def view_fail(request, instruction_id):
             create_patient_report(request, instruction)
             instruction.status = INSTRUCTION_STATUS_FINALISE
             instruction.save()
+            event_logger.info(
+                '{user}:{user_id} RETRY celery task instruction ID {instruction_id}'.format(
+                    user=request.user, user_id=request.user.id,
+                    instruction_id=instruction_id
+                )
+            )
             return redirect('instructions:view_pipeline')
 
     exception_merge = ExceptionMerge.objects.filter(instruction=instruction).first()
+
+    event_logger.info(
+        '{user}:{user_id} ACCESS FAILED view instruction ID {instruction_id}'.format(
+            user=request.user, user_id=request.user.id,
+            instruction_id=instruction_id
+        )
+    )
+
     return render(request, 'instructions/view_fail.html', {
         'instruction': instruction,
         'reject_reason_value': GENERATOR_FAIL,
         'exception_merge': exception_merge
     })
+
 
 #@silk_profile(name='Consent Contact View')
 @login_required(login_url='/accounts/login')
@@ -813,6 +1052,12 @@ def consent_contact(request, instruction_id, patient_emis_number):
             patient_user = create_or_update_patient_user(patient_instruction, patient_emis_number)
             instruction.patient = patient_user
             instruction.save()
+            event_logger.info(
+                '{user}:{user_id} UPDATED consent contact of patient instruction ID {instruction_id}'.format(
+                    user=request.user, user_id=request.user.id,
+                    instruction_id=instruction_id
+                )
+            )
             next_step = request.POST.get('next_step', '')
             if next_step == 'view_pipeline':
                 instruction.saved = True
@@ -872,6 +1117,12 @@ def consent_contact(request, instruction_id, patient_emis_number):
         'type': consent_type,
         'path': consent_path
     }
+    event_logger.info(
+        '{user}:{user_id} ACCESS consent contact view instruction ID {instruction_id}'.format(
+            user=request.user, user_id=request.user.id,
+            instruction_id=instruction_id
+        )
+    )
 
     return render(request, 'instructions/consent_contact.html', {
         'patient_form': patient_form,
@@ -882,7 +1133,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
         'sars_consent_form_data': sars_consent_form_data,
         'mdx_consent_form_data': mdx_consent_form_data,
         'reject_types': INSTRUCTION_REJECT_TYPE,
-        'patient_full_name' : instruction.patient_information.get_full_name()
+        'patient_full_name': instruction.patient_information.get_full_name()
     })
 
 
@@ -900,11 +1151,11 @@ def print_mdx_consent(request, instruction_id, patient_emis_number):
     return MDXDualConsent.render(params)
 
 
-def atoi(text):
+def atoi(text: str) -> int:
     return int(text) if text.isdigit() else text
 
 
-def natural_keys(text):
+def natural_keys(text: str) -> List[int]:
     if 'Road' in text.split(',')[0]:
         use_text = text.split(',')[0]
     elif 'Road' in text.split(',')[1]:
@@ -919,7 +1170,7 @@ def natural_keys(text):
     return [atoi(c) for c in re.split(r'(\d+)', use_text)]
 
 
-def api_get_address(request, address):
+def api_get_address(request: HttpRequest, address: str) -> JsonResponse:
     if not address:
         return JsonResponse({'status': 'error', 'error': 'Address not found.'}, status=404)
 

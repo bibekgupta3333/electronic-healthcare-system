@@ -7,7 +7,7 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.contrib import messages
 from django.db.models import Q
 from django.shortcuts import redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpRequest, HttpResponse
 from django.forms import modelformset_factory
 from django.contrib.auth import authenticate, login as customlogin
 from django.contrib.auth.forms import AuthenticationForm as LoginForm
@@ -29,6 +29,7 @@ from permissions.functions import access_user_management
 from organisations.models import OrganisationGeneralPractice
 from onboarding.views import generate_password
 from axes.models import AccessAttempt
+from typing import Union, List, Dict
 
 from django.conf import settings
 DEFAULT_FROM = settings.DEFAULT_FROM
@@ -39,7 +40,7 @@ from .functions import change_role, remove_user, get_table_data,\
 
 
 @login_required(login_url='/accounts/login')
-def account_view(request):
+def account_view(request: HttpRequest) -> HttpResponse:
     header_title = 'Account'
     user = request.user
 
@@ -182,7 +183,7 @@ def account_view(request):
 
 
 @login_required(login_url='/accounts/login')
-def manage_user(request):
+def manage_user(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         action_type = request.POST.get("action_type")
         if action_type == "Remove":
@@ -199,7 +200,7 @@ def manage_user(request):
 
 @login_required(login_url='/accounts/login')
 @access_user_management('organisations.view_user_management')
-def view_users(request):
+def view_users(request: HttpRequest) -> HttpResponse:
     header_title = "User Management"
     profiles = UserProfileBase.all_objects.all()
     user = request.user
@@ -272,7 +273,7 @@ def view_users(request):
     return response
 
 
-def set_initial_data_permission(permissions, organisation_id):
+def set_initial_data_permission(permissions: InstructionPermission, organisation_id: Union[str, None]) -> List[Dict[str, str]]:
     initial_data = []
     for key, value in GeneralPracticeUser.ROLE_CHOICES:
         if key is '': continue
@@ -283,7 +284,7 @@ def set_initial_data_permission(permissions, organisation_id):
 
 @login_required(login_url='/accounts/login')
 @access_user_management('permissions.change_instructionpermission')
-def update_permission(request):
+def update_permission(request: HttpRequest) -> HttpResponse:
     request.META['HTTP_REFERER'] = ''
     if request.method == 'POST':
         user = request.user
@@ -348,7 +349,7 @@ def set_permission(request, form):
 
 @login_required(login_url='/accounts/login')
 @access_user_management('organisations.add_user_management')
-def create_user(request):
+def create_user(request: HttpRequest) -> HttpResponse:
     header_title = "Add New User"
 
     cur_user = request.user
@@ -482,7 +483,7 @@ def medi_change_user(request, email):
 
 @login_required(login_url='/accounts/login')
 @access_user_management('organisations.add_user_management')
-def medi_create_user(request):
+def medi_create_user(request: HttpRequest) -> HttpResponse:
     newuser_form = AllUserForm()
     if request.method == 'POST':
         newuser_form = AllUserForm(request.POST)
@@ -537,7 +538,7 @@ def medi_create_user(request):
     return response
 
 
-def verify_password(request):
+def verify_password(request: HttpRequest) -> JsonResponse:
     password = request.POST.get('password')
     first_name = request.POST.get('first_name')
     surname = request.POST.get('surname')
@@ -546,13 +547,13 @@ def verify_password(request):
     return JsonResponse({'results': results})
 
 
-def check_email(request):
+def check_email(request: HttpRequest) -> JsonResponse:
     email = request.POST.get('email')
     exists = User.objects.filter(email=email).exists()
     return JsonResponse({'exists': exists})
 
 
-def login(request):
+def login(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
 
         #Set client ip for axes
@@ -582,7 +583,7 @@ def login(request):
     })
 
 
-def two_factor(request):
+def two_factor(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -610,7 +611,7 @@ def two_factor(request):
 
 
 @login_required(login_url='/accounts/login')
-def view_profile(request):
+def view_profile(request: HttpRequest) -> HttpResponse:
     header_title = 'Profile'
     user = User.objects.get(pk=request.user.pk)
     if request.method == 'POST':
@@ -630,7 +631,7 @@ def view_profile(request):
     })
 
 
-def check_lock_out(request):
+def check_lock_out(request: HttpRequest) -> bool:
     ip = get_client_ip(request)
     for access in AccessAttempt.objects.filter(ip_address=ip):
         if access.failures >= settings.AXES_FAILURE_LIMIT:
@@ -638,5 +639,5 @@ def check_lock_out(request):
     return False
 
 
-def locked_out(request):
+def locked_out(request: HttpRequest) -> HttpResponse:
     return render(request, 'registration/locked_out.html')

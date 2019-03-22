@@ -91,7 +91,6 @@ class OrganisationClientAdmin(admin.ModelAdmin):
         ('Insurance: Addition Information', {
             'classes': ('hidden', 'Insurance'),
             'fields': ('division', 'fca_number')}),
-        ('Consent Type', {'fields': ('can_create_amra', 'can_create_sars')}),
     )
 
     class Media:

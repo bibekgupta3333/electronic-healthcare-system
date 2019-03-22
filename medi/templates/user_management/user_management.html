@@ -34,7 +34,7 @@
             <div class="col-md-12">
                     {% for k, v in overall_users_number.items %}
                         <div class="number" id="{{ k|cut:' ' }}">
-                            {% if k == "Client Manager" or k == "Admin" %}
+                            {% if k == "Client Manager" or k == "Client Administrator" %}
                                 <a href="#" onclick="clientuserStatusFilter('{{ k }}');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a>
                             {% elif k == "Medidata" %}
                                 <a href="#" onclick="mediuserStatusFilter('{{ k }}');" class="ml-2 mr-2 mb-0">{{ k }} ({{ v }})</a>
@@ -205,7 +205,7 @@
                 } else {
                     var key = getObjectKeyByValue(gpuser_roleDict, status);
                 }
-                $('#' + key.replace(' ', '')).css("background-color", "rgba(0, 0, 0, 0.1)");
+                $('#' + key.replace(/ /g, '')).css("background-color", "rgba(0, 0, 0, 0.1)");
             } else {
                 $('#All').css("background-color", "rgba(0, 0, 0, 0.1)");
             }

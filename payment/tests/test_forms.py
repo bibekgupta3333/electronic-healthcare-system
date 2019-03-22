@@ -12,44 +12,44 @@ class InstructionVolumeFeeFormTest(TestCase):
             trading_name='Insurance company 1',
             legal_name='Insurance company 1',
             address='address',
-            type=OrganisationClient.INSURANCE_UNDERWRITER
+            type=OrganisationClient.INSURER
         )
         self.organisation_client_invalid = [
             OrganisationClient.objects.create(
                 trading_name='Insurance company 2',
                 legal_name='Insurance company 2',
                 address='address',
-                type=OrganisationClient.INSURANCE_UNDERWRITER
+                type=OrganisationClient.INSURER
             ),
             OrganisationClient.objects.create(
                 trading_name='Insurance company 3',
                 legal_name='Insurance company 3',
                 address='address',
-                type=OrganisationClient.INSURANCE_UNDERWRITER
+                type=OrganisationClient.INSURER
             ),
             OrganisationClient.objects.create(
                 trading_name='Insurance company 4',
                 legal_name='Insurance company 4',
                 address='address',
-                type=OrganisationClient.INSURANCE_UNDERWRITER
+                type=OrganisationClient.INSURER
             ),
             OrganisationClient.objects.create(
                 trading_name='Insurance company 5',
                 legal_name='Insurance company 5',
                 address='address',
-                type=OrganisationClient.INSURANCE_UNDERWRITER
+                type=OrganisationClient.INSURER
             ),
             OrganisationClient.objects.create(
                 trading_name='Insurance company 6',
                 legal_name='Insurance company 6',
                 address='address',
-                type=OrganisationClient.INSURANCE_UNDERWRITER
+                type=OrganisationClient.INSURER
             ),
             OrganisationClient.objects.create(
                 trading_name='Insurance company 7',
                 legal_name='Insurance company 7',
                 address='address',
-                type=OrganisationClient.INSURANCE_UNDERWRITER
+                type=OrganisationClient.INSURER
             )
         ]
 

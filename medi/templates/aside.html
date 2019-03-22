@@ -24,7 +24,7 @@
                 {% endif %}
                 {% if perms.instructions.view_instruction %}
                     <li class="{% if request.resolver_match.url_name == 'view_pipeline' %}active{% endif %}">
-                        <a href="{% url 'instructions:view_pipeline' %}" ><i class="fas fa-tasks"></i>Instructions</a>
+                        <a href="{% url 'instructions:view_pipeline' %}" ><i class="fas fa-tasks"></i>Instruction Pipeline</a>
                     </li>
                 {% endif %}
                 {% if perms.organisations.view_user_management %}
@@ -32,17 +32,12 @@
                         <a href="{% url 'accounts:view_users' %}"><i class="fas fa-users-cog"></i>User Management</a>
                     </li>
                 {% endif %}
-                {% if user.type == 'MEDI' %}
-                    <li>
-                        <a href="#" >Income</a>
-                    </li>
-                {% endif %}
                 {% if perms.template.view_templateinstruction and user.type != 'GP' %}
                     <li class="{% if request.resolver_match.url_name == 'view_templates' %}active{% endif %}">
                         <a href="{% url 'template:view_templates' %}"><i class="fas fa-wrench"></i>Templates</a>
                     </li>
                 {% endif %}
-                {% if perms.instructions.view_account_pages or user.get_my_role == 'Client Admin'%}
+                {% if perms.instructions.view_account_pages %}
                     <li class="{% if request.resolver_match.url_name == 'view_account' %}active{% endif %}">
                         <a href="{% url 'accounts:view_account' %}" ><i class="fas fa-money-check-alt"></i>Account</a>
                     </li>
@@ -54,6 +49,9 @@
                 {% endif %}
                 <li class="{% if request.resolver_match.url_name == 'view_fee_payment_pipeline' %}active{% endif %}">
                     <a href="{% url 'instructions:view_fee_payment_pipeline' %}" ><i class="fas fa-tasks"></i>Fee and Payment</a>
+                </li>
+                <li class="{% if request.resolver_match.url_name == 'resource_centre' %}active{% endif %}">
+                    <a href="{% url 'help:resource_centre' %}"><i class="far fa-question-circle"></i>Resource Centre</a>
                 </li>
             {% endif %}
         </ul>

@@ -8,6 +8,8 @@ from permissions.model_choices import MANAGER_PERMISSIONS, GP_PERMISSIONS,\
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 from common.models import TimeStampedModel
 from django.core.mail import send_mail
+from common.functions import multi_getattr
+from typing import Union
 
 SEX_CHOICES = (
     ('M', 'Male'),
@@ -83,7 +85,7 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['username']
     objects = MyUserManager()
 
-    def get_query_set_within_organisation(self, organisation=None):
+    def get_query_set_within_organisation(self):
         if self.userprofilebase:
             if hasattr(self.userprofilebase, 'generalpracticeuser'):
                 organisation = self.userprofilebase.generalpracticeuser.organisation
@@ -98,7 +100,7 @@ class User(AbstractUser):
         else:
             return None
 
-    def get_short_my_role(self):
+    def get_short_my_role(self) -> str:
         profile = self.userprofilebase
         if self.type == MEDIDATA_USER:
             return 'Medidata'
@@ -109,7 +111,7 @@ class User(AbstractUser):
         else:
             return 'Patient'
 
-    def get_my_role(self):
+    def get_my_role(self) -> str:
         profile = self.userprofilebase
         if self.type == MEDIDATA_USER:
             return 'Medidata User'
@@ -130,7 +132,7 @@ class User(AbstractUser):
         else:
             return 'Patient User'
 
-    def get_my_organisation(self):
+    def get_my_organisation(self) -> Union[OrganisationGeneralPractice, OrganisationMedidata, OrganisationClient, None]:
         if self.type == CLIENT_USER:
             organisation = self.userprofilebase.clientuser.organisation
         elif self.type == GENERAL_PRACTICE_USER:
@@ -147,6 +149,41 @@ class User(AbstractUser):
             user_profile = self.userprofilebase
             title = user_profile.get_title_display()
         return ' '.join([title, self.first_name, self.last_name])
+
+    def can_do_under(self) -> bool:
+        client_organisation = multi_getattr(self, 'userprofilebase.clientuser.organisation', default=None)
+        org = OrganisationClient
+        types = [org.INSURER, org.REINSURER, org.OUTSOURCER]
+        if client_organisation and client_organisation.type in types:
+            return True
+        return False
+
+    def can_do_claim(self) -> bool:
+        client_organisation = multi_getattr(self, 'userprofilebase.clientuser.organisation', default=None)
+        org = OrganisationClient
+        types = [
+            org.INSURER, org.REINSURER, org.BROKER, org.SOLICITOR,
+            org.OUTSOURCER, org.GOVERNMENT_AGENCY, org.PHARMACEUTICALS,
+            org.RESEARCH, org.OTHER
+        ]
+        if client_organisation and client_organisation.type in types:
+            return True
+        return False
+
+    def can_do_sars(self) -> bool:
+        client_organisation = multi_getattr(self, 'userprofilebase.clientuser.organisation', default=None)
+        gp_organisation = multi_getattr(self, 'userprofilebase.generalpracticeuser.organisation', default=None)
+        org = OrganisationClient
+        types = [
+            org.BROKER, org.SOLICITOR, org.OUTSOURCER,
+            org.GOVERNMENT_AGENCY, org.PHARMACEUTICALS,
+            org.RESEARCH, org.OTHER
+        ]
+        if client_organisation and client_organisation.type in types:
+            return True
+        elif gp_organisation:
+            return True
+        return False
 
 
 class UserProfileBase(TimeStampedModel, models.Model):
@@ -172,23 +209,23 @@ class UserProfileBase(TimeStampedModel, models.Model):
     def __str__(self):
         return self.user.email + "User Profile"
 
-    def get_telephone_e164(self):
+    def get_telephone_e164(self) -> str:
         phone = self.get_phone_without_zero(self.telephone_mobile)
         return "+%s%s"%(self.telephone_code, phone)
 
-    def get_phone_without_zero(self, phone):
+    def get_phone_without_zero(self, phone: str) -> str:
         if phone and phone[0] == '0':
             phone = phone[1:]
         return phone
 
-    def remove_permission(self):
+    def remove_permission(self) -> None:
         for permission in self.user.user_permissions.all():
             self.user.user_permissions.remove(permission)
 
         for group in self.user.groups.all():
             self.user.groups.remove(group)
 
-    def set_permission(self, permissions):
+    def set_permission(self, permissions: list) -> None:
         for perm_codename in permissions:
             permission = Permission.objects.get(codename=perm_codename)
             self.user.user_permissions.add(permission)
@@ -224,7 +261,7 @@ class MedidataUser(UserProfileBase):
             self.update_permission()
         super(MedidataUser, self).save(*args, **kwargs)
 
-    def update_permission(self):
+    def update_permission(self) -> None:
         self.remove_permission()
         user = self.user
         user.is_staff = True
@@ -269,17 +306,17 @@ class ClientUser(UserProfileBase):
             self.update_permission()
         super(ClientUser, self).save(*args, **kwargs)
 
-    def update_permission(self):
+    def update_permission(self) -> None:
         self.remove_permission()
         if self.role == self.CLIENT_MANAGER:
             self.update_permission_manager()
         else:
             self.update_permission_admin()
 
-    def update_permission_manager(self):
+    def update_permission_manager(self) -> None:
         self.set_permission(CLIENT_MANAGER_PERMISSIONS)
 
-    def update_permission_admin(self):
+    def update_permission_admin(self) -> None:
         self.set_permission(CLIENT_ADMIN_PERMISSIONS)
 
 
@@ -326,7 +363,7 @@ class GeneralPracticeUser(UserProfileBase):
             self.sending_surgery_email()
         super(GeneralPracticeUser, self).save(*args, **kwargs)
 
-    def sending_surgery_email(self):
+    def sending_surgery_email(self) -> None:
         if self.organisation and self.organisation.organisation_email:
             html_message = loader.render_to_string('accounts/email_message_new_user.html', {
                 'name': self.user.get_full_name(),
@@ -341,7 +378,7 @@ class GeneralPracticeUser(UserProfileBase):
                 html_message=html_message,
             )
 
-    def update_permission(self):
+    def update_permission(self) -> None:
         self.remove_permission()
         group_name = "%s : %s"%(self.get_role_display(),self.organisation.__str__())
         for group in Group.objects.filter(name=group_name):
@@ -354,13 +391,13 @@ class GeneralPracticeUser(UserProfileBase):
         else:
             self.update_permission_other()
 
-    def update_permission_manager(self):
+    def update_permission_manager(self) -> None:
         self.set_permission(MANAGER_PERMISSIONS)
 
-    def update_permission_gp(self):
+    def update_permission_gp(self) -> None:
         self.set_permission(GP_PERMISSIONS)
 
-    def update_permission_other(self):
+    def update_permission_other(self) -> None:
         self.set_permission(OTHER_PERMISSIONS)
 
 
@@ -375,6 +412,7 @@ class PracticePreferences(models.Model):
 
     def __str__(self):
         return self.gp_organisation.name + " Preferences"
+
 
 class Patient(UserProfileBase):
     organisation_gp = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE, null=True)

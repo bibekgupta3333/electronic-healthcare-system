@@ -25,6 +25,6 @@ class AttachmentTest(XMLTestCase):
 
     def test_xpaths(self):
         self.assertListEqual(
-            [".//ConsultationElement[Attachment/GUID='387678']"],
+            [".//Attachment[GUID='387678']"],
             self.attachments[0].xpaths()
         )
