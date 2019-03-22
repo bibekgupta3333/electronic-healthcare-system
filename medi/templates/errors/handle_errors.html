@@ -21,6 +21,9 @@
                         <p class="message-secondary">Click <a href="{% url 'instructions:view_pipeline' %}"><b>here</b></a>
                             to return to your pipeline view</p>
                     {% endif %}
+                    {% if code == 403 %}
+                        {{ reason }}
+                    {% endif %}
                 </div>
             </div>
         </div>
