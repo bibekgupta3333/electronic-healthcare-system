@@ -7,8 +7,9 @@ def xml_parse(xml_data):
         return xml_data
     else:
         # Remove the default namespace definition (xmlns="http://some/namespace")
+        parser = etree.XMLParser(huge_tree=True)
         xml_data = re.sub(r'\sxmlns="[^"]+"', '', xml_data, count=1)
-        parsed_xml = etree.fromstring(xml_data)
+        parsed_xml = etree.fromstring(xml_data, parser=parser)
         return parsed_xml
 
 
