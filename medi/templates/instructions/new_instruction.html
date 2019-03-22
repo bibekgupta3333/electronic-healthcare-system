@@ -149,6 +149,7 @@
                             <div class="row">
                                 <div class="col-md-2 d-flex">Type of Instruction*:</div>
                                 {% bootstrap_field scope_form.type size='small' form_group_class='form-group col-md-6 p-0' show_label=False %}
+                                <input type="hidden" id="type_catagory" name="type_catagory"> 
                             </div>
                             <div class="row d-none" id="template_form">
                                 <div class="col-md-2 rowTitle">Set from Template?</div>
@@ -745,6 +746,16 @@
         $('#id_date_range_to').keydown(function () {
             return false;
         });
+
+        $('#type_0').click( function() {
+            $('#type_catagory').val('under');
+        });
+
+        $('#type_1').click( function() {
+            $('#type_catagory').val('claim');
+        });
+
+
     </script>
 
 {% endblock %}

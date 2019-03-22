@@ -79,6 +79,7 @@ class Instruction(TimeStampedModel, models.Model):
     rejected_note = models.TextField(blank=True)
     rejected_reason = models.IntegerField(choices=INSTRUCTION_REJECT_TYPE, null=True, blank=True)
     type = models.CharField(max_length=4, choices=INSTRUCTION_TYPE_CHOICES)
+    type_catagory = models.CharField(max_length=10, blank=True)
     final_report_date = models.TextField(blank=True)
     gp_earns = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     medi_earns = models.DecimalField(max_digits=5, decimal_places=2, default=0)

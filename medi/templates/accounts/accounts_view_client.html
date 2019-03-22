@@ -2,11 +2,14 @@
 
 {% load static %}
 {% load bootstrap4 %}
+{% load render_table from django_tables2 %}
 {% bootstrap_css %}
 {% bootstrap_javascript jquery='full' %}
 {% bootstrap_messages %}
 
 {% block ExtraHead %}
+    <link rel="stylesheet" href="{% static 'css/dataTables/jquery.dataTables.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/instructions/pipeline_views_instructions.css' %}">
     <link href="{% static 'css/accounts/view_account.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/instructions/new_instruction.css' %}" rel="stylesheet"/>
     <link rel="stylesheet" href="{% static 'css/pretty-checkbox.min.css' %}">
@@ -25,7 +28,10 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <label class="text-mute">Invoicing Block.</label>
+                        <div class="col-12">
+                            {% render_table invoicing_table 'django_tables2/bootstrap.html' %}
+                            {% bootstrap_pagination  parameter_name='page_t2' page=invoicing_table.page pages_to_show=5 size='small' %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -82,4 +88,15 @@
             </div>
         </div>
     </div>
+{% endblock %}
+{% block Script %}
+    <script src="{% static 'js/dataTables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'js/dataTables/dataTables.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'js/instructions/instruction_views.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            $('.pager').hide();
+        });
+    </script>
+    
 {% endblock %}
