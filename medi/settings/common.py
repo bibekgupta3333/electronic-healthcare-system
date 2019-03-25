@@ -271,3 +271,6 @@ EMR_URM = 'https://emr.medi2data.com'
 SILKY_PYTHON_PROFILER = True
 SILKY_PYTHON_PROFILER_BINARY = True
 SILKY_AUTHENTICATION = True
+
+#Set default handle 403!
+CSRF_FAILURE_VIEW = 'services.views.handler_403'

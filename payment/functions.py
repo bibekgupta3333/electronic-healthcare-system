@@ -8,7 +8,7 @@ import logging
 event_logger = logging.getLogger('medidata.event')
 
 
-def calculate_instruction_fee(instruction):
+def calculate_instruction_fee(instruction: Instruction) -> None:
     gp_practice = instruction.gp_practice
     time_delta = instruction.completed_signed_off_timestamp - instruction.fee_calculation_start_date
     organisation_fee = GpOrganisationFee.objects.filter(gp_practice=gp_practice).first()

@@ -2,6 +2,9 @@ from django.db import models
 from organisations.models import OrganisationGeneralPractice, OrganisationClient
 from common.models import TimeStampedModel
 
+from decimal import Decimal
+
+from typing import Union
 
 class OrganisationFeeRate(models.Model):
     name = models.CharField(max_length=255)
@@ -24,7 +27,7 @@ class OrganisationFeeRate(models.Model):
     def __str__(self):
         return "{band_name}: Top payment band is {top_payment}".format(band_name=self.name, top_payment=self.amount_rate_lvl_1)
 
-    def get_fee_rate(self, period_day):
+    def get_fee_rate(self, period_day: int) -> Union[Decimal, int]:
         payment_band = [self.max_day_lvl_1, self.max_day_lvl_2, self.max_day_lvl_3, self.max_day_lvl_4]
         amount_rate = [self.amount_rate_lvl_1, self.amount_rate_lvl_2, self.amount_rate_lvl_3, self.amount_rate_lvl_4]
         for index, band in enumerate(payment_band):
@@ -64,7 +67,7 @@ class InstructionVolumeFee(models.Model):
     def __str__(self):
         return "Fee Structure: {}".format(self.client_organisation)
 
-    def get_fee_rate(self, volume_amount):
+    def get_fee_rate(self, volume_amount: int) -> Union[Decimal, int]:
         volume_band = [self.max_volume_band_lowest, self.max_volume_band_low, self.max_volume_band_medium, self.max_volume_band_top]
         fee_rate = [self.fee_rate_lowest, self.fee_rate_low, self.fee_rate_medium, self.fee_rate_top]
         for index, band in enumerate(volume_band):

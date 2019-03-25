@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.utils import timezone
 from django.core.mail import send_mail
+from django.http import HttpRequest
 from django_clamd.validators import validate_file_infection
 from common.models import TimeStampedModel
 from common.functions import get_url_page
@@ -12,7 +13,7 @@ from accounts import models as account_models
 from snomedct.models import SnomedConcept, CommonSnomedConcepts
 from .model_choices import *
 from django.conf import settings
-from typing import Set
+from typing import Set, Dict, Tuple, Iterable
 
 import datetime
 
@@ -52,20 +53,20 @@ class InstructionPatient(models.Model):
             first_name=self.patient_first_name, last_name=self.patient_last_name, dob=self.patient_dob
         )
 
-    def get_telephone_e164(self):
+    def get_telephone_e164(self) -> str:
         phone = self.get_phone_without_zero(self.patient_telephone_mobile)
         return "+%s%s"%(self.patient_telephone_code, phone)
 
-    def get_alternate_e164(self):
+    def get_alternate_e164(self) -> str:
         phone = self.get_phone_without_zero(self.patient_alternate_phone)
         return "+%s%s"%(self.patient_alternate_code, phone)
 
-    def get_phone_without_zero(self, phone):
+    def get_phone_without_zero(self, phone: str) -> str:
         if phone and phone[0] == '0':
             phone = phone[1:]
         return phone
 
-    def get_full_name(self):
+    def get_full_name(self) -> str:
         return ' '.join([self.get_patient_title_display(), self.patient_first_name, self.patient_last_name])
 
 
@@ -154,13 +155,13 @@ class Instruction(TimeStampedModel, models.Model):
                 self.fee_calculation_start_date = now
             self.save()
 
-    def in_progress(self, context):
+    def in_progress(self, context: Dict[str, str]) -> None:
         self.status = INSTRUCTION_STATUS_PROGRESS
         if not self.gp_user:
             self.gp_user = context.get('gp_user', None)
         self.save()
 
-    def reject(self, request, context):
+    def reject(self, request: HttpRequest, context: Dict[str, str]) -> None:
         self.gp_user = request.user.userprofilebase.generalpracticeuser
         self.rejected_timestamp = timezone.now()
         self.rejected_by = request.user
@@ -177,7 +178,7 @@ class Instruction(TimeStampedModel, models.Model):
             self.send_reject_email(emails)
         self.save()
 
-    def send_reject_email_to_patient(self, patient_email):
+    def send_reject_email_to_patient(self, patient_email: str) -> None:
         send_mail(
             'Rejected Instruction',
             'Unfortunately your instruction could not be completed on this occasion. Please contact your GP Surgery for more information',
@@ -187,8 +188,8 @@ class Instruction(TimeStampedModel, models.Model):
             auth_user=settings.EMAIL_HOST_USER,
             auth_password=settings.EMAIL_HOST_PASSWORD,
         )
-    
-    def send_reject_email(self, to_email):
+
+    def send_reject_email(self, to_email: str) -> None:
         send_mail(
             'Rejected Instruction',
             'You have a rejected instruction. Click here {link}?status=4&type=allType to see it.'.format(link=PIPELINE_INSTRUCTION_LINK),
@@ -199,7 +200,7 @@ class Instruction(TimeStampedModel, models.Model):
             auth_password=settings.EMAIL_HOST_PASSWORD,
         )
 
-    def snomed_concepts_ids_and_readcodes(self) -> Set[int]:
+    def snomed_concepts_ids_and_readcodes(self) -> Tuple[Set[int], Set[int]]:
         snomed_concepts_ids = set()
         readcodes = set()
         for sct in self.selected_snomed_concepts():
@@ -229,7 +230,7 @@ class Instruction(TimeStampedModel, models.Model):
             )
         return readcodes
 
-    def selected_snomed_concepts(self):
+    def selected_snomed_concepts(self) -> Iterable[SnomedConcept]:
         return SnomedConcept.objects.filter(
             instructionconditionsofinterest__instruction=self.id
         )
@@ -243,24 +244,25 @@ class Instruction(TimeStampedModel, models.Model):
     def get_type(self):
         return self.type
 
-    def is_sars(self):
+    def is_sars(self) -> bool:
         return self.type == SARS_TYPE
 
-    def is_amra(self):
+    def is_amra(self) -> bool:
         return self.type == AMRA_TYPE
 
-    def get_str_date_range(self):
-        if self.date_range_from == None:
+    def get_str_date_range(self) -> str:
+        if self.date_range_from is None:
             return None
         str_date_range = str(self.date_range_from) + ' - ' + str(self.date_range_to)
         return str_date_range
 
-    def get_client_org_name(self):
+    def get_client_org_name(self) -> str:
         return self.client_user.organisation.trading_name
         
     get_client_org_name.allow_tags = False
     get_client_org_name.short_description = 'Client organisation name'
     
+
 
 class InstructionAdditionQuestion(models.Model):
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE, related_name='addition_questions')

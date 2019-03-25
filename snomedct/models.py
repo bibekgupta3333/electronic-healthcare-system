@@ -38,7 +38,7 @@ class SnomedConcept(models.Model):
                     child.descendants(include_self=True, ret_descendants=ret_descendants)
         return ret_descendants
 
-    def descendant_readcodes(self, snome_descendants=None) -> Set['ReadCode']:
+    def descendant_readcodes(self, snome_descendants: Set['SnomedConcept']=None) -> Set['ReadCode']:
         """
         Return readcodes of this snomed concept and its descendants.
         """

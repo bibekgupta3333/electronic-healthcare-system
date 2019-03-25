@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def multi_getattr(obj, attr, **kwargs):
+def multi_getattr(obj: object, attr: str, **kwargs) -> object:
     attributes = attr.split('.')
     for attribute in attributes:
         try:
@@ -23,7 +23,7 @@ def multi_getattr(obj, attr, **kwargs):
     return obj
 
 
-def get_env_variable(name):
+def get_env_variable(name: str) -> str:
     try:
         return os.environ[name]
     except KeyError:
