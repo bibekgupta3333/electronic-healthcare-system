@@ -29,7 +29,8 @@ from permissions.functions import access_user_management
 from organisations.models import OrganisationGeneralPractice
 from onboarding.views import generate_password
 from axes.models import AccessAttempt
-from instructions.tables import InstructionTable
+from .tables import AccountTable
+from .report import InfoInstructions
 from django_tables2 import RequestConfig, Column
 from instructions.views import calculate_next_prev
 
@@ -120,10 +121,11 @@ def account_view(request):
         })
 
     # import ipdb; ipdb.set_trace()
-    cost_column_name = 'Income £'
+    cost_column_name = 'Cost £'
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
     instruction_query_set = Instruction.objects.filter(client_user__organisation=client_organisation)
-    table_fee = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
+    instruction_query_set = Instruction.objects.filter(status=INSTRUCTION_STATUS_COMPLETE)
+    table_fee = AccountTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
     table_fee.order_by = request.GET.get('sort', '-created')
     table_fee.paginate(page=request.GET.get('page_t2', 1), per_page=5)
     # next_prev_data_all = calculate_next_prev(table_fee.page)

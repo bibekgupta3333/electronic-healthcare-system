@@ -88,6 +88,70 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="infoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg bg-info">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="col-12 mt-2">
+                            <label style="font-size:30px;color:#235597;margin:0;line-height:30px;">Instruction Infomation</label>
+                            <table class="table table-bordered mt-3">
+                                <tbody>
+                                    <tr class="text-center block-blue">
+                                        <th colspan='2'><h5><i class="fas fa-info-circle"></i>&nbsp;&nbsp;<strong>Patient Information</strong></h5></th>
+                                    </tr>
+                                    <tr>
+                                        <th width="30%">Instruction number: </th>
+                                        <td id="ins_number"></td>
+                                    </tr>
+                                    <tr>
+                                        <th width="30%">Name: </th>
+                                        <td id="patient_name"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Date of Birth: </th>
+                                        <td id="patient_dob"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Address: </th>
+                                        <td id="patient_address"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>NHS #: </th>
+                                        <td id="patient_nhs"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table class="table table-bordered mt-3">
+                                <tbody>
+                                    <tr class="text-center block-blue">
+                                        <th colspan='2'><h5><strong>Requested Conditions</strong></h5></th>
+                                    </tr>
+                                    <tr class="text-center">
+                                        <td id="detail_request"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table class="table table-bordered mt-3">
+                                <tbody>
+                                    <tr class="text-center block-blue">
+                                        <th colspan='2'><h5><strong>Instruction start and completion date</strong></h5></th>
+                                    </tr>
+                                    <tr class="text-center">
+                                        <td id="detail_date"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-12 mt-3">
+                            <button class="btn btn-danger btn-block btn-lg" data-dismiss="modal"><i class="fas fa-times"></i>&nbsp;&nbsp;Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 {% block Script %}
     <script src="{% static 'js/dataTables/jquery.dataTables.min.js' %}"></script>
@@ -96,6 +160,17 @@
     <script>
         $(document).ready(function () {
             $('.pager').hide();
+        });
+
+        $('.infoDetailButton').click(function () {
+            $('#ins_number').text($(this).data('ins_number'));
+            $('#patient_name').text($(this).data('patient_name'));
+            $('#patient_dob').text($(this).data('patient_dob'));
+            $('#patient_address').text($(this).data('patient_address'));
+            $('#patient_nhs').text($(this).data('patient_nhs'));
+            $('#detail_request').text($(this).data('detail_request'));
+            $('#detail_date').text($(this).data('detail_date'));
+            $('#infoModal').modal();
         });
     </script>
     
