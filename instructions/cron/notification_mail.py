@@ -14,6 +14,9 @@ import logging
 
 from django.conf import settings
 
+logger = logging.getLogger('timestamp')
+event_logger = logging.getLogger('medidata.event')
+
 
 def instruction_notification_email_job():
     instruction_notification_sars()
@@ -21,12 +24,12 @@ def instruction_notification_email_job():
 
 
 def instruction_notification_amra():
-    instruction_query_set = Instruction.objects.filter(type='AMRA')
-    instruction_query_set = instruction_query_set.filter(~Q(status=INSTRUCTION_STATUS_COMPLETE) & ~Q(status=INSTRUCTION_STATUS_REJECT) & ~Q(status=INSTRUCTION_STATUS_PAID))
+    pending_instructions = Instruction.objects.filter(type='AMRA')
+    pending_instructions = pending_instructions.filter(~Q(status=INSTRUCTION_STATUS_COMPLETE) & ~Q(status=INSTRUCTION_STATUS_REJECT) & ~Q(status=INSTRUCTION_STATUS_PAID))
 
-    for instruction in instruction_query_set:
+    for instruction in pending_instructions:
         time_check = timezone.now() - instruction.fee_calculation_start_date
-        if time_check.days == 23:
+        if time_check.days == REJECT_PENDING_INSTRUCTION_DAY:
             auto_reject_amra_after_23days(instruction)
         elif (time_check.days == instruction.ins_max_day_lvl_1) or\
             (time_check.days == instruction.ins_max_day_lvl_2) or\
@@ -48,7 +51,7 @@ def send_email_amra(instruction):
     for email in gp_managers:
         gp_email.add(email['email'])
 
-    if not instruction.gp_user == None:
+    if instruction.gp_user:
         gp_email.add(instruction.gp_user.user.email)
 
     try:
@@ -63,7 +66,7 @@ def send_email_amra(instruction):
             })
         )
     except SMTPException:
-        logging.error('"AMRA" Send mail to GP FAILED')
+        event_logger.info('"AMRA" Send mail to GP FAILED')
 
 
 def auto_reject_amra_after_23days(instruction):
@@ -78,12 +81,12 @@ def auto_reject_amra_after_23days(instruction):
     instruction.rejected_reason = LONG_TIMES
     instruction.rejected_by = auto_reject_user
     instruction.rejected_timestamp = timezone.now()
-    instruction.rejected_note = 'Instruction Too long'
+    instruction.rejected_note = 'Instruction not process until dute date'
     instruction.save()
 
     instruction_link = settings.MDX_URL + reverse('instructions:view_reject', kwargs={'instruction_id': instruction.id})
     instruction_med_ref = instruction.medi_ref
-    subject_reject_email = 'AMRA instruction not processed'
+    subject_reject_email = 'AMRA instruction was not processed'
 
     # Send Email for client.
     client_email = [instruction.client_user.user.email]
@@ -100,7 +103,7 @@ def auto_reject_amra_after_23days(instruction):
             })
         )
     except SMTPException:
-        logging.error('"AMRA" Send mail to client FAILED')
+        event_logger.info('"AMRA" Send mail to client FAILED')
 
 
 def instruction_notification_sars():
