@@ -8,6 +8,7 @@ import logging
 
 from django.conf import settings
 
+event_logger = logging.getLogger('medidata.event')
 
 def report_notification_expired_authorisation_job():
     current_date = timezone.now().date()
@@ -29,4 +30,4 @@ def report_notification_expired_authorisation_job():
                     auth_password=settings.EMAIL_HOST_PASSWORD,
                 )
             except SMTPException:
-                logging.error('Send mail FAILED to send message')
+                event_logger.error('Notification mail expired')
