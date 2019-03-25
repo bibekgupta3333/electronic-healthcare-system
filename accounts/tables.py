@@ -142,6 +142,6 @@ class AccountTable(tables.Table):
 
     def render_PDF_copy_of_invoice(self, record):
         return format_html(
-            "<a href='#infoModal' class='btn btn-success btn-block btn-sm invoiceDetailButton' role='button'>"
+            "<a href='#invoiceModal' class='btn btn-success btn-block btn-sm invoiceDetailButton' role='button'>"
             "View</a>"
         )
