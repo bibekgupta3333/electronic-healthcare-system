@@ -25,7 +25,7 @@ def instruction_notification_email_job():
 
 def instruction_notification_amra():
     pending_instructions = Instruction.objects.filter(type='AMRA')
-    pending_instructions = pending_instructions.filter(~Q(status=INSTRUCTION_STATUS_COMPLETE) & ~Q(status=INSTRUCTION_STATUS_REJECT) & ~Q(status=INSTRUCTION_STATUS_PAID))
+    pending_instructions = pending_instructions.filter(~Q(status__in=[INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_REJECT, INSTRUCTION_STATUS_PAID]))
 
     for instruction in pending_instructions:
         time_check = timezone.now() - instruction.fee_calculation_start_date
