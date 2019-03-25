@@ -30,7 +30,7 @@ from organisations.models import OrganisationGeneralPractice
 from onboarding.views import generate_password
 from axes.models import AccessAttempt
 from .tables import AccountTable
-from .report import InfoInstructions
+# from .report import InfoInstructions
 from django_tables2 import RequestConfig, Column
 from instructions.views import calculate_next_prev
 from typing import Union, List, Dict
