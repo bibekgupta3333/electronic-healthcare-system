@@ -50,7 +50,7 @@ class InstructionTable(tables.Table):
     def render_client_ref(self, record):
         client_ref = record.your_ref
         if not client_ref:
-            client_ref = "—"
+            client_ref = "_"
         return format_html(client_ref)
 
     def render_client_user(self, value):
