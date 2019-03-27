@@ -2,11 +2,14 @@
 
 {% load static %}
 {% load bootstrap4 %}
+{% load render_table from django_tables2 %}
 {% bootstrap_css %}
 {% bootstrap_javascript jquery='full' %}
 {% bootstrap_messages %}
 
 {% block ExtraHead %}
+    <link rel="stylesheet" href="{% static 'css/dataTables/jquery.dataTables.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/instructions/pipeline_views_instructions.css' %}">
     <link href="{% static 'css/accounts/view_account.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/instructions/new_instruction.css' %}" rel="stylesheet"/>
     <link rel="stylesheet" href="{% static 'css/pretty-checkbox.min.css' %}">
@@ -25,7 +28,10 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <label class="text-mute">Invoicing Block.</label>
+                        <div class="col-12">
+                            {% render_table invoicing_table 'django_tables2/bootstrap.html' %}
+                            {% bootstrap_pagination  parameter_name='page' page=invoicing_table.page pages_to_show=5 size='small' %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -82,4 +88,123 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="infoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg bg-info">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="col-12 mt-2">
+                            <label style="font-size:30px;color:#235597;margin:0;line-height:30px;">Instruction Infomation</label>
+                            <table class="table table-bordered mt-3">
+                                <tbody>
+                                    <tr class="text-center block-blue">
+                                        <th colspan='2'><h5><i class="fas fa-info-circle"></i>&nbsp;&nbsp;<strong>Patient Information</strong></h5></th>
+                                    </tr>
+                                    <tr>
+                                        <th width="30%">Instruction number: </th>
+                                        <td id="ins_number"></td>
+                                    </tr>
+                                    <tr>
+                                        <th width="30%">Name: </th>
+                                        <td id="patient_name"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Date of Birth: </th>
+                                        <td id="patient_dob"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Address: </th>
+                                        <td id="patient_address"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>NHS #: </th>
+                                        <td id="patient_nhs"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table class="table table-bordered mt-3">
+                                <tbody>
+                                    <tr class="text-center block-blue">
+                                        <th colspan='2'><h5><strong>Requested Conditions</strong></h5></th>
+                                    </tr>
+                                    <tr class="text-center">
+                                        <td id="detail_request"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table class="table table-bordered mt-3">
+                                <tbody>
+                                    <tr class="text-center block-blue">
+                                        <th colspan='2'><h5><strong>Instruction start and completion date</strong></h5></th>
+                                    </tr>
+                                    <tr>
+                                        <th>Start date: </th>
+                                        <td id="detail_start_date"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Completed date: </th>
+                                        <td id="detail_complete_date"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Result: </th>
+                                        <td id="result_date"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-12 mt-3">
+                            <button class="btn btn-danger btn-block btn-lg" data-dismiss="modal"><i class="fas fa-times"></i>&nbsp;&nbsp;Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg bg-info">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="col-12 mt-3">
+                            <h1>Out of services !</h1>
+                        </div>
+                        <div class="col-md-12 mt-3">
+                            <button class="btn btn-danger btn-block btn-lg" data-dismiss="modal"><i class="fas fa-times"></i>&nbsp;&nbsp;Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{% block Script %}
+    <script src="{% static 'js/dataTables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'js/dataTables/dataTables.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'js/instructions/instruction_views.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            $('.pager').hide();
+        });
+
+        $('.infoDetailButton').click(function () {
+            $('#ins_number').text($(this).data('ins_number'));
+            $('#patient_name').text($(this).data('patient_name'));
+            $('#patient_dob').text($(this).data('patient_dob'));
+            $('#patient_address').text($(this).data('patient_address'));
+            $('#patient_nhs').text($(this).data('patient_nhs'));
+            $('#detail_request').text($(this).data('detail_request'));
+            $('#detail_start_date').text($(this).data('detail_start_date'));
+            $('#detail_complete_date').text($(this).data('detail_complete_date'));
+            $('#result_date').text($(this).data('result_date'));
+            $('#infoModal').modal();
+        });
+
+        $('.invoiceDetailButton').click( function () {
+            $('#invoiceModal').modal();
+        });
+    </script>
+    
 {% endblock %}

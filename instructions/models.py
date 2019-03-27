@@ -80,6 +80,7 @@ class Instruction(TimeStampedModel, models.Model):
     rejected_note = models.TextField(blank=True)
     rejected_reason = models.IntegerField(choices=INSTRUCTION_REJECT_TYPE, null=True, blank=True)
     type = models.CharField(max_length=4, choices=INSTRUCTION_TYPE_CHOICES)
+    type_catagory = models.CharField(max_length=20, blank=True)
     final_report_date = models.TextField(blank=True)
     gp_earns = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     medi_earns = models.DecimalField(max_digits=5, decimal_places=2, default=0)
@@ -233,6 +234,15 @@ class Instruction(TimeStampedModel, models.Model):
         return SnomedConcept.objects.filter(
             instructionconditionsofinterest__instruction=self.id
         )
+
+    def get_inner_selected_snomed_concepts(self):
+        snomed = set()
+        for snomed_value in self.selected_snomed_concepts():
+            snomed.add(snomed_value.fsn_description)
+        return snomed
+
+    def get_type(self):
+        return self.type
 
     def is_sars(self) -> bool:
         return self.type == SARS_TYPE

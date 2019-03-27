@@ -29,6 +29,10 @@ from permissions.functions import access_user_management
 from organisations.models import OrganisationGeneralPractice
 from onboarding.views import generate_password
 from axes.models import AccessAttempt
+from .tables import AccountTable
+# from .report import InfoInstructions
+from django_tables2 import RequestConfig, Column
+from instructions.views import calculate_next_prev
 from typing import Union, List, Dict
 
 from django.conf import settings
@@ -117,68 +121,17 @@ def account_view(request: HttpRequest) -> HttpResponse:
             'band_fee_rate_data': band_fee_rate_data,
         })
 
-    client_fee = InstructionVolumeFee.objects.filter(client_organisation_id = user.get_my_organisation().id).first()
-    client_volume_data = list()
-    client_fee_data = list()
-
-    if client_fee:
-        #   Volume Data
-        client_volume_data.append({
-            'amount': client_fee.max_volume_band_lowest,
-            'label': 'Max volume of Lowest band : '
-        })
-        client_volume_data.append({
-            'amount': client_fee.max_volume_band_low,
-            'label': 'Max volume of Low band : '
-        })
-        client_volume_data.append({
-            'amount': client_fee.max_volume_band_medium,
-            'label': 'Max volume of Medium band : '
-        })
-        client_volume_data.append({
-            'amount': client_fee.max_volume_band_top,
-            'label': 'Max volume of Top band : '
-        })
-        
-        #   Fee Data
-        client_fee_data.append({
-            'amount': client_fee.fee_rate_lowest,
-            'label': 'Earnings for Lowest band : '
-        })
-        client_fee_data.append({
-            'amount': client_fee.fee_rate_low,
-            'label': 'Earnings for Low band : '
-        })
-        client_fee_data.append({
-            'amount': client_fee.fee_rate_medium,
-            'label': 'Earnings for Medium band : '
-        })
-        client_fee_data.append({
-            'amount': client_fee.fee_rate_top,
-            'label': 'Earnings for Top band : '
-        })
-
-        #   Tax Data
-        client_fee_data.append({
-            'amount': client_fee.vat,
-            'label': 'VAT : ',
-            'status': 'tax'
-        })
-
-    currentYear = datetime.datetime.now().year
-    client = ClientUser.objects.filter( organisation_id = user.get_my_organisation().id ).first()
-    countInstructions =  Instruction.objects.filter( created__year = currentYear, status = INSTRUCTION_STATUS_COMPLETE, client_user = client ).count()
-
-    createTime = user.get_my_organisation().created_time
-    anniversaryDataStr = str( createTime.day ) + ' / ' + str( createTime.month ) + ' / ' + str( createTime.year + 1 )
+    cost_column_name = 'Cost £'
+    client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
+    instruction_query_set = Instruction.objects.filter(client_user__organisation=client_organisation)
+    instruction_query_set = Instruction.objects.filter(status=INSTRUCTION_STATUS_COMPLETE)
+    table_fee = AccountTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
+    table_fee.order_by = request.GET.get('sort', '-created')
+    table_fee.paginate(page=request.GET.get('page', 1), per_page=5)
 
     return render( request, 'accounts/accounts_view_client.html', {
         'header_title': header_title,
-        # 'gp_preferences_form': client_preferences_form,
-        'client_volume_data': client_volume_data,
-        'client_fee_data': client_fee_data,
-        'completeNum': countInstructions,
-        'anniversaryData': anniversaryDataStr
+        'invoicing_table': table_fee,
     })        
 
 
