@@ -36,5 +36,7 @@ INSTRUCTION_REJECT_TYPE = (
     (CONSENT_INVALID, 'The consent form is invalid'),
     (INAPPROPRIATE_SAR, 'Inappropriate instruction for Subject Access Request'),
     (GENERATOR_FAIL, 'The instruction has generated fail'),
-    (LONG_TIMES, 'Instruction Too long')
+    (LONG_TIMES, 'Instruction not process until dute date')
 )
+
+REJECT_PENDING_INSTRUCTION_DAY = 23
