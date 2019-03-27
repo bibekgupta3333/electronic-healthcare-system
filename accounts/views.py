@@ -121,17 +121,50 @@ def account_view(request: HttpRequest) -> HttpResponse:
             'band_fee_rate_data': band_fee_rate_data,
         })
 
+    #   Table for block 1
     cost_column_name = 'Cost £'
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
     instruction_query_set = Instruction.objects.filter(client_user__organisation=client_organisation)
     instruction_query_set = Instruction.objects.filter(status=INSTRUCTION_STATUS_COMPLETE)
-    table_fee = AccountTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
-    table_fee.order_by = request.GET.get('sort', '-created')
-    table_fee.paginate(page=request.GET.get('page', 1), per_page=5)
+    table_block_1 = AccountTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
+    table_block_1.order_by = request.GET.get('sort', '-created')
+    table_block_1.paginate(page=request.GET.get('page', 1), per_page=5)
 
-    return render( request, 'accounts/accounts_view_client.html', {
+    #   Table for block 3
+    gp_rate_query_set = OrganisationFeeRate.objects.filter(default=True)
+    value_table = list()
+    inner_value_table = dict()
+    value_amount_1 = list()
+    value_amount_2 = list()
+    value_amount_3 = list()
+    value_amount_4 = list()
+    num_i = 0
+    for record in gp_rate_query_set:
+        value_amount_1.append(float(record.amount_rate_lvl_1))
+        value_amount_2.append(float(record.amount_rate_lvl_2))
+        value_amount_3.append(float(record.amount_rate_lvl_3))
+        value_amount_4.append(float(record.amount_rate_lvl_4))
+
+    while num_i < 4:
+        if num_i == 0:
+            key = "0-3"
+            inner_value_table[key] = value_amount_1
+        elif num_i == 1:
+            key = "4-7"
+            inner_value_table[key] = value_amount_2
+        elif num_i == 2:
+            key = "8-11"
+            inner_value_table[key] = value_amount_3
+        elif num_i == 3:
+            key = "11+"
+            inner_value_table[key] = value_amount_4
+        num_i = num_i + 1
+
+    value_table.append(inner_value_table)
+    return render(request, 'accounts/accounts_view_client.html', {
         'header_title': header_title,
-        'invoicing_table': table_fee,
+        'invoicing_table': table_block_1,
+        'GPRate_table': inner_value_table
     })        
 
 

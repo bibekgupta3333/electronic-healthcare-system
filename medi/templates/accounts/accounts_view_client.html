@@ -16,7 +16,7 @@
 {% endblock %}
 
 {% block Content %}
-    <div class="container-fluid">
+    <div class="container-fluid" id="block_contain">
         <div class="card-deck instruction">
             <div class="col-12">
                 <div class="card contactPreferences mt-2">
@@ -65,7 +65,36 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <label class="text-mute">GP fee structure Block.</label>
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <p class="text-danger">
+                                        If instruction recieved before 12.00 noon on a Friday. If after 0 day commences on the Monday.
+                                        Bank Holidays are not included.
+                                    </p>
+                                    <table class='table table-striped table-bordered'>
+                                        <thead>
+                                            <tr class="text-center btn-fee text-light">
+                                                <th width="25%">Days / Band</th>
+                                                <th width="25%">Band 1 (Default)</th>
+                                                <th width="25%">Band 2</th>
+                                                <th width="25%">Band 3</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for key, value in GPRate_table.items %}
+                                                <tr class="text-center">
+                                                    <td class="btn-fee text-light"><strong>{{ key }}&nbsp;Days</strong></td>
+                                                    <td>{{ value.0 }}&nbsp;£</td>
+                                                    <td>{{ value.1 }}&nbsp;£</td>
+                                                    <td>{{ value.2 }}&nbsp;£</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
