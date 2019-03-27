@@ -121,20 +121,17 @@ def account_view(request: HttpRequest) -> HttpResponse:
             'band_fee_rate_data': band_fee_rate_data,
         })
 
-    # import ipdb; ipdb.set_trace()
     cost_column_name = 'Cost £'
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
     instruction_query_set = Instruction.objects.filter(client_user__organisation=client_organisation)
     instruction_query_set = Instruction.objects.filter(status=INSTRUCTION_STATUS_COMPLETE)
     table_fee = AccountTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
     table_fee.order_by = request.GET.get('sort', '-created')
-    table_fee.paginate(page=request.GET.get('page_t2', 1), per_page=5)
-    # next_prev_data_all = calculate_next_prev(table_fee.page)
+    table_fee.paginate(page=request.GET.get('page', 1), per_page=5)
 
     return render( request, 'accounts/accounts_view_client.html', {
         'header_title': header_title,
         'invoicing_table': table_fee,
-        # 'next_prev_data_all': next_prev_data_all
     })        
 
 

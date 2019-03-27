@@ -106,11 +106,9 @@ class AccountTable(tables.Table):
         
         if record.fee_calculation_start_date and record.completed_signed_off_timestamp:
             calculate_date = record.completed_signed_off_timestamp - record.fee_calculation_start_date
-            result_date = '\nresult: ' + str(calculate_date.days) + ' days.'
-            date_detail = str(date(record.fee_calculation_start_date, "d/m/Y")) + " - " + str(date(record.completed_signed_off_timestamp, "d/m/Y"))
-            show_date = " ".join([str(date_detail), str(result_date)])
+            calculate_date = " ".join([str(calculate_date.days), "days"])
         else:
-            show_date = 'None'
+            calculate_date = 'None'
 
         return format_html(
             "<a href='#infoModal'>"
@@ -121,7 +119,9 @@ class AccountTable(tables.Table):
             "data-patient_address='{}'"
             "data-patient_nhs='{}'"
             "data-detail_request='{}'"
-            "data-detail_date='{}'"
+            "data-detail_start_date='{}'"
+            "data-detail_complete_date='{}'"
+            "data-result_date='{}'"
             ">View</span>"
             "</a>",
             record.id,
@@ -137,7 +137,9 @@ class AccountTable(tables.Table):
                 ]),
             patient.patient_nhs_number if patient.patient_nhs_number else '-',
             snomed_detail if not snomed_detail == '' else 'None',
-            show_date
+            date(record.fee_calculation_start_date, "d/m/Y") if record.fee_calculation_start_date else 'None',
+            date(record.completed_signed_off_timestamp, "d/m/Y") if record.completed_signed_off_timestamp else 'None',
+            calculate_date
         )
 
     def render_PDF_copy_of_invoice(self, record):

@@ -30,7 +30,7 @@
                     <div class="card-body">
                         <div class="col-12">
                             {% render_table invoicing_table 'django_tables2/bootstrap.html' %}
-                            {% bootstrap_pagination  parameter_name='page_t2' page=invoicing_table.page pages_to_show=5 size='small' %}
+                            {% bootstrap_pagination  parameter_name='page' page=invoicing_table.page pages_to_show=5 size='small' %}
                         </div>
                     </div>
                 </div>
@@ -138,8 +138,17 @@
                                     <tr class="text-center block-blue">
                                         <th colspan='2'><h5><strong>Instruction start and completion date</strong></h5></th>
                                     </tr>
-                                    <tr class="text-center">
-                                        <td id="detail_date"></td>
+                                    <tr>
+                                        <th>Start date: </th>
+                                        <td id="detail_start_date"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Completed date: </th>
+                                        <td id="detail_complete_date"></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Result: </th>
+                                        <td id="result_date"></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -187,7 +196,9 @@
             $('#patient_address').text($(this).data('patient_address'));
             $('#patient_nhs').text($(this).data('patient_nhs'));
             $('#detail_request').text($(this).data('detail_request'));
-            $('#detail_date').text($(this).data('detail_date'));
+            $('#detail_start_date').text($(this).data('detail_start_date'));
+            $('#detail_complete_date').text($(this).data('detail_complete_date'));
+            $('#result_date').text($(this).data('result_date'));
             $('#infoModal').modal();
         });
 
