@@ -38,7 +38,7 @@ class SendSMS:
         }
         self.number = kwargs.get('number')
 
-    def send(self, msg):
+    def send(self, msg: str):
         data = json.dumps({"to": self.number, "text": msg, "platform":"web"})
         response = requests.post(self.url + "send", data, headers=self.header)
         return response

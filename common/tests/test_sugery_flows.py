@@ -1,11 +1,14 @@
 from django.test import TestCase
 from django.shortcuts import reverse
-from accounts.models import User
+from accounts.models import User, CLIENT_USER, ClientUser
+from organisations.models import OrganisationClient
 from django.core.files import File
+from django.core.management import call_command
 from unittest.mock import Mock
 from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_FINALISE, INSTRUCTION_STATUS_FAIL, INSTRUCTION_STATUS_COMPLETE
 from payment.models import OrganisationFeeRate
+from django.test import tag
 
 
 class SurgeryOnboard(TestCase):
@@ -230,6 +233,145 @@ class SurgerySARSFlow(SurgeryOnboard):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, '/instruction/view-pipeline/')
 
+    @tag('end_to_end')
+    def test_instruction_files(self):
+        instruction = Instruction.objects.get(pk=self.instruction.pk)
+        if not instruction.medical_report:
+            self.fail("Medical report is missing")
+        if not instruction.medical_xml_report:
+            self.fail("Medical report xml is missing")
+        if instruction.status not in [INSTRUCTION_STATUS_FINALISE, INSTRUCTION_STATUS_FAIL, INSTRUCTION_STATUS_COMPLETE]:
+            self.fail("Instruction invalid status")
+
+
+class SurgeryAMRAFlow(SurgeryOnboard):
+
+    def setUp(self):
+        super().setUp()
+        self.create_client()
+        self.import_data()
+        self.create_amra()
+        self.select_patient()
+        self.preview_report()
+        self.submit_report()
+
+    def create_client(self):
+        self.client_org = OrganisationClient.objects.create(
+            type=OrganisationClient.OUTSOURCER
+        )
+        self.client_user = User.objects.create(
+            email='client@mohara.co',
+            type=CLIENT_USER
+        )
+        self.client_profile = ClientUser.objects.create(
+            role=ClientUser.CLIENT_MANAGER,
+            organisation=self.client_org,
+            user=self.client_user,
+            title='MR'
+        )
+
+    def import_data(self):
+        call_command('import_snomedct', '--snomed_concepts', verbosity=0)
+        call_command('loaddata', 'config/data/common.json', verbosity=0)
+
+    def create_amra(self):
+        self.client.force_login(self.client_user)
+        mock_consent_form = Mock(spec=File)
+        data = {
+            'addition_condition_title': '',
+            'common_condition': '[126951006]',
+            'date_range_from': '',
+            'date_range_to': '',
+            'form-0-question': '',
+            'form-INITIAL_FORMS': '0',
+            'form-MAX_NUM_FORMS': '1000',
+            'form-MIN_NUM_FORMS': '0',
+            'form-TOTAL_FORMS': '1',
+            'gp_last_name': 'GP',
+            'gp_practice': self.practice_code,
+            'gp_practice_name': 'Surgery',
+            'gp_title': 'MR',
+            'initial': 'Pichate',
+            'instruction_id': '',
+            'medi_ref': '10000040',
+            'patient_address_line1': 'Aberdeen City Council',
+            'patient_address_line2': ' Education Department  St. Nicholas House',
+            'patient_address_line3': ' Broad Street',
+            'patient_address_number': self.address,
+            'patient_city': ' Aberdeen',
+            'patient_county': ' Aberdeenshire',
+            'patient_dob_day': '21',
+            'patient_dob_month': '9',
+            'patient_dob_year': '1962',
+            'patient_email': '',
+            'patient_first_name': 'Sarah',
+            'patient_last_name': 'Giles',
+            'patient_nhs_number': '',
+            'patient_postcode': 'AB10 1AG',
+            'patient_title': 'MR',
+            'template': '',
+            'type': 'AMRA',
+            'your_ref': 'REF001',
+            'consent_form': mock_consent_form
+        }
+        response = self.client.post(reverse('instructions:new_instruction'), data)
+        self.instruction = Instruction.objects.filter(client_user__user__pk=self.client_user.pk).first()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/instruction/view-pipeline/')
+
+    def select_patient(self):
+        self.client.force_login(self.user)
+        data = {
+            'allocate_options': '0',
+            'gp_practitioner': ''
+        }
+        response = self.client.post(reverse(
+            'medicalreport:select_patient',
+            kwargs={'instruction_id':self.instruction.pk, 'patient_emis_number':self.emis_number}),
+            data
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/medicalreport/' + str(self.instruction.pk) + '/edit/')
+
+    def preview_report(self):
+        data = {
+            'additional_allergies_allergen': '',
+            'additional_allergies_date_discovered': '',
+            'additional_allergies_reaction': '',
+            'additional_medication_dose': '',
+            'additional_medication_drug': '',
+            'additional_medication_frequency': '',
+            'additional_medication_notes': '',
+            'additional_medication_prescribed_from': '',
+            'additional_medication_prescribed_to': '',
+            'additional_medication_records_type': '',
+            'additional_medication_related_condition': '',
+            'event_flag': 'preview',
+            'redaction_acute_prescription_notes': '',
+            'redaction_attachment_notes': '',
+            'redaction_bloods_notes': '',
+            'redaction_comment_notes': '',
+            'redaction_consultation_notes': '',
+            'redaction_referral_notes': '',
+            'redaction_repeat_prescription_notes': '',
+            'redaction_significant_problem_notes': '',
+            'redaction_xpaths': None
+        }
+        response = self.client.post(reverse('medicalreport:update_report', kwargs={'instruction_id':self.instruction.pk}), data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/medicalreport/' + str(self.instruction.pk) + '/submit-report/')
+
+    def submit_report(self):
+        data = {
+            'event_flag': 'submit',
+            'prepared_and_signed': 'PREPARED_AND_REVIEWED',
+            'prepared_by': '1'
+        }
+        response = self.client.post(reverse('medicalreport:update_report', kwargs={'instruction_id':self.instruction.pk}), data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/instruction/view-pipeline/')
+
+    @tag('end_to_end')
     def test_instruction_files(self):
         instruction = Instruction.objects.get(pk=self.instruction.pk)
         if not instruction.medical_report:
