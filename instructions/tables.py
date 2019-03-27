@@ -45,15 +45,12 @@ class InstructionTable(tables.Table):
             self.columns.hide('created')
             self.columns.hide('client_ref')
 
-        if request.resolver_match.url_name == 'view_account':
-            pass
-
         self.user = request.user
 
     def render_client_ref(self, record):
         client_ref = record.your_ref
         if not client_ref:
-            client_ref = "â€”"
+            client_ref = "—"
         return format_html(client_ref)
 
     def render_client_user(self, value):
