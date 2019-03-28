@@ -67,15 +67,20 @@ class InstructionVolumeFeeForm(forms.ModelForm):
         try:
             if self.cleaned_data['max_volume_band_lowest'] >= self.cleaned_data['max_volume_band_low'] \
                     or self.cleaned_data['max_volume_band_lowest'] >= self.cleaned_data['max_volume_band_medium'] \
+                    or self.cleaned_data['max_volume_band_lowest'] >= self.cleaned_data['max_volume_band_high'] \
                     or self.cleaned_data['max_volume_band_lowest'] >= self.cleaned_data['max_volume_band_top']:
                 raise forms.ValidationError("Invalid band value: Lowest band must be minimum.")
 
             if self.cleaned_data['max_volume_band_low'] >= self.cleaned_data['max_volume_band_medium'] \
+                    or self.cleaned_data['max_volume_band_low'] >= self.cleaned_data['max_volume_band_high'] \
                     or self.cleaned_data['max_volume_band_low'] >= self.cleaned_data['max_volume_band_top']:
                 raise forms.ValidationError("Invalid band value: Invalid low band")
 
-            if self.cleaned_data['max_volume_band_medium'] >= self.cleaned_data['max_volume_band_top']:
-                raise forms.ValidationError("Invalid band value: Top band value must more than medium band value")
+            if self.cleaned_data['max_volume_band_medium'] >= self.cleaned_data['max_volume_band_high']:
+                raise forms.ValidationError("Invalid band value: High band value must more than medium band value")
+
+            if self.cleaned_data['max_volume_band_high'] >= self.cleaned_data['max_volume_band_top']:
+                raise forms.ValidationError("Invalid band value: Top band value must more than high band value")
 
             organisation_client = self.cleaned_data['client_organisation']
             organisation_fee = InstructionVolumeFee.objects.filter(client_organisation=organisation_client).first()
