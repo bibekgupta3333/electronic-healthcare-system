@@ -20,3 +20,11 @@
 .btn-fee {
   background-color: #296799;
 }
+
+.block-gray {
+  background-color: rgba(0 , 0, 0, 0.3);
+}
+
+.block-gray .warning_icon {
+  font-size: 72px;
+}

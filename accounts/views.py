@@ -24,6 +24,7 @@ from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE
 
 from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences, ClientUser
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
+from payment.model_choices import *
 from .forms import PracticePreferencesForm, TwoFactorForm
 from permissions.functions import access_user_management
 from organisations.models import OrganisationGeneralPractice
@@ -121,18 +122,49 @@ def account_view(request: HttpRequest) -> HttpResponse:
             'band_fee_rate_data': band_fee_rate_data,
         })
 
+    client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
+
     #   Table for block 1
     cost_column_name = 'Cost £'
-    client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
     instruction_query_set = Instruction.objects.filter(client_user__organisation=client_organisation)
     instruction_query_set = Instruction.objects.filter(status=INSTRUCTION_STATUS_COMPLETE)
     table_block_1 = AccountTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
     table_block_1.order_by = request.GET.get('sort', '-created')
     table_block_1.paginate(page=request.GET.get('page', 1), per_page=5)
 
+    #   Table for block 2
+    claim_table = dict()
+    under_table = dict()
+    sars_table = dict()
+    client_fee_query_set = InstructionVolumeFee.objects.filter(client_org=client_organisation)
+    for volume_query in client_fee_query_set:
+        range_1 = "0-" + str(volume_query.max_volume_band_lowest)
+        range_2 = "-".join([str(volume_query.max_volume_band_lowest + 1), str(volume_query.max_volume_band_low)])
+        range_3 = "-".join([str(volume_query.max_volume_band_low + 1), str(volume_query.max_volume_band_medium)])
+        range_4 = "-".join([str(volume_query.max_volume_band_medium + 1), str(volume_query.max_volume_band_high)])
+        range_5 = "-".join([str(volume_query.max_volume_band_high + 1), str(volume_query.max_volume_band_top)])
+
+        if volume_query.fee_rate_type == FEE_CLAIMS_TYPE:
+            claim_table[range_1] = float(volume_query.fee_rate_lowest)
+            claim_table[range_2] = float(volume_query.fee_rate_low)
+            claim_table[range_3] = float(volume_query.fee_rate_medium)
+            claim_table[range_4] = float(volume_query.fee_rate_high)
+            claim_table[range_5] = float(volume_query.fee_rate_top)
+        elif volume_query.fee_rate_type == FEE_UNDERWRITE_TYPE:
+            under_table[range_1] = float(volume_query.fee_rate_lowest)
+            under_table[range_2] = float(volume_query.fee_rate_low)
+            under_table[range_3] = float(volume_query.fee_rate_medium)
+            under_table[range_4] = float(volume_query.fee_rate_high)
+            under_table[range_5] = float(volume_query.fee_rate_top)
+        elif volume_query.fee_rate_type == FEE_SARS_TYPE:
+            sars_table[range_1] = float(volume_query.fee_rate_lowest)
+            sars_table[range_2] = float(volume_query.fee_rate_low)
+            sars_table[range_3] = float(volume_query.fee_rate_medium)
+            sars_table[range_4] = float(volume_query.fee_rate_high)
+            sars_table[range_5] = float(volume_query.fee_rate_top)
+
     #   Table for block 3
     gp_rate_query_set = OrganisationFeeRate.objects.filter(default=True)
-    value_table = list()
     inner_value_table = dict()
     value_amount_1 = list()
     value_amount_2 = list()
@@ -160,10 +192,12 @@ def account_view(request: HttpRequest) -> HttpResponse:
             inner_value_table[key] = value_amount_4
         num_i = num_i + 1
 
-    value_table.append(inner_value_table)
     return render(request, 'accounts/accounts_view_client.html', {
         'header_title': header_title,
         'invoicing_table': table_block_1,
+        'claim_table': claim_table,
+        'under_table': under_table,
+        'sars_table': sars_table,
         'GPRate_table': inner_value_table
     })        
 

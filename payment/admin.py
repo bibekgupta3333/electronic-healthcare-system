@@ -42,10 +42,10 @@ class GpOrganisationFeeAdmin(admin.ModelAdmin):
 
 class InstructionVolumeFeeClientAdmin(admin.ModelAdmin):
     form = InstructionVolumeFeeForm
-    raw_id_fields = ('client_organisation', )
+    raw_id_fields = ('client_org', )
     fields = (
-        'client_organisation', 'max_volume_band_lowest', 'max_volume_band_low', 'max_volume_band_medium', 'max_volume_band_top',
-        'fee_rate_lowest', 'fee_rate_low', 'fee_rate_medium', 'fee_rate_top', 'vat'
+        'client_org', 'max_volume_band_lowest', 'max_volume_band_low', 'max_volume_band_medium', 'max_volume_band_high', 'max_volume_band_top',
+        'fee_rate_lowest', 'fee_rate_low', 'fee_rate_medium', 'fee_rate_high', 'fee_rate_top', 'fee_rate_type', 'vat'
     )
 
 

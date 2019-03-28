@@ -48,7 +48,91 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <label class="text-mute">Client fee structure Block.</label>
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-md-4 text-center">
+                                    {% if under_table %}
+                                        <h6 class="text-dark">Underwriting AMRA Table</h6>
+                                        <table class="table table-striped table-bordered">
+                                            <thead>
+                                                <tr class="text-center btn-fee text-light">
+                                                    <th width="50%">No. Instruction</th>
+                                                    <th width="50%">MDX Fee.</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for key, value in under_table.items %}
+                                                    <tr class="text-center">
+                                                        <td>{{ key }}</td>
+                                                        <td>{{ value }}&nbsp;£</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    {% else %}
+                                        <div class="block-gray h-100 text-center" style="padding:10% 10% 10% 10%">
+                                            <font class="warning_icon text-danger"><i class="fas fa-exclamation-triangle"></i></font>
+                                            <h6 class="text-danger mt-2">Underwriting AMRA Table not setup.</h6>
+                                            <label class="text-danger">Please contact mediData for setup</label>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    {% if claim_table %}
+                                        <h6 class="text-dark">Claims AMRA Table</h6>
+                                        <table class="table table-striped table-bordered">
+                                            <thead>
+                                                <tr class="text-center btn-fee text-light">
+                                                    <th width="50%">No. Instruction</th>
+                                                    <th width="50%">MDX Fee.</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for key, value in claim_table.items %}
+                                                    <tr class="text-center">
+                                                        <td>{{ key }}</td>
+                                                        <td>{{ value }}&nbsp;£</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    {% else %}
+                                        <div class="block-gray h-100 text-center" style="padding:10% 10% 10% 10%">
+                                            <font class="warning_icon text-danger"><i class="fas fa-exclamation-triangle"></i></font>
+                                            <h6 class="text-danger mt-2">Claims AMRA Table not setup.</h6>
+                                            <label class="text-danger">Please contact mediData for setup</label>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    {% if sars_table %}
+                                        <h6 class="text-dark">SARS Table</h6>
+                                        <table class="table table-striped table-bordered">
+                                            <thead>
+                                                <tr class="text-center btn-fee text-light">
+                                                    <th width="50%">No. Instruction</th>
+                                                    <th width="50%">MDX Fee.</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for key, value in sars_table.items %}
+                                                    <tr class="text-center">
+                                                        <td>{{ key }}</td>
+                                                        <td>{{ value }}&nbsp;£</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    {% else %}
+                                        <div class="block-gray h-100 text-center" style="padding:10% 10% 10% 10%">
+                                            <font class="warning_icon text-danger"><i class="fas fa-exclamation-triangle"></i></font>
+                                            <h6 class="text-danger mt-2">SARS Table not setup.</h6>
+                                            <label class="text-danger">Please contact mediData for setup</label>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
