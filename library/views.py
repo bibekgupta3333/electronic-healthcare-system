@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django_tables2 import RequestConfig
 from django.db.models import Q
@@ -10,7 +10,7 @@ from .tables import LibraryTable
 
 
 @login_required(login_url='/accounts/login')
-def edit_library(request):
+def edit_library(request, event):
     header_title = "Surgery Library"
     page_length = 10
     search_input = ''
@@ -33,5 +33,14 @@ def edit_library(request):
         'table': table,
         'next_prev_data': next_prev_data,
         'page_length': page_length,
-        'search_input': search_input
+        'search_input': search_input,
+        'event': event
     })
+
+
+@login_required(login_url='/accounts/login')
+def delete_library(request, library_id):
+    library = get_object_or_404(Library, pk=library_id)
+    library.delete()
+
+    return redirect('library:edit_library', event='delete')
