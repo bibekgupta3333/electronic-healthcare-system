@@ -15,6 +15,7 @@ from .model_choices import *
 from django.conf import settings
 from typing import Set, Dict, Tuple, Iterable
 from payment.models import WeeklyInvoice
+from payment.model_choices import FEE_TYPE_CHOICE
 
 import datetime
 
@@ -81,7 +82,7 @@ class Instruction(TimeStampedModel, models.Model):
     rejected_note = models.TextField(blank=True)
     rejected_reason = models.IntegerField(choices=INSTRUCTION_REJECT_TYPE, null=True, blank=True)
     type = models.CharField(max_length=4, choices=INSTRUCTION_TYPE_CHOICES)
-    type_catagory = models.CharField(max_length=20, blank=True)
+    type_catagory = models.IntegerField(choices=FEE_TYPE_CHOICE, null=True)
     final_report_date = models.TextField(blank=True)
     gp_earns = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     medi_earns = models.DecimalField(max_digits=5, decimal_places=2, default=0)
