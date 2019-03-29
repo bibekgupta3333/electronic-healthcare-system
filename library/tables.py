@@ -26,7 +26,7 @@ class LibraryTable(tables.Table):
     def render_delete_button(self, record):
         return format_html(
             '<button data-deleteLink="{delete_library_url}" class="btn btn-danger btn-sm deleteButton" data-toggle="modal" '
-            'data-target="#warningDeleteModal" style="width:90px;"><i class="fas fa-times"></i> REMOVE</button>'.format(
+            'data-target="#warningDeleteModal" style="width:90px;"><i class="fas fa-times"></i>&nbsp;REMOVE</button>'.format(
                 delete_library_url=reverse('library:delete_library', kwargs={'library_id': record.id})
             )
         )
