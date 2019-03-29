@@ -16,7 +16,7 @@ def calculate_instruction_fee(instruction: Instruction) -> None:
     if organisation_fee:
         organisation_fee_rate = organisation_fee.organisation_fee.get_fee_rate(time_delta.days)
     client_organisation = instruction.client_user.organisation if instruction.client_user else None
-    instruction_volume_fee = InstructionVolumeFee.objects.filter(client_organisation=client_organisation, fee_rate_type=type_catagory).first()
+    instruction_volume_fee = InstructionVolumeFee.objects.filter(client_org=client_organisation, fee_rate_type=instruction.type_catagory).first()
     if instruction_volume_fee and organisation_fee:
         instruction_fee_rate = instruction_volume_fee.get_fee_rate(
             Instruction.objects.filter(client_user__organisation=client_organisation).count()
