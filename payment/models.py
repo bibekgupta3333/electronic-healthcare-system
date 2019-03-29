@@ -7,6 +7,7 @@ from decimal import Decimal
 
 from typing import Union
 
+
 class OrganisationFeeRate(models.Model):
     name = models.CharField(max_length=255)
     max_day_lvl_1 = models.PositiveSmallIntegerField(default=3, verbose_name='Top payment band until day')
@@ -69,15 +70,7 @@ class InstructionVolumeFee(models.Model):
         verbose_name_plural = 'Client Instruction Volume Fee structures'
 
     def __str__(self):
-        if self.fee_rate_type == 1:
-            type = "AMRA CLAIMS"
-        elif self.fee_rate_type == 2:
-            type = "AMRA_UNDERWRITING"
-        elif self.fee_rate_type == 3:
-            type = "SARS"
-        else:
-            type = "Unknow"
-        return "Fee Structure: {} - {}".format(self.client_org, type)
+        return "Fee Structure: {} - {}".format(self.client_org, self.get_fee_type())
 
     def get_fee_rate(self, volume_amount: int) -> Union[Decimal, int]:
         volume_band = [self.max_volume_band_lowest, self.max_volume_band_low, self.max_volume_band_medium, self.max_volume_band_top]
@@ -86,3 +79,26 @@ class InstructionVolumeFee(models.Model):
             if volume_amount <= band:
                 return fee_rate[index]
         return 0
+
+    def get_fee_type(self):
+        if self.fee_rate_type == 1:
+            type = "AMRA CLAIMS"
+        elif self.fee_rate_type == 2:
+            type = "AMRA_UNDERWRITING"
+        elif self.fee_rate_type == 3:
+            type = "SARS"
+        else:
+            type = "Unknow"
+        return type
+
+
+class WeeklyInvoice(models.Model):
+    start_date = models.DateField()
+    end_date = models.DateField()
+    client_org = models.ForeignKey(OrganisationClient, on_delete=models.CASCADE, verbose_name='Client Organisation', null=True)
+    number_instructions = models.IntegerField(verbose_name='Number Instructions', default=0)
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Total cost in week')
+    paid = models.BooleanField(default=False)
+
+    def __str__(self):
+        return "Week range : {} - {}".format(self.start_date, self.end_date)
