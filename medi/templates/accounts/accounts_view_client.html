@@ -72,8 +72,8 @@
                                     {% else %}
                                         <div class="block-gray h-100 text-center" style="padding:10% 10% 10% 10%">
                                             <font class="warning_icon text-danger"><i class="fas fa-exclamation-triangle"></i></font>
-                                            <h6 class="text-danger mt-2">Underwriting AMRA Table not setup.</h6>
-                                            <label class="text-danger">Please contact mediData for setup</label>
+                                            <h6 class="text-danger mt-2">Underwriting AMRA Table available.</h6>
+                                            <label class="text-danger">Please contact mediData for available</label>
                                         </div>
                                     {% endif %}
                                 </div>
@@ -99,8 +99,8 @@
                                     {% else %}
                                         <div class="block-gray h-100 text-center" style="padding:10% 10% 10% 10%">
                                             <font class="warning_icon text-danger"><i class="fas fa-exclamation-triangle"></i></font>
-                                            <h6 class="text-danger mt-2">Claims AMRA Table not setup.</h6>
-                                            <label class="text-danger">Please contact mediData for setup</label>
+                                            <h6 class="text-danger mt-2">Claims AMRA Table available.</h6>
+                                            <label class="text-danger">Please contact mediData for available</label>
                                         </div>
                                     {% endif %}
                                 </div>
@@ -126,8 +126,8 @@
                                     {% else %}
                                         <div class="block-gray h-100 text-center" style="padding:10% 10% 10% 10%">
                                             <font class="warning_icon text-danger"><i class="fas fa-exclamation-triangle"></i></font>
-                                            <h6 class="text-danger mt-2">SARS Table not setup.</h6>
-                                            <label class="text-danger">Please contact mediData for setup</label>
+                                            <h6 class="text-danger mt-2">SARS Table available.</h6>
+                                            <label class="text-danger">Please contact mediData for available</label>
                                         </div>
                                     {% endif %}
                                 </div>
@@ -195,7 +195,10 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <label class="text-mute">Payment Logs Block.</label>
+                        <div class="col-md-12">
+                            {% render_table weekly_table 'django_tables2/bootstrap.html' %}
+                            {% bootstrap_pagination  parameter_name='page_weekly' page=weekly_table.page pages_to_show=5 size='small' %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -303,12 +306,13 @@
         });
 
         $('.infoDetailButton').click(function () {
+            $('#detail_request').empty();
             $('#ins_number').text($(this).data('ins_number'));
             $('#patient_name').text($(this).data('patient_name'));
             $('#patient_dob').text($(this).data('patient_dob'));
             $('#patient_address').text($(this).data('patient_address'));
             $('#patient_nhs').text($(this).data('patient_nhs'));
-            $('#detail_request').text($(this).data('detail_request'));
+            $('#detail_request').append($(this).data('detail_request').replace(/\,/g, '<br>'));
             $('#detail_start_date').text($(this).data('detail_start_date'));
             $('#detail_complete_date').text($(this).data('detail_complete_date'));
             $('#result_date').text($(this).data('result_date'));
@@ -318,6 +322,13 @@
         $('.invoiceDetailButton').click( function () {
             $('#invoiceModal').modal();
         });
+
+        $('.status_paid').each( function() {
+            if( $(this).text() == 'Paid' ) {
+                $(this).parent().removeClass('block_unpaid')
+                $(this).parent().addClass('block_paid');
+            }
+        })
     </script>
     
 {% endblock %}

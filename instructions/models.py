@@ -14,6 +14,7 @@ from snomedct.models import SnomedConcept, CommonSnomedConcepts
 from .model_choices import *
 from django.conf import settings
 from typing import Set, Dict, Tuple, Iterable
+from payment.models import WeeklyInvoice
 
 import datetime
 
@@ -117,6 +118,8 @@ class Instruction(TimeStampedModel, models.Model):
     ins_amount_rate_lvl_2 = models.DecimalField(max_digits=5, decimal_places=2, default=0, blank=True)
     ins_amount_rate_lvl_3 = models.DecimalField(max_digits=5, decimal_places=2, default=0, blank=True)
     ins_amount_rate_lvl_4 = models.DecimalField(max_digits=5, decimal_places=2, default=0, blank=True)
+
+    invoice_in_week = models.ForeignKey(WeeklyInvoice, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         verbose_name = "Instruction"

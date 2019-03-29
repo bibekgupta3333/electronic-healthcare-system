@@ -7,6 +7,7 @@ from django.utils.html import format_html
 from django.urls import reverse
 from permissions.templatetags.get_permissions import view_complete_report
 from django.template.defaultfilters import date
+from payment.models import WeeklyInvoice
 
 
 class UserTable(tables.Table):
@@ -147,3 +148,29 @@ class AccountTable(tables.Table):
             "<a href='#invoiceModal' class='btn btn-success btn-block btn-sm invoiceDetailButton' role='button'>"
             "View</a>"
         )
+
+
+class PaymentLogTable(tables.Table):
+    status = tables.Column(empty_values=(), default='-', attrs={
+        'td': {
+            'class': 'status_paid'
+        }
+    })
+ 
+    class Meta:
+        attrs = {
+            'class': 'table table-bordered text-center',
+            'id': 'WeeklyInvoiceTable'
+        }
+        model = WeeklyInvoice
+        fields = (
+            'start_date', 'end_date', 'number_instructions', 'total_cost', 'status'
+        )
+        template_name = 'django_tables2/semantic.html'
+        row_attrs = {
+            'class': 'block_unpaid'
+        }
+
+    def render_status(self, record):
+        status = "Paid" if record.paid else "Unpaid"
+        return format_html("<strong>{}</strong>", status)

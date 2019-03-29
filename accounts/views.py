@@ -15,7 +15,7 @@ from django.contrib.auth.forms import AuthenticationForm as LoginForm
 from permissions.forms import InstructionPermissionForm, GroupPermissionForm
 from permissions.models import InstructionPermission
 from common.functions import multi_getattr, verify_password as verify_pass
-from payment.models import GpOrganisationFee, InstructionVolumeFee, OrganisationFeeRate
+from payment.models import GpOrganisationFee, InstructionVolumeFee, OrganisationFeeRate, WeeklyInvoice
 from django_tables2 import RequestConfig
 from accounts.forms import AllUserForm, NewGPForm, NewClientForm, NewMediForm,\
         UserProfileForm, UserProfileBaseForm
@@ -30,7 +30,7 @@ from permissions.functions import access_user_management
 from organisations.models import OrganisationGeneralPractice
 from onboarding.views import generate_password
 from axes.models import AccessAttempt
-from .tables import AccountTable
+from .tables import AccountTable, PaymentLogTable
 # from .report import InfoInstructions
 from django_tables2 import RequestConfig, Column
 from instructions.views import calculate_next_prev
@@ -165,32 +165,33 @@ def account_view(request: HttpRequest) -> HttpResponse:
 
     #   Table for block 3
     gp_rate_query_set = OrganisationFeeRate.objects.filter(default=True)
-    inner_value_table = dict()
+    table_block_3 = dict()
     value_amount_1 = list()
     value_amount_2 = list()
     value_amount_3 = list()
     value_amount_4 = list()
-    num_i = 0
+
+    key_1 = "0-3"
+    key_2 = "4-7"
+    key_3 = "8-11"
+    key_4 = "11+"
+
     for record in gp_rate_query_set:
         value_amount_1.append(float(record.amount_rate_lvl_1))
         value_amount_2.append(float(record.amount_rate_lvl_2))
         value_amount_3.append(float(record.amount_rate_lvl_3))
         value_amount_4.append(float(record.amount_rate_lvl_4))
 
-    while num_i < 4:
-        if num_i == 0:
-            key = "0-3"
-            inner_value_table[key] = value_amount_1
-        elif num_i == 1:
-            key = "4-7"
-            inner_value_table[key] = value_amount_2
-        elif num_i == 2:
-            key = "8-11"
-            inner_value_table[key] = value_amount_3
-        elif num_i == 3:
-            key = "11+"
-            inner_value_table[key] = value_amount_4
-        num_i = num_i + 1
+    table_block_3[key_1] = value_amount_1
+    table_block_3[key_2] = value_amount_2
+    table_block_3[key_3] = value_amount_3
+    table_block_3[key_4] = value_amount_4
+
+    #   Table for block 4
+    weekly_query = WeeklyInvoice.objects.filter(client_org=client_organisation)
+    table_block_4 = PaymentLogTable(weekly_query)
+    table_block_4.order_by = request.GET.get('sort', '-created')
+    table_block_4.paginate(page=request.GET.get('page_weekly', 1), per_page=5)
 
     return render(request, 'accounts/accounts_view_client.html', {
         'header_title': header_title,
@@ -198,7 +199,8 @@ def account_view(request: HttpRequest) -> HttpResponse:
         'claim_table': claim_table,
         'under_table': under_table,
         'sars_table': sars_table,
-        'GPRate_table': inner_value_table
+        'GPRate_table': table_block_3,
+        'weekly_table': table_block_4
     })        
 
 
