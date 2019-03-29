@@ -15,13 +15,79 @@
 {% endblock %}
 
 {% block Content %}
-
+    <div>
+        <div class="card">
+            <div class="card-body">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button class="btn btn-fee text-light btn-lg">Add to Library</button>
+                        </div>
+                        <div class="offset-md-2 col-md-4">
+                            <form id="topsearchform" role="search" method="get" action="" class="" autocomplete="off">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <input id="search" name="search" type="search" class="form-control search" required="true">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button class="btn btn-fee text-light btn-block" type="submit" id="id_search_btn"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mt-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="offset-md-9 col-md-3">
+                        <div class="Table_page_length">
+                            <label>Show per page</label>
+                            <select name="libraryTable_length" id="libraryTable_page_length" class="w-25 form-control-sm">
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">
+                        {% render_table table 'django_tables2/bootstrap.html' %}
+                        {% bootstrap_pagination  page=table.page pages_to_show=5 size='small' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block Script %}
     <script src="{% static 'js/dataTables/jquery.dataTables.min.js' %}"></script>
     <script src="{% static 'js/dataTables/dataTables.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'js/instructions/instruction_views.js' %}"></script>
     <script>
+        $('#libraryTable').DataTable({
+            "pageLength": {{ page_length }},
+        });
+        $('.dataTables_filter, .dataTables_info, .dataTables_paginate, .pager, #libraryTable_length').remove();
+
+        $("<li class='page-item {{ next_prev_data|keyvalue:'prev_disabled' }}'><a class='page-link'" +
+            "href='{% url 'library:edit_library' %}?page={{ next_prev_data|keyvalue:'prev_page' }}'>&lt;</a>/li").insertAfter('.prev');
+        $("<li class='page-item {{ next_prev_data|keyvalue:'next_disabled' }}'><a class='page-link'" +
+            "href='{% url 'library:edit_library' %}?page={{ next_prev_data|keyvalue:'next_page' }}'>&gt;</a></li>").insertBefore('.last');
+
+        $(".page-link").each(function () {
+            this.href = this.href + '&page_length=' + {{ page_length }} + '&search=' + '{{ search_input }}';
+        });
+        $('#search').val('{{ search_input }}');
+
+        $('#libraryTable_page_length').val({{ page_length }});
+        $('#libraryTable_page_length').change(function () {
+           window.location = "{% url 'library:edit_library' %}?page_length=" + $(this).val()
+        });
 
     </script>
 {% endblock %}

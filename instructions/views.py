@@ -244,7 +244,9 @@ def calculate_next_prev(page=None, **kwargs) -> Dict[str, str]:
 
         return {
             'next_page': next_page, 'prev_page': prev_page,
-            'status': kwargs['filter_status'], 'type': kwargs['filter_type'],
+            'status': kwargs.get('filter_status'),
+            'type': kwargs.get('filter_type'),
+            'page_length': kwargs.get('page_length'),
             'next_disabled': next_disabled, 'prev_disabled': prev_disabled
         }
 
