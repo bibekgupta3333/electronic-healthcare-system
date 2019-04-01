@@ -300,6 +300,7 @@ def create_or_update_instruction(
         instruction.date_range_from = from_date
         instruction.date_range_to = to_date
 
+    instruction.type_catagory = request.POST.get('type_catagory', 3)
     instruction.patient_information_id = patient_instruction.id
     instruction.save()
 

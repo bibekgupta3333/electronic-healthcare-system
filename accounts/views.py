@@ -15,7 +15,7 @@ from django.contrib.auth.forms import AuthenticationForm as LoginForm
 from permissions.forms import InstructionPermissionForm, GroupPermissionForm
 from permissions.models import InstructionPermission
 from common.functions import multi_getattr, verify_password as verify_pass
-from payment.models import GpOrganisationFee, InstructionVolumeFee, OrganisationFeeRate
+from payment.models import GpOrganisationFee, InstructionVolumeFee, OrganisationFeeRate, WeeklyInvoice
 from django_tables2 import RequestConfig
 from accounts.forms import AllUserForm, NewGPForm, NewClientForm, NewMediForm,\
         UserProfileForm, UserProfileBaseForm
@@ -24,11 +24,15 @@ from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE
 
 from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences, ClientUser
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
+from payment.model_choices import *
 from .forms import PracticePreferencesForm, TwoFactorForm
 from permissions.functions import access_user_management
 from organisations.models import OrganisationGeneralPractice
 from onboarding.views import generate_password
 from axes.models import AccessAttempt
+from .tables import AccountTable, PaymentLogTable
+from django_tables2 import RequestConfig, Column
+from instructions.views import calculate_next_prev
 from typing import Union, List, Dict
 
 from django.conf import settings
@@ -117,68 +121,87 @@ def account_view(request: HttpRequest) -> HttpResponse:
             'band_fee_rate_data': band_fee_rate_data,
         })
 
-    client_fee = InstructionVolumeFee.objects.filter(client_organisation_id = user.get_my_organisation().id).first()
-    client_volume_data = list()
-    client_fee_data = list()
+    client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
 
-    if client_fee:
-        #   Volume Data
-        client_volume_data.append({
-            'amount': client_fee.max_volume_band_lowest,
-            'label': 'Max volume of Lowest band : '
-        })
-        client_volume_data.append({
-            'amount': client_fee.max_volume_band_low,
-            'label': 'Max volume of Low band : '
-        })
-        client_volume_data.append({
-            'amount': client_fee.max_volume_band_medium,
-            'label': 'Max volume of Medium band : '
-        })
-        client_volume_data.append({
-            'amount': client_fee.max_volume_band_top,
-            'label': 'Max volume of Top band : '
-        })
-        
-        #   Fee Data
-        client_fee_data.append({
-            'amount': client_fee.fee_rate_lowest,
-            'label': 'Earnings for Lowest band : '
-        })
-        client_fee_data.append({
-            'amount': client_fee.fee_rate_low,
-            'label': 'Earnings for Low band : '
-        })
-        client_fee_data.append({
-            'amount': client_fee.fee_rate_medium,
-            'label': 'Earnings for Medium band : '
-        })
-        client_fee_data.append({
-            'amount': client_fee.fee_rate_top,
-            'label': 'Earnings for Top band : '
-        })
+    #   Table for block 1
+    cost_column_name = 'Cost £'
+    instruction_query_set = Instruction.objects.filter(
+        client_user__organisation=client_organisation,
+        status=INSTRUCTION_STATUS_COMPLETE
+    )
+    table_block_1 = AccountTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
+    table_block_1.order_by = request.GET.get('sort', '-created')
+    table_block_1.paginate(page=request.GET.get('page', 1), per_page=5)
 
-        #   Tax Data
-        client_fee_data.append({
-            'amount': client_fee.vat,
-            'label': 'VAT : ',
-            'status': 'tax'
-        })
+    #   Table for block 2
+    claim_table = dict()
+    under_table = dict()
+    sars_table = dict()
+    client_fee_query_set = InstructionVolumeFee.objects.filter(client_org=client_organisation)
+    for volume_query in client_fee_query_set:
+        range_1 = "0-" + str(volume_query.max_volume_band_lowest)
+        range_2 = "-".join([str(volume_query.max_volume_band_lowest + 1), str(volume_query.max_volume_band_low)])
+        range_3 = "-".join([str(volume_query.max_volume_band_low + 1), str(volume_query.max_volume_band_medium)])
+        range_4 = "-".join([str(volume_query.max_volume_band_medium + 1), str(volume_query.max_volume_band_high)])
+        range_5 = "-".join([str(volume_query.max_volume_band_high + 1), str(volume_query.max_volume_band_top)])
 
-    currentYear = datetime.datetime.now().year
-    client = ClientUser.objects.filter( organisation_id = user.get_my_organisation().id ).first()
-    countInstructions =  Instruction.objects.filter( created__year = currentYear, status = INSTRUCTION_STATUS_COMPLETE, client_user = client ).count()
+        if volume_query.fee_rate_type == FEE_CLAIMS_TYPE:
+            claim_table[range_1] = float(volume_query.fee_rate_lowest)
+            claim_table[range_2] = float(volume_query.fee_rate_low)
+            claim_table[range_3] = float(volume_query.fee_rate_medium)
+            claim_table[range_4] = float(volume_query.fee_rate_high)
+            claim_table[range_5] = float(volume_query.fee_rate_top)
+        elif volume_query.fee_rate_type == FEE_UNDERWRITE_TYPE:
+            under_table[range_1] = float(volume_query.fee_rate_lowest)
+            under_table[range_2] = float(volume_query.fee_rate_low)
+            under_table[range_3] = float(volume_query.fee_rate_medium)
+            under_table[range_4] = float(volume_query.fee_rate_high)
+            under_table[range_5] = float(volume_query.fee_rate_top)
+        elif volume_query.fee_rate_type == FEE_SARS_TYPE:
+            sars_table[range_1] = float(volume_query.fee_rate_lowest)
+            sars_table[range_2] = float(volume_query.fee_rate_low)
+            sars_table[range_3] = float(volume_query.fee_rate_medium)
+            sars_table[range_4] = float(volume_query.fee_rate_high)
+            sars_table[range_5] = float(volume_query.fee_rate_top)
 
-    createTime = user.get_my_organisation().created_time
-    anniversaryDataStr = str( createTime.day ) + ' / ' + str( createTime.month ) + ' / ' + str( createTime.year + 1 )
+    #   Table for block 3
+    gp_rate_query_set = OrganisationFeeRate.objects.filter(default=True)
+    table_block_3 = dict()
+    value_amount_1 = list()
+    value_amount_2 = list()
+    value_amount_3 = list()
+    value_amount_4 = list()
 
-    return render( request, 'accounts/accounts_view_client.html', {
+    key_1 = "0-3"
+    key_2 = "4-7"
+    key_3 = "8-11"
+    key_4 = "11+"
+
+    for record in gp_rate_query_set:
+        value_amount_1.append(float(record.amount_rate_lvl_1))
+        value_amount_2.append(float(record.amount_rate_lvl_2))
+        value_amount_3.append(float(record.amount_rate_lvl_3))
+        value_amount_4.append(float(record.amount_rate_lvl_4))
+
+    table_block_3[key_1] = value_amount_1
+    table_block_3[key_2] = value_amount_2
+    table_block_3[key_3] = value_amount_3
+    table_block_3[key_4] = value_amount_4
+
+    #   Table for block 4
+    weekly_query = WeeklyInvoice.objects.filter(client_org=client_organisation)
+    table_block_4 = PaymentLogTable(weekly_query)
+    table_block_4.order_by = request.GET.get('sort', '-created')
+    table_block_4.paginate(page=request.GET.get('page_weekly', 1), per_page=5)
+
+    return render(request, 'accounts/accounts_view_client.html', {
         'header_title': header_title,
-        # 'gp_preferences_form': client_preferences_form,
-        'client_volume_data': client_volume_data,
-        'client_fee_data': client_fee_data,
-        'completeNum': countInstructions,
-        'anniversaryData': anniversaryDataStr
+        'invoicing_table': table_block_1,
+        'claim_table': claim_table,
+        'under_table': under_table,
+        'sars_table': sars_table,
+        'GPRate_table': table_block_3,
+        'weekly_table': table_block_4
     })        
 
 

@@ -21,3 +21,9 @@
 .display-inline {
     display: inline-block;
 }
+
+.block-blue {
+    background-color: #36569a;
+    color: whitesmoke
+  }
+  
