@@ -71,8 +71,14 @@ class AccountTable(tables.Table):
         type = record.type
         type_catagory = record.type_catagory
         if type_catagory:
+            if type_catagory == 1:
+                type_detail = 'Claims'
+            elif type_catagory == 2:
+                type_detail = 'Underwriting'
+            else:
+                type_detail = 'Sars'
             return format_html(
-                '<strong>{}</strong><br> <font size="-1">( {} )</font>', type, type_catagory
+                '<strong>{}</strong><br> <font size="-1">( {} )</font>', type, type_detail
             )
         else:
             return format_html(

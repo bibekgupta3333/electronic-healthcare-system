@@ -120,7 +120,7 @@ class Instruction(TimeStampedModel, models.Model):
     ins_amount_rate_lvl_3 = models.DecimalField(max_digits=5, decimal_places=2, default=0, blank=True)
     ins_amount_rate_lvl_4 = models.DecimalField(max_digits=5, decimal_places=2, default=0, blank=True)
 
-    invoice_in_week = models.ForeignKey(WeeklyInvoice, on_delete=models.SET_NULL, null=True)
+    invoice_in_week = models.ForeignKey(WeeklyInvoice, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         verbose_name = "Instruction"
