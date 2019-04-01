@@ -12,11 +12,17 @@
      <!-- Jquery DataTables -->
     <link rel="stylesheet" href="{% static 'css/dataTables/jquery.dataTables.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/instructions/pipeline_views_instructions.css' %}">
+    <link href="{% static 'css/onboarding/emr_setup_final.css' %}" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/library/library.css' %}">
 {% endblock %}
 
 {% block Content %}
     <div>
+    {% csrf_token %}
+        <form method="POST">
+            {% csrf_token %}
+            {% include 'library/add_word_modal.html' %}
+        </form>
         <div class="modal fade" data-backdrop="static" tabindex="-1" role="dialog" id="warningDeleteModal">
             <div class="vertical-alignment-helper">
                 <div class="modal-dialog vertical-align-center" role="document">
@@ -67,13 +73,13 @@
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-md-6">
-                            <button class="btn btn-fee text-light btn-lg">Add to Library</button>
+                            <button class="btn btn-fee text-light btn-lg" id="AddWordButton">Add to Library</button>
                         </div>
                         <div class="offset-md-2 col-md-4">
-                            <form id="topsearchform" role="search" method="get" action="" class="" autocomplete="off">
+                            <form id="topsearchform" role="search" method="GET" action="" class="" autocomplete="off">
                                 <div class="row">
                                     <div class="col-md-8">
-                                        <input id="search" name="search" type="search" class="form-control search" required="true">
+                                        <input id="search" name="search" type="search" class="form-control search">
                                     </div>
                                     <div class="col-md-4">
                                         <button class="btn btn-fee text-light btn-block" type="submit" id="id_search_btn"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</button>
@@ -120,10 +126,16 @@
         });
         $('.dataTables_filter, .dataTables_info, .dataTables_paginate, .pager, #libraryTable_length').remove();
 
-        if ('{{ event }}' == 'delete') {
+        if('{{ event }}' == 'delete') {
             $('#deletedWordModal').modal({
                 backdrop: 'static'
             });
+        }
+
+        if('{{ duplicate_error_message }}') {
+            $('#addWordModal').modal({
+                backdrop: 'static'
+            })
         }
 
         $("<li class='page-item {{ next_prev_data|keyvalue:'prev_disabled' }}'><a class='page-link'" +
@@ -137,10 +149,14 @@
         $('#search').val('{{ search_input }}');
 
         $('.deleteButton').click(function () {
-            $('#continueDeleteButton').attr('href', $(this).data('deletelink'))
+            $('#continueDeleteButton').attr('href', $(this).data('deletelink'));
         });
 
-
+        $('#AddWordButton').click(function () {
+           $('#addWordModal').modal({
+               backdrop: 'static',
+           })
+        });
 
         $('#libraryTable_page_length').val({{ page_length }});
         $('#libraryTable_page_length').change(function () {
