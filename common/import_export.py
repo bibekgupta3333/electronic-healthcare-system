@@ -89,13 +89,13 @@ class CustomExportMixin(ExportMixin):
         for total_earn in total_earns_for_each_client_organisation:
             client_organisation = OrganisationClient.objects.get(pk=total_earn['client_user__organisation'])
             try:
-                fee_structure = InstructionVolumeFee.objects.get(client_organisation=client_organisation)
                 completed_instruction = Instruction.objects.filter(
                     client_user__organisation=client_organisation,
                     status=model_choices.INSTRUCTION_STATUS_COMPLETE
                 )
                 total_vat = 0
                 for instruction in completed_instruction:
+                    fee_structure = InstructionVolumeFee.objects.filter(client_org=client_organisation, fee_rate_type=instruction.type_catagory).first()
                     medi_earns_without_vat = instruction.medi_earns * 100 / (100 + fee_structure.vat)
                     total_vat += medi_earns_without_vat * fee_structure.vat / 100
                 export_row = [
