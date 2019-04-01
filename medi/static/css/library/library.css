@@ -37,3 +37,12 @@
     margin: 0 auto;
     pointer-events: all;
 }
+
+.smaller-text {
+    font-size: smaller;
+}
+
+.label-text {
+    color: #00000096;
+    font-size: 25px;
+}
