@@ -135,7 +135,7 @@
         if('{{ duplicate_error_message }}') {
             $('#addWordModal').modal({
                 backdrop: 'static'
-            })
+            });
         }
 
         $("<li class='page-item {{ next_prev_data|keyvalue:'prev_disabled' }}'><a class='page-link'" +
@@ -155,12 +155,12 @@
         $('#AddWordButton').click(function () {
            $('#addWordModal').modal({
                backdrop: 'static',
-           })
+           });
         });
 
         $('#libraryTable_page_length').val({{ page_length }});
         $('#libraryTable_page_length').change(function () {
-           window.location = "{% url 'library:edit_library' event='index' %}?page_length=" + $(this).val()
+           window.location = "{% url 'library:edit_library' event='index' %}?page_length=" + $(this).val();
         });
     </script>
 {% endblock %}
