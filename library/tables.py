@@ -1,4 +1,5 @@
 from django.utils.html import format_html
+from django.shortcuts import reverse
 
 from .models import Library
 
@@ -23,6 +24,11 @@ class LibraryTable(tables.Table):
         return format_html('<button class="btn btn-fee text-light btn-sm" style="width:80px;">EDIT</button>')
 
     def render_delete_button(self, record):
-        return format_html('<button class="btn btn-danger btn-sm" style="width:80px;">DELETE</button>')
+        return format_html(
+            '<button data-deleteLink="{delete_library_url}" class="btn btn-danger btn-sm deleteButton" data-toggle="modal" '
+            'data-target="#warningDeleteModal" style="width:90px;"><i class="fas fa-times"></i>&nbsp;REMOVE</button>'.format(
+                delete_library_url=reverse('library:delete_library', kwargs={'library_id': record.id})
+            )
+        )
 
 
