@@ -244,7 +244,7 @@
                                     <tr class="text-center block-blue">
                                         <th colspan='2'><h5><strong>Requested Conditions</strong></h5></th>
                                     </tr>
-                                    <tr class="text-center">
+                                    <tr>
                                         <td id="detail_request"></td>
                                     </tr>
                                 </tbody>
@@ -312,7 +312,7 @@
             $('#patient_dob').text($(this).data('patient_dob'));
             $('#patient_address').text($(this).data('patient_address'));
             $('#patient_nhs').text($(this).data('patient_nhs'));
-            $('#detail_request').append($(this).data('detail_request').replace(/\,/g, '<br>'));
+            $('#detail_request').append('- ' + $(this).data('detail_request').replace(/\,/g, '<br>- '));
             $('#detail_start_date').text($(this).data('detail_start_date'));
             $('#detail_complete_date').text($(this).data('detail_complete_date'));
             $('#result_date').text($(this).data('result_date'));
