@@ -2,6 +2,7 @@ from django.test import TestCase
 from ..models import OrganisationFeeRate, InstructionVolumeFee
 from model_mommy import mommy
 from organisations.models import OrganisationGeneralPractice, OrganisationClient
+from payment.model_choices import FEE_UNDERWRITE_TYPE
 
 
 class OrganisationFeeModelTest(TestCase):
@@ -78,7 +79,7 @@ class InstructionVolumeFeeClientModelTest(TestCase):
 
         self.instruction_volume_fee = mommy.make(
             InstructionVolumeFee,
-            client_organisation=self.client_organisation,
+            client_org=self.client_organisation,
             max_volume_band_lowest=10000,
             max_volume_band_low=20000,
             max_volume_band_medium=50000,
@@ -86,11 +87,12 @@ class InstructionVolumeFeeClientModelTest(TestCase):
             fee_rate_lowest=20,
             fee_rate_low=18,
             fee_rate_medium=15,
-            fee_rate_top=10
+            fee_rate_top=10,
+            fee_rate_type=2
         )
 
     def test_string_representation(self):
-        self.assertEqual(str(self.instruction_volume_fee), "Fee Structure: {}".format(self.client_organisation))
+        self.assertEqual(str(self.instruction_volume_fee), "Fee Structure: {} - AMRA_UNDERWRITING".format(self.client_organisation))
 
     def test_verbose_name(self):
         self.assertEqual(str(InstructionVolumeFee._meta.verbose_name), "Client Instruction Volume Fee structure")
