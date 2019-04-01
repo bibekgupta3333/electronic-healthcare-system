@@ -31,7 +31,6 @@ from organisations.models import OrganisationGeneralPractice
 from onboarding.views import generate_password
 from axes.models import AccessAttempt
 from .tables import AccountTable, PaymentLogTable
-# from .report import InfoInstructions
 from django_tables2 import RequestConfig, Column
 from instructions.views import calculate_next_prev
 from typing import Union, List, Dict
@@ -126,8 +125,10 @@ def account_view(request: HttpRequest) -> HttpResponse:
 
     #   Table for block 1
     cost_column_name = 'Cost £'
-    instruction_query_set = Instruction.objects.filter(client_user__organisation=client_organisation)
-    instruction_query_set = Instruction.objects.filter(status=INSTRUCTION_STATUS_COMPLETE)
+    instruction_query_set = Instruction.objects.filter(
+        client_user__organisation=client_organisation,
+        status=INSTRUCTION_STATUS_COMPLETE
+    )
     table_block_1 = AccountTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
     table_block_1.order_by = request.GET.get('sort', '-created')
     table_block_1.paginate(page=request.GET.get('page', 1), per_page=5)
