@@ -82,31 +82,6 @@ class InstructionVolumeFeeForm(forms.ModelForm):
             if self.cleaned_data['max_volume_band_high'] >= self.cleaned_data['max_volume_band_top']:
                 raise forms.ValidationError("Invalid band value: Top band value must more than high band value")
 
-            organisation_client = self.cleaned_data['client_org']
-            organisation_fee = InstructionVolumeFee.objects.filter(client_org=organisation_client).first()
-            owning_client = ''
-            if self.initial:
-                owning_client = self.initial['client_org']
-
-            if owning_client:
-                if organisation_fee and organisation_client.pk != owning_client:
-                    raise forms.ValidationError(
-                        format_html(
-                            '<strong>Organisation had selected:</strong> <a href="{gp_payment_fee_edit_path}">Here</a>'.format(
-                                gp_payment_fee_edit_path=get_url_page('admin_gp_payment_fee_edit', organisation_fee.pk)
-                            )
-                        )
-                    )
-            else:
-                if organisation_fee:
-                    raise forms.ValidationError(
-                        format_html(
-                            '<strong>Organisation had selected:</strong> <a href="{gp_payment_fee_edit_path}">Here</a>'.format(
-                                gp_payment_fee_edit_path=get_url_page('admin_gp_payment_fee_edit', organisation_fee.pk)
-                            )
-                        )
-                    )
-
             return self.cleaned_data
         except KeyError:
             self._errors
