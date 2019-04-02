@@ -130,7 +130,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
         status=INSTRUCTION_STATUS_COMPLETE
     )
     table_block_1 = AccountTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
-    table_block_1.order_by = request.GET.get('sort', '-created')
+    table_block_1.order_by = '-created'
     table_block_1.paginate(page=request.GET.get('page', 1), per_page=5)
 
     #   Table for block 2
@@ -191,7 +191,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
     #   Table for block 4
     weekly_query = WeeklyInvoice.objects.filter(client_org=client_organisation)
     table_block_4 = PaymentLogTable(weekly_query)
-    table_block_4.order_by = request.GET.get('sort', '-created')
+    table_block_4.order_by = '-start_date'
     table_block_4.paginate(page=request.GET.get('page_weekly', 1), per_page=5)
 
     return render(request, 'accounts/accounts_view_client.html', {

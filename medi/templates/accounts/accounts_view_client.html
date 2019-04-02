@@ -328,7 +328,10 @@
                 $(this).parent().removeClass('block_unpaid')
                 $(this).parent().addClass('block_paid');
             }
-        })
+        });
+
+        $('tr th a').removeAttr('href');
+        $('tr th a').addClass('text-dark');
     </script>
     
 {% endblock %}
