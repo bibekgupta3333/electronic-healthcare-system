@@ -4,14 +4,19 @@ from django.conf import settings
 from django.utils import timezone
 from django.template import loader
 from django.core.mail import send_mail
+from django.template.loader import get_template
 
 from services.xml.base64_attachment import Base64Attachment
 from medicalreport.models import AmendmentsForRecord
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.emisapiservices import services
 from instructions.models import Instruction
-from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE
+from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_FAIL
 from report.mobile import SendSMS
+from report.models import ExceptionMerge, UnsupportedAttachment
+import xhtml2pdf.pisa as pisa
+from medicalreport.templatetags.custom_filters import format_date_filter
+# from silk.profiling.profiler import silk_profile
 
 from celery import shared_task
 from PIL import Image
@@ -23,12 +28,18 @@ import reportlab.lib.pagesizes as pdf_sizes
 import logging
 import io
 import uuid
+import glob
+import os
+import re
 
 logger = logging.getLogger(__name__)
 time_logger = logging.getLogger('timestamp')
+event_logger = logging.getLogger('medidata.event')
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPORT_DIR = BASE_DIR + '/medicalreport/templates/medicalreport/reports/unsupport_files.html'
 
 
-def send_patient_mail(scheme, host,  unique_url, instruction):
+def send_patient_mail(scheme: str, host: str,  unique_url: str, instruction: Instruction) -> None:
     report_link = scheme + '://' + host + '/report/' + str(instruction.pk) + '/patient/' + unique_url
     send_mail(
         'Notification from your GP surgery',
@@ -43,8 +54,25 @@ def send_patient_mail(scheme, host,  unique_url, instruction):
     )
 
 
+def link_callback(uri: str, rel) -> str:
+    sUrl = settings.STATIC_URL
+    sRoot = settings.STATIC_ROOT
+
+    if uri.startswith(sUrl):
+        path = os.path.join(sRoot, uri.replace(sUrl, ""))
+    else:
+        path = sRoot
+
+    if sRoot == 'static':
+        path = BASE_DIR + '/medi/' + path
+
+    if not os.path.isfile(path):
+        raise Exception('static URI must start with %s' % (sUrl))
+    return path
+
+
 @shared_task(bind=True)
-def generate_medicalreport_with_attachment(self, instruction_id, report_link_info):
+def generate_medicalreport_with_attachment(self, instruction_id: str, report_link_info: dict):
     start_time = timezone.now()
 
     try:
@@ -56,41 +84,53 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
         output = PyPDF2.PdfFileWriter()
 
         # add each page of medical report to output file
-        medical_report = PyPDF2.PdfFileReader('asdfadsfa')
+        medical_report = PyPDF2.PdfFileReader(instruction.medical_report)
         for page_num in range(medical_report.getNumPages()):
             output.addPage(medical_report.getPage(page_num))
 
         # create list of PdfFileReader obj from raw bytes of xml data
         attachments_pdf = []
+        unique_file_name = []
+        download_attachments = []
+        exception_detail = list()
+        folder = settings.BASE_DIR + '/static/generic_pdf/'
         for attachment in medical_record_decorator.attachments():
-            xpaths = attachment.xpaths()
-            if redaction.redacted(xpaths) is not True:
-                raw_xml_or_status_code = services.GetAttachment(
-                    instruction.patient_information.patient_emis_number,
-                    attachment.dds_identifier(),
-                    gp_organisation=instruction.gp_practice).call()
+            try:
+                unique = uuid.uuid4().hex
+                unique_file_name.append(unique)
+                xpaths = attachment.xpaths()
+                description = attachment.description()
+                date = format_date_filter(attachment.parsed_date())
+                attachment_id = attachment.dds_identifier()
+                if redaction.redacted(xpaths) is not True:
+                    raw_xml_or_status_code = services.GetAttachment(
+                        instruction.patient_information.patient_emis_number,
+                        attachment_id,
+                        gp_organisation=instruction.gp_practice).call()
 
-                file_name = Base64Attachment(raw_xml_or_status_code).filename()
-                file_type = file_name.split('.')[-1]
-                raw_attachment = Base64Attachment(raw_xml_or_status_code).data()
-                buffer = io.BytesIO(raw_attachment)
-                folder = settings.BASE_DIR + '/static/generic_pdf/'
-                try:
+                    file_name = Base64Attachment(raw_xml_or_status_code).filename()
+                    file_type = file_name.split('.')[-1]
+                    raw_attachment = Base64Attachment(raw_xml_or_status_code).data()
+                    buffer = io.BytesIO(raw_attachment)
+                    path_patient = instruction.patient_information.__str__()
+                    save_path = settings.MEDIA_ROOT + '/patient_attachments/' + path_patient + '/'
+                    if not os.path.exists(os.path.dirname(save_path)):
+                        os.makedirs(os.path.dirname(save_path))
+
                     if file_type == 'pdf':
                         attachments_pdf.append(PyPDF2.PdfFileReader(buffer))
                     elif file_type in ['doc', 'docx', 'rtf']:
-                        tmp_file = 'temp1.' + file_type
+                        tmp_file = 'temp_%s.' % unique + file_type
                         f = open(folder + tmp_file, 'wb')
                         f.write(buffer.getvalue())
                         f.close()
                         subprocess.call(
-                            (
-                                        "export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
+                            ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
                             shell=True
                         )
-                        pdf = open(folder + 'temp1.pdf', 'rb')
+                        pdf = open(folder + 'temp_%s.pdf' % unique, 'rb')
                         attachments_pdf.append(PyPDF2.PdfFileReader(pdf))
-                    elif file_type in ['jpg', 'jpeg', 'png', 'tiff']:
+                    elif file_type in ['jpg', 'jpeg', 'png', 'tiff', 'tif']:
                         image = Image.open(buffer)
                         image_format = image.format
                         if image_format == "TIFF":
@@ -117,14 +157,43 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                             c.save()
                             attachments_pdf.append(PyPDF2.PdfFileReader(out_pdf_io))
                         else:
-                            pdf_bytes = img2pdf.convert('imgtemp1.pdf')
-                            f = open(folder + 'imgtemp1.pdf', 'wb')
+                            pdf_bytes = img2pdf.convert('img_temp_%s.pdf' % unique)
+                            f = open(folder + 'img_temp_%s.pdf' % unique, 'wb')
                             f.write(pdf_bytes)
                             attachments_pdf.append(PyPDF2.PdfFileReader(f))
                             image.close()
                             f.close()
-                except Exception as e:
-                    logger.error(e)
+                    else:
+                        # zipped unsupported file type
+                        file_name = Base64Attachment(raw_xml_or_status_code).filename()
+                        buffer = io.BytesIO()
+                        buffer.write(raw_attachment)
+                        save_file = file_name.split('\\')[-1]
+                        f = open(save_path + save_file, 'wb')
+                        f.write(buffer.getvalue())
+                        f.close()
+                        download_attachments.append(save_file)
+
+                        # keep unsupported file type
+                        UnsupportedAttachment.objects.get_or_create(
+                            instruction=instruction,
+                            file_name=file_name,
+                            defaults={
+                                'file_type': file_type,
+                            }
+                        )
+
+            except Exception as e:
+                exception_detail.append(date + ' ' + description)
+                logger.error(e)
+                    
+        if download_attachments:
+            template = get_template(REPORT_DIR)
+            html = template.render({'attachments': download_attachments})
+            pdf_file = io.BytesIO()
+            pdf = pisa.pisaDocument(io.BytesIO(html.encode("UTF-8")), pdf_file, link_callback=link_callback)
+            if not pdf.err:
+                attachments_pdf.append(PyPDF2.PdfFileReader(pdf_file))
 
         # add each page of each attachment to output file
         for pdf in attachments_pdf:
@@ -139,21 +208,39 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
         uuid_hex = uuid.uuid4().hex
         instruction.medical_with_attachment_report.save('report_with_attachments_%s.pdf' % uuid_hex,
                                                         ContentFile(pdf_page_buf.getvalue()))
+
+        # remove temp files
+        for unique in unique_file_name:
+            for file_path in glob.glob(folder+'*{unique}*'.format(unique=unique)):
+                os.remove(file_path)
+
     except Exception as e:
         # waiting for 5 min to retry
         raise self.retry(countdown=60*5, exc=e, max_retires=2)
 
-    if instruction.medical_with_attachment_report:
-        SendSMS(number=instruction.patient_information.get_telephone_e164()).send()
-        send_patient_mail(
-            report_link_info['scheme'],
-            report_link_info['host'],
-            report_link_info['unique_url'],
-            instruction
+    if exception_detail:
+        exception_merge, created = ExceptionMerge.objects.update_or_create(
+            instruction_id=instruction_id,
+            defaults={'file_detail': exception_detail},
         )
-
-        instruction.status = INSTRUCTION_STATUS_COMPLETE
+        instruction.status = INSTRUCTION_STATUS_FAIL
         instruction.save()
+    else:
+        if instruction.medical_with_attachment_report:
+            msg_line_1 = "Your GP surgery has completed your SAR request. We have sent you an email to access a copy."
+            msg_line_2 = "This may have landed in your 'Junk mail'. Move to your inbox to activate the link."
+            msg = "%s %s"%(msg_line_1, msg_line_2)
+            SendSMS(number=instruction.patient_information.get_telephone_e164()).send(msg)
+            send_patient_mail(
+                report_link_info['scheme'],
+                report_link_info['host'],
+                report_link_info['unique_url'],
+                instruction
+            )
+
+            instruction.download_attachments = ",".join(download_attachments)
+            instruction.status = INSTRUCTION_STATUS_COMPLETE
+            instruction.save()
 
     end_time = timezone.now()
     total_time = end_time - start_time

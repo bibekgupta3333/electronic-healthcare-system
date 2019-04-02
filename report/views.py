@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404, reverse
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http import HttpResponse, StreamingHttpResponse, HttpRequest, HttpResponseRedirect
 from wsgiref.util import FileWrapper
 from django.db.models import Sum, Q
 
@@ -9,13 +9,13 @@ from accounts.models import *
 from django.core.mail import send_mail
 from django.contrib import messages
 from django.template import loader
-from django.utils import timezone
 
 from instructions.models import Instruction
 from .models import PatientReportAuth, ThirdPartyAuthorisation
 from .forms import AccessCodeForm, ThirdPartyAuthorisationForm
-from .functions import validate_pin
+from .functions import validate_pin, get_zip_medical_report
 
+from typing import Union
 from report.mobile import AuthMobile
 
 import json
@@ -24,9 +24,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 time_logger = logging.getLogger('timestamp')
+event_logger = logging.getLogger('medidata.event')
 
 
-def sar_request_code(request, instruction_id, access_type, url):
+def sar_request_code(request: HttpRequest, instruction_id: str, access_type: str, url: str) -> HttpResponse:
     error_message = None
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     third_party_authorisation = None
@@ -42,12 +43,17 @@ def sar_request_code(request, instruction_id, access_type, url):
         third_party_authorisation = get_object_or_404(ThirdPartyAuthorisation, unique=url)
         patient_auth = third_party_authorisation.patient_report_auth
         greeting_name = third_party_authorisation.company
+
         if third_party_authorisation.expired:
             return render(request, 'date_expired.html', )
 
         if third_party_authorisation.locked_report:
             return redirect_auth_limit(request)
 
+    event_logger.info(
+        '{access_type} ACCESS medical report, Instruction ID {instruction_id}'.format(
+            access_type=access_type, instruction_id=instruction_id)
+    )
     if request.method == 'POST':
         third_party_response_sms = None
         third_party_response_voice = None
@@ -59,27 +65,58 @@ def sar_request_code(request, instruction_id, access_type, url):
                 response_results_dict = json.loads(patient_response_sms.text)
                 patient_auth.mobi_request_id = response_results_dict['id']
                 successful_request = True
+            else:
+                event_logger.warning(
+                    '{access_type} REQUESTED OTP failed, Instruction ID {instruction_id}, Reason: {error_reason}'.format(
+                        access_type=access_type, instruction_id=instruction_id,
+                        error_reason=json.loads(patient_response_sms.text)['error']
+                    )
+                )
             patient_auth.save()
         else:
             third_party_authorisation.count = 0
             if third_party_authorisation.family_phone_number:
                 third_party_response_sms = AuthMobile(number=third_party_authorisation.get_family_phone_e164()).request()
+                event_logger.info('Third party REQUESTED OTP pin, Instruction ID {instruction_id}'.format(
+                    instruction_id=instruction_id)
+                )
 
             if third_party_authorisation.office_phone_number:
                 third_party_response_voice = AuthMobile(number=third_party_authorisation.get_office_phone_e164(), type='ivr').request()
+                event_logger.info('Third party REQUESTED OTP voice, Instruction ID {instruction_id}'.format(
+                    instruction_id=instruction_id)
+                )
 
             if third_party_response_sms and third_party_response_sms.status_code == 200:
                 response_results_dict = json.loads(third_party_response_sms.text)
                 third_party_authorisation.mobi_request_id = response_results_dict['id']
                 successful_request = True
+            else:
+                event_logger.warning(
+                    '{access_type} REQUESTED OTP pin failed, Instruction ID {instruction_id}, Reason: {error_reason}'.format(
+                        access_type=access_type, instruction_id=instruction_id,
+                        error_reason=json.loads(third_party_response_sms.text)['error']
+                    )
+                )
 
             if third_party_response_voice and third_party_response_voice.status_code == 200:
                 response_results_dict = json.loads(third_party_response_voice.text)
                 third_party_authorisation.mobi_request_voice_id = response_results_dict['id']
                 successful_request = True
+            else:
+                event_logger.warning(
+                    '{access_type} REQUESTED OTP voice failed, Instruction ID {instruction_id}, Reason: {error_reason}'.format(
+                        access_type=access_type, instruction_id=instruction_id,
+                        error_reason=json.loads(third_party_response_voice.text)['error']
+                    )
+                )
             third_party_authorisation.save()
 
         if successful_request:
+            event_logger.info(
+                '{access_type} REQUESTED OTP successful, Instruction ID {instruction_id}'.format(
+                    access_type=access_type, instruction_id=instruction_id)
+            )
             return redirect('report:access-code', access_type=access_type, url=url)
         else:
             error_message = "Something went wrong"
@@ -126,7 +163,10 @@ def sar_access_code(request, access_type, url):
                 number = ["*"] * (len(phone_number) - 3)
                 number.append(phone_number[-3:])
                 number = " ".join(map(str, number))
-
+        event_logger.info(
+            '{access_type} ACCESS medical report, Instruction ID {instruction_id}'.format(
+                access_type=access_type, instruction_id=instruction.id)
+        )
         if request.method == 'POST':
             third_party_response_sms = None
             third_party_response_sms_voice = None
@@ -202,7 +242,7 @@ def sar_access_code(request, access_type, url):
     })
 
 
-def get_report(request, access_type):
+def get_report(request: HttpRequest, access_type:  str) -> Union[HttpResponse, StreamingHttpResponse]:
     if not request.COOKIES.get('verified_pin'):
         return redirect('report:session-expired')
 
@@ -224,13 +264,17 @@ def get_report(request, access_type):
 
         if third_party_authorisation.locked_report:
             return redirect_auth_limit(request)
+    event_logger.info(
+        '{access_type} ACCESS get medical report view, Instruction ID {instruction_id}'.format(
+            access_type=access_type, instruction_id=report_auth.instruction.id)
+    )
 
     if request.method == 'POST':
             instruction = get_object_or_404(Instruction, id=report_auth.instruction_id)
             path_file = instruction.medical_with_attachment_report.path
             if request.POST.get('button') == 'Download Report':
-                response = StreamingHttpResponse(FileWrapper(open(path_file, 'rb')), content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename="medical_report.pdf"'
+                response = StreamingHttpResponse(FileWrapper(get_zip_medical_report(instruction)), content_type='application/octet-stream')
+                response['Content-Disposition'] = 'attachment; filename="medical_report.zip"'
                 return response
 
             elif request.POST.get('button') == 'View Report':
@@ -247,15 +291,16 @@ def get_report(request, access_type):
     })
 
 
-def redirect_auth_limit(request):
+def redirect_auth_limit(request: HttpRequest) -> HttpResponse:
     error_message = 'You exceeded the limit'
     return render(request, 'patient/auth_3_exceed_limit.html', {'message': error_message})
 
 
-def session_expired(request):
+def session_expired(request: HttpRequest) -> HttpResponse:
     return render(request, 'patient/session_expired.html')
 
-def summry_report(request):
+
+def summry_report(request: HttpRequest) -> HttpResponse:
     if 'current_year' in request.GET:
         numYear = int(request.GET.get('current_year', None))
     else:
@@ -353,7 +398,8 @@ def summry_report(request):
                     'incomeList' : incomeList
                 })
 
-def add_third_party_authorisation(request, report_auth_id):
+
+def add_third_party_authorisation(request: HttpRequest, report_auth_id: str) -> HttpResponse:
     report_auth = get_object_or_404(PatientReportAuth, id=report_auth_id)
     third_party_form = ThirdPartyAuthorisationForm()
 
@@ -361,6 +407,9 @@ def add_third_party_authorisation(request, report_auth_id):
         third_party_form = ThirdPartyAuthorisationForm(request.POST)
         if third_party_form.is_valid():
             third_party_authorisation = third_party_form.save(report_auth)
+            event_logger.info('CREATED third party authorised model ID {model_id}'.format(
+                model_id=third_party_authorisation.id)
+            )
             phone_number = ''
             if third_party_authorisation.office_phone_number:
                 phone_number = third_party_authorisation.get_office_phone_e164()
@@ -395,7 +444,7 @@ def add_third_party_authorisation(request, report_auth_id):
     })
 
 
-def cancel_authorisation(request, third_party_authorisation_id):
+def cancel_authorisation(request: HttpRequest, third_party_authorisation_id: str) -> HttpResponseRedirect:
     third_party_authorisation = get_object_or_404(ThirdPartyAuthorisation, id=third_party_authorisation_id)
     report_auth = third_party_authorisation.patient_report_auth
 
@@ -403,6 +452,9 @@ def cancel_authorisation(request, third_party_authorisation_id):
     third_party_authorisation.expired = True
     third_party_authorisation.locked_report = False
     third_party_authorisation.save()
+    event_logger.info('CANCELED third party authorised model ID {model_id}'.format(
+        model_id=third_party_authorisation.id)
+    )
 
     send_mail(
         'Medical Report Authorisation',
@@ -417,7 +469,7 @@ def cancel_authorisation(request, third_party_authorisation_id):
     return redirect('report:select-report', access_type=PatientReportAuth.ACCESS_TYPE_PATIENT)
 
 
-def extend_authorisation(request, third_party_authorisation_id):
+def extend_authorisation(request: HttpRequest, third_party_authorisation_id: str) -> HttpResponseRedirect:
     third_party_authorisation = get_object_or_404(ThirdPartyAuthorisation, id=third_party_authorisation_id)
     report_auth = third_party_authorisation.patient_report_auth
 
@@ -426,6 +478,9 @@ def extend_authorisation(request, third_party_authorisation_id):
     if expired_date < limit_extend.date():
         third_party_authorisation.expired_date = expired_date
         third_party_authorisation.save()
+        event_logger.info('EXTENDED third party authorised model ID {model_id}'.format(
+            model_id=third_party_authorisation.id)
+        )
         send_mail(
             'Medical Report Authorisation',
             'Your access on SAR report from {patient_name} has been extended. Please click {link} to access the report'.format(
@@ -448,11 +503,31 @@ def extend_authorisation(request, third_party_authorisation_id):
     return redirect('report:select-report', access_type=PatientReportAuth.ACCESS_TYPE_PATIENT)
 
 
-def renew_authorisation(request, third_party_authorisation_id):
+def renew_authorisation(request: HttpRequest, third_party_authorisation_id: str) -> HttpResponseRedirect:
     third_party_authorisation = get_object_or_404(ThirdPartyAuthorisation, id=third_party_authorisation_id)
+    report_auth = third_party_authorisation.patient_report_auth
 
     third_party_authorisation.expired_date = datetime.datetime.now().date() + datetime.timedelta(days=30)
     third_party_authorisation.expired = False
     third_party_authorisation.save()
+    event_logger.info('RENEW third party authorised model ID {model_id}'.format(
+        model_id=third_party_authorisation.id)
+    )
+    send_mail(
+        'Medical Report Authorisation',
+        'Your access on SAR report from {patient_name} has been extended. Please click {link} to access the report'.format(
+            patient_name=report_auth.patient.user.first_name,
+            link=request.scheme + '://' + request.get_host() + reverse(
+                'report:request-code', kwargs={
+                    'instruction_id': report_auth.instruction.id,
+                    'access_type': PatientReportAuth.ACCESS_TYPE_THIRD_PARTY,
+                    'url': third_party_authorisation.unique
+                }
+            )
+        ),
+        'Medidata',
+        [third_party_authorisation.email],
+        fail_silently=True
+    )
 
     return redirect('report:select-report', access_type=PatientReportAuth.ACCESS_TYPE_PATIENT)

@@ -1,12 +1,14 @@
 import uuid
 import logging
 import os
+import glob
 from datetime import datetime
 from django.conf import settings
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.template import loader
 from django.utils.html import format_html
+from django.http import HttpRequest
 from django.shortcuts import redirect
 from django.utils import timezone
 from django.core.files.base import ContentFile
@@ -18,16 +20,17 @@ from instructions import models
 from .forms import MedicalReportFinaliseSubmitForm
 from .models import AdditionalMedicationRecords, AdditionalAllergies, AmendmentsForRecord,\
         ReferencePhrases
-from medicalreport.reports import MedicalReport
+from medicalreport.reports import MedicalReport, TEMP_DIR
 from report.models import PatientReportAuth
 from report.tasks import generate_medicalreport_with_attachment
+from instructions.models import Instruction
 
 
 UI_DATE_FORMAT = '%m/%d/%Y'
 logger = logging.getLogger('timestamp')
 
 
-def create_or_update_redaction_record(request, instruction):
+def create_or_update_redaction_record(request, instruction: Instruction) -> bool:
     try:
         amendments_for_record = AmendmentsForRecord.objects.get(instruction=instruction)
     except AmendmentsForRecord.DoesNotExist:
@@ -103,11 +106,12 @@ def create_or_update_redaction_record(request, instruction):
                 instruction.status = models.INSTRUCTION_STATUS_FINALISE
                 instruction.completed_signed_off_timestamp = timezone.now()
                 messages.success(request, 'Completed Medical Report')
+                delete_tmp_files(instruction)
 
             instruction.save()
             amendments_for_record.save()
             if status == 'preview':
-                save_medical_report(request, instruction, amendments_for_record)
+                save_medical_report(instruction, amendments_for_record)
             if status and status not in ['submit', 'draft', 'preview']:
                 return False
 
@@ -125,7 +129,7 @@ def create_or_update_redaction_record(request, instruction):
     return True
 
 
-def save_medical_report(request, instruction, amendments_for_record):
+def save_medical_report(instruction: Instruction, amendments_for_record: AmendmentsForRecord) -> None:
     start_time = timezone.now()
     raw_xml_or_status_code = services.GetMedicalRecord(amendments_for_record.patient_emis_number, gp_organisation=instruction.gp_practice).call()
     parse_xml = redaction_elements(raw_xml_or_status_code, amendments_for_record.redacted_xpaths)
@@ -155,19 +159,23 @@ def save_medical_report(request, instruction, amendments_for_record):
     logger.info("[SAVING PDF AND XML] %s seconds with patient %s"%(total_time.seconds, instruction.patient_information.__str__()))
 
 
-def get_redaction_xpaths(request, amendments_for_record):
+def delete_tmp_files(instruction: Instruction) -> None:
+    for f in glob.glob(TEMP_DIR + "%s_tmp*"%instruction.pk):
+        os.remove(f)
+
+
+def get_redaction_xpaths(request: HttpRequest, amendments_for_record: AmendmentsForRecord) -> None:
     redaction_xpaths = request.POST.getlist('redaction_xpaths')
     amendments_for_record.redacted_xpaths = redaction_xpaths
 
 
-def get_redaction_conditions(request, amendments_for_record):
-
+def get_redaction_conditions(request: HttpRequest, amendments_for_record: AmendmentsForRecord) -> None:
     redaction_conditions = set(filter(None, request.POST.getlist('map_code')))
     if 'undefined'in redaction_conditions: redaction_conditions.remove('undefined')
     amendments_for_record.re_redacted_codes = list(redaction_conditions)
 
 
-def get_redaction_notes(request, amendments_for_record):
+def get_redaction_notes(request, amendments_for_record: AmendmentsForRecord) -> None:
     acute_notes = request.POST.get('redaction_acute_prescription_notes', '')
     repeat_notes = request.POST.get('redaction_repeat_prescription_notes', '')
     consultation_notes = request.POST.get('redaction_consultation_notes', '')
@@ -187,7 +195,7 @@ def get_redaction_notes(request, amendments_for_record):
     amendments_for_record.comment_notes = comment_notes
 
 
-def get_additional_allergies(request, amendments_for_record):
+def get_additional_allergies(request, amendments_for_record: AmendmentsForRecord) -> bool:
     additional_allergies_allergen = request.POST.get('additional_allergies_allergen')
     additional_allergies_reaction = request.POST.get('additional_allergies_reaction')
     additional_allergies_date_discovered = request.POST.get('additional_allergies_date_discovered')
@@ -207,7 +215,7 @@ def get_additional_allergies(request, amendments_for_record):
         return False
 
 
-def get_additional_medication(request, amendments_for_record):
+def get_additional_medication(request, amendments_for_record: AmendmentsForRecord) -> bool:
     additional_medication_type = request.POST.get('additional_medication_records_type')
     additional_medication_snomedct = request.POST.get('additional_medication_related_condition')
     additional_medication_drug = request.POST.get('additional_medication_drug')
@@ -248,19 +256,19 @@ def get_additional_medication(request, amendments_for_record):
         return False
 
 
-def delete_additional_medication_records(request):
+def delete_additional_medication_records(request: HttpRequest) -> None:
     additional_medication_records_delete = request.POST.getlist('additional_medication_records_delete')
     if additional_medication_records_delete:
         AdditionalMedicationRecords.objects.filter(id__in=additional_medication_records_delete).delete()
 
 
-def delete_additional_allergies_records(request):
+def delete_additional_allergies_records(request: HttpRequest) -> None:
     additional_allergies_records_delete = request.POST.getlist('additional_allergies_records_delete')
     if additional_allergies_records_delete:
         AdditionalAllergies.objects.filter(id__in=additional_allergies_records_delete).delete()
 
 
-def send_surgery_email(instruction):
+def send_surgery_email(instruction: Instruction) -> None:
     send_mail(
         'Medidata eMR: Your medical report is ready',
         'Your instruction has been submitted',
@@ -269,13 +277,13 @@ def send_surgery_email(instruction):
         fail_silently=True,
         html_message=loader.render_to_string('medicalreport/surgery_email.html',
                                              {
-                                                 'name': instruction.patient.user.first_name,
+                                                 'name': instruction.patient_information.patient_first_name,
                                                  'gp': instruction.gp_user.user.first_name,
                                              }
                                              ))
 
 
-def create_patient_report(request, instruction):
+def create_patient_report(request: HttpRequest, instruction: Instruction) -> None:
     unique_url = uuid.uuid4().hex
     PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
     report_link_info = {

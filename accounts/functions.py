@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.core.mail import send_mail
 from .forms import NewGPForm, NewClientForm
+from instructions.models import InstructionPatient
 from .tables import UserTable
 from .models import User, GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER, PATIENT_USER,\
         Patient, GeneralPracticeUser, ClientUser, UserProfileBase
@@ -101,7 +102,7 @@ def count_gpusers(queryset):
     sars_count = queryset.filter(userprofilebase__generalpracticeuser__role=2).count()
     overall_users_number = {
         'All': all_count,
-        'Manager': pmanager_count,
+        'GP Manager': pmanager_count,
         'GP': gp_count,
         'Other Practice Staff': sars_count
     }
@@ -114,8 +115,8 @@ def count_clientusers(queryset):
     client_count = queryset.filter(userprofilebase__clientuser__role=1).count()
     overall_users_number = {
         'All': all_count,
-        'Admin': admin_count,
-        'Client': client_count
+        'Client Manager': admin_count,
+        'Client Administrator': client_count
     }
     return overall_users_number
 
@@ -130,11 +131,11 @@ def count_users(queryset):
     medi_count = queryset.filter(type=MEDIDATA_USER).count()
     overall_users_number = {
         'All': all_count,
-        'Admin': admin_count,
-        'Client': client_count,
-        'Manager': pmanager_count,
+        'Client Manager': admin_count,
+        'Client Administrator': client_count,
+        'GP Manager': pmanager_count,
         'GP': gp_count,
-        'Practice Staff': sars_count,
+        'Other Practice Staff': sars_count,
         'Medidata': medi_count
     }
     return overall_users_number
@@ -194,7 +195,7 @@ def get_user_type_form(cur_user):
         }
 
 
-def create_or_update_patient_user(patient_information, patient_emis_number) -> Patient:
+def create_or_update_patient_user(patient_information: InstructionPatient, patient_emis_number: int) -> Patient:
     password = User.objects.make_random_password()
     patient = Patient.objects.filter(emis_number=patient_emis_number).first()
 
@@ -246,7 +247,7 @@ def notify_admins(request):
             to_emails = [ client.email for client in User.objects.filter(
                 userprofilebase__in=profiles.alive(),
                 userprofilebase__clientuser__organisation=organisation,
-                userprofilebase__clientuser__role=ClientUser.CLIENT_ADMIN)
+                userprofilebase__clientuser__role=ClientUser.CLIENT_MANAGER)
             ]
         elif hasattr(user.userprofilebase, 'generalpracticeuser'):
             organisation = user.userprofilebase.generalpracticeuser.organisation
@@ -276,9 +277,9 @@ def notify_password_reset(func):
     def wrapper(request, *args, **kwargs):
         if request.method == 'POST':
             email = request.POST.get("email")
-            user = User.objects.get(email=email)
+            user = User.objects.filter(email=email).first()
             surgery_email = None
-            if user.type == GENERAL_PRACTICE_USER and hasattr(user, 'userprofilebase') and\
+            if user and user.type == GENERAL_PRACTICE_USER and hasattr(user, 'userprofilebase') and\
                 hasattr(user.userprofilebase, 'generalpracticeuser') and\
                 user.userprofilebase.generalpracticeuser.organisation:
                 surgery_email = user.userprofilebase.generalpracticeuser.organisation.organisation_email
@@ -294,7 +295,7 @@ def notify_password_reset(func):
     return wrapper
 
 
-def get_client_ip(request):
+def get_client_ip(request) -> str:
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[0]
@@ -303,15 +304,15 @@ def get_client_ip(request):
     return ip
 
 
-def convert_ipv4(ip):
+def convert_ipv4(ip) -> tuple:
     return tuple(int(n) for n in ip.split('.'))
 
 
-def check_ipv4_in(addr, start, end):
+def check_ipv4_in(addr: str, start: str, end: str) -> bool:
     return convert_ipv4(start) < convert_ipv4(addr) < convert_ipv4(end)
 
 
-def check_ip_from_n3_hscn(request):
+def check_ip_from_n3_hscn(request) -> bool:
     client_ip = get_client_ip(request)
     for addr in NET_ADDRS:
         if IPAddress(client_ip) in IPNetwork(addr):

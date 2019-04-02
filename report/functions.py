@@ -1,11 +1,18 @@
 
 from django.core.mail import send_mail
 from django.template import loader
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
-
-from .models import PatientReportAuth
+from django.conf import settings
+from zipfile import ZipFile, ZIP_DEFLATED
+from .models import PatientReportAuth, ThirdPartyAuthorisation
+from instructions.models import Instruction
 
 import json
+import logging
+import io
+
+event_logger = logging.getLogger('medidata.event')
 
 #todo add link
 def send_patient_mail(patient, gp_practice):
@@ -22,7 +29,10 @@ def send_patient_mail(patient, gp_practice):
     )
 
 
-def validate_pin(response, pin,  patient_auth, access_type, third_party_authorisation=None, otp_type=''):
+def validate_pin(
+        response, pin: str,  patient_auth: PatientReportAuth,
+        access_type: str, third_party_authorisation: ThirdPartyAuthorisation=None, otp_type: str=''
+) -> bool:
     max_input = 3
     if response.status_code == 200:
         response_results_dict = json.loads(response.text)
@@ -31,6 +41,10 @@ def validate_pin(response, pin,  patient_auth, access_type, third_party_authoris
                 patient_auth.verify_pin = pin
                 patient_auth.count = 0
                 patient_auth.save()
+                event_logger.info(
+                    '{access_type} VERIFIED OTP successful, Instruction ID {instruction_id}'.format(
+                        access_type=access_type, instruction_id=patient_auth.instruction.id)
+                )
                 return True
             else:
                 patient_auth.count = patient_auth.count + 1
@@ -46,6 +60,10 @@ def validate_pin(response, pin,  patient_auth, access_type, third_party_authoris
                     third_party_authorisation.verify_voice_pin = pin
                 third_party_authorisation.count = 0
                 third_party_authorisation.save()
+                event_logger.info(
+                    '{access_type} VERIFIED OTP successful, Instruction ID {instruction_id}'.format(
+                        access_type=access_type, instruction_id=patient_auth.instruction.id)
+                )
                 return True
             else:
                 third_party_authorisation.count = third_party_authorisation.count + 1
@@ -53,4 +71,22 @@ def validate_pin(response, pin,  patient_auth, access_type, third_party_authoris
                     third_party_authorisation.locked_report = True
                     third_party_authorisation.count = 0
                 third_party_authorisation.save()
+
+        if not response_results_dict['validated']:
+            event_logger.info(
+                '{access_type} VERIFIED OTP failed, Instruction ID {instruction_id}'.format(
+                    access_type=access_type, instruction_id=patient_auth.instruction.id)
+            )
+
     return False
+
+
+def get_zip_medical_report(instruction: Instruction):
+    path_patient = instruction.patient_information.__str__()
+    path = settings.MEDIA_ROOT + '/patient_attachments/' + path_patient + '/'
+    attachments = instruction.download_attachments
+    with ZipFile(path + 'medicalreports.zip','w', ZIP_DEFLATED) as zip:
+        zip.write(instruction.medical_with_attachment_report.path, 'medical_report.pdf')
+        for attachment in attachments.split(','):
+            zip.write(path + attachment, attachment)
+    return open(path + 'medicalreports.zip', 'rb')

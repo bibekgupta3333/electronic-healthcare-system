@@ -59,11 +59,7 @@ class ScopeInstructionForm(forms.Form):
             self.fields['type'] = forms.CharField(max_length=255, widget=forms.TextInput(attrs={'class': 'w-25'}))
         else:
             self.patient_email = patient_email
-            FORM_INSTRUCTION_TYPE_CHOICES = [
-                (AMRA_TYPE, 'Underwriting(AMRA)'),
-                (AMRA_TYPE, 'Claim(AMRA)'),
-                (SARS_TYPE, 'SAR')
-            ]
+            FORM_INSTRUCTION_TYPE_CHOICES = []
 
             SCOPE_COMMON_CONDITION_CHOICES = [
                 [[snomed.external_id for snomed in common_snomed.snomed_concept_code.all()], common_snomed.common_name] for common_snomed in CommonSnomedConcepts.objects.all()
@@ -71,29 +67,24 @@ class ScopeInstructionForm(forms.Form):
 
             self.fields['common_condition'] = forms.MultipleChoiceField(choices=SCOPE_COMMON_CONDITION_CHOICES, widget=forms.CheckboxSelectMultiple(), required=False)
 
+            if user:
+                if user.can_do_under():
+                    FORM_INSTRUCTION_TYPE_CHOICES.append((AMRA_TYPE, 'Underwriting(AMRA)'))
+                if user.can_do_claim():
+                    FORM_INSTRUCTION_TYPE_CHOICES.append((AMRA_TYPE, 'Claim(AMRA)'))
+                if user.can_do_sars():
+                    FORM_INSTRUCTION_TYPE_CHOICES.append((SARS_TYPE, 'SAR'))
             client_organisation = multi_getattr(user, 'userprofilebase.clientuser.organisation', default=None)
             if client_organisation:
-                if not client_organisation.can_create_amra and not client_organisation.can_create_sars:
-                    FORM_INSTRUCTION_TYPE_CHOICES = ()
-                elif not client_organisation.can_create_amra:
-                    del FORM_INSTRUCTION_TYPE_CHOICES[0]
-                    del FORM_INSTRUCTION_TYPE_CHOICES[0]
-                elif not client_organisation.can_create_sars:
-                    del FORM_INSTRUCTION_TYPE_CHOICES[2]
                 self.fields['template'] = forms.ModelChoiceField(
                         queryset=TemplateInstruction.objects.filter(
                             Q(organisation=client_organisation) | Q(organisation__isnull=True)),
                         required=False)
 
-            gp_organisation = multi_getattr(user, 'userprofilebase.generalpracticeuser.organisation', default=None)
-            if gp_organisation:
-                del FORM_INSTRUCTION_TYPE_CHOICES[0]
-                del FORM_INSTRUCTION_TYPE_CHOICES[0]
-
             self.fields['type'] = forms.ChoiceField(
                 choices=FORM_INSTRUCTION_TYPE_CHOICES,
                 widget=forms.RadioSelect(
-                    attrs={'class': 'd-inline instructionType'}
+                    attrs={'class': 'd-inline instructionType', 'id':'type'}
                 )
             )
 
@@ -187,3 +178,14 @@ class InstructionAdminForm(forms.ModelForm):
     class Meta:
         model = Instruction
         fields = '__all__'
+
+
+class DateRangeSearchForm(forms.Form):
+    from_date = forms.DateField(
+        input_formats=DATE_INPUT_FORMATS, required=False,
+        widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': 'From'})
+    )
+    to_date = forms.DateField(
+        input_formats=DATE_INPUT_FORMATS, required=False,
+        widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': 'To'})
+    )

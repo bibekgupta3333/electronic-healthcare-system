@@ -1,12 +1,12 @@
 import os
 import logging
+import re
 import xhtml2pdf.pisa as pisa
 from io import BytesIO
 from django.core.files.base import ContentFile
 from django.utils import timezone
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, render
 from django.http import HttpResponse
-from django.shortcuts import render_to_response
 from django.template.loader import get_template
 from services.xml.base64_attachment import Base64Attachment
 from services.emisapiservices import services
@@ -15,15 +15,18 @@ from django.urls import reverse
 import reportlab.lib.pagesizes as pdf_sizes
 from PIL import Image
 from django.conf import settings
+from instructions.models import Instruction
+#from silk.profiling.profiler import silk_profile
 import subprocess
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPORT_DIR = BASE_DIR + '/medicalreport/templates/medicalreport/reports/medicalreport.html'
+TEMP_DIR = BASE_DIR + '/medi/static/generic_pdf/'
 logger = logging.getLogger('timestamp')
 
 
-def link_callback(uri, rel):
+def link_callback(uri: str, rel) -> str:
     sUrl = settings.STATIC_URL
     sRoot = settings.STATIC_ROOT
 
@@ -43,7 +46,7 @@ def link_callback(uri, rel):
 class MedicalReport:
 
     @staticmethod
-    def render(params: dict):
+    def render(params: dict) -> HttpResponse:
         start_time = timezone.now()
         template = get_template(REPORT_DIR)
         html = template.render(params)
@@ -58,7 +61,7 @@ class MedicalReport:
             return HttpResponse("Error Rendering PDF", status=400)
 
     @staticmethod
-    def download(params: dict):
+    def download(params: dict) -> HttpResponse:
         template = get_template(REPORT_DIR)
         html = template.render(params)
         file = BytesIO()
@@ -71,7 +74,8 @@ class MedicalReport:
             return response
 
     @staticmethod
-    def get_pdf_file(params: dict):
+    #@silk_profile(name='Get PDF Medical Report Method')
+    def get_pdf_file(params: dict) -> ContentFile:
         template = get_template(REPORT_DIR)
         html = template.render(params)
         file = BytesIO()
@@ -81,25 +85,47 @@ class MedicalReport:
 
 
 class AttachmentReport:
-    def __init__(self, raw_xml: str):
+    def __init__(self, instruction: Instruction, raw_xml: str, path_file: str):
+        self.instruction = instruction
+        self.path_file = path_file
         self.raw_xml = raw_xml
         self.file_name = Base64Attachment(self.raw_xml).filename()
         self.file_type = self.file_name.split('.')[-1]
 
-    def render(self):
+    def render(self) -> HttpResponse:
         if self.file_type == "pdf":
             return self.render_pdf()
         elif self.file_type in ["rtf", "doc", "docx"]:
             return self.render_pdf_with_libreoffice()
-        elif self.file_type in ["jpg", "jpeg", "png", "tiff"]:
+        elif self.file_type in ["jpg", "jpeg", "png", "tiff", "tif"]:
             return self.render_image()
         else:
-            return self.render_error()
+            return self.render_download_file()
 
-    def render_error(self):
+    def download(self) -> HttpResponse:
+        attachment = Base64Attachment(self.raw_xml).data()
+        buffer = BytesIO()
+        buffer.write(attachment)
+        save_file = '%s_tmp_attachments.%s'%(self.instruction.pk, self.file_type)
+        f = open(TEMP_DIR + save_file, 'wb')
+        f.write(buffer.getvalue())
+        f.close()
+        download_file = open(TEMP_DIR + save_file, 'rb')
+        response = HttpResponse(download_file, content_type="application/octet-stream")
+        response['Content-Disposition'] = 'attachment; filename=' + self.file_name.split('\\')[-1]
+        return response
+
+    def render_download_file(self) -> HttpResponse:
+        link = reverse(
+            'medicalreport:download_attachment',
+            kwargs={'path_file': self.path_file, 'instruction_id': self.instruction.id}
+        )
+        return render_to_response('medicalreport/preview_and_download.html', {'link': link})
+
+    def render_error(self) -> HttpResponse:
         return render_to_response('errors/handle_errors_convert_file.html')
 
-    def render_pdf(self):
+    def render_pdf(self) -> HttpResponse:
         attachment = Base64Attachment(self.raw_xml).data()
         buffer = BytesIO()
         buffer.write(attachment)
@@ -109,27 +135,26 @@ class AttachmentReport:
         )
         return response
 
-    def render_pdf_with_libreoffice(self):
+    def render_pdf_with_libreoffice(self) -> HttpResponse:
         attachment = Base64Attachment(self.raw_xml).data()
         buffer = BytesIO()
         buffer.write(attachment)
-        folder = BASE_DIR + '/medi/static/generic_pdf/'
-        tmp_file = 'tmp.' + self.file_type
-        f = open(folder + tmp_file, 'wb')
+        tmp_file = '%s_tmp.%s'%(self.instruction.pk, self.file_type)
+        f = open(TEMP_DIR + tmp_file, 'wb')
         f.write(buffer.getvalue())
         f.close()
         subprocess.call(
-            ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
+            ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + TEMP_DIR + " " + TEMP_DIR + "/" + tmp_file),
             shell=True
         )
-        pdf = open(folder + 'tmp.pdf', 'rb')
+        pdf = open(TEMP_DIR + '%s_tmp.pdf'%self.instruction.pk, 'rb')
         response = HttpResponse(
             pdf,
             content_type="application/pdf",
         )
         return response
 
-    def render_image(self):
+    def render_image(self) -> HttpResponse:
         attachment = Base64Attachment(self.raw_xml).data()
         image = Image.open(BytesIO(attachment))
         image_format = image.format
@@ -140,7 +165,7 @@ class AttachmentReport:
         image.save(response, image_format)
         return response
 
-    def render_pdf_with_tiff(self, image, max_pages = 200):
+    def render_pdf_with_tiff(self, image: Image, max_pages: int=200) -> HttpResponse:
         height = image.tag[0x101][0]
         width = image.tag[0x100][0]
         out_pdf_io = BytesIO()

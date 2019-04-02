@@ -11,6 +11,9 @@
                 {% if medical_record.registration.re %}
                     <li><strong>Address: </strong>{{ medical_record.registration.re|join:", " }}</li>
                 {% endif %}
+                {% if instruction.get_str_date_range %}
+                    <li><strong>Date Range: </strong>{{ instruction.get_str_date_range }}</li>
+                {% endif %}
             </ul>
         </div>
         {% if instruction.type == 'AMRA' %}
