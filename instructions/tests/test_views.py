@@ -172,6 +172,7 @@ class TestCalculateNextPrev(TestInstructionBase):
             'next_page': 1,
             'prev_page': 1,
             'status': 0,
+            'page_length': None,
             'type': 'SARS',
             'next_disabled': 'disabled',
             'prev_disabled': 'disabled',

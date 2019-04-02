@@ -8,11 +8,13 @@ MANAGER_PERMISSIONS=[
     'view_instructionpermission',
     'add_instructionpermission',
     'change_instructionpermission',
-    'delete_instructionpermission'
+    'delete_instructionpermission',
+    'view_library',
 ]
 
 GP_PERMISSIONS=[
-    'view_instruction'
+    'view_instruction',
+    'view_library'
 ]
 
 OTHER_PERMISSIONS=[
@@ -176,5 +178,6 @@ INSTRUCTION_PERMISSIONS=[
     'view_summary_report',
     'view_account_pages',
     'authorise_fee',
-    'amend_fee'
+    'amend_fee',
+    'view_library'
 ]

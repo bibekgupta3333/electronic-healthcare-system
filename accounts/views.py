@@ -113,6 +113,21 @@ def account_view(request: HttpRequest) -> HttpResponse:
                 'label': 'Received after %s days'%organisation_fee.max_day_lvl_3
             })
 
+        if request.method == "POST":
+            new_organisation_password = generate_password(initial_range=1, body_rage=12, tail_rage=1)
+            gp_organisation.set_operating_system_salt_and_encrypted_password(new_organisation_password)
+            gp_organisation.save()
+
+            return render(request, 'accounts/accounts_view.html', {
+                'header_title': header_title,
+                'organisation_fee_data': organisation_fee_data,
+                'gp_preferences_form': gp_preferences_form,
+                'new_password': new_organisation_password,
+                'practice_code': gp_organisation.pk,
+                'has_amend_fee_perm': has_amend_fee_perm,
+                'band_fee_rate_data': band_fee_rate_data,
+            })
+
         return render(request, 'accounts/accounts_view.html', {
             'header_title': header_title,
             'organisation_fee_data': organisation_fee_data,

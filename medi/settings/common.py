@@ -69,7 +69,8 @@ INSTALLED_APPS = [
     'onboarding',
     'permissions',
     'payment',
-    'report'
+    'report',
+    'library',
 ]
 
 MIDDLEWARE = [
