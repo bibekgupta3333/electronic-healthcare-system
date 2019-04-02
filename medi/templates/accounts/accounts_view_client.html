@@ -302,6 +302,11 @@
     <script src="{% static 'js/instructions/instruction_views.js' %}"></script>
     <script>
         $(document).ready(function () {
+            $('#instructionsTable').DataTable();
+            $('#WeeklyInvoiceTable').DataTable();
+            $('.dataTables_filter, .dataTables_info, .dataTables_paginate, .dataTables_length').hide();
+            $('tr th a').removeAttr('href');
+            $('tr th a').addClass('text-dark');
             $('.pager').hide();
         });
 
@@ -329,9 +334,6 @@
                 $(this).parent().addClass('block_paid');
             }
         });
-
-        $('tr th a').removeAttr('href');
-        $('tr th a').addClass('text-dark');
     </script>
     
 {% endblock %}
