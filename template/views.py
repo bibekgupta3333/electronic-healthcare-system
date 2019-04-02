@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpRequest, HttpResponse, HttpResponseRedirect
 from template.forms import TemplateInstructionForm, TemplateQuestionForm,\
         TemplateConditionForm
 from template.functions import get_common_with_snomed, create_question,\
@@ -13,7 +13,7 @@ import json
 import ast
 
 
-def create_template(request):
+def create_template(request: HttpRequest) -> JsonResponse:
     if request.method == "POST":
         snomed_concepts = request.POST.getlist('common_condition[]')
         questions = request.POST.getlist('questions[]')
@@ -53,7 +53,7 @@ def create_template(request):
     })
 
 
-def get_template_data(request, template_id=None):
+def get_template_data(request: HttpRequest, template_id: str=None) -> JsonResponse:
     if not template_id:
         JsonResponse(status=404)
 
@@ -75,7 +75,7 @@ def get_template_data(request, template_id=None):
     return JsonResponse(data, status=200)
 
 
-def view_templates(request):
+def view_templates(request: HttpRequest) -> HttpResponse:
     header_title = "Templates"
     try:
         organisation = request.user.userprofilebase.clientuser.organisation
@@ -92,13 +92,13 @@ def view_templates(request):
     })
 
 
-def remove_template(request, template_id):
+def remove_template(request: HttpRequest, template_id: str) -> HttpResponseRedirect:
     template = get_object_or_404(TemplateInstruction, pk=template_id)
     template.delete()
     return redirect('template:view_templates')
 
 
-def edit_template(request, template_id):
+def edit_template(request: HttpRequest, template_id: str) -> HttpResponse:
     header_title = "Change Template"
     template = get_object_or_404(TemplateInstruction, pk=template_id)
     conditions = template.conditions.all().values_list('snomedct_id', 'snomedct__fsn_description')
@@ -149,7 +149,7 @@ def edit_template(request, template_id):
     })
 
 
-def new_template(request):
+def new_template(request:HttpRequest) -> HttpResponse:
     header_title = "New Template"
     template_form = TemplateInstructionForm()
     question_set = modelformset_factory(TemplateAdditionalQuestion, TemplateQuestionForm, extra=1)

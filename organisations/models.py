@@ -36,21 +36,31 @@ class OrganisationMedidata(OrganisationBase):
 
 
 class OrganisationClient(OrganisationBase):
-    INSURANCE_UNDERWRITER = 1
-    INSURANCE_CLAIM = 2
-    MEDICOLEGAL = 3
+    INSURER = 1
+    REINSURER = 2
+    BROKER = 3
+    SOLICITOR = 4
+    OUTSOURCER = 5
+    GOVERNMENT_AGENCY = 6
+    PHARMACEUTICALS = 7
+    RESEARCH = 8
+    OTHER = 9
 
     ROLE_CHOICES = (
-        (INSURANCE_UNDERWRITER, 'Insurance Underwriter'),
-        (INSURANCE_CLAIM, 'Insurance Claim'),
-        (MEDICOLEGAL, 'Medicolegal')
+        (INSURER, 'Insurer'),
+        (REINSURER, 'Reinsurer'),
+        (BROKER, 'Broker'),
+        (SOLICITOR, 'Solicitor'),
+        (OUTSOURCER, 'Outsourcer'),
+        (GOVERNMENT_AGENCY, 'Government agency'),
+        (PHARMACEUTICALS, 'Pharmaceuticals'),
+        (RESEARCH, 'Research'),
+        (OTHER, 'Other')
     )
 
     type = models.IntegerField(choices=ROLE_CHOICES)
     fca_number = models.CharField(max_length=255, blank=True)
     division = models.TextField(blank=True)
-    can_create_amra = models.BooleanField(default=False)
-    can_create_sars = models.BooleanField(default=False)
     contact_name = models.CharField(max_length=255, blank=True)
     contact_telephone = models.CharField(max_length=255, blank=True)
     contact_email = models.EmailField(blank=True)
@@ -139,7 +149,7 @@ class OrganisationGeneralPractice(models.Model):
     def __str__(self):
         return self.name
 
-    def set_operating_system_salt_and_encrypted_password(self, val):
+    def set_operating_system_salt_and_encrypted_password(self, val: str) -> None:
         salt = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
         iv_salt, iv_aes_key, ciphertext = aes_with_salt_encryption(val, salt)
         self.operating_system_salt_and_encrypted_iv = '{iv_salt}${iv_aes_key}'.format(
@@ -149,7 +159,7 @@ class OrganisationGeneralPractice(models.Model):
             salt=salt, aes_ciphertext=ciphertext
         )
 
-    def get_operating_system_salt_and_encrypted_password(self):
+    def get_operating_system_salt_and_encrypted_password(self) -> str:
         if self.operating_system_salt_and_encrypted_iv:
             return aes_with_salt_decryption(
                 self._operating_system_salt_and_encrypted_password,
@@ -162,6 +172,6 @@ class OrganisationGeneralPractice(models.Model):
         set_operating_system_salt_and_encrypted_password
     )
 
-    def is_active(self):
+    def is_active(self) -> bool:
         return self.live and self.accept_policy
 

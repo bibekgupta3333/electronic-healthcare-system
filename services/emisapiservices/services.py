@@ -10,6 +10,7 @@ import time
 
 
 logger = logging.getLogger('timestamp')
+event_logger = logging.getLogger('medidata.event')
 
 
 class EmisAPIServiceBase:
@@ -44,30 +45,26 @@ class EmisAPIServiceBase:
             logger.info("[CALL EMIS] %s seconds with url %s"%(total_time.seconds, request_uri))
 
         http_error_msg = ''
-        try:
-            if isinstance(r.reason, bytes):
-                try:
-                    reason = r.reason.decode('utf-8')
-                except UnicodeDecodeError:
-                    reason = r.reason.decode('iso-8859-1')
-            else:
-                reason = r.reason
+        if isinstance(r.reason, bytes):
+            try:
+                reason = r.reason.decode('utf-8')
+            except UnicodeDecodeError:
+                reason = r.reason.decode('iso-8859-1')
+        else:
+            reason = r.reason
 
-            if 400 <= r.status_code < 500:
-                http_error_msg = u'%s Client Error: %s for url: %s \n' \
-                                 u'Message: %s' % (r.status_code, reason, r.url, r.text)
+        if 400 <= r.status_code < 500:
+            http_error_msg = u'%s Client Error: %s for url: %s \n' \
+                             u'Message: %s' % (r.status_code, reason, r.url, r.text)
 
-            elif 500 <= r.status_code < 600:
-                http_error_msg = u'%s Server Error: %s for url: %s \n' \
-                                 u'Message: %s' % (r.status_code, reason, r.url, r.text)
+        elif 500 <= r.status_code < 600:
+            http_error_msg = u'%s Server Error: %s for url: %s \n' \
+                             u'Message: %s' % (r.status_code, reason, r.url, r.text)
 
-            if http_error_msg:
-                raise HTTPError(http_error_msg, response=r)
-        finally:
-            if http_error_msg:
-                return r.status_code
-
-            return r.text
+        if http_error_msg:
+            event_logger.error('FAILED: calling EMIS, reason:{http_error_msg}'.format(http_error_msg=http_error_msg))
+            return r.status_code
+        return r.text
 
 
 class GetAttachment(EmisAPIServiceBase):
@@ -138,4 +135,5 @@ class GetEmisStatusCode(EmisAPIServiceBase):
                 self.emis_password,
             )
         )
+        event_logger.info('EMIS Polling Status {result}'.format(result='SUCCESS' if r.status_code == 400 else 'UNAUTHORIZED'))
         return r.status_code

@@ -2,7 +2,7 @@ from django.test import tag
 
 from services.tests.xml_test_case import XMLTestCase
 from services.xml.auto_redactable import (
-    years_ago, auto_redact_by_conditions, auto_redact_consultations,
+    years_ago, auto_redact_by_conditions, auto_redact_consultations, auto_redact_by_link_conditions,
     auto_redact_medications, auto_redact_referrals, auto_redact_attachments,
     auto_redact_profile_events
 )
@@ -11,6 +11,7 @@ from services.xml.consultation import Consultation
 from services.xml.medication import Medication
 from services.xml.referral import Referral
 from services.xml.value_event import ValueEvent
+from services.xml.medical_record import MedicalRecord
 
 from instructions.models import Instruction, InstructionConditionsOfInterest
 from instructions import model_choices
@@ -25,6 +26,7 @@ class AutoRedactableTest(XMLTestCase):
     def setUp(self):
         super().setUp()
         medication_elements = self.parsed_xml.xpath(Medication.XPATH)
+        self.medical_record = MedicalRecord(self.parsed_xml)
         self.medications = [Medication(e) for e in medication_elements]
         self.instruction_with_range = mommy.make(
                 Instruction,
@@ -62,8 +64,8 @@ class AutoRedactableTest(XMLTestCase):
     def test_auto_redact_by_conditions(self):
         self.assertEqual(4, len(self.medications))
         self.assertEqual(
-            1,
-            len(auto_redact_by_conditions(self.medications, self.instruction))
+            0,
+            len(auto_redact_by_link_conditions(self.medications, self.instruction, self.medical_record))
         )
 
     def test_auto_redact_by_date(self):
@@ -106,8 +108,8 @@ class AutoRedactableTest(XMLTestCase):
         test_date = date(2018, 1, 1)
         self.assertEqual(4, len(self.medications))
         self.assertEqual(
-            3,
-            len(auto_redact_medications(self.medications, self.instruction, test_date))
+            0,
+            len(auto_redact_medications(self.medications, self.instruction, self.medical_record, current_date=test_date))
         )
 
     def test_auto_redact_medications_with_sars(self):

@@ -9,16 +9,16 @@ inst_statusDict["Completed"] = 2;
 inst_statusDict["Rejected"] = 3;
 inst_statusDict["Paid"] = 4;
 inst_statusDict["Finalising"] = 5;
-inst_statusDict["Generated Fail"] = 6;
+inst_statusDict["Fail"] = 6;
 
 gpuser_roleDict["All"] = -1;
-gpuser_roleDict["Manager"] = 0;
+gpuser_roleDict["GP Manager"] = 0;
 gpuser_roleDict["GP"] = 1;
 gpuser_roleDict["Other Practice Staff"] = 2;
 
 clientuser_roleDict["All"] = -1;
-clientuser_roleDict["Admin"] = 0;
-clientuser_roleDict["Client"] = 1;
+clientuser_roleDict["Client Manager"] = 0;
+clientuser_roleDict["Client Administrator"] = 1;
 
 medidatauser_roleDict["Medidata"] = 0;
 
@@ -49,10 +49,6 @@ function getObjectKeyByValue(obj, val){
     }
 }
 
-function instructionStatusFilter(selected_status){
-    window.location = '/instruction/view-pipeline/?status=' + inst_statusDict[selected_status] + '&type=' + $('#filterInstructionType').val();
-}
-
 function gpuserStatusFilter(selected_status){
     window.location = '/accounts/view-users/?status=' + gpuser_roleDict[selected_status] + '&type=' + $('#filterUserType').val() + '&user_type=GP';
 }
@@ -63,13 +59,6 @@ function mediuserStatusFilter(selected_status){
 
 function clientuserStatusFilter(selected_status){
     window.location = '/accounts/view-users/?status=' + clientuser_roleDict[selected_status] + '&type=' + $('#filterUserType').val() + '&user_type=CLT';
-}
-
-function typeFilter(){
-    if(getUrlParameter('status')){
-        status = getUrlParameter('status');
-    }
-    window.location = '/instruction/view-pipeline/?status=' + status + '&type=' + $('#filterInstructionType').val();
 }
 
 function userTypeFilter() {

@@ -324,7 +324,6 @@ class UserProfileForm(forms.ModelForm):
                 self.fields['email'].widget.attrs['disabled'] = True
 
 
-
 class UserProfileBaseForm(forms.ModelForm):
     class Meta:
         model = UserProfileBase

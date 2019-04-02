@@ -85,13 +85,13 @@ class MedicalReportDecorator(MedicalRecord):
 
     def acute_medications(self) -> List[Medication]:
         ret_xml = chronological_redactable_elements(
-            auto_redact_medications(super().acute_medications(), self.instruction)
+            auto_redact_medications(super().acute_medications(), self.instruction, self)
         )
         return ret_xml
 
     def repeat_medications(self) -> List[Medication]:
         ret_xml = chronological_redactable_elements(
-            auto_redact_medications(super().repeat_medications(), self.instruction)
+            auto_redact_medications(super().repeat_medications(), self.instruction, self)
         )
         return ret_xml
 
