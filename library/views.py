@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django_tables2 import RequestConfig
 from django.db.models import Q
+from django.db import IntegrityError
 
 from instructions.views import calculate_next_prev
 
@@ -61,3 +62,19 @@ def delete_library(request, library_id):
     library.hard_delete()
 
     return redirect('library:edit_library', event='delete')
+
+
+@login_required(login_url='/accounts/login')
+def edit_word_library(request, library_id):
+    library = get_object_or_404(Library, pk=library_id)
+    library.key = request.POST.get('key')
+    library.value = request.POST.get('value')
+    event = 'edit'
+    try:
+        library.save()
+        messages.success(request, 'Update word successfully')
+    except IntegrityError as e:
+        event = 'edit_error:{id}'.format(id=library.id)
+
+    return redirect('library:edit_library', event=event)
+
