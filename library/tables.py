@@ -21,12 +21,16 @@ class LibraryTable(tables.Table):
         )
 
     def render_edit_button(self, record):
-        return format_html('<button class="btn btn-fee text-light btn-sm" style="width:80px;">EDIT</button>')
+        return format_html(
+            '<button data-editLink="{edit_library_url}" class="btn btn-fee text-light btn-sm editButton" style="width:80px;">EDIT</button>'.format(
+                edit_library_url=reverse('library:edit_word_library', kwargs={'library_id': record.id})
+            )
+        )
 
     def render_delete_button(self, record):
         return format_html(
             '<button data-deleteLink="{delete_library_url}" class="btn btn-danger btn-sm deleteButton" data-toggle="modal" '
-            'data-target="#warningDeleteModal" style="width:90px;"><i class="fas fa-times"></i>&nbsp;REMOVE</button>'.format(
+            'data-target="#warningModal" style="width:90px;"><i class="fas fa-times"></i>&nbsp;REMOVE</button>'.format(
                 delete_library_url=reverse('library:delete_library', kwargs={'library_id': record.id})
             )
         )

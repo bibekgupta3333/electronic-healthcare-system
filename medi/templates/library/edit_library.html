@@ -19,30 +19,26 @@
 {% block Content %}
     <div>
     {% csrf_token %}
-        <form method="POST">
+        <form method="POST" action="" id="addWordForm">
             {% csrf_token %}
             {% include 'library/add_word_modal.html' %}
         </form>
-        <div class="modal fade" data-backdrop="static" tabindex="-1" role="dialog" id="warningDeleteModal">
+        <div class="modal fade" data-backdrop="static" tabindex="-1" role="dialog" id="warningModal">
             <div class="vertical-alignment-helper">
                 <div class="modal-dialog vertical-align-center" role="document">
                     <div class="modal-content">
                         <div class="modal-header custom-modal-header">
-                            <h3 class="col-12 modal-title text-center">Delete word</h3>
+                            <h3 class="col-12 modal-title text-center" id="warningHeader"></h3>
                         </div>
                         <div class="modal-body custom-modal-body">
-                            <p class="p-2 mt-2 pb-0 mb-0">
-                                Are you sure you wish to delete this Library Entry entry? This will not affect completed
-                                reports/records but will affect any 'in progress' or 'not started' instructions, unless
-                                redactions are already made.
-                            </p>
+                            <p class="p-2 mt-2 pb-0 mb-0" id="warningMessage"></p>
                         </div>
                         <div class="modal-footer custom-modal-footer">
                             <div class="col-md-6">
                                 <button type="button" class="btn btn-secondary btn-lg library-button" data-dismiss="modal">Go back</button>
                             </div>
                             <div class="col-md-6">
-                                <a href="#" class="btn btn-primary btn-lg library-button ml-5" id="continueDeleteButton">Continue</a>
+                                <a href="#" class="btn btn-primary btn-lg library-button ml-5 text-light" id="continueDeleteButton">Continue</a>
                             </div>
                         </div>
                     </div>
@@ -62,7 +58,7 @@
                             </p>
                         </div>
                         <div class="modal-footer custom-modal-footer justify-content-center">
-                            <button type="button" class="btn btn-lg btn-fee" data-dismiss="modal">Continue</button>
+                            <button type="button" class="btn btn-lg btn-fee text-light" data-dismiss="modal">Continue</button>
                         </div>
                     </div>
                 </div>
@@ -120,6 +116,7 @@
     <script src="{% static 'js/dataTables/jquery.dataTables.min.js' %}"></script>
     <script src="{% static 'js/dataTables/dataTables.bootstrap4.min.js' %}"></script>
     <script src="{% static 'js/instructions/instruction_views.js' %}"></script>
+    <script src="{% static 'js/library/library.js' %}"></script>
     <script>
         $('#libraryTable').DataTable({
             "pageLength": {{ page_length }},
@@ -132,7 +129,14 @@
             });
         }
 
-        if('{{ duplicate_error_message }}') {
+        if('{{ add_word_error_message }}') {
+            $('#headerModal').text('Add new word to the Surgery library');
+            $('#addWordModal').modal({
+                backdrop: 'static'
+            });
+        }else if('{{ edit_word_error_message }}') {
+            $('#headerModal').text('Edit word');
+            $('#addWordForm').attr('action', '{{ error_edit_link }}');
             $('#addWordModal').modal({
                 backdrop: 'static'
             });
@@ -146,16 +150,37 @@
         $(".page-link").each(function () {
             this.href = this.href + '&page_length=' + {{ page_length }} + '&search=' + '{{ search_input }}';
         });
+
         $('#search').val('{{ search_input }}');
 
+        $('.editButton').click(function () {
+            clean_modal();
+            setup_edit_modal();
+            var value = $(this).parent().prev().text();
+            var key = $(this).parent().prev().prev().text();
+            $('#id_value').val(value);
+            $('#id_key').val(key);
+            $('#addWordForm').attr('action', $(this).data('editlink'));
+            $('#warningModal').modal({
+                backdrop: 'status',
+            });
+        });
+
         $('.deleteButton').click(function () {
+            $('#warningHeader').text('Delete word');
+            $('#warningMessage').text('Are you sure you wish to delete this Library Entry entry? This will not affect completed' +
+                'reports/records but will affect any \'in progress\' or \'not started\' instructions, unless' +
+                'redactions are already made.');
             $('#continueDeleteButton').attr('href', $(this).data('deletelink'));
+            $('#continueDeleteButton').removeAttr('data-target data-toggle data-dismiss');
         });
 
         $('#AddWordButton').click(function () {
-           $('#addWordModal').modal({
-               backdrop: 'static',
-           });
+            clean_modal();
+            setup_add_modal();
+            $('#addWordModal').modal({
+                backdrop: 'static',
+            });
         });
 
         $('#libraryTable_page_length').val({{ page_length }});
