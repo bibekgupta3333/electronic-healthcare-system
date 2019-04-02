@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django_tables2 import RequestConfig
@@ -20,9 +20,12 @@ def edit_library(request, event):
     gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
     library = Library.objects.filter(gp_practice=gp_practice)
     library_form = LibraryForm()
-    duplicate_error_message = ''
+    add_word_error_message = ''
+    edit_word_error_message = ''
+    error_edit_link = ''
     if request.method == 'POST':
         library_form = LibraryForm(request.POST)
+        event = ''
         if library_form.is_valid():
             library_obj = library_form.save(commit=False)
             library_obj.gp_practice = gp_practice
@@ -30,15 +33,23 @@ def edit_library(request, event):
             library_form = LibraryForm()
             messages.success(request, 'Add word successfully')
         else:
-            duplicate_error_message = 'This word already exist in your library. If you wish to edit it, please go back' \
+            add_word_error_message = 'This word already exist in your library. If you wish to edit it, please go back' \
                                       'to the library and edit from there'
 
     if 'page_length' in request.GET:
         page_length = int(request.GET.get('page_length'))
 
     if 'search' in request.GET:
-        search_input = request.GET.get('search')
+        search_input = request.GExT.get('search')
         library = library.filter(Q(key__icontains=search_input) | Q(value__icontains=search_input))
+
+    if event.split(':')[0] == 'edit_error':
+        error_edit_id = event.split(':')[1]
+        error_libray = Library.objects.get(id=error_edit_id)
+        library_form = LibraryForm(instance=error_libray)
+        error_edit_link = reverse('library:edit_word_library', kwargs={'library_id': error_edit_id})
+        edit_word_error_message = 'This word already exist in your library. If you wish to edit it, please go back' \
+                                  'to the library and edit from there'
 
     table = LibraryTable(library)
     RequestConfig(request, paginate={'per_page': page_length}).configure(table)
@@ -52,7 +63,9 @@ def edit_library(request, event):
         'search_input': search_input,
         'library_form': library_form,
         'event': event,
-        'duplicate_error_message': duplicate_error_message,
+        'add_word_error_message': add_word_error_message,
+        'edit_word_error_message': edit_word_error_message,
+        'error_edit_link': error_edit_link
     })
 
 
@@ -77,4 +90,3 @@ def edit_word_library(request, library_id):
         event = 'edit_error:{id}'.format(id=library.id)
 
     return redirect('library:edit_library', event=event)
-
