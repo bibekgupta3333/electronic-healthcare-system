@@ -9,7 +9,7 @@ from django.http import HttpRequest, JsonResponse, HttpResponseRedirect
 from django_tables2 import RequestConfig, Column
 from django.views.decorators.cache import cache_page
 from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest, Setting, InstructionPatient
-from .tables import InstructionTable
+from .tables import InstructionTable, FeeInstructionTable
 from .model_choices import *
 from .forms import ScopeInstructionForm, AdditionQuestionFormset, SarsConsentForm, MdxConsentForm,\
         ReferenceForm, ConsentForm, InstructionDateRangeForm, DateRangeSearchForm
@@ -171,7 +171,7 @@ def get_table_fee_sensitive(request: HttpRequest, gp_practice_code: str) -> Inst
     instruction_query_set_11days = Q(created__range=(from_expected_date_11days, to_expected_date_11days))
 
     instruction_query_set = instruction_query_set.filter(instruction_query_set_3days | instruction_query_set_7days | instruction_query_set_11days)
-    table_fee = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
+    table_fee = FeeInstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
     table_fee.order_by = request.GET.get('sort', '-created')
     table_fee.paginate(page=request.GET.get('page_t2', 1), per_page=5)
 

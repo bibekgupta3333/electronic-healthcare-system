@@ -64,9 +64,6 @@ class AccountTable(tables.Table):
             'data-id': lambda record: record.pk
         }
 
-    def before_render(self, request):
-        self.user = request.user
-
     def render_type(self, record):
         type = record.type
         type_catagory = record.type_catagory
@@ -97,8 +94,7 @@ class AccountTable(tables.Table):
         )
 
     def render_cost(self, record):
-        if self.user.type == models.CLIENT_USER:
-            return record.gp_earns + record.medi_earns
+        return record.gp_earns + record.medi_earns
 
     def render_instruction_information(self, record):
         gp_practice = record.gp_practice
