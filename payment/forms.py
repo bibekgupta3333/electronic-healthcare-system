@@ -1,5 +1,6 @@
 from django import forms
 from django.utils.html import format_html
+from django.db.models import Q
 
 from .models import OrganisationFeeRate, InstructionVolumeFee
 from common.functions import get_url_page
@@ -82,12 +83,33 @@ class InstructionVolumeFeeForm(forms.ModelForm):
             if self.cleaned_data['max_volume_band_high'] >= self.cleaned_data['max_volume_band_top']:
                 raise forms.ValidationError("Invalid band value: Top band value must more than high band value")
 
+            owning_client = ''
+            all_fee_types = []
+            if self.initial:
+                owning_client = self.initial['client_org']
+                all_fee_types = InstructionVolumeFee.objects.filter(
+                    ~Q(fee_rate_type=self.initial['fee_rate_type']), client_org=owning_client
+                ).values_list('fee_rate_type', flat=True)
+
             organisation_client = self.cleaned_data['client_org']
             org_fee_type = self.cleaned_data['fee_rate_type']
-            organisation_fee = InstructionVolumeFee.objects.filter(client_org=organisation_client, fee_rate_type=org_fee_type).first()
+            organisation_fee = InstructionVolumeFee.objects.filter(
+                client_org=organisation_client, fee_rate_type=org_fee_type
+            ).first()
 
-            if organisation_fee:
-                raise forms.ValidationError(format_html('<strong>Rate type had selected:</strong>'))
+            if owning_client:
+                if organisation_client.pk == owning_client:
+                    if self.cleaned_data['fee_rate_type'] in all_fee_types:
+                        raise forms.ValidationError(
+                            format_html('<strong>{rate_type} type had been selected:</strong>'.format(
+                                rate_type=organisation_fee.get_fee_rate_type_display(),
+                                client_org=organisation_fee.client_org
+                            )))
+            elif organisation_fee:
+                raise forms.ValidationError(format_html('<strong>{rate_type} type of {client_org} had been selected:</strong>'.format(
+                    rate_type=organisation_fee.get_fee_rate_type_display(),
+                    client_org=organisation_fee.client_org
+                )))
 
             return self.cleaned_data
         except KeyError:

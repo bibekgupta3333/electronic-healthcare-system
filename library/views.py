@@ -40,7 +40,7 @@ def edit_library(request, event):
         page_length = int(request.GET.get('page_length'))
 
     if 'search' in request.GET:
-        search_input = request.GExT.get('search')
+        search_input = request.GET.get('search')
         library = library.filter(Q(key__icontains=search_input) | Q(value__icontains=search_input))
 
     if event.split(':')[0] == 'edit_error':
