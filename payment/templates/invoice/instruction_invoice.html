@@ -1,0 +1,36 @@
+{% load final_report_tags %}
+{% load static %}
+{% load bootstrap4 %}
+{% load custom_filters %}
+{% bootstrap_css %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Medidata Medical Website">
+        <meta name="author" content="Mohara Ltd.">
+        <title>Instruction Invoice</title>
+        <style>
+            @page {
+                size: a4 portrait;
+                @frame header_frame {
+                    -pdf-frame-content: header_content;
+                    left: 30pt; width: 532pt; top: 30pt; height: 60pt;
+                }
+                @frame content_frame {
+                    left: 30pt; width: 532pt; top: 90pt; height: 632pt;
+                }
+                @frame footer_frame {
+                    -pdf-frame-content: footer_content;
+                    left: 30pt; width: 532pt; top: 720pt; height: 130pt;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        client detail : {{ client_detail.organsation.trading_name }} {{ client_detail.organsation.legal_name }} {{ client_user.organisation.address }}
+        medidata detail : {{ medi_detail }} {{ medi_detail.payment_bank_holder_name }} {{ medi_detail.payment_bank_account_number }} {{ medi_detail.payment_bank_sort_code }}
+        date invoice : 
+    </body>
+</html>

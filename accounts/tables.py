@@ -8,6 +8,9 @@ from django.urls import reverse
 from permissions.templatetags.get_permissions import view_complete_report
 from django.template.defaultfilters import date
 from payment.models import WeeklyInvoice
+from organisations.models import OrganisationMedidata
+from django.utils import timezone
+from datetime import timedelta
 
 
 class UserTable(tables.Table):
@@ -150,6 +153,18 @@ class AccountTable(tables.Table):
         )
 
     def render_PDF_copy_of_invoice(self, record):
+        import ipdb; ipdb.set_trace()
+        medi_user = OrganisationMedidata.objects.first()
+        now = timezone.now()
+        date_detail = {
+            'date_invoice': now,
+            'dute_date': now + timedelta(days=7)
+        }
+        params = {
+            'client_detail': record.client_user,
+            'medi_detail': medi_user,
+            'date_detail': date_detail
+        }
         return format_html(
             "<a href='#invoiceModal' class='btn btn-success btn-block btn-sm invoiceDetailButton' role='button'>"
             "View</a>"
