@@ -11,10 +11,6 @@ class OrganisationFeeAdmin(CustomExportMixin, admin.ModelAdmin):
     class Media:
         js = ('js/custom_admin/payment_fee_admin.js', )
 
-    def delete_model(self, request, obj):
-        super().delete_model(request, obj)
-        obj.hard_delete()
-
 
 class GpOrganisationFeeAdmin(admin.ModelAdmin):
     raw_id_fields = ['gp_practice', ]
