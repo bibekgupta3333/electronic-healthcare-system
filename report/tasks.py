@@ -130,7 +130,6 @@ def generate_medicalreport_with_attachment(self, instruction_id: str, report_lin
                         )
                         pdf = open(folder + 'temp_%s.pdf' % unique, 'rb')
                         attachments_pdf.append(PyPDF2.PdfFileReader(pdf))
-                        pdf.close()
                     elif file_type in ['jpg', 'jpeg', 'png', 'tiff', 'tif']:
                         image = Image.open(buffer)
                         image_format = image.format
