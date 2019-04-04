@@ -19,22 +19,22 @@ def edit_library(request, event):
     search_input = ''
     gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
     library = Library.objects.filter(gp_practice=gp_practice)
-    library_form = LibraryForm()
+    library_form = LibraryForm(gp_org_id=gp_practice.pk)
     add_word_error_message = ''
     edit_word_error_message = ''
     error_edit_link = ''
     if request.method == 'POST':
-        library_form = LibraryForm(request.POST)
+        library_form = LibraryForm(request.POST, gp_org_id=gp_practice.pk)
         event = ''
         if library_form.is_valid():
             library_obj = library_form.save(commit=False)
             library_obj.gp_practice = gp_practice
             library_obj.save()
-            library_form = LibraryForm()
+            library_form = LibraryForm(gp_org_id=gp_practice.pk)
             messages.success(request, 'Add word successfully')
         else:
-            add_word_error_message = 'This word already exist in your library. If you wish to edit it, please go back' \
-                                      'to the library and edit from there'
+            add_word_error_message = 'This word already exists in your library. If you wish to edit it, please go back' \
+                                      ' to the library and edit from there'
 
     if 'page_length' in request.GET:
         page_length = int(request.GET.get('page_length'))
@@ -49,7 +49,7 @@ def edit_library(request, event):
         library_form = LibraryForm(instance=error_libray)
         error_edit_link = reverse('library:edit_word_library', kwargs={'library_id': error_edit_id})
         edit_word_error_message = 'This word already exist in your library. If you wish to edit it, please go back' \
-                                  'to the library and edit from there'
+                                  ' to the library and edit from there'
 
     table = LibraryTable(library)
     RequestConfig(request, paginate={'per_page': page_length}).configure(table)
