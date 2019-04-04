@@ -11,6 +11,7 @@ from payment.models import WeeklyInvoice
 from organisations.models import OrganisationMedidata
 from django.utils import timezone
 from datetime import timedelta
+from payment.functions import PaymentInvoice 
 
 
 class UserTable(tables.Table):
@@ -178,6 +179,8 @@ class AccountTable(tables.Table):
             'date_detail': date_detail,
             'instruction': record
         }
+        invoice_pdf = PaymentInvoice.get_invoice_pdf_file(params)
+        
         return format_html(
             "<a href='#invoiceModal' class='btn btn-success btn-block btn-sm invoiceDetailButton' role='button'>"
             "View</a>"
