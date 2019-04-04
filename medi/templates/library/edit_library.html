@@ -168,9 +168,9 @@
 
         $('.deleteButton').click(function () {
             $('#warningHeader').text('Delete word');
-            $('#warningMessage').text('Are you sure you wish to delete this Library Entry entry? This will not affect completed' +
-                'reports/records but will affect any \'in progress\' or \'not started\' instructions, unless' +
-                'redactions are already made.');
+            $('#warningMessage').text('Are you sure you wish to delete this Library entry? This will not affect completed' +
+                ' reports/records but will affect any \'in progress\' or \'not started\' instructions, unless' +
+                ' redactions are already made.');
             $('#continueDeleteButton').attr('href', $(this).data('deletelink'));
             $('#continueDeleteButton').removeAttr('data-target data-toggle data-dismiss');
         });
