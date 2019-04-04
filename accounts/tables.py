@@ -175,7 +175,8 @@ class AccountTable(tables.Table):
         params = {
             'client_detail': record.client_user,
             'medi_detail': medi_user,
-            'date_detail': date_detail
+            'date_detail': date_detail,
+            'instruction': record
         }
         return format_html(
             "<a href='#invoiceModal' class='btn btn-success btn-block btn-sm invoiceDetailButton' role='button'>"
