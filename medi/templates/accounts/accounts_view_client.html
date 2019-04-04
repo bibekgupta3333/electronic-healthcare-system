@@ -13,6 +13,7 @@
     <link href="{% static 'css/accounts/view_account.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/instructions/new_instruction.css' %}" rel="stylesheet"/>
     <link rel="stylesheet" href="{% static 'css/pretty-checkbox.min.css' %}">
+    <link href="{% static 'css/bootstrap-datepicker.min.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block Content %}
@@ -29,6 +30,36 @@
                     </div>
                     <div class="card-body">
                         <div class="col-12">
+                            <div class="row">
+                                <div class="col-8">
+                                    <div class="col-md-6">
+                                        {% for k, v in filter_number.items %}
+                                            <div class="number">
+                                                <button class="btn btn-fee text-light" id="{{ k|cut:' ' }}_t2" onclick="invoiceStatusFilter('{{ k }}');">{{ k }} ({{ v }})</button>
+                                            </div>
+                                        {% endfor %}
+                                        <div class="col-md-12">&nbsp;</div>
+                                        <label>Show per page </label>
+                                        <select name="libraryTable_length" id="libraryTable_page_length" class="form-control col-md-3">
+                                            <option value="10">10</option>
+                                            <option value="25">25</option>
+                                            <option value="50">50</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-4 pt-2">
+                                    <form method="POST">
+                                    {% csrf_token %}
+                                        <div class="row">
+                                            {% bootstrap_field date_range_form.from_date form_group_class='col-md-5' show_label=False %}
+                                            {% bootstrap_field date_range_form.to_date form_group_class='col-md-5' show_label=False %}
+                                            {% bootstrap_button 'Search' button_type="submit" button_class="btn-primary btn-block col-md-2" %}
+                                            <input type="hidden" name="status_input" id="id_status_input" value="{{ filter_status }}">
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="col-12">&nbsp;</div>
                             {% render_table invoicing_table 'django_tables2/bootstrap.html' %}
                             {% bootstrap_pagination  parameter_name='page' page=invoicing_table.page pages_to_show=5 size='small' %}
                         </div>
@@ -300,6 +331,7 @@
     <script src="{% static 'js/dataTables/jquery.dataTables.min.js' %}"></script>
     <script src="{% static 'js/dataTables/dataTables.bootstrap4.min.js' %}"></script>
     <script src="{% static 'js/instructions/instruction_views.js' %}"></script>
+    <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
     <script>
         $(document).ready(function () {
             $('#instructionsTable').DataTable();
@@ -332,6 +364,46 @@
             if( $(this).text() == 'Paid' ) {
                 $(this).parent().removeClass('block_unpaid')
                 $(this).parent().addClass('block_paid');
+            }
+        });
+
+        var start = new Date(1900, 1, 1);
+        var end = new Date();
+
+        $('#id_from_date').datepicker({
+            clearBtn: true,
+            startDate : start,
+            endDate   : end,
+            autoclose : true,
+            format: 'mm/dd/yyyy',
+        }).on('changeDate', function(){
+            if($(this).val()){
+                $('#id_to_date').datepicker('setStartDate', new Date(reformatted_date($(this).val())));
+            }else {
+                $('#id_to_date').datepicker('setStartDate', start);
+            }
+        });
+
+        $('#id_to_date').datepicker({
+            clearBtn: true,
+            startDate : start,
+            endDate   : end,
+            autoclose : true,
+            format: 'mm/dd/yyyy',
+        }).on('changeDate', function(){
+            if($(this).val()){
+                $('#id_from_date').datepicker('setEndDate', new Date(reformatted_date($(this).val())));
+            }else {
+                $('#id_from_date').datepicker('setEndDate', end);
+            }
+        });
+
+        $('#libraryTable_page_length').val({{ page_length }});
+        $('#libraryTable_page_length').change(function () { 
+            if( getUrlParameter('status') ) {
+                window.location = '/accounts/view-account/?status=' + getUrlParameter('status') + "&page_length=" + $(this).val();
+            } else {
+                window.location = '/accounts/view-account/?page_length=' + $(this).val();
             }
         });
     </script>

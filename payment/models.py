@@ -96,8 +96,8 @@ class WeeklyInvoice(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     client_org = models.ForeignKey(OrganisationClient, on_delete=models.CASCADE, verbose_name='Client Organisation', null=True)
-    number_instructions = models.IntegerField(verbose_name='Number Instructions', default=0)
-    total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Total cost in week')
+    number_instructions = models.IntegerField(verbose_name='Number of Instructions', default=0)
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Total cost in invoice')
     paid = models.BooleanField(default=False)
 
     def __str__(self):
