@@ -67,3 +67,7 @@ function userTypeFilter() {
     }
     window.location = '/accounts/view-users/?status=' + status + '&type=' + $('#filterUserType').val();
 }
+
+function invoiceStatusFilter(selected_status){
+    window.location = '/accounts/view-account/?status=' + inst_statusDict[selected_status];
+}

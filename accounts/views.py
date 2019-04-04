@@ -1,4 +1,6 @@
 import datetime
+import dateutil
+import pytz
 
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
@@ -20,8 +22,7 @@ from django_tables2 import RequestConfig
 from accounts.forms import AllUserForm, NewGPForm, NewClientForm, NewMediForm,\
         UserProfileForm, UserProfileBaseForm
 from instructions.models import Instruction
-from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE
-
+from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_PAID
 from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences, ClientUser
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from payment.model_choices import *
@@ -34,13 +35,26 @@ from .tables import AccountTable, PaymentLogTable
 from django_tables2 import RequestConfig, Column
 from instructions.views import calculate_next_prev
 from typing import Union, List, Dict
-
+from instructions.forms import DateRangeSearchForm
 from django.conf import settings
 DEFAULT_FROM = settings.DEFAULT_FROM
 
 from .functions import change_role, remove_user, get_table_data,\
         get_post_new_user_data, get_user_type_form, reset_password,\
         check_ip_from_n3_hscn, get_client_ip
+
+
+def count_status_invoice_table(query) -> Dict[str, int]:
+    complete_total_count = query.filter(status=INSTRUCTION_STATUS_COMPLETE).count()
+    paid_total_count = query.filter(status=INSTRUCTION_STATUS_PAID).count()
+    all_total_count = query.count()
+    filter_number = {
+        'All': all_total_count,
+        'Completed': complete_total_count,
+        'Paid': paid_total_count
+    }
+
+    return filter_number
 
 
 @login_required(login_url='/accounts/login')
@@ -139,14 +153,35 @@ def account_view(request: HttpRequest) -> HttpResponse:
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
 
     #   Table for block 1
+    date_range_form = DateRangeSearchForm()
     cost_column_name = 'Cost £'
     instruction_query_set = Instruction.objects.filter(
         client_user__organisation=client_organisation,
-        status=INSTRUCTION_STATUS_COMPLETE
+        status__in=[INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_PAID]
     )
+    filter_number = count_status_invoice_table(instruction_query_set)
+
+    if request.method == 'POST':
+        if request.POST.get('from_date', '') and request.POST.get('to_date', ''):
+            from_date = dateutil.parser.parse(request.POST.get('from_date', '')).replace(tzinfo=pytz.UTC)
+            to_date = dateutil.parser.parse(request.POST.get('to_date', '')).replace(tzinfo=pytz.UTC)
+            instruction_query_set = instruction_query_set.filter(completed_signed_off_timestamp__range=(from_date, to_date))
+            filter_number = count_status_invoice_table(instruction_query_set)
+
+    page_length = 10
+    if 'page_length' in request.GET:
+        page_length = int(request.GET.get('page_length'))
+
+    filter_status_btn = int(request.GET.get('status', -1))
+    filter_status_search = int(request.GET.get('status_input', -1))
+    if filter_status_btn != -1:
+        instruction_query_set = instruction_query_set.filter(status=filter_status_btn)
+    elif filter_status_search != -1:
+        instruction_query_set = instruction_query_set.filter(status=filter_status_search)
+
     table_block_1 = AccountTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
     table_block_1.order_by = '-created'
-    table_block_1.paginate(page=request.GET.get('page', 1), per_page=5)
+    table_block_1.paginate(page=request.GET.get('page', 1), per_page=page_length)
 
     #   Table for block 2
     claim_table = dict()
@@ -211,7 +246,11 @@ def account_view(request: HttpRequest) -> HttpResponse:
 
     return render(request, 'accounts/accounts_view_client.html', {
         'header_title': header_title,
+        'filter_number': filter_number,
+        'page_length': page_length,
         'invoicing_table': table_block_1,
+        'filter_status': filter_status_btn,
+        'date_range_form': date_range_form,
         'claim_table': claim_table,
         'under_table': under_table,
         'sars_table': sars_table,

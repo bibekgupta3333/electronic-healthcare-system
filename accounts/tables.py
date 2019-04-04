@@ -46,7 +46,7 @@ class AccountTable(tables.Table):
     client_ref = tables.Column(empty_values=(), default='-')
     instruction_information = tables.Column(empty_values=(), default='-')
     PDF_copy_of_invoice = tables.Column(empty_values=(), default='-')
-    # created = tables.DateTimeColumn(format='D j M Y')
+    complete_date = tables.DateTimeColumn(format='D j M Y')
     user = None
 
     class Meta:
@@ -56,8 +56,9 @@ class AccountTable(tables.Table):
         }
         model = Instruction
         fields = (
-            'client_ref', 'medi_ref', 'patient_information', 'cost', 'type',
-            'instruction_information', 'PDF_copy_of_invoice'
+            'status', 'client_ref', 'medi_ref', 'patient_information', 'cost', 
+            'type', 'complete_date', 'instruction_information',
+            'PDF_copy_of_invoice'
         )
         template_name = 'django_tables2/semantic.html'
         row_attrs = {
@@ -82,6 +83,18 @@ class AccountTable(tables.Table):
                 '<strong>{}</strong>', type
             )
 
+    def render_status(self, value, record):
+        STATUS_DICT = {
+            'New': 'badge-primary',
+            'In Progress': 'badge-warning',
+            'Paid': 'badge-info',
+            'Completed': 'badge-success',
+            'Rejected': 'badge-danger',
+            'Finalising': 'badge-secondary',
+            'Fail': 'badge-dark'
+        }
+        return format_html('<h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
+
     def render_client_ref(self, record):
         client_ref = record.your_ref
         if not client_ref:
@@ -95,6 +108,9 @@ class AccountTable(tables.Table):
 
     def render_cost(self, record):
         return record.gp_earns + record.medi_earns
+
+    def render_complete_date(self, record):
+        return record.completed_signed_off_timestamp
 
     def render_instruction_information(self, record):
         gp_practice = record.gp_practice
@@ -153,6 +169,7 @@ class AccountTable(tables.Table):
 
 
 class PaymentLogTable(tables.Table):
+    invoice_attachment = tables.Column(empty_values=(), default='-')
     status = tables.Column(empty_values=(), default='-', attrs={
         'td': {
             'class': 'status_paid'
@@ -166,7 +183,8 @@ class PaymentLogTable(tables.Table):
         }
         model = WeeklyInvoice
         fields = (
-            'start_date', 'end_date', 'number_instructions', 'total_cost', 'status'
+            'start_date', 'end_date', 'number_instructions', 'total_cost', 'status',
+            'invoice_attachment'
         )
         template_name = 'django_tables2/semantic.html'
         row_attrs = {
@@ -176,3 +194,9 @@ class PaymentLogTable(tables.Table):
     def render_status(self, record):
         status = "Paid" if record.paid else "Unpaid"
         return format_html("<strong>{}</strong>", status)
+
+    def render_invoice_attachment(self, record):
+        return format_html(
+            "<a href='#invoiceModal' class='btn btn-secondary btn-block btn-sm invoiceDetailButton' role='button'>"
+            "View</a>"
+        )
