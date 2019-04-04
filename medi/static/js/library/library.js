@@ -12,8 +12,8 @@ function setup_edit_modal() {
     $('#warningHeader').text('Edit word');
     $('#keyLabelInput').text('Word');
     $('#warningMessage').text('Are you sure you wish to edit this Library Entry entry? This will not affect completed' +
-        'reports/records but will affect any \'in progress\' or \'not started\' instructions, unless' +
-        'redactions are already made.');
+        ' reports/records but will affect any \'in progress\' or \'not started\' instructions, unless' +
+        ' redactions are already made.');
     $('#continueDeleteButton').attr('href', '#addWordModal');
     $('#continueDeleteButton').attr('data-target', '#addWordModal');
     $('#continueDeleteButton').attr('data-toggle', 'modal');
