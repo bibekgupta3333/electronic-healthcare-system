@@ -9,7 +9,7 @@ from django.http import HttpRequest, JsonResponse, HttpResponseRedirect
 from django_tables2 import RequestConfig, Column
 from django.views.decorators.cache import cache_page
 from .models import Instruction, InstructionAdditionQuestion, InstructionConditionsOfInterest, Setting, InstructionPatient
-from .tables import InstructionTable
+from .tables import InstructionTable, FeeInstructionTable
 from .model_choices import *
 from .forms import ScopeInstructionForm, AdditionQuestionFormset, SarsConsentForm, MdxConsentForm,\
         ReferenceForm, ConsentForm, InstructionDateRangeForm, DateRangeSearchForm
@@ -28,6 +28,7 @@ from .print_consents import MDXDualConsent
 from report.models import ExceptionMerge
 from medicalreport.functions import create_patient_report
 from template.models import TemplateInstruction
+from payment.models import GpOrganisationFee
 #from silk.profiling.profiler import silk_profile
 
 from datetime import timedelta
@@ -170,7 +171,7 @@ def get_table_fee_sensitive(request: HttpRequest, gp_practice_code: str) -> Inst
     instruction_query_set_11days = Q(created__range=(from_expected_date_11days, to_expected_date_11days))
 
     instruction_query_set = instruction_query_set.filter(instruction_query_set_3days | instruction_query_set_7days | instruction_query_set_11days)
-    table_fee = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
+    table_fee = FeeInstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
     table_fee.order_by = request.GET.get('sort', '-created')
     table_fee.paginate(page=request.GET.get('page_t2', 1), per_page=5)
 
@@ -244,7 +245,9 @@ def calculate_next_prev(page=None, **kwargs) -> Dict[str, str]:
 
         return {
             'next_page': next_page, 'prev_page': prev_page,
-            'status': kwargs['filter_status'], 'type': kwargs['filter_type'],
+            'status': kwargs.get('filter_status'),
+            'type': kwargs.get('filter_type'),
+            'page_length': kwargs.get('page_length'),
             'next_disabled': next_disabled, 'prev_disabled': prev_disabled
         }
 
@@ -260,6 +263,18 @@ def create_or_update_instruction(
         instruction = get_object_or_404(Instruction, pk=instruction_id)
     else:
         instruction = Instruction()
+
+        fee_data = GpOrganisationFee.objects.filter(gp_practice=gp_practice).first()
+        if fee_data:
+            instruction.ins_max_day_lvl_1 = fee_data.organisation_fee.max_day_lvl_1
+            instruction.ins_max_day_lvl_2 = fee_data.organisation_fee.max_day_lvl_2
+            instruction.ins_max_day_lvl_3 = fee_data.organisation_fee.max_day_lvl_3
+            instruction.ins_max_day_lvl_4 = fee_data.organisation_fee.max_day_lvl_4
+            instruction.ins_amount_rate_lvl_1 = fee_data.organisation_fee.amount_rate_lvl_1
+            instruction.ins_amount_rate_lvl_2 = fee_data.organisation_fee.amount_rate_lvl_2
+            instruction.ins_amount_rate_lvl_3 = fee_data.organisation_fee.amount_rate_lvl_3
+            instruction.ins_amount_rate_lvl_4 = fee_data.organisation_fee.amount_rate_lvl_4
+
     if request.user.type == CLIENT_USER:
         instruction.client_user = request.user.userprofilebase.clientuser
         instruction.type = scope_form.cleaned_data['type']
@@ -287,6 +302,7 @@ def create_or_update_instruction(
         instruction.date_range_from = from_date
         instruction.date_range_to = to_date
 
+    instruction.type_catagory = request.POST.get('type_catagory', 3)
     instruction.patient_information_id = patient_instruction.id
     instruction.save()
 

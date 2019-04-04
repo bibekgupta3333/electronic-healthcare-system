@@ -20,3 +20,21 @@
 .btn-fee {
   background-color: #296799;
 }
+
+.block-gray {
+  background-color: rgba(0 , 0, 0, 0.3);
+}
+
+.block-gray .warning_icon {
+  font-size: 72px;
+}
+
+.block_paid {
+  background-color: rgba(0 , 170, 0, 0.1);
+  color: black;
+}
+
+.block_unpaid { 
+  background-color: rgba(255 , 0, 0, 0.1);
+  color: black;
+}

@@ -233,7 +233,7 @@ class InstructionAdmin(CustomImportExportModelAdmin):
         }),
         ('Payment Information', {
             'fields': (
-                'gp_earns', 'medi_earns', 'client_payment_reference', 'gp_payment_reference'
+                'gp_earns', 'medi_earns', 'client_payment_reference', 'gp_payment_reference', 'invoice_in_week'
             )
         })
     )

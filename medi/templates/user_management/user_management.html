@@ -105,7 +105,7 @@
         {% if perms.permissions.view_instructionpermission %}
             <form action="{% url 'accounts:update_permission' %}" id="permissionForm" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
-                <table class="table table-striped table-bordered table-hover dataTable no-footer">
+                <table class="table table-striped table-bordered table-hover dataTable no-footer table-responsive">
                     {{ permission_formset.management_form }}
                     <thead>
                         <tr class="text-center">

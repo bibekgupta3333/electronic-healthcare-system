@@ -157,12 +157,10 @@ def generate_medicalreport_with_attachment(self, instruction_id: str, report_lin
                             c.save()
                             attachments_pdf.append(PyPDF2.PdfFileReader(out_pdf_io))
                         else:
-                            pdf_bytes = img2pdf.convert('img_temp_%s.pdf' % unique)
-                            f = open(folder + 'img_temp_%s.pdf' % unique, 'wb')
-                            f.write(pdf_bytes)
-                            attachments_pdf.append(PyPDF2.PdfFileReader(f))
-                            image.close()
-                            f.close()
+                            image.save(folder + 'img_temp_%s.' % unique + image_format)
+                            pdf_bytes = img2pdf.convert(folder + 'img_temp_%s.' % unique + image_format)
+                            buffer = io.BytesIO(pdf_bytes)
+                            attachments_pdf.append(PyPDF2.PdfFileReader(buffer))
                     else:
                         # zipped unsupported file type
                         file_name = Base64Attachment(raw_xml_or_status_code).filename()

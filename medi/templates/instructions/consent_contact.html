@@ -346,6 +346,7 @@
                 setTimeout(function(){$("#confirmDialog").popup('show')}, 300);
             }
             else if( $('#id_patient_telephone_mobile').val().length > 11 && $('#id_patient_alternate_phone').val().length > 11 ) {
+                $('#warningTimeout').modal('hide');
                 return false;
             }
             else {

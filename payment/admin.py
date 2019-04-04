@@ -1,7 +1,8 @@
 from django.contrib import admin
-from .models import OrganisationFeeRate, InstructionVolumeFee, GpOrganisationFee
+from .models import OrganisationFeeRate, InstructionVolumeFee, GpOrganisationFee, WeeklyInvoice
 from .forms import OrganisationFeeForm, InstructionVolumeFeeForm
-from common.import_export import CustomExportMixin
+from common.import_export import CustomExportMixin, CustomImportExportModelAdmin
+from import_export import resources
 
 
 class OrganisationFeeAdmin(CustomExportMixin, admin.ModelAdmin):
@@ -9,10 +10,6 @@ class OrganisationFeeAdmin(CustomExportMixin, admin.ModelAdmin):
 
     class Media:
         js = ('js/custom_admin/payment_fee_admin.js', )
-
-    def delete_model(self, request, obj):
-        super().delete_model(request, obj)
-        obj.hard_delete()
 
 
 class GpOrganisationFeeAdmin(admin.ModelAdmin):
@@ -42,14 +39,34 @@ class GpOrganisationFeeAdmin(admin.ModelAdmin):
 
 class InstructionVolumeFeeClientAdmin(admin.ModelAdmin):
     form = InstructionVolumeFeeForm
-    raw_id_fields = ('client_organisation', )
+    raw_id_fields = ('client_org', )
     fields = (
-        'client_organisation', 'max_volume_band_lowest', 'max_volume_band_low', 'max_volume_band_medium', 'max_volume_band_top',
-        'fee_rate_lowest', 'fee_rate_low', 'fee_rate_medium', 'fee_rate_top', 'vat'
+        'client_org', 'max_volume_band_lowest', 'max_volume_band_low', 'max_volume_band_medium', 'max_volume_band_high', 'max_volume_band_top',
+        'fee_rate_lowest', 'fee_rate_low', 'fee_rate_medium', 'fee_rate_high', 'fee_rate_top', 'fee_rate_type', 'vat'
+    )
+
+
+class WeeklyInvoiceResource(resources.ModelResource):
+    class Meta:
+        model = WeeklyInvoice
+        fields = ('id', 'start_date', 'end_date', 'number_instructions', 'total_cost', 'paid')
+
+    def before_import(self, dataset, using_transactions, dry_run, **kwargs):
+        columns = []
+        for column in dataset.headers:
+            columns.append(column.lower())
+        dataset.headers = columns
+
+
+class WeeklyInvoiceAdmin(CustomImportExportModelAdmin):
+    resource_class = WeeklyInvoiceResource
+    fields = (
+        'start_date', 'end_date', 'client_org', 'number_instructions', 'total_cost', 'paid'
     )
 
 
 admin.site.register(OrganisationFeeRate, OrganisationFeeAdmin)
 admin.site.register(InstructionVolumeFee, InstructionVolumeFeeClientAdmin)
 admin.site.register(GpOrganisationFee, GpOrganisationFeeAdmin)
+admin.site.register(WeeklyInvoice, WeeklyInvoiceAdmin)
 
