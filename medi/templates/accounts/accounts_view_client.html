@@ -32,7 +32,7 @@
                         <div class="col-12">
                             <div class="row">
                                 <div class="col-8">
-                                    <div class="col-md-6">
+                                    <div class="col-md-12">
                                         {% for k, v in filter_number.items %}
                                             <div class="number">
                                                 <button class="btn btn-fee text-light" id="{{ k|cut:' ' }}_t2" onclick="invoiceStatusFilter('{{ k }}');">{{ k }} ({{ v }})</button>
@@ -40,7 +40,7 @@
                                         {% endfor %}
                                         <div class="col-md-12">&nbsp;</div>
                                         <label>Show per page </label>
-                                        <select name="libraryTable_length" id="libraryTable_page_length" class="form-control col-md-3">
+                                        <select name="libraryTable_length" id="libraryTable_page_length" class="form-control col-md-2">
                                             <option value="10">10</option>
                                             <option value="25">25</option>
                                             <option value="50">50</option>
