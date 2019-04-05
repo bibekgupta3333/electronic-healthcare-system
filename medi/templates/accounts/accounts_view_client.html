@@ -95,7 +95,7 @@
                                                 {% for key, value in under_table.items %}
                                                     <tr class="text-center">
                                                         <td>{{ key }}</td>
-                                                        <td>{{ value }}&nbsp;£</td>
+                                                        <td>£&nbsp;{{ value }}</td>
                                                     </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -122,7 +122,7 @@
                                                 {% for key, value in claim_table.items %}
                                                     <tr class="text-center">
                                                         <td>{{ key }}</td>
-                                                        <td>{{ value }}&nbsp;£</td>
+                                                        <td>£&nbsp;{{ value }}</td>
                                                     </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -149,7 +149,7 @@
                                                 {% for key, value in sars_table.items %}
                                                     <tr class="text-center">
                                                         <td>{{ key }}</td>
-                                                        <td>{{ value }}&nbsp;£</td>
+                                                        <td>£&nbsp;{{ value }}</td>
                                                     </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -200,9 +200,9 @@
                                             {% for key, value in GPRate_table.items %}
                                                 <tr class="text-center">
                                                     <td class="btn-fee text-light"><strong>{{ key }}&nbsp;Days</strong></td>
-                                                    <td>{{ value.0 }}&nbsp;£</td>
-                                                    <td>{{ value.1 }}&nbsp;£</td>
-                                                    <td>{{ value.2 }}&nbsp;£</td>
+                                                    <td>£&nbsp;{{ value.0 }}</td>
+                                                    <td>£&nbsp;{{ value.1 }}</td>
+                                                    <td>£&nbsp;{{ value.2 }}</td>
                                                 </tr>
                                             {% endfor %}
                                         </tbody>
