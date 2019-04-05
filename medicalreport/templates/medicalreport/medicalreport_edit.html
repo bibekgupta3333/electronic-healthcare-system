@@ -10,6 +10,7 @@
 
 {% block ExtraHead %}
     <link rel="stylesheet" href="{% static 'medicalreport/css/medicalreport.css' %}">
+    <link rel="stylesheet" href="{% static 'css/library/library.css' %}">
     <link href="{% static 'css/bootstrap-datepicker.min.css' %}" rel="stylesheet"/>
     <link rel="stylesheet" href="{% static 'css/pretty-checkbox.min.css' %}">
 {% endblock %}
@@ -133,6 +134,15 @@
     </div>
 
     {% endcache %}
+
+    <a href="javascript:;" class="btn btn-primary" id="report-toolbox-open-modal">Report Toolbox</a>
+    <div class="report-toolbox-modal" id="report-toolbox-modal">
+        {% include "library/report_toolbox_modal.html" %}
+    </div>
+    <form method="POST" action="{% url 'library:add_word_library' %}" id="addWordForm">
+        {% csrf_token %}
+        {% include "library/add_word_modal.html" %}
+    </form>
 {% endblock %}
 
 {% block Script %}
@@ -157,6 +167,10 @@
 
         $('#patient-info-open-modal').on('click', function () {
            $('#patientInfo').toggle();
+        });
+
+        $('#report-toolbox-open-modal').on('click', function () {
+           $('#report-toolbox-modal').toggle();
         });
 
         $('input:checkbox').on('change', function(){
@@ -210,6 +224,12 @@
            $('#loadingModal').modal({
                 backdrop: "static"
             }); 
+        });
+
+        $('#addWordForm').submit(function(e) {
+            addWordLibrary();
+            $("#addWordModal").modal('hide');
+            return false;
         });
     </script>
 {% endblock %}
