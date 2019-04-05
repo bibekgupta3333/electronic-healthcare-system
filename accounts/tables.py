@@ -8,6 +8,12 @@ from django.urls import reverse
 from permissions.templatetags.get_permissions import view_complete_report
 from django.template.defaultfilters import date
 from payment.models import WeeklyInvoice
+from organisations.models import OrganisationMedidata
+from django.utils import timezone
+from datetime import timedelta
+from payment.functions import PaymentInvoice 
+from django.conf import settings
+import uuid
 
 
 class UserTable(tables.Table):
@@ -141,7 +147,7 @@ class AccountTable(tables.Table):
             "data-detail_start_date='{}'"
             "data-detail_complete_date='{}'"
             "data-result_date='{}'"
-            ">View</span>"
+            "><i class='fas fa-search'></i>&nbsp;&nbsp;View</span>"
             "</a>",
             record.id,
             patient.get_full_name(),
@@ -162,9 +168,32 @@ class AccountTable(tables.Table):
         )
 
     def render_PDF_copy_of_invoice(self, record):
+        if not record.invoice_pdf_file:
+            medi_user = OrganisationMedidata.objects.first()
+            now = timezone.now()
+            date_detail = {
+                'date_invoice': now,
+                'dute_date': now + timedelta(days=7)
+            }
+            client_detail = record.client_user.organisation
+            params = {
+                'client_detail': client_detail,
+                'medi_detail': medi_user,
+                'date_detail': date_detail,
+                'record': [record, ]
+            }
+
+            uuid_hex = uuid.uuid4().hex
+            record.invoice_pdf_file.save('invoice_%s.pdf'%uuid_hex, PaymentInvoice.get_invoice_pdf_file(params))
+        
+        path = settings.MEDIA_URL + str(record.invoice_pdf_file)
         return format_html(
-            "<a href='#invoiceModal' class='btn btn-success btn-block btn-sm invoiceDetailButton' role='button'>"
-            "View</a>"
+            '<a href="{}" target="_blank">'
+            '<button type="button" class="btn btn-success btn-block btn-sm">'
+            '<i class="fas fa-search"></i>&nbsp;&nbsp;Click to preview'
+            '</button>'
+            '</a>',
+            path
         )
 
 
@@ -196,7 +225,12 @@ class PaymentLogTable(tables.Table):
         return format_html("<strong>{}</strong>", status)
 
     def render_invoice_attachment(self, record):
+        path = settings.MEDIA_URL + str(record.weekly_invoice_pdf_file)
         return format_html(
-            "<a href='#invoiceModal' class='btn btn-secondary btn-block btn-sm invoiceDetailButton' role='button'>"
-            "View</a>"
+            '<a href="{}" target="_blank">'
+            '<button type="button" class="btn btn-secondary btn-block btn-sm">'
+            '<i class="fas fa-search"></i>&nbsp;&nbsp;Click to preview'
+            '</button>'
+            '</a>',
+            path
         )
