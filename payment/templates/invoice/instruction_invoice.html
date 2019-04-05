@@ -29,20 +29,23 @@
         </style>
     </head>
     <body>
-        client detail : {{ client_detail.organsation.trading_name }} {{ client_detail.organsation.legal_name }} {{ client_user.organisation.address }}
-        medidata detail : {{ medi_detail }} {{ medi_detail.payment_bank_holder_name }} {{ medi_detail.payment_bank_account_number }} {{ medi_detail.payment_bank_sort_code }}
-        date invoice : {{ date_detail.date_invoice }}
-        7 days later : {{ date_detail.dute_date }}
-        <hr>
-        Instruction detail
-        <li>Instruction Number : {{ record.pk }}</li>
-        <li>Instruction Type : {{ record.type }}</li>
-        <li>Instruction Mediref : {{ record.medi_ref }}</li>
-        <li>Instruction Clientref : {{ record.your_ref }}</li>
-        <li>Patient Info : {{ record.patient_information }}</li>
-        <li>Instruction GP Fee : {{ record.gp_earns }}</li>
-        <li>Instruction MDx Fee : {{ record.medi_earns }}</li>
-        <li>Instruction VAT : 20%</li>
-        <li>Instruction Total Fee : {{ record.gp_earns + record.medi_earns}}</li>
+        client detail : {{ client_detail.trading_name }} {{ client_detail.legal_name }} {{ client_detail.address }}
+        <br>medidata detail : {{ medi_detail }} {{ medi_detail.payment_bank_holder_name }} {{ medi_detail.payment_bank_account_number }} {{ medi_detail.payment_bank_sort_code }}
+        <br>date invoice : {{ date_detail.date_invoice }}
+        <br>7 days later : {{ date_detail.dute_date }}
+        <br><hr>
+        <br>Instruction detail
+            {% for record in record %}
+                <li>Instruction Number : {{ record.pk }}</li>
+                <li>Instruction Type : {{ record.type }}</li>
+                <li>Instruction Mediref : {{ record.medi_ref }}</li>
+                <li>Instruction Clientref : {{ record.your_ref }}</li>
+                <li>Patient Info : {{ record.patient_information }}</li>
+                <li>Instruction GP Fee : {{ record.gp_earns }}</li>
+                <li>Instruction MDx Fee : {{ record.medi_earns }}</li>
+                <li>Instruction VAT : 20%</li>
+                <li>Instruction Total Fee : {{ record.gp_earns|add:record.medi_earns }}</li>
+                <hr>
+            {% endfor %}
     </body>
 </html>

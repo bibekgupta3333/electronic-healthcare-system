@@ -12,6 +12,7 @@ import os
 
 event_logger = logging.getLogger('medidata.event')
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TEMP_DIR = BASE_DIR + '/medi/static/generic_pdf/'
 REPORT_DIR = BASE_DIR + '/payment/templates/invoice/instruction_invoice.html'
 
 
