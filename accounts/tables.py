@@ -138,20 +138,20 @@ class AccountTable(tables.Table):
         return format_html(
             "<a href='#infoModal'>"
             "<span class='btn btn-primary btn-block btn-sm infoDetailButton'"
-            "data-ins_number='{}'"
             "data-patient_name='{}'"
             "data-patient_dob='{}'"
             "data-patient_address='{}'"
             "data-patient_nhs='{}'"
+            "data-patient_client_ref='{}'"
+            "data-patient_medi_ref='{}'"
             "data-detail_request='{}'"
             "data-detail_start_date='{}'"
             "data-detail_complete_date='{}'"
             "data-result_date='{}'"
             "><i class='fas fa-search'></i>&nbsp;&nbsp;View</span>"
             "</a>",
-            record.id,
             patient.get_full_name(),
-            patient.patient_dob,
+            date(patient.patient_dob, "d/m/Y"),
             ' '.join([
                     patient.patient_address_number,
                     patient.patient_address_line1,
@@ -161,6 +161,8 @@ class AccountTable(tables.Table):
                     patient.patient_county
                 ]),
             patient.patient_nhs_number if patient.patient_nhs_number else '-',
+            record.your_ref if record.your_ref else '-',
+            record.medi_ref if record.medi_ref else '-',
             snomed_detail if not snomed_detail == '' else 'None',
             date(record.fee_calculation_start_date, "d/m/Y") if record.fee_calculation_start_date else 'None',
             date(record.completed_signed_off_timestamp, "d/m/Y") if record.completed_signed_off_timestamp else 'None',
