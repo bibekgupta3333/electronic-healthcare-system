@@ -4,6 +4,7 @@ from django.contrib import messages
 from django_tables2 import RequestConfig
 from django.db.models import Q
 from django.db import IntegrityError
+from django.http import JsonResponse
 
 from instructions.views import calculate_next_prev
 
@@ -25,16 +26,20 @@ def edit_library(request, event):
     error_edit_link = ''
     if request.method == 'POST':
         library_form = LibraryForm(request.POST)
-        event = ''
         if library_form.is_valid():
             library_obj = library_form.save(commit=False)
             library_obj.gp_practice = gp_practice
             library_obj.save()
             library_form = LibraryForm()
+            if event == 'add' and request.is_ajax():
+                return JsonResponse({'message': 'A word has been created.'})
             messages.success(request, 'Add word successfully')
         else:
             add_word_error_message = 'This word already exist in your library. If you wish to edit it, please go back' \
                                       'to the library and edit from there'
+            if event == 'add' and request.is_ajax():
+                return JsonResponse({'message': 'Error', 'add_word_error_message': add_word_error_message})
+        event = ''
 
     if 'page_length' in request.GET:
         page_length = int(request.GET.get('page_length'))
@@ -90,16 +95,3 @@ def edit_word_library(request, library_id):
         event = 'edit_error:{id}'.format(id=library.id)
 
     return redirect('library:edit_library', event=event)
-
-
-@login_required(login_url='/accounts/login')
-def add_word_library(request):
-    gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
-    if request.method == 'POST' and request.is_ajax():
-        library_form = LibraryForm(request.POST)
-        if library_form.is_valid():
-            library_obj = library_form.save(commit=False)
-            library_obj.gp_practice = gp_practice
-            library_obj.save()
-            return JsonResponse({'message': 'Report has been saved.'})
-        return JsonResponse({'message': 'Error'})

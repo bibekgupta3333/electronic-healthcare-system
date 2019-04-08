@@ -139,7 +139,7 @@
     <div class="report-toolbox-modal" id="report-toolbox-modal">
         {% include "library/report_toolbox_modal.html" %}
     </div>
-    <form method="POST" action="{% url 'library:add_word_library' %}" id="addWordForm">
+    <form method="POST" action="{% url 'library:edit_library' event='add' %}" id="addWordForm">
         {% csrf_token %}
         {% include "library/add_word_modal.html" %}
     </form>
@@ -228,7 +228,6 @@
 
         $('#addWordForm').submit(function(e) {
             addWordLibrary();
-            $("#addWordModal").modal('hide');
             return false;
         });
     </script>
