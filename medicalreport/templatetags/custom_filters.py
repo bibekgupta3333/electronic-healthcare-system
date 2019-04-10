@@ -141,7 +141,6 @@ def profile_event_value_header(key):
 
 @register.filter
 def event_value_body(event):
-    # print(type(event))
     if event:
         return "{}<br>{}".format(format_date(event.parsed_date()), event.description())
     else:
@@ -199,7 +198,8 @@ def consultation_element_list(consultation):
 @register.filter
 def replace_ref_phrases(relations, value):
     if relations:
-        return re.sub(relations, "[UNSPECIFIED THIRD PARTY]", value, flags=re.IGNORECASE)
+        ret = re.sub(relations, " [UNSPECIFIED THIRD PARTY] ", ' ' + value + ' ', flags=re.IGNORECASE).strip()
+        return ret
     return value
 
 
