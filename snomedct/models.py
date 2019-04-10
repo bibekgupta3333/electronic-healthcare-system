@@ -38,7 +38,7 @@ class SnomedConcept(models.Model):
                     child.descendants(include_self=True, ret_descendants=ret_descendants)
         return ret_descendants
 
-    def descendant_readcodes(self, snome_descendants=None) -> Set['ReadCode']:
+    def descendant_readcodes(self, snome_descendants: Set['SnomedConcept']=None) -> Set['ReadCode']:
         """
         Return readcodes of this snomed concept and its descendants.
         """
@@ -100,8 +100,8 @@ class SnomedDescendant(models.Model):
 class CommonSnomedConcepts(models.Model):
     common_name = models.CharField(max_length=255)
     snomed_concept_code = models.ManyToManyField(SnomedConcept)
-    descendant_snomed_id = ArrayField(models.BigIntegerField())
-    descendant_readcodes = ArrayField(models.CharField(max_length=255))
+    descendant_snomed_id = ArrayField(models.BigIntegerField(), null=True, default=list)
+    descendant_readcodes = ArrayField(models.CharField(max_length=255), null=True, default=list)
 
     def __str__(self):
         return self.common_name

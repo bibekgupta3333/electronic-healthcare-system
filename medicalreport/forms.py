@@ -4,8 +4,10 @@ from permissions.models import InstructionPermission
 from .models import AmendmentsForRecord
 from instructions.models import Instruction
 from instructions.model_choices import AMRA_TYPE
+from organisations.models import OrganisationGeneralPractice
 from accounts.models import User, GeneralPracticeUser, UserProfileBase
 from accounts import models
+from typing import List
 
 
 class MedicalReportFinaliseSubmitForm(forms.Form):
@@ -89,7 +91,7 @@ class AllocateInstructionForm(forms.Form):
             if user and instruction_id:
                 self.fields['allocate_options'] = self.set_allocate_by_permission(user, instruction_id, queryset)
 
-    def set_allocate_by_permission(self, user, instruction_id, queryset):
+    def set_allocate_by_permission(self, user: User, instruction_id: str, queryset) -> forms.ChoiceField:
         can_proceed = process_instruction(user.id, instruction_id)
         ALLOCATE_OPTIONS_CHOICE = [(self.RETURN_TO_PIPELINE, 'Return to pipeline view')]
         if user.has_perm('instructions.allocate_gp'):
@@ -100,7 +102,7 @@ class AllocateInstructionForm(forms.Form):
             ALLOCATE_OPTIONS_CHOICE.append((self.PROCEED_REPORT, 'Proceed with report'))
         return forms.ChoiceField(choices=ALLOCATE_OPTIONS_CHOICE, widget=forms.RadioSelect())
 
-    def set_role_can_precess(self, instruction_id, organisation):
+    def set_role_can_precess(self, instruction_id: str, organisation: OrganisationGeneralPractice) -> List[int]:
         role = []
         instruction = Instruction.objects.get(pk=instruction_id)
         for permission in InstructionPermission.objects.filter(organisation=organisation):

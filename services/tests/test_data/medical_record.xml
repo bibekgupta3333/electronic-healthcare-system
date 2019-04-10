@@ -141,8 +141,8 @@
             <AssignedDate>05/05/2015</AssignedDate>
             <DisplayTerm>hemoglobin, 11.4 11*9 cells/L</DisplayTerm>
             <Code>
-              <Value>38082009</Value>
-              <Scheme>SNOMED</Scheme>
+              <MapCode>38082009</MapCode>
+              <MapScheme>SNOMED</MapScheme>
             </Code>
             <NumericValue>
               <Value>11.4</Value>
@@ -558,8 +558,8 @@
         <ConsultationElement>
           <Event>
             <Code>
-              <Value>1331000000103</Value>
-              <Scheme>SNOMED</Scheme>
+              <MapCode>1331000000103</MapCode>
+              <MapScheme>SNOMED</MapScheme>
             </Code>
           </Event>
         </ConsultationElement>
@@ -588,8 +588,8 @@
             <AssignedDate>26/07/2016</AssignedDate>
             <DisplayTerm>Smoker</DisplayTerm>
             <Code>
-              <Value>365981007</Value>
-              <Scheme>SNOMED</Scheme>
+              <MapCode>365981007</MapCode>
+              <MapScheme>SNOMED</MapScheme>
             </Code>
           </Event>
         </ConsultationElement>
@@ -618,8 +618,8 @@
             <AssignedDate>28/09/2018</AssignedDate>
             <DisplayTerm>Alcohol drinker</DisplayTerm>
             <Code>
-              <Value>228273003</Value>
-              <Scheme>SNOMED</Scheme>
+              <MapCode>228273003</MapCode>
+              <MapScheme>SNOMED</MapScheme>
             </Code>
           </Event>
         </ConsultationElement>
@@ -694,6 +694,17 @@
       </Drug>
       <PrescriptionType>ACUTE</PrescriptionType>
       <IssueCount>1</IssueCount>
+      <ProblemLinkList>
+        <Link>
+          <Target>
+            <DBID>70</DBID>
+            <RefID>70</RefID>
+            <GUID>370095</GUID>
+            <FileStatus>0</FileStatus>
+          </Target>
+          <LinkType>0</LinkType>
+        </Link>
+      </ProblemLinkList>
     </Medication>
     <Medication>
       <GUID>575848</GUID>
@@ -704,12 +715,23 @@
       <Drug>
         <PreparationID>
           <Term>Paracetamol 500mg tablets</Term>
-          <Scheme>SNOMED</Scheme>
-          <Value>90332006</Value>
+          <MapScheme>SNOMED</MapScheme>
+          <MapCode>90332006</MapCode>
         </PreparationID>
       </Drug>
       <PrescriptionType>ACUTE</PrescriptionType>
       <IssueCount>0</IssueCount>
+      <ProblemLinkList>
+        <Link>
+          <Target>
+            <DBID>70</DBID>
+            <RefID>70</RefID>
+            <GUID>370095</GUID>
+            <FileStatus>0</FileStatus>
+          </Target>
+          <LinkType>0</LinkType>
+        </Link>
+      </ProblemLinkList>
     </Medication>
     <Medication>
       <GUID>858585</GUID>
@@ -726,6 +748,17 @@
       </Drug>
       <PrescriptionType>REPEAT</PrescriptionType>
       <IssueCount>1</IssueCount>
+      <ProblemLinkList>
+        <Link>
+          <Target>
+            <DBID>70</DBID>
+            <RefID>70</RefID>
+            <GUID>370095</GUID>
+            <FileStatus>0</FileStatus>
+          </Target>
+          <LinkType>0</LinkType>
+        </Link>
+      </ProblemLinkList>
     </Medication>
     <Medication>
       <GUID>48499</GUID>
@@ -740,6 +773,17 @@
       </Drug>
       <PrescriptionType>REPEAT</PrescriptionType>
       <IssueCount>0</IssueCount>
+      <ProblemLinkList>
+        <Link>
+          <Target>
+            <DBID>70</DBID>
+            <RefID>70</RefID>
+            <GUID>370095</GUID>
+            <FileStatus>0</FileStatus>
+          </Target>
+          <LinkType>0</LinkType>
+        </Link>
+      </ProblemLinkList>
     </Medication>
   </MedicationList>
   <AttachmentList>

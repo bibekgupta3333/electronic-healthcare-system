@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.forms import ValidationError
 
 from payment.forms import InstructionVolumeFeeForm
+from payment.model_choices import FEE_SARS_TYPE
 from organisations.models import OrganisationClient
 
 
@@ -12,59 +13,62 @@ class InstructionVolumeFeeFormTest(TestCase):
             trading_name='Insurance company 1',
             legal_name='Insurance company 1',
             address='address',
-            type=OrganisationClient.INSURANCE_UNDERWRITER
+            type=OrganisationClient.INSURER
         )
         self.organisation_client_invalid = [
             OrganisationClient.objects.create(
                 trading_name='Insurance company 2',
                 legal_name='Insurance company 2',
                 address='address',
-                type=OrganisationClient.INSURANCE_UNDERWRITER
+                type=OrganisationClient.INSURER
             ),
             OrganisationClient.objects.create(
                 trading_name='Insurance company 3',
                 legal_name='Insurance company 3',
                 address='address',
-                type=OrganisationClient.INSURANCE_UNDERWRITER
+                type=OrganisationClient.INSURER
             ),
             OrganisationClient.objects.create(
                 trading_name='Insurance company 4',
                 legal_name='Insurance company 4',
                 address='address',
-                type=OrganisationClient.INSURANCE_UNDERWRITER
+                type=OrganisationClient.INSURER
             ),
             OrganisationClient.objects.create(
                 trading_name='Insurance company 5',
                 legal_name='Insurance company 5',
                 address='address',
-                type=OrganisationClient.INSURANCE_UNDERWRITER
+                type=OrganisationClient.INSURER
             ),
             OrganisationClient.objects.create(
                 trading_name='Insurance company 6',
                 legal_name='Insurance company 6',
                 address='address',
-                type=OrganisationClient.INSURANCE_UNDERWRITER
+                type=OrganisationClient.INSURER
             ),
             OrganisationClient.objects.create(
                 trading_name='Insurance company 7',
                 legal_name='Insurance company 7',
                 address='address',
-                type=OrganisationClient.INSURANCE_UNDERWRITER
+                type=OrganisationClient.INSURER
             )
         ]
 
     def test_valid_data(self):
         form = InstructionVolumeFeeForm(
             {
-                'client_organisation': self.organisation_client_1,
+                'client_org': self.organisation_client_1,
                 'max_volume_band_lowest': 10000,
                 'max_volume_band_low': 20000,
                 'max_volume_band_medium': 50000,
+                'max_volume_band_high': 60000,
                 'max_volume_band_top': 100000,
                 'fee_rate_lowest': 20,
                 'fee_rate_low': 18,
                 'fee_rate_medium': 15,
+                'fee_rate_high': 13,
                 'fee_rate_top': 10,
+                'fee_rate_type': FEE_SARS_TYPE,
                 'vat': 20
             },
         )
@@ -118,7 +122,7 @@ class InstructionVolumeFeeFormTest(TestCase):
         for case, client_organisation in zip(invalid_band_case, self.organisation_client_invalid):
             form = InstructionVolumeFeeForm(
                 {
-                    'client_organisation': client_organisation,
+                    'client_org': client_organisation,
                     'max_volume_band_lowest': case['max_volume_band_lowest'],
                     'max_volume_band_low': case['max_volume_band_low'],
                     'max_volume_band_medium': case['max_volume_band_medium'],

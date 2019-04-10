@@ -69,7 +69,8 @@ INSTALLED_APPS = [
     'onboarding',
     'permissions',
     'payment',
-    'report'
+    'report',
+    'library',
 ]
 
 MIDDLEWARE = [
@@ -227,6 +228,7 @@ CRONJOBS = [
     ('0 8 * * *', 'instructions.cron.notification_mail.instruction_notification_email_job'),
     ('0 0 * * *', 'report.cron.notification_mail.report_notification_expired_authorisation_job'),
     ('0 11,16 * * *', 'instructions.cron.notification_mail.send_email_to_practice_job'),
+    ('1 0 * * SUN', 'payment.cron.genarate_invoice.genarated_weekly_invoice'),
 ]
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
@@ -271,3 +273,6 @@ EMR_URM = 'https://emr.medi2data.com'
 SILKY_PYTHON_PROFILER = True
 SILKY_PYTHON_PROFILER_BINARY = True
 SILKY_AUTHENTICATION = True
+
+#Set default handle 403!
+CSRF_FAILURE_VIEW = 'services.views.handler_403'
