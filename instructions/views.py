@@ -29,6 +29,7 @@ from report.models import ExceptionMerge
 from medicalreport.functions import create_patient_report
 from template.models import TemplateInstruction
 from payment.models import GpOrganisationFee
+from payment.model_choices import FEE_STATUS_INVALID_DETAIL, FEE_STATUS_INVALID_FEE
 #from silk.profiling.profiler import silk_profile
 
 from datetime import timedelta
@@ -46,6 +47,22 @@ event_logger = logging.getLogger('medidata.event')
 
 from django.conf import settings
 PIPELINE_INSTRUCTION_LINK = get_url_page('instruction_pipeline')
+
+
+def checkFeeStatus(gp_practice):
+    org_fee = GpOrganisationFee.objects.filter(gp_practice=gp_practice).first()
+    if org_fee:
+        if org_fee.organisation_fee == '':
+            fee_setup_status = FEE_STATUS_INVALID_FEE
+        elif org_fee.gp_practice.payment_bank_holder_name == '' or\
+                org_fee.gp_practice.payment_bank_sort_code == '' or\
+                org_fee.gp_practice.payment_bank_account_number == '':
+            fee_setup_status = FEE_STATUS_INVALID_DETAIL
+        else:
+            fee_setup_status = None
+    else:
+        fee_setup_status = FEE_STATUS_INVALID_FEE
+    return fee_setup_status
 
 
 def count_instructions(user: User, gp_practice_code: str, client_organisation: OrganisationClient, page: str='') -> Dict[str, int]:
@@ -347,6 +364,8 @@ def instruction_pipeline_view(request):
 
     if user.type == GENERAL_PRACTICE_USER:
         gp_practice = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation', default=None)
+        check_fee_status = checkFeeStatus(gp_practice)
+
         if gp_practice and not gp_practice.is_active():
             return redirect('onboarding:emis_setup', practice_code=gp_practice.pk)
 
@@ -432,7 +451,8 @@ def instruction_pipeline_view(request):
         'count_fee_sensitive_number': count_fee_sensitive_number,
         'header_title': header_title,
         'next_prev_data_all': next_prev_data_all,
-        'next_prev_data_fee': next_prev_data_fee
+        'next_prev_data_fee': next_prev_data_fee,
+        'check_fee_status': check_fee_status if check_fee_status else None
     })
 
     response.set_cookie('status', filter_status)

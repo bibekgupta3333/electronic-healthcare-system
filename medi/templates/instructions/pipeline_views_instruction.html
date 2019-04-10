@@ -156,6 +156,16 @@
         </div>
     </div>
 
+    <!-- Block modal show when setup fee not complete -->
+    <div class="modal fade" id="form-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="container" style="padding: 2% 2% 2% 2%">
+                    <h1>Hello world !</h1>
+                </div>
+            </div>
+        </div>
+    </div>
 
 {% endblock %}
 
@@ -225,6 +235,11 @@
             $('th a').click(function(e) {
                 e.preventDefault();
             });
+
+            $("#form-modal").modal({
+                backdrop: 'static'
+            });
+
         });
 
         function instructionStatusFilter(selected_status, page, tableNumber){
