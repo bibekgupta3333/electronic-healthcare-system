@@ -376,7 +376,7 @@ class RedactReferencePhraseTest(TestCase):
         ReferencePhrases.objects.create(name='father')
         self.value = "Mr Chatterly's father had recently been diagnosed with lymphoma"
         self.result = "Mr Chatterly's [UNSPECIFIED THIRD PARTY] had recently been diagnosed with lymphoma"
-        self.relations = '|'.join(relation.name for relation in ReferencePhrases.objects.all())
+        self.relations = " " + " | ".join(relation.name for relation in ReferencePhrases.objects.all()) + " "
 
     def test_redact_with_father(self):
         result = replace_ref_phrases(self.relations, self.value)
