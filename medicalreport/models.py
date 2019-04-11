@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.postgres.fields import JSONField
 from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE
-from snomedct.models import SnomedConcept
+from snomedct.models import SnomedConcept, ReadCode
 from accounts.models import User, GeneralPracticeUser
 from postgres_copy import CopyManager
 from django.utils.html import format_html
@@ -99,6 +99,15 @@ class AdditionalAllergies(models.Model):
 class NhsSensitiveConditions(models.Model):
     group = models.CharField(max_length=128)
     snome_code = models.CharField(max_length=128)
+
+    @staticmethod
+    def get_sensitives_readcode():
+        sensitive_readcode = set()
+        sensitive_snome = NhsSensitiveConditions.objects.all().values_list('snome_code', flat=True)
+        for snome in sensitive_snome:
+            for r in ReadCode.objects.filter(concept_id=snome):
+                sensitive_readcode.add(r.ext_read_code)
+        return sensitive_readcode
 
 
 class ReferencePhrases(models.Model):
