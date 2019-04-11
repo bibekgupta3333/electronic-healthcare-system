@@ -215,7 +215,7 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         )
     )
 
-    library_form = LibraryForm()
+    library_form = LibraryForm(gp_org_id=instruction.gp_practice.pk)
 
     response = render(request, 'medicalreport/medicalreport_edit.html', {
         'user': request.user,
