@@ -157,11 +157,19 @@
     </div>
 
     <!-- Block modal show when setup fee not complete -->
-    <div class="modal fade" id="form-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal fade" id="check-fee-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="container" style="padding: 2% 2% 2% 2%">
-                    <h1>Hello world !</h1>
+                    <div class='card'>
+                        <div class="card-body bg-primary text-light">
+                            <div class="text-center">
+                                <h4>AMRA Report are coming to eMR</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">&nbsp;</div>
+                    asdasdsa
                 </div>
             </div>
         </div>
@@ -236,7 +244,7 @@
                 e.preventDefault();
             });
 
-            $("#form-modal").modal({
+            $("#check-fee-modal").modal({
                 backdrop: 'static'
             });
 
