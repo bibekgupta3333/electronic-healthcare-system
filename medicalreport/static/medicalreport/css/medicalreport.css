@@ -18,6 +18,26 @@
     display: none;
 }
 
+#report-toolbox-open-modal {
+    position: fixed;
+    top: 0px;
+    right: 400px;
+    margin: 8px;
+}
+
+#report-toolbox-modal {
+    position: fixed;
+    top: 35px;
+    right: 400px;
+    margin: 8px;
+    box-shadow: 10px 10px 30px #88888857;
+    border-top: solid;
+    border-top-color: blue;
+    background-color: white;
+    width: 730px;
+    display: none;
+}
+
 .no-bullet {
     margin-left: 0px;
     padding-left: 0px;

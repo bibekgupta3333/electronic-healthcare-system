@@ -79,12 +79,16 @@
             </div>
             <div class="modal-body">
                 <div style="text-align: center; padding: 15px">
-                    {% if instruction.mdx_consent %}
+                    {% if instruction.type == 'SARS' and instruction.mdx_consent %}
                         <object data="{{ instruction.mdx_consent.url }}" height="735px" width="60%">
                             <embed data="{{ instruction.mdx_consent.url }}" />
                         </object>
+                    {% elif instruction.type == 'AMRA' and instruction.consent_form %}
+                        <object data="{{ instruction.consent_form.url }}" height="735px" width="60%">
+                            <embed data="{{ instruction.consent_form.url }}" />
+                        </object>
                     {% else %}
-                    <p>No consent form </p>
+                        <p>No consent form </p>
                     {% endif %}
                 </div>
             </div>

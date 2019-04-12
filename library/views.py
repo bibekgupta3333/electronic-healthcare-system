@@ -90,3 +90,16 @@ def edit_word_library(request, library_id):
         event = 'edit_error:{id}'.format(id=library.id)
 
     return redirect('library:edit_library', event=event)
+
+
+@login_required(login_url='/accounts/login')
+def add_word_library(request):
+    gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
+    if request.method == 'POST' and request.is_ajax():
+        library_form = LibraryForm(request.POST)
+        if library_form.is_valid():
+            library_obj = library_form.save(commit=False)
+            library_obj.gp_practice = gp_practice
+            library_obj.save()
+            return JsonResponse({'message': 'Report has been saved.'})
+        return JsonResponse({'message': 'Error'})
