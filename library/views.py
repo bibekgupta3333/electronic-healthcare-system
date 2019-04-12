@@ -4,6 +4,7 @@ from django.contrib import messages
 from django_tables2 import RequestConfig
 from django.db.models import Q
 from django.db import IntegrityError
+from django.http import JsonResponse
 
 from instructions.views import calculate_next_prev
 
@@ -25,22 +26,26 @@ def edit_library(request, event):
     error_edit_link = ''
     if request.method == 'POST':
         library_form = LibraryForm(request.POST)
-        event = ''
         if library_form.is_valid():
             library_obj = library_form.save(commit=False)
             library_obj.gp_practice = gp_practice
             library_obj.save()
             library_form = LibraryForm()
+            if event == 'add' and request.is_ajax():
+                return JsonResponse({'message': 'A word has been created.'})
             messages.success(request, 'Add word successfully')
         else:
             add_word_error_message = 'This word already exist in your library. If you wish to edit it, please go back' \
                                       'to the library and edit from there'
+            if event == 'add' and request.is_ajax():
+                return JsonResponse({'message': 'Error', 'add_word_error_message': add_word_error_message})
+        event = ''
 
     if 'page_length' in request.GET:
         page_length = int(request.GET.get('page_length'))
 
     if 'search' in request.GET:
-        search_input = request.GExT.get('search')
+        search_input = request.GET.get('search')
         library = library.filter(Q(key__icontains=search_input) | Q(value__icontains=search_input))
 
     if event.split(':')[0] == 'edit_error':

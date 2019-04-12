@@ -84,3 +84,24 @@ function saveReport(){
         create_alert('Something went wrong, please try again.', 'error');
     });
 }
+
+function addWordLibrary() {
+    var post_url = $('#addWordForm').attr("action"); //get form action url
+    var request_method = $('#addWordForm').attr("method"); //get form GET/POST method
+    var form_data = $('#addWordForm').serialize(); //Encode form elements for submission
+    $.ajax({
+        url: post_url,
+        type: request_method,
+        data: form_data
+    }).done(function(response) {
+        if (typeof response['add_word_error_message'] != 'undefined') {
+            $('#errorMessage').text(response['add_word_error_message']);
+        } else {
+            $('#errorMessage').text('');
+            create_alert(response['message'], 'success');
+            $("#addWordModal").modal('hide');
+        }
+    }).fail(function() {
+        create_alert('Something went wrong, please try again.', 'error');
+    });
+}
