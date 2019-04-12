@@ -26,7 +26,6 @@ from permissions.functions import check_permission, check_user_type
 from payment.functions import calculate_instruction_fee
 from typing import List
 from library.forms import LibraryForm
-from common.functions import multi_getattr
 #from silk.profiling.profiler import silk_profile
 
 logger = logging.getLogger('timestamp')
