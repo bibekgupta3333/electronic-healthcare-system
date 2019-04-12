@@ -26,10 +26,11 @@ from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_
 from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences, ClientUser
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from payment.model_choices import *
-from .forms import PracticePreferencesForm, TwoFactorForm
+from .forms import PracticePreferencesForm, TwoFactorForm, BankDetailsForm
 from permissions.functions import access_user_management
 from organisations.models import OrganisationGeneralPractice
 from onboarding.views import generate_password
+from onboarding.forms import BankDetailsEmrSetUpStage2Form
 from axes.models import AccessAttempt
 from .tables import AccountTable, PaymentLogTable
 from django_tables2 import RequestConfig, Column
@@ -73,11 +74,23 @@ def account_view(request: HttpRequest) -> HttpResponse:
             practice_preferences.notification = 'NEW'
             practice_preferences.save()
 
+        bank_details_info = {
+            'payment_bank_holder_name': gp_organisation.payment_bank_holder_name,
+            'payment_bank_account_number': gp_organisation.payment_bank_account_number,
+            'payment_bank_sort_code': gp_organisation.payment_bank_sort_code,
+        }
+        bank_details_form = BankDetailsForm(initial=bank_details_info)
+
         if request.is_ajax():
             if request.POST.get('is_fee_changed'):
                 new_organisation_fee_id = request.POST.get('organisation_fee_id')
                 GpOrganisationFee.objects.filter(gp_practice=gp_organisation).update(organisation_fee_id=int(new_organisation_fee_id))
                 return JsonResponse({'message': 'Preferences have been saved.'})
+            if request.POST.get('update_bank_details'):
+                bank_details_form = BankDetailsForm(request.POST, instance=gp_organisation)
+                if bank_details_form.is_valid():
+                    bank_details_form.save()
+                    return JsonResponse({'message': 'Bank details have been saved.'})
             gp_preferences_form = PracticePreferencesForm(request.POST, instance=practice_preferences)
             if gp_preferences_form.is_valid():
                 gp_preferences_form.save()
@@ -148,6 +161,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
             'gp_preferences_form': gp_preferences_form,
             'has_amend_fee_perm': has_amend_fee_perm,
             'band_fee_rate_data': band_fee_rate_data,
+            'bank_details_form': bank_details_form,
         })
 
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
