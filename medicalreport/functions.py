@@ -142,7 +142,7 @@ def save_medical_report(instruction: Instruction, amendments_for_record: Amendme
         os.remove(instruction.medical_xml_report.path)
         instruction.medical_xml_report.delete()
     medical_record_decorator = MedicalReportDecorator(parse_xml, instruction)
-    relations = '|'.join(relation.name for relation in ReferencePhrases.objects.all())
+    relations = " " + " | ".join(relation.name for relation in ReferencePhrases.objects.all()) + " "
     str_xml = lxml_to_string(parse_xml)
     params = {
         'medical_record': medical_record_decorator,
