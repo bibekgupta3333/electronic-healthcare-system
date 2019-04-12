@@ -363,6 +363,11 @@ h1 {
 }
 
 .modal-content {
+    /* color: #856404; */
+    /* background-color: #fff3cd; */
+}
+
+.modal-warning-block {
     color: #856404;
     background-color: #fff3cd;
 }
