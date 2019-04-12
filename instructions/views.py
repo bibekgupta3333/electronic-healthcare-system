@@ -800,6 +800,8 @@ def upload_consent(request, instruction_id):
         if request.POST.get('select_type') == 'accept':
             instruction.consent_form = setting.consent_form
             select_type = 'accept'
+            instruction.save()
+            uploaded = True
         else:
             consent_form = ConsentForm(request.POST, request.FILES, instance=instruction)
             if consent_form.is_valid():

@@ -26,10 +26,11 @@ from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_
 from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences, ClientUser
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from payment.model_choices import *
-from .forms import PracticePreferencesForm, TwoFactorForm
+from .forms import PracticePreferencesForm, TwoFactorForm, BankDetailsForm
 from permissions.functions import access_user_management
 from organisations.models import OrganisationGeneralPractice
 from onboarding.views import generate_password
+from onboarding.forms import BankDetailsEmrSetUpStage2Form
 from axes.models import AccessAttempt
 from .tables import AccountTable, PaymentLogTable
 from django_tables2 import RequestConfig, Column
@@ -73,11 +74,23 @@ def account_view(request: HttpRequest) -> HttpResponse:
             practice_preferences.notification = 'NEW'
             practice_preferences.save()
 
+        bank_details_info = {
+            'payment_bank_holder_name': gp_organisation.payment_bank_holder_name,
+            'payment_bank_account_number': gp_organisation.payment_bank_account_number,
+            'payment_bank_sort_code': gp_organisation.payment_bank_sort_code,
+        }
+        bank_details_form = BankDetailsForm(initial=bank_details_info)
+
         if request.is_ajax():
             if request.POST.get('is_fee_changed'):
                 new_organisation_fee_id = request.POST.get('organisation_fee_id')
                 GpOrganisationFee.objects.filter(gp_practice=gp_organisation).update(organisation_fee_id=int(new_organisation_fee_id))
                 return JsonResponse({'message': 'Preferences have been saved.'})
+            if request.POST.get('update_bank_details'):
+                bank_details_form = BankDetailsForm(request.POST, instance=gp_organisation)
+                if bank_details_form.is_valid():
+                    bank_details_form.save()
+                    return JsonResponse({'message': 'Bank details have been saved.'})
             gp_preferences_form = PracticePreferencesForm(request.POST, instance=practice_preferences)
             if gp_preferences_form.is_valid():
                 gp_preferences_form.save()
@@ -148,6 +161,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
             'gp_preferences_form': gp_preferences_form,
             'has_amend_fee_perm': has_amend_fee_perm,
             'band_fee_rate_data': band_fee_rate_data,
+            'bank_details_form': bank_details_form,
         })
 
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
@@ -196,23 +210,23 @@ def account_view(request: HttpRequest) -> HttpResponse:
         range_5 = "-".join([str(volume_query.max_volume_band_high + 1), str(volume_query.max_volume_band_top)])
 
         if volume_query.fee_rate_type == FEE_CLAIMS_TYPE:
-            claim_table[range_1] = float(volume_query.fee_rate_lowest)
-            claim_table[range_2] = float(volume_query.fee_rate_low)
-            claim_table[range_3] = float(volume_query.fee_rate_medium)
-            claim_table[range_4] = float(volume_query.fee_rate_high)
-            claim_table[range_5] = float(volume_query.fee_rate_top)
+            claim_table[range_1] = round(volume_query.fee_rate_lowest, 2)
+            claim_table[range_2] = round(volume_query.fee_rate_low, 2)
+            claim_table[range_3] = round(volume_query.fee_rate_medium, 2)
+            claim_table[range_4] = round(volume_query.fee_rate_high, 2)
+            claim_table[range_5] = round(volume_query.fee_rate_top, 2)
         elif volume_query.fee_rate_type == FEE_UNDERWRITE_TYPE:
-            under_table[range_1] = float(volume_query.fee_rate_lowest)
-            under_table[range_2] = float(volume_query.fee_rate_low)
-            under_table[range_3] = float(volume_query.fee_rate_medium)
-            under_table[range_4] = float(volume_query.fee_rate_high)
-            under_table[range_5] = float(volume_query.fee_rate_top)
+            under_table[range_1] = round(volume_query.fee_rate_lowest, 2)
+            under_table[range_2] = round(volume_query.fee_rate_low, 2)
+            under_table[range_3] = round(volume_query.fee_rate_medium, 2)
+            under_table[range_4] = round(volume_query.fee_rate_high, 2)
+            under_table[range_5] = round(volume_query.fee_rate_top, 2)
         elif volume_query.fee_rate_type == FEE_SARS_TYPE:
-            sars_table[range_1] = float(volume_query.fee_rate_lowest)
-            sars_table[range_2] = float(volume_query.fee_rate_low)
-            sars_table[range_3] = float(volume_query.fee_rate_medium)
-            sars_table[range_4] = float(volume_query.fee_rate_high)
-            sars_table[range_5] = float(volume_query.fee_rate_top)
+            sars_table[range_1] = round(volume_query.fee_rate_lowest, 2)
+            sars_table[range_2] = round(volume_query.fee_rate_low, 2)
+            sars_table[range_3] = round(volume_query.fee_rate_medium, 2)
+            sars_table[range_4] = round(volume_query.fee_rate_high, 2)
+            sars_table[range_5] = round(volume_query.fee_rate_top, 2)
 
     #   Table for block 3
     gp_rate_query_set = OrganisationFeeRate.objects.filter(default=True)
@@ -228,10 +242,10 @@ def account_view(request: HttpRequest) -> HttpResponse:
     key_4 = "11+"
 
     for record in gp_rate_query_set:
-        value_amount_1.append(float(record.amount_rate_lvl_1))
-        value_amount_2.append(float(record.amount_rate_lvl_2))
-        value_amount_3.append(float(record.amount_rate_lvl_3))
-        value_amount_4.append(float(record.amount_rate_lvl_4))
+        value_amount_1.append(round(record.amount_rate_lvl_1, 2))
+        value_amount_2.append(round(record.amount_rate_lvl_2, 2))
+        value_amount_3.append(round(record.amount_rate_lvl_3, 2))
+        value_amount_4.append(round(record.amount_rate_lvl_4, 2))
 
     table_block_3[key_1] = value_amount_1
     table_block_3[key_2] = value_amount_2

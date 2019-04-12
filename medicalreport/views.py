@@ -10,7 +10,7 @@ from django.views.decorators.cache import cache_page
 from services.emisapiservices import services
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.xml.medical_record import MedicalRecord
-from .models import AmendmentsForRecord, ReferencePhrases
+from .models import AmendmentsForRecord, ReferencePhrases, NhsSensitiveConditions
 from services.xml.patient_list import PatientList
 from services.xml.registration import Registration
 from medicalreport.forms import MedicalReportFinaliseSubmitForm
@@ -25,6 +25,7 @@ from .forms import AllocateInstructionForm
 from permissions.functions import check_permission, check_user_type
 from payment.functions import calculate_instruction_fee
 from typing import List
+from library.forms import LibraryForm
 #from silk.profiling.profiler import silk_profile
 
 logger = logging.getLogger('timestamp')
@@ -201,15 +202,20 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         },
         user=request.user)
 
-    relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
+    relations = " " + " | ".join(relation.name for relation in ReferencePhrases.objects.all()) + " "
+    sensitive_conditions = dict()
+    sensitive_conditions['snome'] = set(NhsSensitiveConditions.objects.all().values_list('snome_code', flat=True))
+    sensitive_conditions['readcodes'] = NhsSensitiveConditions.get_sensitives_readcode()
+
     inst_gp_user = instruction.gp_user.user
     cur_user = request.user
-
     event_logger.info(
         '{user}:{user_id} ACCESS edit medical report view'.format(
             user=request.user, user_id=request.user.id,
         )
     )
+
+    library_form = LibraryForm(gp_org_id=instruction.gp_practice.pk)
 
     response = render(request, 'medicalreport/medicalreport_edit.html', {
         'user': request.user,
@@ -219,8 +225,10 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         'finalise_submit_form': finalise_submit_form,
         'questions': questions,
         'relations': relations,
+        'sensitive_conditions': sensitive_conditions,
         'show_alert': True if inst_gp_user == cur_user else False,
-        'patient_full_name': instruction.patient_information.get_full_name()
+        'patient_full_name': instruction.patient_information.get_full_name(),
+        'library_form': library_form,
     })
     end_time = timezone.now()
     total_time = end_time - start_time
@@ -270,7 +278,7 @@ def submit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
 
     medical_record_decorator = MedicalReportDecorator(instruction.medical_xml_report.read().decode('utf-8'), instruction)
     attachments = medical_record_decorator.attachments
-    relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
+    relations = " " + " | ".join(relation.name for relation in ReferencePhrases.objects.all()) + " "
     initial_prepared_by = request.user.userprofilebase.generalpracticeuser.pk
     if redaction.prepared_by:
         initial_prepared_by = redaction.prepared_by.pk
