@@ -1,4 +1,5 @@
 from django import template
+from django.utils.html import format_html
 from .helper import diagnosed_date, linked_problems, end_date, format_date, additional_medication_dates_description
 import re
 register = template.Library()
@@ -70,8 +71,12 @@ def past_problem_header(problem):
 
 
 @register.filter
-def general_header(model):
-    return "{} - {}".format(format_date(model.parsed_date()), model.description())
+def general_header(model, word_library=''):
+    split_word = model.description().split()
+    for word in word_library:
+        if word.key in split_word:
+            description = re.sub(word.key, '<span class="bg-warning highlight-library">' + str(word.key) + '</span>', model.description(), flags=re.IGNORECASE)
+            return "{} - {}".format(format_date(model.parsed_date()), format_html(description))
 
 
 @register.filter
@@ -85,12 +90,6 @@ def referral_body(referral, locations):
         return ', '.join(provider.address_lines())
     except:
         return ''
-
-
-@register.filter
-def is_linked_with_minor_problem(referral, minor_problems_list):
-    guid_minor_problems = [p.get_element_text('GUID') for p in minor_problems_list]
-    return referral.get_element_text('ProblemLinkList/Link/Target/GUID') in guid_minor_problems
 
 
 @register.filter
