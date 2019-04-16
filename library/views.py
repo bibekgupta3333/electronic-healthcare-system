@@ -20,22 +20,22 @@ def edit_library(request, event):
     search_input = ''
     gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
     library = Library.objects.filter(gp_practice=gp_practice)
-    library_form = LibraryForm()
+    library_form = LibraryForm(gp_org_id=gp_practice.pk)
     add_word_error_message = ''
     edit_word_error_message = ''
     error_edit_link = ''
     if request.method == 'POST':
-        library_form = LibraryForm(request.POST)
+        library_form = LibraryForm(request.POST, gp_org_id=gp_practice.pk)
         if library_form.is_valid():
             library_obj = library_form.save(commit=False)
             library_obj.gp_practice = gp_practice
             library_obj.save()
-            library_form = LibraryForm()
+            library_form = LibraryForm(gp_org_id=gp_practice.pk)
             if event == 'add' and request.is_ajax():
                 return JsonResponse({'message': 'A word has been created.'})
             messages.success(request, 'Add word successfully')
         else:
-            add_word_error_message = 'This word already exist in your library. If you wish to edit it, please go back' \
+            add_word_error_message = 'This word already exist in your library. If you wish to edit it, please go back ' \
                                       'to the library and edit from there'
             if event == 'add' and request.is_ajax():
                 return JsonResponse({'message': 'Error', 'add_word_error_message': add_word_error_message})
@@ -53,7 +53,7 @@ def edit_library(request, event):
         error_libray = Library.objects.get(id=error_edit_id)
         library_form = LibraryForm(instance=error_libray)
         error_edit_link = reverse('library:edit_word_library', kwargs={'library_id': error_edit_id})
-        edit_word_error_message = 'This word already exist in your library. If you wish to edit it, please go back' \
+        edit_word_error_message = 'This word already exist in your library. If you wish to edit it, please go back ' \
                                   'to the library and edit from there'
 
     table = LibraryTable(library)

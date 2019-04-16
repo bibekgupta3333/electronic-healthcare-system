@@ -143,7 +143,7 @@ def redaction_checkbox_with_body(model, redaction, header='', body=''):
         'checked': checked,
         'xpaths': xpaths,
         'header': header,
-        'header_detail': format_html(header),
+        'header_detail': format_html(header if header else ''),
         'body': body,
         'is_sensitive': is_sensitive
     }

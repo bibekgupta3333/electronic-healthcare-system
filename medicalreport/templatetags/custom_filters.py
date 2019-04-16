@@ -72,11 +72,13 @@ def past_problem_header(problem):
 
 @register.filter
 def general_header(model, word_library=''):
+    description = model.description()
     split_word = model.description().split()
     for word in word_library:
-        if word.key in split_word:
-            description = re.sub(word.key, '<span class="bg-warning highlight-library">' + str(word.key) + '</span>', model.description(), flags=re.IGNORECASE)
-            return "{} - {}".format(format_date(model.parsed_date()), format_html(description))
+        if str.upper(word.key) in map(str.upper, split_word):
+            idx = list(map(str.upper, split_word)).index(str.upper(word.key))
+            description = re.sub(word.key, '<span class="bg-warning highlight-library">' + split_word[idx] + '</span>', description, flags=re.IGNORECASE)
+    return "{} - {}".format(format_date(model.parsed_date()), format_html(description))
 
 
 @register.filter
