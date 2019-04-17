@@ -191,6 +191,25 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="col-md-12 mt-4" id="patient_contact_main_block">
+                    <div class="card">
+                        <div class="card-header"><h5>Patient Contact</h5></div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-2 rowTitle">Upload consent form:</div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="file-loading">
+                                            {% bootstrap_field scope_form.consent_form show_label=False %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="col-md-12 mt-4" id="questions_main_block">
                     <div class="card">
                         <div class="card-header"><h5>Addition Question</h5></div>
@@ -298,7 +317,6 @@
                     $('#template_form').removeClass('d-none');
                     $('#template_form').find('.select2-container--default').css('width', '100%');
                 }else{
-                    $('#consent_main_block').hide();
                     $('#questions_main_block').hide();
                     $('#template_form').addClass('d-none');
                     $('.checkbox input[type="checkbox"]').prop("checked", false);
