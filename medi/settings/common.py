@@ -276,3 +276,6 @@ SILKY_AUTHENTICATION = True
 
 #Set default handle 403!
 CSRF_FAILURE_VIEW = 'services.views.handler_403'
+
+#Set false for disable celery
+IMAGE_REDACTION_ENABLED = True
