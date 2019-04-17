@@ -92,22 +92,26 @@ def sar_request_code(request: HttpRequest, instruction_id: str, access_type: str
                 third_party_authorisation.mobi_request_id = response_results_dict['id']
                 successful_request = True
             else:
-                event_logger.warning(
-                    '{access_type} REQUESTED OTP pin failed, Instruction ID {instruction_id}'.format(
-                        access_type=access_type, instruction_id=instruction_id
+                if third_party_response_sms:
+                    event_logger.warning(
+                        '{access_type} REQUESTED OTP pin failed, Instruction ID {instruction_id}, Reason: {error_reason}'.format(
+                            access_type=access_type, instruction_id=instruction_id,
+                            error_reason=json.loads(third_party_response_sms.text)['error']
+                        )
                     )
-                )
 
             if third_party_response_voice and third_party_response_voice.status_code == 200:
                 response_results_dict = json.loads(third_party_response_voice.text)
                 third_party_authorisation.mobi_request_voice_id = response_results_dict['id']
                 successful_request = True
             else:
-                event_logger.warning(
-                    '{access_type} REQUESTED OTP voice failed, Instruction ID {instruction_id}'.format(
-                        access_type=access_type, instruction_id=instruction_id
+                if third_party_response_voice:
+                    event_logger.warning(
+                        '{access_type} REQUESTED OTP voice failed, Instruction ID {instruction_id}, Reason: {error_reason}'.format(
+                            access_type=access_type, instruction_id=instruction_id,
+                            error_reason=json.loads(third_party_response_voice.text)['error']
+                        )
                     )
-                )
             third_party_authorisation.save()
 
         if successful_request:
