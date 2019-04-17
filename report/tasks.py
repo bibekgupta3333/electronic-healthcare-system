@@ -16,6 +16,8 @@ from report.mobile import SendSMS
 from report.models import ExceptionMerge, UnsupportedAttachment
 import xhtml2pdf.pisa as pisa
 from medicalreport.templatetags.custom_filters import format_date_filter
+from report.functions import redaction_image
+from pdf2image import convert_from_bytes, convert_from_path
 # from silk.profiling.profiler import silk_profile
 
 from celery import shared_task
@@ -118,7 +120,36 @@ def generate_medicalreport_with_attachment(self, instruction_id: str, report_lin
                         os.makedirs(os.path.dirname(save_path))
 
                     if file_type == 'pdf':
-                        attachments_pdf.append(PyPDF2.PdfFileReader(buffer))
+                        pages = convert_from_bytes(raw_attachment)
+                        images_name_list = []
+                        for num, page in enumerate(pages):
+                            file_name = 'out_{inst_id}_{num}.jpg'.format(num=num, inst_id=instruction.id)
+                            page.save(file_name, 'JPEG')
+                            images_name_list.append(file_name)
+
+                        output_pdf_list = []
+                        for image in images_name_list:
+                            output_pdf_list.append(redaction_image(
+                                image_path=image,
+                                east_path='config/frozen_east_text_detection.pb',
+                                patient_info={
+                                    'first_name': instruction.patient_information.patient_first_name,
+                                    'last_name': instruction.patient_information.patient_last_name
+                                }
+                            ))
+
+                        redacted_output = PyPDF2.PdfFileWriter()
+                        for pdf in output_pdf_list:
+                            if pdf.isEncrypted:
+                                pdf.decrypt(password='')
+                            for page_num in range(pdf.getNumPages()):
+                                redacted_output.addPage(pdf.getPage(page_num))
+
+                        pdf_page_buf = io.BytesIO()
+                        redacted_output.write(pdf_page_buf)
+                        attachments_pdf.append(PyPDF2.PdfFileReader(pdf_page_buf))
+                        for name in images_name_list:
+                            os.remove(name)
                     elif file_type in ['doc', 'docx', 'rtf']:
                         tmp_file = 'temp_%s.' % unique + file_type
                         f = open(folder + tmp_file, 'wb')
@@ -128,8 +159,36 @@ def generate_medicalreport_with_attachment(self, instruction_id: str, report_lin
                             ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
                             shell=True
                         )
-                        pdf = open(folder + 'temp_%s.pdf' % unique, 'rb')
-                        attachments_pdf.append(PyPDF2.PdfFileReader(pdf))
+                        pages = convert_from_path(folder + 'temp_%s.pdf' % unique)
+                        images_name_list = []
+                        for num, page in enumerate(pages):
+                            file_name = 'out_{inst_id}_{num}.jpg'.format(num=num, inst_id=instruction.id)
+                            page.save(file_name, 'JPEG')
+                            images_name_list.append(file_name)
+
+                        output_pdf_list = []
+                        for image in images_name_list:
+                            output_pdf_list.append(redaction_image(
+                                image_path=image,
+                                east_path='config/frozen_east_text_detection.pb',
+                                patient_info={
+                                    'first_name': instruction.patient_information.patient_first_name,
+                                    'last_name': instruction.patient_information.patient_last_name
+                                }
+                            ))
+
+                        redacted_output = PyPDF2.PdfFileWriter()
+                        for pdf in output_pdf_list:
+                            if pdf.isEncrypted:
+                                pdf.decrypt(password='')
+                            for page_num in range(pdf.getNumPages()):
+                                redacted_output.addPage(pdf.getPage(page_num))
+
+                        pdf_page_buf = io.BytesIO()
+                        redacted_output.write(pdf_page_buf)
+                        attachments_pdf.append(PyPDF2.PdfFileReader(pdf_page_buf))
+                        for name in images_name_list:
+                            os.remove(name)
                     elif file_type in ['jpg', 'jpeg', 'png', 'tiff', 'tif']:
                         image = Image.open(buffer)
                         image_format = image.format
@@ -155,12 +214,71 @@ def generate_medicalreport_with_attachment(self, instruction_id: str, report_lin
                                     break
                                 page += 1
                             c.save()
-                            attachments_pdf.append(PyPDF2.PdfFileReader(out_pdf_io))
+
+                            pages = convert_from_bytes(out_pdf_io.getvalue())
+                            images_name_list = []
+                            for num, page in enumerate(pages):
+                                file_name = 'out_{inst_id}_{num}.jpg'.format(num=num, inst_id=instruction.id)
+                                page.save(file_name, 'JPEG')
+                                images_name_list.append(file_name)
+
+                            output_pdf_list = []
+                            for image in images_name_list:
+                                output_pdf_list.append(redaction_image(
+                                    image_path=image,
+                                    east_path='config/frozen_east_text_detection.pb',
+                                    patient_info={
+                                        'first_name': instruction.patient_information.patient_first_name,
+                                        'last_name': instruction.patient_information.patient_last_name
+                                    }
+                                ))
+
+                            redacted_output = PyPDF2.PdfFileWriter()
+                            for pdf in output_pdf_list:
+                                if pdf.isEncrypted:
+                                    pdf.decrypt(password='')
+                                for page_num in range(pdf.getNumPages()):
+                                    redacted_output.addPage(pdf.getPage(page_num))
+
+                            pdf_page_buf = io.BytesIO()
+                            redacted_output.write(pdf_page_buf)
+                            attachments_pdf.append(PyPDF2.PdfFileReader(pdf_page_buf))
+                            for name in images_name_list:
+                                os.remove(name)
                         else:
                             image.save(folder + 'img_temp_%s.' % unique + image_format)
                             pdf_bytes = img2pdf.convert(folder + 'img_temp_%s.' % unique + image_format)
-                            buffer = io.BytesIO(pdf_bytes)
-                            attachments_pdf.append(PyPDF2.PdfFileReader(buffer))
+                            pages = convert_from_bytes(pdf_bytes)
+                            images_name_list = []
+                            for num, page in enumerate(pages):
+                                file_name = 'out_{inst_id}_{num}.jpg'.format(num=num, inst_id=instruction.id)
+                                page.save(file_name, 'JPEG')
+                                images_name_list.append(file_name)
+
+                            output_pdf_list = []
+                            for image in images_name_list:
+                                output_pdf_list.append(redaction_image(
+                                    image_path=image,
+                                    east_path='config/frozen_east_text_detection.pb',
+                                    patient_info={
+                                        'first_name': instruction.patient_information.patient_first_name,
+                                        'last_name': instruction.patient_information.patient_last_name
+                                    }
+                                ))
+
+                            redacted_output = PyPDF2.PdfFileWriter()
+                            for pdf in output_pdf_list:
+                                if pdf.isEncrypted:
+                                    pdf.decrypt(password='')
+                                for page_num in range(pdf.getNumPages()):
+                                    redacted_output.addPage(pdf.getPage(page_num))
+
+                            pdf_page_buf = io.BytesIO()
+                            redacted_output.write(pdf_page_buf)
+                            attachments_pdf.append(PyPDF2.PdfFileReader(pdf_page_buf))
+
+                            for name in images_name_list:
+                                os.remove(name)
                     else:
                         # zipped unsupported file type
                         file_name = Base64Attachment(raw_xml_or_status_code).filename()

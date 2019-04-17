@@ -16,8 +16,14 @@ import reportlab.lib.pagesizes as pdf_sizes
 from PIL import Image
 from django.conf import settings
 from instructions.models import Instruction
+import PyPDF2
+from report.functions import redaction_image
 #from silk.profiling.profiler import silk_profile
 import subprocess
+import io
+import os
+
+from pdf2image import convert_from_bytes, convert_from_path
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -127,12 +133,42 @@ class AttachmentReport:
 
     def render_pdf(self) -> HttpResponse:
         attachment = Base64Attachment(self.raw_xml).data()
-        buffer = BytesIO()
-        buffer.write(attachment)
+        pages = convert_from_bytes(attachment)
+        images_name_list = []
+        for num, page in enumerate(pages):
+            file_name = 'out_{inst_id}_{num}.jpg'.format(num=num, inst_id=self.instruction.id)
+            page.save(file_name, 'JPEG')
+            images_name_list.append(file_name)
+
+        output_pdf_list = []
+        for image in images_name_list:
+            output_pdf_list.append(redaction_image(
+                image_path=image,
+                east_path='config/frozen_east_text_detection.pb',
+                patient_info={
+                    'first_name': self.instruction.patient_information.patient_first_name,
+                    'last_name': self.instruction.patient_information.patient_last_name
+                }
+            ))
+
+        output = PyPDF2.PdfFileWriter()
+        for pdf in output_pdf_list:
+            if pdf.isEncrypted:
+                pdf.decrypt(password='')
+            for page_num in range(pdf.getNumPages()):
+                output.addPage(pdf.getPage(page_num))
+
+        pdf_page_buf = io.BytesIO()
+        output.write(pdf_page_buf)
+
         response = HttpResponse(
-            buffer.getvalue(),
+            pdf_page_buf.getvalue(),
             content_type="application/pdf",
         )
+
+        for name in images_name_list:
+            os.remove(name)
+
         return response
 
     def render_pdf_with_libreoffice(self) -> HttpResponse:
@@ -147,11 +183,42 @@ class AttachmentReport:
             ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + TEMP_DIR + " " + TEMP_DIR + "/" + tmp_file),
             shell=True
         )
-        pdf = open(TEMP_DIR + '%s_tmp.pdf'%self.instruction.pk, 'rb')
+        pages = convert_from_path(TEMP_DIR + '%s_tmp.pdf'%self.instruction.pk)
+        images_name_list = []
+        for num, page in enumerate(pages):
+            file_name = 'out_{inst_id}_{num}.jpg'.format(num=num, inst_id=self.instruction.id)
+            page.save(file_name, 'JPEG')
+            images_name_list.append(file_name)
+
+        output_pdf_list = []
+        for image in images_name_list:
+            output_pdf_list.append(redaction_image(
+                image_path=image,
+                east_path='config/frozen_east_text_detection.pb',
+                patient_info={
+                    'first_name': self.instruction.patient_information.patient_first_name,
+                    'last_name': self.instruction.patient_information.patient_last_name
+                }
+            ))
+
+        output = PyPDF2.PdfFileWriter()
+        for pdf in output_pdf_list:
+            if pdf.isEncrypted:
+                pdf.decrypt(password='')
+            for page_num in range(pdf.getNumPages()):
+                output.addPage(pdf.getPage(page_num))
+
+        pdf_page_buf = io.BytesIO()
+        output.write(pdf_page_buf)
+
         response = HttpResponse(
-            pdf,
+            pdf_page_buf.getvalue(),
             content_type="application/pdf",
         )
+
+        for name in images_name_list:
+            os.remove(name)
+
         return response
 
     def render_image(self) -> HttpResponse:
@@ -160,9 +227,38 @@ class AttachmentReport:
         image_format = image.format
         if image_format == "TIFF":
             return self.render_pdf_with_tiff(image)
-        extension = str(image_format)
-        response = HttpResponse(content_type="image/" + extension.lower())
-        image.save(response, image_format)
+
+        file_name = 'out_{inst_id}_{num}.jpg'.format(num=1, inst_id=self.instruction.id)
+        image.save(file_name)
+        output_pdf_list = list()
+        output_pdf_list.append(
+            redaction_image(
+                image_path=file_name,
+                east_path='config/frozen_east_text_detection.pb',
+                patient_info={
+                    'first_name': self.instruction.patient_information.patient_first_name,
+                    'last_name': self.instruction.patient_information.patient_last_name
+                }
+            )
+        )
+
+        output = PyPDF2.PdfFileWriter()
+        for pdf in output_pdf_list:
+            if pdf.isEncrypted:
+                pdf.decrypt(password='')
+            for page_num in range(pdf.getNumPages()):
+                output.addPage(pdf.getPage(page_num))
+
+        pdf_page_buf = io.BytesIO()
+        output.write(pdf_page_buf)
+
+        response = HttpResponse(
+            pdf_page_buf.getvalue(),
+            content_type="application/pdf",
+        )
+
+        os.remove(file_name)
+
         return response
 
     def render_pdf_with_tiff(self, image: Image, max_pages: int=200) -> HttpResponse:
@@ -186,8 +282,41 @@ class AttachmentReport:
               break
             page += 1
         c.save()
+
+        pages = convert_from_bytes(out_pdf_io.getvalue())
+        images_name_list = []
+        for num, page in enumerate(pages):
+            file_name = 'out_{inst_id}_{num}.jpg'.format(num=num, inst_id=self.instruction.id)
+            page.save(file_name, 'JPEG')
+            images_name_list.append(file_name)
+
+        output_pdf_list = []
+        for image in images_name_list:
+            output_pdf_list.append(redaction_image(
+                image_path=image,
+                east_path='config/frozen_east_text_detection.pb',
+                patient_info={
+                    'first_name': self.instruction.patient_information.patient_first_name,
+                    'last_name': self.instruction.patient_information.patient_last_name
+                }
+            ))
+
+        output = PyPDF2.PdfFileWriter()
+        for pdf in output_pdf_list:
+            if pdf.isEncrypted:
+                pdf.decrypt(password='')
+            for page_num in range(pdf.getNumPages()):
+                output.addPage(pdf.getPage(page_num))
+
+        pdf_page_buf = io.BytesIO()
+        output.write(pdf_page_buf)
+
         response = HttpResponse(
-            out_pdf_io.getvalue(),
+            pdf_page_buf.getvalue(),
             content_type="application/pdf",
         )
+
+        for name in images_name_list:
+            os.remove(name)
+
         return response

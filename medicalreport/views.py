@@ -278,7 +278,7 @@ def submit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
 
     medical_record_decorator = MedicalReportDecorator(instruction.medical_xml_report.read().decode('utf-8'), instruction)
     attachments = medical_record_decorator.attachments
-    relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
+    relations = " " + " | ".join(relation.name for relation in ReferencePhrases.objects.all()) + " "
     initial_prepared_by = request.user.userprofilebase.generalpracticeuser.pk
     if redaction.prepared_by:
         initial_prepared_by = redaction.prepared_by.pk
