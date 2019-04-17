@@ -93,9 +93,8 @@ def sar_request_code(request: HttpRequest, instruction_id: str, access_type: str
                 successful_request = True
             else:
                 event_logger.warning(
-                    '{access_type} REQUESTED OTP pin failed, Instruction ID {instruction_id}, Reason: {error_reason}'.format(
-                        access_type=access_type, instruction_id=instruction_id,
-                        error_reason=json.loads(third_party_response_sms.text)['error']
+                    '{access_type} REQUESTED OTP pin failed, Instruction ID {instruction_id}'.format(
+                        access_type=access_type, instruction_id=instruction_id
                     )
                 )
 
@@ -105,9 +104,8 @@ def sar_request_code(request: HttpRequest, instruction_id: str, access_type: str
                 successful_request = True
             else:
                 event_logger.warning(
-                    '{access_type} REQUESTED OTP voice failed, Instruction ID {instruction_id}, Reason: {error_reason}'.format(
-                        access_type=access_type, instruction_id=instruction_id,
-                        error_reason=json.loads(third_party_response_voice.text)['error']
+                    '{access_type} REQUESTED OTP voice failed, Instruction ID {instruction_id}'.format(
+                        access_type=access_type, instruction_id=instruction_id
                     )
                 )
             third_party_authorisation.save()
