@@ -294,11 +294,11 @@
                 e.preventDefault();
             });
 
-            if('{{check_fee_status}}' == 1) {
+            if({{check_fee_status}} == 1) {
                 $("#check-bank-detail-modal").modal({
                     backdrop: 'static'
                 });
-            } else if('{{check_fee_status}}' == 2) {
+            } else if({{check_fee_status}} == 2) {
                $("#check-fee-modal").modal({
                     backdrop: 'static'
                 }); 

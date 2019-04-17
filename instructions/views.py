@@ -52,7 +52,7 @@ PIPELINE_INSTRUCTION_LINK = get_url_page('instruction_pipeline')
 def checkFeeStatus(gp_practice):
     org_fee = GpOrganisationFee.objects.filter(gp_practice=gp_practice).first()
     if org_fee:
-        if org_fee.organisation_fee == '':
+        if not org_fee.organisation_fee:
             fee_setup_status = FEE_STATUS_INVALID_FEE
         elif org_fee.gp_practice.payment_bank_holder_name == '' or\
                 org_fee.gp_practice.payment_bank_sort_code == '' or\
@@ -455,7 +455,7 @@ def instruction_pipeline_view(request):
         'header_title': header_title,
         'next_prev_data_all': next_prev_data_all,
         'next_prev_data_fee': next_prev_data_fee,
-        'check_fee_status': check_fee_status if check_fee_status else None
+        'check_fee_status': check_fee_status
     })
 
     response.set_cookie('status', filter_status)
