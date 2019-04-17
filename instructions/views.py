@@ -358,13 +358,16 @@ def instruction_pipeline_view(request):
     table_fee = None
     next_prev_data_all = {}
     next_prev_data_fee = {}
+    check_fee_status = None
 
     if table_num == 'undefined':
         table_num = 1
 
     if user.type == GENERAL_PRACTICE_USER:
         gp_practice = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation', default=None)
-        check_fee_status = checkFeeStatus(gp_practice)
+        check_permission = request.user.get_group_permissions()
+        if 'instructions.view_account_pages' in check_permission:
+            check_fee_status = checkFeeStatus(gp_practice)
 
         if gp_practice and not gp_practice.is_active():
             return redirect('onboarding:emis_setup', practice_code=gp_practice.pk)
