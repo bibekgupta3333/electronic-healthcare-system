@@ -1,6 +1,7 @@
 from django import template
 from django.db.models import Q
 from .helper import problem_xpaths
+from django.utils.html import format_html
 from medicalreport.models import NhsSensitiveConditions
 
 register = template.Library()
@@ -21,7 +22,8 @@ def form_referrals(context):
         'locations': context['medical_record'].locations,
         'instruction': context['instruction'],
         'minor_problems_list': context['medical_record'].minor_problems,
-        'redaction': context['redaction']
+        'redaction': context['redaction'],
+        'word_library': context['word_library'],
     }
 
 
@@ -40,7 +42,8 @@ def form_consultations(context):
         'consultations': context['medical_record'].consultations,
         'relations': context['relations'],
         'people': context['medical_record'].people,
-        'redaction': context['redaction']
+        'redaction': context['redaction'],
+        'word_library': context['word_library'],
     }
 
 
@@ -67,7 +70,8 @@ def form_significant_problems(context):
         'significant_active_problems': context['medical_record'].significant_active_problems,
         'significant_past_problems': context['medical_record'].significant_past_problems,
         'problem_linked_lists': context['medical_record'].problem_linked_lists,
-        'redaction': context['redaction']
+        'redaction': context['redaction'],
+        'word_library': context['word_library'],
     }
 
 
@@ -79,7 +83,8 @@ def form_medications(context):
         'additional_acute_medications': context['redaction'].additional_acute_medications,
         'additional_repeat_medications': context['redaction'].additional_repeat_medications,
         'redaction': context['redaction'],
-        'instruction': context['instruction']
+        'instruction': context['instruction'],
+        'word_library': context['word_library'],
     }
 
 
@@ -103,7 +108,8 @@ def form_allergies(context):
         'all_allergies': context['medical_record'].all_allergies,
         'additional_allergies': context['redaction'].additional_allergies,
         'redaction': context['redaction'],
-        'instruction': context['instruction']
+        'instruction': context['instruction'],
+        'word_library': context['word_library'],
     }
 
 
@@ -137,6 +143,7 @@ def redaction_checkbox_with_body(model, redaction, header='', body=''):
         'checked': checked,
         'xpaths': xpaths,
         'header': header,
+        'header_detail': format_html(header if header else ''),
         'body': body,
         'is_sensitive': is_sensitive
     }
@@ -199,6 +206,7 @@ def problem_redaction_checkboxes(model, redaction, problem_linked_lists, map_cod
         'checked': checked,
         'xpaths': xpaths,
         'header': header,
+        'header_detail': format_html(header),
         'is_sensitive': is_sensitive
     }
 

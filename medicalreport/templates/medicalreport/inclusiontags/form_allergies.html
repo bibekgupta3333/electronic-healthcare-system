@@ -20,7 +20,7 @@
             <div class="tab-content" id="nav-tabContent">
                 <div class="tab-pane fade show active" id="nav-allergies" role="tabpanel" aria-labelledby="nav-allergies-tab">
                     {% for model in all_allergies %}
-                    {% with header=model|general_header  %} 
+                    {% with header=model|general_header:word_library  %}
                         {% redaction_checkbox_with_body model redaction header %}
                     {% endwith %}
                     {% endfor %}

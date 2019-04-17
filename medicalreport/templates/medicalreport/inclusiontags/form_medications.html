@@ -21,7 +21,7 @@
             <div class="tab-content" id="nav-tabContent">
                 <div class="tab-pane fade show active" id="nav-acute-medications" role="tabpanel" aria-labelledby="nav-acute-medications-tab">
                     {% for model in acute_medications%}
-                    {% with header=model|general_header  %} 
+                    {% with header=model|general_header:word_library  %}
                         {% redaction_checkbox_with_body model redaction header %}
                     {% endwith %}
                     {% endfor %}
@@ -37,7 +37,7 @@
                 </div>
                 <div class="tab-pane fade" id="nav-repeat-medications" role="tabpanel" aria-labelledby="nav-repeat-medications-tab">
                     {% for model in repeat_medications%}
-                    {% with header=model|general_header  %} 
+                    {% with header=model|general_header:word_library  %}
                         {% redaction_checkbox_with_body model redaction header %}
                     {% endwith %}
                     {% endfor %}
