@@ -28,6 +28,10 @@ class OrganisationBase(models.Model):
 
 
 class OrganisationMedidata(OrganisationBase):
+    payment_bank_holder_name = models.CharField(max_length=255, blank=True)
+    payment_bank_account_number = models.CharField(max_length=255, blank=True)
+    payment_bank_sort_code = models.CharField(max_length=255, blank=True)
+    
     class Meta:
         verbose_name = 'Organisation Medidata'
 

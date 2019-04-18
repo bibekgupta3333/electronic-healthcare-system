@@ -65,7 +65,7 @@ LOGGING = {
     }
 }
 
-EMIS_API_HOST = 'http://medi2data.net:9443'
+EMIS_API_HOST = 'http://api01-dev-mde.flexiion-customer.net/'
 TWO_FACTOR_ENABLED=False
 CELERY_ENABLED=False
 CLAMD_ENABLED= False

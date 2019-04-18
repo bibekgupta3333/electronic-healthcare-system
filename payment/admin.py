@@ -61,7 +61,8 @@ class WeeklyInvoiceResource(resources.ModelResource):
 class WeeklyInvoiceAdmin(CustomImportExportModelAdmin):
     resource_class = WeeklyInvoiceResource
     fields = (
-        'start_date', 'end_date', 'client_org', 'number_instructions', 'total_cost', 'paid'
+        'start_date', 'end_date', 'client_org', 'number_instructions', 'total_cost', 'paid',
+        'weekly_invoice_pdf_file'
     )
 
 

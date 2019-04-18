@@ -57,6 +57,42 @@
                     <div class="card-header">
                         <div class="row">
                             <div class="col-md-6">
+                                <h5>Bank Details for Fee Payments</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">Bank Account Name</div>
+                            <div class="col-md-4">
+                                {% bootstrap_field bank_details_form.payment_bank_holder_name placeholder='' %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3">Bank Account Number</div>
+                            <div class="col-md-4">
+                                {% bootstrap_field bank_details_form.payment_bank_account_number placeholder='' %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3">Bank Account Sort Code</div>
+                            <div class="col-md-4">
+                                {% bootstrap_field bank_details_form.payment_bank_sort_code placeholder='' %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-5">
+                                <button class="btn btn-primary" id="update_bank_details" type="button">
+                                    Update Bank Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card contactPreferences mt-4">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-md-6">
                                 <h5>Practice Fee Income</h5>
                             </div>
                         </div>
@@ -169,6 +205,18 @@
                     create_alert('Notification setting has been changed.', 'success');
                 })
                 .fail(function(){
+                    create_alert('Something went wrong, please try again.', 'error');
+                });
+            });
+
+            $('#update_bank_details').click(function() {
+                $.ajax({
+                    url: $('#update_bank_details').attr("action"),
+                    type: 'POST',
+                    data: $('#preferencesForm').serialize()+'&update_bank_details=1'
+                }).done(function() {
+                    create_alert('Bank details setting has been changed.', 'success');
+                }).fail(function() {
                     create_alert('Something went wrong, please try again.', 'error');
                 });
             });
