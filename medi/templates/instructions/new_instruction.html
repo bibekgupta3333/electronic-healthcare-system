@@ -342,10 +342,6 @@
         $(document).ready(function () {
             var isPopup = false;
             var isErrorPopup = false;
-            var validations ={
-                email: [/^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/, 'Please enter a valid email address']
-            };
-
             setUpTel("id_patient_telephone_mobile", "id_patient_telephone_code");
 
             {% if request.user.type == 'GP' %}
