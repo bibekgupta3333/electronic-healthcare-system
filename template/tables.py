@@ -21,6 +21,6 @@ class TemplateTable(tables.Table):
         return format_html(
             "<a href='" + reverse('template:edit_template', args=[record.pk]) +\
             "' id='changeBtn-" + str(record.pk) + "' class='btn btn-primary'>Edit</a>\
-            <a href='" + reverse('template:remove_template', args=[record.pk]) +\
-            "' id='removeBtn-" + str(record.pk) + "' class='btn btn-danger'>Remove</a>"
+            <a href='#' id='removeBtn-" + str(record.pk) + "'>\
+            <span class='btn btn-danger deleted_btn' data-link='" + reverse('template:remove_template', args=[record.pk]) + "'>Remove</span></a>"
         )
