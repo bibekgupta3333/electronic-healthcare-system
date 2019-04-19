@@ -141,6 +141,8 @@ class Instruction(TimeStampedModel, models.Model):
             ('view_account_pages', 'view account page'),
             ('authorise_fee', 'Authorise Fee'),
             ('amend_fee', 'Amend Fee'),
+            ('authorise_bank_account', 'view Bank detail'),
+            ('amend_bank_account', 'view/edit Bank detail')
         )
 
     def __str__(self):

@@ -140,6 +140,12 @@ def account_view(request: HttpRequest) -> HttpResponse:
                 'label': 'Received after %s days'%organisation_fee.max_day_lvl_3
             })
 
+        bank_detail_block = None
+        if request.user.has_perm('instructions.authorise_bank_account'):
+            bank_detail_block = "view"
+        if request.user.has_perm('instructions.amend_bank_account'):
+            bank_detail_block = "edit"
+
         if request.method == "POST":
             new_organisation_password = generate_password(initial_range=1, body_rage=12, tail_rage=1)
             gp_organisation.set_operating_system_salt_and_encrypted_password(new_organisation_password)
@@ -153,6 +159,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
                 'practice_code': gp_organisation.pk,
                 'has_amend_fee_perm': has_amend_fee_perm,
                 'band_fee_rate_data': band_fee_rate_data,
+                'status_bank_detail_block': bank_detail_block
             })
 
         return render(request, 'accounts/accounts_view.html', {
@@ -162,6 +169,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
             'has_amend_fee_perm': has_amend_fee_perm,
             'band_fee_rate_data': band_fee_rate_data,
             'bank_details_form': bank_details_form,
+            'status_bank_detail_block': bank_detail_block
         })
 
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
