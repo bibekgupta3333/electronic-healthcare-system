@@ -53,7 +53,7 @@
                 </div>
             </div>
             {% if organisation_fee_data %}
-                {% if status_bank_detail_block == 'view' or status_bank_detail_block == 'edit' %}
+                {% if perms.instructions.authorise_bank_account or perms.instructions.amend_bank_account %}
                     <div id="bank_detail_block">
                         <div class="card contactPreferences mt-4">
                             <div class="card-header">
@@ -82,7 +82,7 @@
                                         {% bootstrap_field bank_details_form.payment_bank_sort_code placeholder='' %}
                                     </div>
                                 </div>
-                                {% if status_bank_detail_block == 'edit' %}
+                                {% if perms.instructions.amend_bank_account %}
                                     <div class="row">
                                         <div class="col-md-5">
                                             <button class="btn btn-primary" id="update_bank_details" type="button">
@@ -251,7 +251,7 @@
                 $(this).text(Number(this.text).toFixed(2));
             });
 
-            {% if status_bank_detail_block == 'view' %}
+            {% if not perms.instructions.amend_bank_account %}
                 $('#id_payment_bank_holder_name').prop('disabled', true);
                 $('#id_payment_bank_account_number').prop('disabled', true);
                 $('#id_payment_bank_sort_code').prop('disabled', true);
