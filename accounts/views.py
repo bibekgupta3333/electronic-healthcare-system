@@ -181,7 +181,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
                 'new_password': new_organisation_password,
                 'practice_code': gp_organisation.pk,
                 'has_amend_fee_perm': has_amend_fee_perm,
-                'band_fee_rate_data': band_fee_rate_data,
+                'band_fee_rate_data': band_fee_rate_data
             })
 
         return render(request, 'accounts/accounts_view.html', {
@@ -190,7 +190,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
             'gp_preferences_form': gp_preferences_form,
             'has_amend_fee_perm': has_amend_fee_perm,
             'band_fee_rate_data': band_fee_rate_data,
-            'bank_details_form': bank_details_form,
+            'bank_details_form': bank_details_form
         })
 
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
