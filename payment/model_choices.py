@@ -7,3 +7,7 @@ FEE_TYPE_CHOICE = (
     (FEE_UNDERWRITE_TYPE, 'AMRA_UNDERWRITING'),
     (FEE_SARS_TYPE, 'SARS')
 )
+
+# Fee status for check setup fee progress.
+FEE_STATUS_INVALID_DETAIL = 1
+FEE_STATUS_INVALID_FEE = 2

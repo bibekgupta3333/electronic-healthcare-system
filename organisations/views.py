@@ -93,11 +93,11 @@ def get_nhs_autocomplete(request: HttpRequest) -> JsonResponse:
     if organisation_gps.exists():
         for organisation_gp in organisation_gps:
             data['items'][0]['children'].append(
-                {'id': organisation_gp.practcode, 'text': organisation_gp.name})
+                {'id': organisation_gp.practcode, 'text': ', '.join([organisation_gp.name, organisation_gp.billing_address_city, organisation_gp.billing_address_postalcode])})
 
     if nhs_gps.exists():
         for nhs_gp in nhs_gps:
-            data['items'][1]['children'].append({'id': nhs_gp.practcode, 'text': nhs_gp.name})
+            data['items'][1]['children'].append({'id': nhs_gp.practcode, 'text': ', '.join([nhs_gp.name, nhs_gp.billing_address_city, nhs_gp.billing_address_postalcode])})
 
     return JsonResponse(data)
 
