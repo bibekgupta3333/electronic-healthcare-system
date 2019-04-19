@@ -365,8 +365,7 @@ def instruction_pipeline_view(request):
 
     if user.type == GENERAL_PRACTICE_USER:
         gp_practice = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation', default=None)
-        check_permission = request.user.get_group_permissions()
-        if 'instructions.view_account_pages' in check_permission:
+        if request.user.has_perm('instructions.view_account_pages'):
             check_fee_status = checkFeeStatus(gp_practice)
 
         if gp_practice and not gp_practice.is_active():
