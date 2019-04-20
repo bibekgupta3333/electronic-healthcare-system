@@ -149,9 +149,9 @@ def redaction_checkbox_with_body(model, redaction, header='', word_library='', b
                 <span class="highlight-library">
                     <span class="bg-warning"> %s </span>
                     <span class="dropdown-options">
-                        <a href="#">Redact</a>
-                        <a href="#">Replace</a>
-                        <a href="#">Replace all</a>
+                        <a href="#" class="highlight-redact">Redact</a>
+                        <a href="#" class="highlight-replace">Replace</a>
+                        <a href="#" class="highlight-replaceall">Replace all</a>
                     </span>
                 </span>
             ''' % split_word[idx]

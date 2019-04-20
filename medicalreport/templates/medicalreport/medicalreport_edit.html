@@ -133,6 +133,24 @@
         </div>
     </div>
 
+    <div class="modal fade" id="resetModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg bg-info">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="col-12 text-center mt-2">
+                            <img src="{% static 'images/custom_images/reset.gif'%}" class="img-fluid">
+                            <div class="col-12">&nbsp;</div>
+                            <h4>Patient : <strong>{{ patient_full_name }}</strong></h4>
+                            <h4 class="mt-2">The medical record or report will be reset.</h4>
+                            <label class="text-danger mt-4">Please don't leave this page. Process is running ....</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {% endcache %}
 
     <a href="javascript:;" class="btn btn-primary" id="report-toolbox-open-modal">Report Toolbox</a>
@@ -249,6 +267,24 @@
             else {
                $(".dropdown-options").slideUp('fast');
             }
+        });
+        $(".highlight-redact").on("click", function() {
+            $(this).parent().parent().find("bg-warning").removeClass("bg-warning").addClass("hl-redact");
+        });
+        $(".highlight-replace").on("click", function() {
+            var word = $(this).parent().parent().find("bg-warning").text();
+            $.ajax({
+                url: "{% url 'library:replace_word' %}",
+                type: "POST",
+                dataType: "json",
+                data: { word: word }
+            }).done(function(response) {
+            }).fail(function() {
+                create_alert('Something went wrong, please try again.', 'error');
+            });
+        });
+        $(".highlight-replaceall").on("click", function() {
+
         });
     </script>
 {% endblock %}

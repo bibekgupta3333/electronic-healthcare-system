@@ -95,3 +95,22 @@ def edit_word_library(request, library_id):
         event = 'edit_error:{id}'.format(id=library.id)
 
     return redirect('library:edit_library', event=event)
+
+
+@login_required(login_url='/accounts/login')
+def replace_word(request):
+    if request.method == 'POST':
+        word = request.POST['word']
+        gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
+        library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
+        if library:
+            return JsonResponse({'replace_word': library.value})
+
+@login_required(login_url='/accounts/login')
+def replaceall_word(request):
+    if request.method == 'POST':
+        word = request.POST['word']
+        gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
+        library = Library.objects.filter(gp_practice=gp_practice)
+        if library:
+            return JsonResponse({'replace_word': library})
