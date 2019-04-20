@@ -113,8 +113,12 @@ def replace_word(request):
 @login_required(login_url='/accounts/login')
 def replaceall_word(request):
     if request.is_ajax():
-        word = request.POST['word']
-        gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
-        library = Library.objects.filter(gp_practice=gp_practice)
-        if library:
-            return JsonResponse({'replace_word': library})
+        try:
+            word = request.GET.get('word').strip()
+            gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
+            library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
+            if library:
+                return JsonResponse({'replace_word': library.value})
+            return JsonResponse({'message': 'Error'})
+        except e:
+            return JsonResponse({'message': 'Error'})

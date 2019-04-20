@@ -268,7 +268,7 @@
                     create_alert('Something went wrong, please try again.', 'error');
                 } else {
                     word.text(response['replace_word']);
-                    word.removeClass("hg-warning");
+                    word.removeClass("bg-warning");
                 }
             }).fail(function() {
                 create_alert('Something went wrong, please try again.', 'error');
@@ -276,6 +276,23 @@
         });
         $(".highlight-replaceall").on("click", function(e) {
             e.preventDefault();
+            var word = $(this).parent().parent().find("span.bg-warning");
+            $.ajax({
+                url: "{% url 'library:replaceall_word' %}",
+                dataType: "json",
+                data: { word: word.text() }
+            }).done(function(response) {
+                if (response['message'] == 'Error') {
+                    create_alert('Something went wrong, please try again.', 'error');
+                } else {
+                    $(".highlight-replaceall .bg-warning").each(function(i, obj) {
+                        obj.text(response['replace_word']);
+                        obj.removeClass("bg-warning");
+                    });
+                }
+            }).fail(function() {
+                create_alert('Something went wrong, please try again.', 'error');
+            });
         });
     </script>
 {% endblock %}

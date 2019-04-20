@@ -3,6 +3,8 @@ from django.db.models import Q
 from .helper import problem_xpaths
 from django.utils.html import format_html
 from medicalreport.models import NhsSensitiveConditions
+from accounts.models import User
+from library.models import Library
 import re
 
 register = template.Library()
@@ -127,7 +129,7 @@ def form_new_additional_allergies():
 
 
 @register.inclusion_tag('medicalreport/inclusiontags/redaction_checkbox_with_body.html')
-def redaction_checkbox_with_body(model, redaction, header='', word_library='', body=''):
+def redaction_checkbox_with_body(model, redaction, header='', word_library='', body='', user_id=None):
     checked = ""
     xpaths = model.xpaths()
     snomed_codes = model.snomed_concepts()
@@ -140,21 +142,25 @@ def redaction_checkbox_with_body(model, redaction, header='', word_library='', b
     if redaction.redacted(xpaths) is True:
         checked = "checked"
 
+    gp_practice = User.objects.get(pk=user_id).userprofilebase.generalpracticeuser.organisation
+
     title = header
     split_word = header.split()
     for word in word_library:
         if str.upper(word.key) in map(str.upper, split_word):
             idx = list(map(str.upper, split_word)).index(str.upper(word.key))
+            library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
+            option_disable = '' if library else 'option-disable'
             highlight_html = '''
                 <span class="highlight-library">
                     <span class="bg-warning"> %s </span>
                     <span class="dropdown-options">
                         <a href="#" class="highlight-redact">Redact</a>
-                        <a href="#" class="highlight-replace">Replace</a>
-                        <a href="#" class="highlight-replaceall">Replace all</a>
+                        <a href="#" class="highlight-replace %s">Replace</a>
+                        <a href="#" class="highlight-replaceall %s">Replace all</a>
                     </span>
                 </span>
-            ''' % split_word[idx]
+            ''' % (split_word[idx], option_disable, option_disable)
             header = re.sub(word.key, highlight_html, header, flags=re.IGNORECASE)
 
     return {
