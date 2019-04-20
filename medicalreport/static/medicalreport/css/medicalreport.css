@@ -427,3 +427,7 @@ h1 {
 .highlight-library .dropdown-options a:hover {
     background-color: #ddd;
 }
+
+.highlight-library .hl-redact {
+    background-color: #333;
+}

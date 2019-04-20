@@ -99,16 +99,20 @@ def edit_word_library(request, library_id):
 
 @login_required(login_url='/accounts/login')
 def replace_word(request):
-    if request.method == 'POST':
-        word = request.POST['word']
-        gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
-        library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
-        if library:
-            return JsonResponse({'replace_word': library.value})
+    if request.is_ajax():
+        try:
+            word = request.GET.get('word').strip()
+            gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
+            library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
+            if library:
+                return JsonResponse({'replace_word': library.value})
+            return JsonResponse({'message': 'Error'})
+        except e:
+            return JsonResponse({'message': 'Error'})
 
 @login_required(login_url='/accounts/login')
 def replaceall_word(request):
-    if request.method == 'POST':
+    if request.is_ajax():
         word = request.POST['word']
         gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
         library = Library.objects.filter(gp_practice=gp_practice)

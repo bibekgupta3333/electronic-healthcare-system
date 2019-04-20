@@ -133,24 +133,6 @@
         </div>
     </div>
 
-    <div class="modal fade" id="resetModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg bg-info">
-            <div class="modal-content">
-                <div class="modal-body">
-                    <div class="container">
-                        <div class="col-12 text-center mt-2">
-                            <img src="{% static 'images/custom_images/reset.gif'%}" class="img-fluid">
-                            <div class="col-12">&nbsp;</div>
-                            <h4>Patient : <strong>{{ patient_full_name }}</strong></h4>
-                            <h4 class="mt-2">The medical record or report will be reset.</h4>
-                            <label class="text-danger mt-4">Please don't leave this page. Process is running ....</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     {% endcache %}
 
     <a href="javascript:;" class="btn btn-primary" id="report-toolbox-open-modal">Report Toolbox</a>
@@ -254,10 +236,12 @@
         $(".highlight-library").hover(function() {
             if (!timeoutId) {
                 var highlight_div = $(this);
-                timeoutId = window.setTimeout(function() {
-                    timeoutId = null;
-                    highlight_div.find('.dropdown-options').slideDown('fast');
-               }, 400);
+                if (highlight_div.find('.bg-warning')) {
+                    timeoutId = window.setTimeout(function() {
+                        timeoutId = null;
+                        highlight_div.find('.dropdown-options').slideDown('fast');
+                   }, 400);
+                }
             }
         }, function () {
             if (timeoutId) {
@@ -268,23 +252,30 @@
                $(".dropdown-options").slideUp('fast');
             }
         });
-        $(".highlight-redact").on("click", function() {
-            $(this).parent().parent().find("bg-warning").removeClass("bg-warning").addClass("hl-redact");
+        $(".highlight-redact").on("click", function(e) {
+            e.preventDefault();
+            $(this).parent().parent().find("span.bg-warning").removeClass("bg-warning").addClass("hl-redact");
         });
-        $(".highlight-replace").on("click", function() {
-            var word = $(this).parent().parent().find("bg-warning").text();
+        $(".highlight-replace").on("click", function(e) {
+            e.preventDefault();
+            var word = $(this).parent().parent().find("span.bg-warning");
             $.ajax({
                 url: "{% url 'library:replace_word' %}",
-                type: "POST",
                 dataType: "json",
-                data: { word: word }
+                data: { word: word.text() }
             }).done(function(response) {
+                if (response['message'] == 'Error') {
+                    create_alert('Something went wrong, please try again.', 'error');
+                } else {
+                    word.text(response['replace_word']);
+                    word.removeClass("hg-warning");
+                }
             }).fail(function() {
                 create_alert('Something went wrong, please try again.', 'error');
             });
         });
-        $(".highlight-replaceall").on("click", function() {
-
+        $(".highlight-replaceall").on("click", function(e) {
+            e.preventDefault();
         });
     </script>
 {% endblock %}
