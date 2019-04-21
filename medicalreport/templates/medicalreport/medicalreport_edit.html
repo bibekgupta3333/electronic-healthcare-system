@@ -258,17 +258,18 @@
         });
         $(".highlight-replace").on("click", function(e) {
             e.preventDefault();
-            var word = $(this).parent().parent().find("span.bg-warning");
+            var word_span = $(this).parent().parent().find("span.bg-warning");
+            var word = word_span.text();
             $.ajax({
                 url: "{% url 'library:replace_word' %}",
                 dataType: "json",
-                data: { word: word.text() }
+                data: { word: word }
             }).done(function(response) {
                 if (response['message'] == 'Error') {
                     create_alert('Something went wrong, please try again.', 'error');
                 } else {
-                    word.text(response['replace_word']);
-                    word.removeClass("bg-warning");
+                    word_span.text(response['replace_word']);
+                    word_span.removeClass("bg-warning");
                 }
             }).fail(function() {
                 create_alert('Something went wrong, please try again.', 'error');
@@ -276,18 +277,21 @@
         });
         $(".highlight-replaceall").on("click", function(e) {
             e.preventDefault();
-            var word = $(this).parent().parent().find("span.bg-warning");
+            var word_span = $(this).parent().parent().find("span.bg-warning");
+            var word = word_span.text();
             $.ajax({
                 url: "{% url 'library:replaceall_word' %}",
                 dataType: "json",
-                data: { word: word.text() }
+                data: { word: word }
             }).done(function(response) {
                 if (response['message'] == 'Error') {
                     create_alert('Something went wrong, please try again.', 'error');
                 } else {
-                    $(".highlight-replaceall .bg-warning").each(function(i, obj) {
-                        obj.text(response['replace_word']);
-                        obj.removeClass("bg-warning");
+                    $(".highlight-library .bg-warning").each(function(i, obj) {
+                        if ($(obj).text() == word) {
+                            $(obj).text(response['replace_word']);
+                            $(obj).removeClass("bg-warning");
+                        }
                     });
                 }
             }).fail(function() {
