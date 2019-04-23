@@ -3,8 +3,6 @@ from django.db.models import Q
 from .helper import problem_xpaths
 from django.utils.html import format_html
 from medicalreport.models import NhsSensitiveConditions
-from accounts.models import User
-from library.models import Library
 import re
 
 register = template.Library()

@@ -18,7 +18,7 @@ class Library(TimeStampedModel):
 
 
 class LibraryHistory(TimeStampedModel):
-	gp_practice = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE)
-	action = models.CharField(max_length=255, verbose_name='Action')
-	old = models.CharField(max_length=255, blank=True, verbose_name='Old value')
-	new = models.CharField(max_length=255, blank=True, verbose_name='New value')
+    gp_practice = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE)
+    action = models.CharField(max_length=255, verbose_name='Action')
+    old = models.CharField(max_length=255, blank=True, verbose_name='Old value')
+    new = models.CharField(max_length=255, blank=True, verbose_name='New value')

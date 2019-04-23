@@ -8,7 +8,7 @@ from django.http import JsonResponse
 
 from instructions.views import calculate_next_prev
 
-from .models import Library
+from .models import Library, LibraryHistory
 from .tables import LibraryTable
 from .forms import LibraryForm
 
@@ -105,9 +105,11 @@ def replace_word(request):
             gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
             library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
             if library:
-                return JsonResponse({'replace_word': library.value})
+                library_history = LibraryHistory(gp_practice=gp_practice, action='Replace', old=word, new=library.value)
+                library_history.save()
+                return JsonResponse({'replace_word': library.value, 'id': library_history.id})
             return JsonResponse({'message': 'Error'})
-        except e:
+        except:
             return JsonResponse({'message': 'Error'})
 
 @login_required(login_url='/accounts/login')
@@ -117,8 +119,26 @@ def replaceall_word(request):
             word = request.GET.get('word').strip()
             gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
             library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
+            library_history = LibraryHistory(gp_practice=gp_practice, action='ReplaceAll', old=word, new=library.value)
+            library_history.save()
             if library:
                 return JsonResponse({'replace_word': library.value})
             return JsonResponse({'message': 'Error'})
-        except e:
+        except:
+            return JsonResponse({'message': 'Error'})
+
+@login_required(login_url='/accounts/login')
+def undo_last(request):
+    if request.is_ajax():
+        try:
+            gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
+            recent_history = LibraryHistory.objects.filter(gp_practice=gp_practice).latest('id')
+            data = {
+                'action': recent_history.action,
+                'id': recent_history.id,
+                'old': recent_history.old,
+            }
+            recent_history.delete()
+            return JsonResponse(data)
+        except:
             return JsonResponse({'message': 'Error'})

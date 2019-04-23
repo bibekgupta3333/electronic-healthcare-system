@@ -236,7 +236,7 @@
         $(".highlight-library").hover(function() {
             if (!timeoutId) {
                 var highlight_div = $(this);
-                if (highlight_div.find('.bg-warning')) {
+                if (highlight_div.find('.bg-warning').length) {
                     timeoutId = window.setTimeout(function() {
                         timeoutId = null;
                         highlight_div.find('.dropdown-options').slideDown('fast');
@@ -270,6 +270,7 @@
                 } else {
                     word_span.text(response['replace_word']);
                     word_span.removeClass("bg-warning");
+                    word_span.addClass('change-'+response['id']);
                 }
             }).fail(function() {
                 create_alert('Something went wrong, please try again.', 'error');
@@ -297,6 +298,24 @@
             }).fail(function() {
                 create_alert('Something went wrong, please try again.', 'error');
             });
+        });
+
+        $('#report-toolbox-modal-undolast').on('click', function(e) {
+            e.preventDefault();
+            $.ajax({
+                url: "{% url 'library:undo_last' %}",
+            }).done(function(response) {
+                if (response['message'] == 'Error') {
+                    create_alert('Something went wrong, please try again.', 'error');
+                } else {
+                    if (response['action'] == 'Replace') {
+                        $('.change-'+response['id']).text(response['old']);
+                        $('.change-'+response['id']).removeClass().addClass("bg-warning");
+                    }
+                }
+            }).fail(function() {
+                create_alert('Something went wrong, please try again.', 'error');
+            })
         });
     </script>
 {% endblock %}
