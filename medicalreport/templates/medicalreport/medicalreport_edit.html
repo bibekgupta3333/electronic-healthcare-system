@@ -281,7 +281,7 @@
             var word_span = $(this).parent().parent().find("span.bg-warning");
             var word = word_span.text();
             $.ajax({
-                url: "{% url 'library:replaceall_word' %}",
+                url: "{% url 'library:replace_allword' %}",
                 dataType: "json",
                 data: { word: word }
             }).done(function(response) {
@@ -292,6 +292,7 @@
                         if ($(obj).text() == word) {
                             $(obj).text(response['replace_word']);
                             $(obj).removeClass("bg-warning");
+                            $(obj).addClass('change-'+response['id']);
                         }
                     });
                 }
@@ -311,11 +312,15 @@
                     if (response['action'] == 'Replace') {
                         $('.change-'+response['id']).text(response['old']);
                         $('.change-'+response['id']).removeClass().addClass("bg-warning");
+                    } else if (response['action'] == 'ReplaceAll') {
+                        $('.change-'+response['id']).text(response['old']);
+                        $('.change-'+response['id']).removeClass().addClass("bg-warning");
                     }
                 }
             }).fail(function() {
                 create_alert('Something went wrong, please try again.', 'error');
             })
         });
+
     </script>
 {% endblock %}

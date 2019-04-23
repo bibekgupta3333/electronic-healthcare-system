@@ -27,7 +27,8 @@ from payment.functions import calculate_instruction_fee
 from typing import List
 from common.functions import multi_getattr
 from library.forms import LibraryForm
-from library.models import Library
+from library.models import Library, LibraryHistory
+from django.core import serializers
 #from silk.profiling.profiler import silk_profile
 
 logger = logging.getLogger('timestamp')
@@ -218,6 +219,7 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     library_form = LibraryForm(gp_org_id=gp_practice_code)
 
     word_library = Library.objects.filter(gp_practice=gp_practice_code)
+    library_history = LibraryHistory.objects.filter(gp_practice=gp_practice_code)
 
     response = render(request, 'medicalreport/medicalreport_edit.html', {
         'user': request.user,
@@ -231,6 +233,7 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         'patient_full_name': instruction.patient_information.get_full_name(),
         'library_form': library_form,
         'word_library': word_library,
+        'library_history': library_history,
     })
     end_time = timezone.now()
     total_time = end_time - start_time

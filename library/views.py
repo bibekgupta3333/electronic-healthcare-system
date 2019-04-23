@@ -113,7 +113,7 @@ def replace_word(request):
             return JsonResponse({'message': 'Error'})
 
 @login_required(login_url='/accounts/login')
-def replaceall_word(request):
+def replace_allword(request):
     if request.is_ajax():
         try:
             word = request.GET.get('word').strip()
@@ -138,7 +138,7 @@ def undo_last(request):
                 'id': recent_history.id,
                 'old': recent_history.old,
             }
-            recent_history.delete()
+            recent_history.hard_delete()
             return JsonResponse(data)
         except:
             return JsonResponse({'message': 'Error'})
