@@ -16,6 +16,7 @@ from report.mobile import SendSMS
 from report.models import ExceptionMerge, UnsupportedAttachment
 import xhtml2pdf.pisa as pisa
 from medicalreport.templatetags.custom_filters import format_date_filter
+from medicalreport.reports import generate_redact_pdf
 from report.functions import redaction_image
 from pdf2image import convert_from_bytes, convert_from_path
 # from silk.profiling.profiler import silk_profile
@@ -121,36 +122,13 @@ def generate_medicalreport_with_attachment(self, instruction_id: str, report_lin
 
                     if file_type == 'pdf':
                         if settings.IMAGE_REDACTION_ENABLED:
-                            pages = convert_from_bytes(raw_attachment)
-                            images_name_list = []
-                            for num, page in enumerate(pages):
-                                file_name = folder + 'out_{inst_id}_{num}.jpg'.format(num=num, inst_id=instruction.id)
-                                page.save(file_name, 'JPEG')
-                                images_name_list.append(file_name)
+                            redacted_pdf = generate_redact_pdf(
+                                instruction.patient_information.patient_first_name,
+                                instruction.patient_information.patient_last_name,
+                                pdf_byte=raw_attachment
+                            )
 
-                            output_pdf_list = []
-                            for image in images_name_list:
-                                output_pdf_list.append(redaction_image(
-                                    image_path=image,
-                                    east_path='config/frozen_east_text_detection.pb',
-                                    patient_info={
-                                        'first_name': instruction.patient_information.patient_first_name,
-                                        'last_name': instruction.patient_information.patient_last_name
-                                    }
-                                ))
-
-                            redacted_output = PyPDF2.PdfFileWriter()
-                            for pdf in output_pdf_list:
-                                if pdf.isEncrypted:
-                                    pdf.decrypt(password='')
-                                for page_num in range(pdf.getNumPages()):
-                                    redacted_output.addPage(pdf.getPage(page_num))
-
-                            pdf_page_buf = io.BytesIO()
-                            redacted_output.write(pdf_page_buf)
-                            attachments_pdf.append(PyPDF2.PdfFileReader(pdf_page_buf))
-                            for name in images_name_list:
-                                os.remove(name)
+                            attachments_pdf.append(PyPDF2.PdfFileReader(redacted_pdf))
                         else:
                             attachments_pdf.append(PyPDF2.PdfFileReader(buffer))
                     elif file_type in ['doc', 'docx', 'rtf']:
@@ -163,36 +141,13 @@ def generate_medicalreport_with_attachment(self, instruction_id: str, report_lin
                             shell=True
                         )
                         if settings.IMAGE_REDACTION_ENABLED:
-                            pages = convert_from_path(folder + 'temp_%s.pdf' % unique)
-                            images_name_list = []
-                            for num, page in enumerate(pages):
-                                file_name = 'out_{inst_id}_{num}.jpg'.format(num=num, inst_id=instruction.id)
-                                page.save(file_name, 'JPEG')
-                                images_name_list.append(file_name)
-
-                            output_pdf_list = []
-                            for image in images_name_list:
-                                output_pdf_list.append(redaction_image(
-                                    image_path=image,
-                                    east_path='config/frozen_east_text_detection.pb',
-                                    patient_info={
-                                        'first_name': instruction.patient_information.patient_first_name,
-                                        'last_name': instruction.patient_information.patient_last_name
-                                    }
-                                ))
-
-                            redacted_output = PyPDF2.PdfFileWriter()
-                            for pdf in output_pdf_list:
-                                if pdf.isEncrypted:
-                                    pdf.decrypt(password='')
-                                for page_num in range(pdf.getNumPages()):
-                                    redacted_output.addPage(pdf.getPage(page_num))
-
-                            pdf_page_buf = io.BytesIO()
-                            redacted_output.write(pdf_page_buf)
-                            attachments_pdf.append(PyPDF2.PdfFileReader(pdf_page_buf))
-                            for name in images_name_list:
-                                os.remove(name)
+                            pdf_path = folder + 'temp_%s.pdf' % unique
+                            redacted_pdf = generate_redact_pdf(
+                                instruction.patient_information.patient_first_name,
+                                instruction.patient_information.patient_last_name,
+                                pdf_path=pdf_path
+                            )
+                            attachments_pdf.append(PyPDF2.PdfFileReader(redacted_pdf))
                         else:
                             pdf = open(folder + 'temp_%s.pdf' % unique, 'rb')
                             attachments_pdf.append(PyPDF2.PdfFileReader(pdf))
@@ -223,36 +178,13 @@ def generate_medicalreport_with_attachment(self, instruction_id: str, report_lin
                             c.save()
 
                             if settings.IMAGE_REDACTION_ENABLED:
-                                pages = convert_from_bytes(out_pdf_io.getvalue())
-                                images_name_list = []
-                                for num, page in enumerate(pages):
-                                    file_name = 'out_{inst_id}_{num}.jpg'.format(num=num, inst_id=instruction.id)
-                                    page.save(file_name, 'JPEG')
-                                    images_name_list.append(file_name)
+                                redacted_pdf = generate_redact_pdf(
+                                    instruction.patient_information.patient_first_name,
+                                    instruction.patient_information.patient_last_name,
+                                    pdf_byte=out_pdf_io.getvalue()
+                                )
 
-                                output_pdf_list = []
-                                for image in images_name_list:
-                                    output_pdf_list.append(redaction_image(
-                                        image_path=image,
-                                        east_path='config/frozen_east_text_detection.pb',
-                                        patient_info={
-                                            'first_name': instruction.patient_information.patient_first_name,
-                                            'last_name': instruction.patient_information.patient_last_name
-                                        }
-                                    ))
-
-                                redacted_output = PyPDF2.PdfFileWriter()
-                                for pdf in output_pdf_list:
-                                    if pdf.isEncrypted:
-                                        pdf.decrypt(password='')
-                                    for page_num in range(pdf.getNumPages()):
-                                        redacted_output.addPage(pdf.getPage(page_num))
-
-                                pdf_page_buf = io.BytesIO()
-                                redacted_output.write(pdf_page_buf)
-                                attachments_pdf.append(PyPDF2.PdfFileReader(pdf_page_buf))
-                                for name in images_name_list:
-                                    os.remove(name)
+                                attachments_pdf.append(PyPDF2.PdfFileReader(redacted_pdf))
                             else:
                                 attachments_pdf.append(PyPDF2.PdfFileReader(out_pdf_io))
                         else:
@@ -260,37 +192,12 @@ def generate_medicalreport_with_attachment(self, instruction_id: str, report_lin
                             pdf_bytes = img2pdf.convert(folder + 'img_temp_%s.' % unique + image_format)
 
                             if settings.IMAGE_REDACTION_ENABLED:
-                                pages = convert_from_bytes(pdf_bytes)
-                                images_name_list = []
-                                for num, page in enumerate(pages):
-                                    file_name = 'out_{inst_id}_{num}.jpg'.format(num=num, inst_id=instruction.id)
-                                    page.save(file_name, 'JPEG')
-                                    images_name_list.append(file_name)
-
-                                output_pdf_list = []
-                                for image in images_name_list:
-                                    output_pdf_list.append(redaction_image(
-                                        image_path=image,
-                                        east_path='config/frozen_east_text_detection.pb',
-                                        patient_info={
-                                            'first_name': instruction.patient_information.patient_first_name,
-                                            'last_name': instruction.patient_information.patient_last_name
-                                        }
-                                    ))
-
-                                redacted_output = PyPDF2.PdfFileWriter()
-                                for pdf in output_pdf_list:
-                                    if pdf.isEncrypted:
-                                        pdf.decrypt(password='')
-                                    for page_num in range(pdf.getNumPages()):
-                                        redacted_output.addPage(pdf.getPage(page_num))
-
-                                pdf_page_buf = io.BytesIO()
-                                redacted_output.write(pdf_page_buf)
-                                attachments_pdf.append(PyPDF2.PdfFileReader(pdf_page_buf))
-
-                                for name in images_name_list:
-                                    os.remove(name)
+                                redacted_pdf = generate_redact_pdf(
+                                    instruction.patient_information.patient_first_name,
+                                    instruction.patient_information.patient_last_name,
+                                    pdf_byte=pdf_bytes
+                                )
+                                attachments_pdf.append(PyPDF2.PdfFileReader(redacted_pdf))
                             else:
                                 buffer = io.BytesIO(pdf_bytes)
                                 attachments_pdf.append(PyPDF2.PdfFileReader(buffer))

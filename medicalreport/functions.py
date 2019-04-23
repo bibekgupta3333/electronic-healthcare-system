@@ -1,7 +1,3 @@
-import uuid
-import logging
-import os
-import glob
 from datetime import datetime
 from django.conf import settings
 from django.contrib import messages
@@ -25,6 +21,10 @@ from report.models import PatientReportAuth
 from report.tasks import generate_medicalreport_with_attachment
 from instructions.models import Instruction
 
+import uuid
+import logging
+import os
+import glob
 
 UI_DATE_FORMAT = '%m/%d/%Y'
 logger = logging.getLogger('timestamp')
