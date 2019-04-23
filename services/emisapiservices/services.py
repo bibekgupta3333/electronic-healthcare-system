@@ -120,7 +120,7 @@ class GetMedicalRecord(EmisAPIServiceBase):
 
 class GetEmisStatusCode(EmisAPIServiceBase):
     def uri(self) -> str:
-        uri = "{host}/api/organisations/{organisation_id}/patients".format(
+        uri = "{host}/api/organisations/{organisation_id}/patients?q=medidataemislogintest".format(
             host=settings.EMIS_API_HOST,
             organisation_id=self.emis_organisation_code
         )
