@@ -137,7 +137,7 @@ def generate_medicalreport_with_attachment(self, instruction_id: str, report_lin
                         f.write(buffer.getvalue())
                         f.close()
                         subprocess.call(
-                            ("cd /Applications/LibreOffice.app/Contents/MacOS && ./soffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
+                            ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
                             shell=True
                         )
                         if settings.IMAGE_REDACTION_ENABLED:
