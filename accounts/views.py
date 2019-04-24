@@ -38,6 +38,7 @@ from instructions.views import calculate_next_prev
 from typing import Union, List, Dict
 from instructions.forms import DateRangeSearchForm
 from django.conf import settings
+from django.core.mail import send_mail
 DEFAULT_FROM = settings.DEFAULT_FROM
 
 from .functions import change_role, remove_user, get_table_data,\
@@ -56,6 +57,32 @@ def count_status_invoice_table(query) -> Dict[str, int]:
     }
 
     return filter_number
+
+
+def send_notification_org_email(request, gp_user, status):
+    gp_organisation = gp_user.organisation
+    gp_name = " ".join([gp_user.user.first_name, gp_user.user.last_name])
+    if status == 'is_fee_changed':
+        subject = 'Fee Band selected'
+        message = 'A fee band was selected for your Surgery by "{name}". To review please click this link {protocol}://{link}'.format(
+            name=gp_name,
+            protocol=request.scheme,
+            link=request.get_host() + reverse('accounts:view_account')
+        )
+    elif status == 'update_bank_details':
+        subject = 'Bank account details change'
+        message = 'Your Surgery bank account details were changed by "{name}".'.format(
+            name=gp_name
+        )
+
+    org_email = gp_organisation.organisation_email
+    send_mail(
+        subject,
+        message,
+        'MediData',
+        [org_email],
+        fail_silently=True
+    )
 
 
 @login_required(login_url='/accounts/login')
@@ -85,11 +112,13 @@ def account_view(request: HttpRequest) -> HttpResponse:
             if request.POST.get('is_fee_changed'):
                 new_organisation_fee_id = request.POST.get('organisation_fee_id')
                 GpOrganisationFee.objects.filter(gp_practice=gp_organisation).update(organisation_fee_id=int(new_organisation_fee_id))
+                send_notification_org_email(request, gp_user, 'is_fee_changed')
                 return JsonResponse({'message': 'Preferences have been saved.'})
             if request.POST.get('update_bank_details'):
                 bank_details_form = BankDetailsForm(request.POST, instance=gp_organisation)
                 if bank_details_form.is_valid():
                     bank_details_form.save()
+                    send_notification_org_email(request, gp_user, 'update_bank_details')
                     return JsonResponse({'message': 'Bank details have been saved.'})
             gp_preferences_form = PracticePreferencesForm(request.POST, instance=practice_preferences)
             if gp_preferences_form.is_valid():
@@ -152,7 +181,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
                 'new_password': new_organisation_password,
                 'practice_code': gp_organisation.pk,
                 'has_amend_fee_perm': has_amend_fee_perm,
-                'band_fee_rate_data': band_fee_rate_data,
+                'band_fee_rate_data': band_fee_rate_data
             })
 
         return render(request, 'accounts/accounts_view.html', {
@@ -161,7 +190,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
             'gp_preferences_form': gp_preferences_form,
             'has_amend_fee_perm': has_amend_fee_perm,
             'band_fee_rate_data': band_fee_rate_data,
-            'bank_details_form': bank_details_form,
+            'bank_details_form': bank_details_form
         })
 
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
