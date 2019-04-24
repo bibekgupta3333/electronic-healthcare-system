@@ -230,5 +230,97 @@
             addWordLibrary();
             return false;
         });
+
+        var timeoutId;
+        $(".dropdown-options").hide();
+        $(".highlight-library").hover(function() {
+            if (!timeoutId) {
+                var highlight_div = $(this);
+                if (highlight_div.find('.bg-warning').length) {
+                    timeoutId = window.setTimeout(function() {
+                        timeoutId = null;
+                        highlight_div.find('.dropdown-options').slideDown('fast');
+                   }, 400);
+                }
+            }
+        }, function () {
+            if (timeoutId) {
+                window.clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+            else {
+               $(".dropdown-options").slideUp('fast');
+            }
+        });
+        $(".highlight-redact").on("click", function(e) {
+            e.preventDefault();
+            $(this).parent().parent().find("span.bg-warning").removeClass("bg-warning").addClass("hl-redact");
+        });
+        $(".highlight-replace").on("click", function(e) {
+            e.preventDefault();
+            var word_span = $(this).parent().parent().find("span.bg-warning");
+            var word = word_span.text();
+            $.ajax({
+                url: "{% url 'library:replace_word' %}",
+                dataType: "json",
+                data: { word: word }
+            }).done(function(response) {
+                if (response['message'] == 'Error') {
+                    create_alert('Something went wrong, please try again.', 'error');
+                } else {
+                    word_span.text(response['replace_word']);
+                    word_span.removeClass("bg-warning");
+                    word_span.addClass('change-'+response['id']);
+                }
+            }).fail(function() {
+                create_alert('Something went wrong, please try again.', 'error');
+            });
+        });
+        $(".highlight-replaceall").on("click", function(e) {
+            e.preventDefault();
+            var word_span = $(this).parent().parent().find("span.bg-warning");
+            var word = word_span.text();
+            $.ajax({
+                url: "{% url 'library:replace_allword' %}",
+                dataType: "json",
+                data: { word: word }
+            }).done(function(response) {
+                if (response['message'] == 'Error') {
+                    create_alert('Something went wrong, please try again.', 'error');
+                } else {
+                    $(".highlight-library .bg-warning").each(function(i, obj) {
+                        if ($(obj).text() == word) {
+                            $(obj).text(response['replace_word']);
+                            $(obj).removeClass("bg-warning");
+                            $(obj).addClass('change-'+response['id']);
+                        }
+                    });
+                }
+            }).fail(function() {
+                create_alert('Something went wrong, please try again.', 'error');
+            });
+        });
+
+        $('#report-toolbox-modal-undolast').on('click', function(e) {
+            e.preventDefault();
+            $.ajax({
+                url: "{% url 'library:undo_last' %}",
+            }).done(function(response) {
+                if (response['message'] == 'Error') {
+                    create_alert('Something went wrong, please try again.', 'error');
+                } else {
+                    if (response['action'] == 'Replace') {
+                        $('.change-'+response['id']).text(response['old']);
+                        $('.change-'+response['id']).removeClass().addClass("bg-warning");
+                    } else if (response['action'] == 'ReplaceAll') {
+                        $('.change-'+response['id']).text(response['old']);
+                        $('.change-'+response['id']).removeClass().addClass("bg-warning");
+                    }
+                }
+            }).fail(function() {
+                create_alert('Something went wrong, please try again.', 'error');
+            })
+        });
+
     </script>
 {% endblock %}

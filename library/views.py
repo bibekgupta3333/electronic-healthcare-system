@@ -8,7 +8,7 @@ from django.http import JsonResponse
 
 from instructions.views import calculate_next_prev
 
-from .models import Library
+from .models import Library, LibraryHistory
 from .tables import LibraryTable
 from .forms import LibraryForm
 
@@ -95,3 +95,50 @@ def edit_word_library(request, library_id):
         event = 'edit_error:{id}'.format(id=library.id)
 
     return redirect('library:edit_library', event=event)
+
+
+@login_required(login_url='/accounts/login')
+def replace_word(request):
+    if request.is_ajax():
+        try:
+            word = request.GET.get('word').strip()
+            gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
+            library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
+            if library:
+                library_history = LibraryHistory(gp_practice=gp_practice, action='Replace', old=word, new=library.value)
+                library_history.save()
+                return JsonResponse({'replace_word': library.value, 'id': library_history.id})
+            return JsonResponse({'message': 'Error'})
+        except:
+            return JsonResponse({'message': 'Error'})
+
+@login_required(login_url='/accounts/login')
+def replace_allword(request):
+    if request.is_ajax():
+        try:
+            word = request.GET.get('word').strip()
+            gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
+            library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
+            library_history = LibraryHistory(gp_practice=gp_practice, action='ReplaceAll', old=word, new=library.value)
+            library_history.save()
+            if library:
+                return JsonResponse({'replace_word': library.value})
+            return JsonResponse({'message': 'Error'})
+        except:
+            return JsonResponse({'message': 'Error'})
+
+@login_required(login_url='/accounts/login')
+def undo_last(request):
+    if request.is_ajax():
+        try:
+            gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
+            recent_history = LibraryHistory.objects.filter(gp_practice=gp_practice).latest('id')
+            data = {
+                'action': recent_history.action,
+                'id': recent_history.id,
+                'old': recent_history.old,
+            }
+            recent_history.hard_delete()
+            return JsonResponse(data)
+        except:
+            return JsonResponse({'message': 'Error'})
