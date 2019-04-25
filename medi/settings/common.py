@@ -279,3 +279,6 @@ CSRF_FAILURE_VIEW = 'services.views.handler_403'
 
 #Set false for disable celery
 IMAGE_REDACTION_ENABLED = True
+
+# Set False for disable site_control
+SITE_CONTROL = True
