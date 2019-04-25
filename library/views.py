@@ -104,11 +104,16 @@ def replace_word(request):
         try:
             word = request.GET.get('word').strip()
             instruction_id = request.GET.get('instruction_id')
+            header = request.GET.get('header')
+            index = request.GET.get('index')
+            content = request.GET.get('content')
+
             gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
             library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
 
+            change_info = '%s :-> %s :-> %s' % (header.strip(), index, content.strip())
             instruction = Instruction.objects.get(pk=instruction_id)
-            library_history = LibraryHistory(instruction=instruction, action='Replace', old=word, new=library.value)
+            library_history = LibraryHistory(instruction=instruction, action='Replace', old=word, new=library.value, change_info=change_info)
             library_history.save()
             return JsonResponse({'replace_word': library.value, 'id': library_history.id})
         except:
