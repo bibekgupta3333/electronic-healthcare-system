@@ -30,7 +30,6 @@ from medicalreport.functions import create_patient_report
 from template.models import TemplateInstruction
 from payment.models import GpOrganisationFee
 from payment.model_choices import FEE_STATUS_INVALID_DETAIL, FEE_STATUS_INVALID_FEE
-from services.models import SiteAccessControl
 #from silk.profiling.profiler import silk_profile
 
 from datetime import timedelta
