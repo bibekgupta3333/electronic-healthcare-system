@@ -263,7 +263,7 @@
             $.ajax({
                 url: "{% url 'library:replace_word' %}",
                 dataType: "json",
-                data: { word: word }
+                data: { word: word, instruction_id: {{ instruction.id }} }
             }).done(function(response) {
                 if (response['message'] == 'Error') {
                     create_alert('Something went wrong, please try again.', 'error');
@@ -283,7 +283,7 @@
             $.ajax({
                 url: "{% url 'library:replace_allword' %}",
                 dataType: "json",
-                data: { word: word }
+                data: { word: word, instruction_id: {{ instruction.id }} }
             }).done(function(response) {
                 if (response['message'] == 'Error') {
                     create_alert('Something went wrong, please try again.', 'error');
@@ -305,6 +305,8 @@
             e.preventDefault();
             $.ajax({
                 url: "{% url 'library:undo_last' %}",
+                dataType: "json",
+                data: { instruction_id: {{ instruction.id }} }
             }).done(function(response) {
                 if (response['message'] == 'Error') {
                     create_alert('Something went wrong, please try again.', 'error');

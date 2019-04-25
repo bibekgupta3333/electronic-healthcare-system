@@ -219,7 +219,7 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     library_form = LibraryForm(gp_org_id=gp_practice_code)
 
     word_library = Library.objects.filter(gp_practice=gp_practice_code)
-    library_history = LibraryHistory.objects.filter(gp_practice=gp_practice_code)
+    library_history = LibraryHistory.objects.filter(instruction=instruction)
 
     response = render(request, 'medicalreport/medicalreport_edit.html', {
         'user': request.user,
