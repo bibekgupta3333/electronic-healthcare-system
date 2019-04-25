@@ -876,6 +876,16 @@ def review_instruction(request, instruction_id: str):
     date_format = patient_instruction.patient_dob.strftime("%d/%m/%Y")
     date_range_form = InstructionDateRangeForm(instance=instruction)
 
+    if request.method == "POST":
+        instruction.reject(request, request.POST)
+        event_logger.info(
+            '{user}:{user_id} REJECT instruction ID {instruction_id} on failed'.format(
+                user=request.user, user_id=request.user.id,
+                instruction_id=instruction_id
+            )
+        )
+        return HttpResponseRedirect("%s?%s"%(reverse('instructions:view_pipeline'),"status=%s&type=allType"%INSTRUCTION_STATUS_REJECT))            
+
     # Initial Patient Form
     patient_form = InstructionPatientForm(
         instance=patient_instruction,
@@ -953,7 +963,8 @@ def review_instruction(request, instruction_id: str):
         'consent_form_data': consent_form_data,
         'instruction_id': instruction_id,
         'instruction': instruction,
-        'can_process': can_process
+        'can_process': can_process,
+        'reject_reason_value': CANCEL_BY_CLIENT,
     })
 
 

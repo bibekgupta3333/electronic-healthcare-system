@@ -246,9 +246,13 @@
                                 </button>
                             </div>
                             <div class="col-md-6">
-                                <button class="btn btn-danger btn-block btn-lg" type="button">
-                                    <i class="fas fa-check"></i>&nbsp;&nbsp;Yes
-                                </button>
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <input name="rejected_reason" type="hidden" value="{{ reject_reason_value }}"/>
+                                    <button class="btn btn-danger btn-block btn-lg" type="submit">
+                                        <i class="fas fa-check"></i>&nbsp;&nbsp;Yes
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>

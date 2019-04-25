@@ -7,7 +7,7 @@ from django.http import HttpRequest
 from django_clamd.validators import validate_file_infection
 from common.models import TimeStampedModel
 from common.functions import get_url_page
-from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser, User
+from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser, User, GENERAL_PRACTICE_USER
 from organisations.models import OrganisationGeneralPractice
 from accounts import models as account_models
 from snomedct.models import SnomedConcept, CommonSnomedConcepts
@@ -169,9 +169,14 @@ class Instruction(TimeStampedModel, models.Model):
         self.save()
 
     def reject(self, request: HttpRequest, context: Dict[str, str]) -> None:
-        self.gp_user = request.user.userprofilebase.generalpracticeuser
+        import ipdb; ipdb.set_trace()
+        user = request.user
+        if user.type == GENERAL_PRACTICE_USER:
+            self.gp_user = user.userprofilebase.generalpracticeuser
+        else:
+        
         self.rejected_timestamp = timezone.now()
-        self.rejected_by = request.user
+        self.rejected_by = user
         self.rejected_reason = context.get('rejected_reason', None)
         self.rejected_note = context.get('rejected_note', '')
         self.status = INSTRUCTION_STATUS_REJECT
