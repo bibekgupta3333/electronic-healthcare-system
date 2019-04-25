@@ -154,6 +154,14 @@
                     </div>
                 </div>
             </div>
+            <div class="bottom-panel">
+                <div class="panel-close"><i class="fa fa-times"></i></div>
+                <div class="container">
+                    <p>If you wish to download the report or record, or print a consolidated version, please use the buttons below. Please note that not all file types can be processed to print via eMR, and therefore you may need to print those separately.</p>
+                    <button type="button" class="btn btn-success">Download Report</button>
+                    <button type="button" class="btn btn-default">Print Report</button>
+                </div>
+            </div>
         </form>
     </div>
 
@@ -184,6 +192,9 @@
                     backdrop: "static"
                 });
             }
+        });
+        $('.panel-close').click(function () {
+            $('.bottom-panel').hide(500);
         });
     </script>
 {% endblock %}
