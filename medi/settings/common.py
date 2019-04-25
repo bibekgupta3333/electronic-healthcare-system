@@ -279,3 +279,6 @@ CSRF_FAILURE_VIEW = 'services.views.handler_403'
 
 #Set false for disable celery
 IMAGE_REDACTION_ENABLED = True
+
+# Set False for disable send new instruction email to Medidata User
+NEW_INSTRUCTION_SEND_MAIL_TO_MEDI = False
