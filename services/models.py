@@ -13,12 +13,6 @@ class SiteAccessControl(models.Model):
     def __str__(self):
         return self.site_host
 
-    def detail_active_host(self) -> str:
-        if self.active_host:
-            return 'ACTIVE!'
-        else:
-            return 'INACTIVE!'
-
     def detail_role_access(self) -> str:
         access_list = list()
         if self.gp_access:
@@ -32,25 +26,16 @@ class SiteAccessControl(models.Model):
         return " / ".join(access_list)
 
     def can_access_site(self, user_type) -> bool:
-        access_bool = bool()
         if self.active_host:
-            if user_type == GENERAL_PRACTICE_USER:
-                if self.gp_access:
-                    access_bool = True
-                    return access_bool
-            elif user_type == CLIENT_USER:
-                if self.client_access:
-                    access_bool = True
-                    return access_bool
-            elif user_type == MEDIDATA_USER:
-                if self.medi_access:
-                    access_bool = True
-                    return access_bool
-            elif user_type == PATIENT_USER:
-                if self.patient_access:
-                    access_bool = True
-                    return access_bool
+            if user_type == GENERAL_PRACTICE_USER and self.gp_access:
+                return True
+            elif user_type == CLIENT_USER and self.client_access:
+                return True
+            elif user_type == MEDIDATA_USER and self.medi_access:
+                return True
+            elif user_type == PATIENT_USER and self.patient_access:
+                return True
             else:
-                return access_bool
+                return False
         else:
-            return access_bool
+            return False
