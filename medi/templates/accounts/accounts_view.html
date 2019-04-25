@@ -53,6 +53,49 @@
                 </div>
             </div>
             {% if organisation_fee_data %}
+                {% if perms.instructions.authorise_bank_account or perms.instructions.amend_bank_account %}
+                    <div id="bank_detail_block">
+                        <div class="card contactPreferences mt-4">
+                            <div class="card-header">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5>Bank Details for Fee Payments</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">Bank Account Name</div>
+                                    <div class="col-md-4">
+                                        {% bootstrap_field bank_details_form.payment_bank_holder_name placeholder='' %}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">Bank Account Number</div>
+                                    <div class="col-md-4">
+                                        {% bootstrap_field bank_details_form.payment_bank_account_number placeholder='' %}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">Bank Account Sort Code</div>
+                                    <div class="col-md-4">
+                                        {% bootstrap_field bank_details_form.payment_bank_sort_code placeholder='' %}
+                                    </div>
+                                </div>
+                                {% if perms.instructions.amend_bank_account %}
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <button class="btn btn-primary" id="update_bank_details" type="button">
+                                                Update Bank Details
+                                            </button>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
                 <div class="card contactPreferences mt-4">
                     <div class="card-header">
                         <div class="row">
@@ -76,7 +119,7 @@
                             {% for data in organisation_fee_data %}
                                 <div class="row FeeLevel">
                                     <div class="col-md-3 rowTitle">
-                                      {{ data.label }}
+                                    {{ data.label }}
                                     </div>
                                     <div class="col-md-9">
                                         <div class="row">
@@ -173,6 +216,18 @@
                 });
             });
 
+            $('#update_bank_details').click(function() {
+                $.ajax({
+                    url: $('#update_bank_details').attr("action"),
+                    type: 'POST',
+                    data: $('#preferencesForm').serialize()+'&update_bank_details=1'
+                }).done(function() {
+                    create_alert('Bank details setting has been changed.', 'success');
+                }).fail(function() {
+                    create_alert('Something went wrong, please try again.', 'error');
+                });
+            });
+
             var band_fee_rate_data = {{ band_fee_rate_data }};
             $('#first_fee').on('change', function () {
                 {% for data in organisation_fee_data %}
@@ -195,6 +250,12 @@
             $("#first_fee > option").each(function() {
                 $(this).text(Number(this.text).toFixed(2));
             });
+
+            {% if not perms.instructions.amend_bank_account %}
+                $('#id_payment_bank_holder_name').prop('disabled', true);
+                $('#id_payment_bank_account_number').prop('disabled', true);
+                $('#id_payment_bank_sort_code').prop('disabled', true);
+            {% endif %}
         });
     </script>
 {% endblock %}

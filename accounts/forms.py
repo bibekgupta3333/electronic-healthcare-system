@@ -324,7 +324,6 @@ class UserProfileForm(forms.ModelForm):
                 self.fields['email'].widget.attrs['disabled'] = True
 
 
-
 class UserProfileBaseForm(forms.ModelForm):
     class Meta:
         model = UserProfileBase
@@ -340,3 +339,13 @@ class UserProfileBaseForm(forms.ModelForm):
             if userprofile.user and not userprofile.user.has_perm('accounts.change_user'):
                 self.fields['telephone_mobile'].widget.attrs['disabled'] = True
                 self.fields['telephone_code'].widget.attrs['disabled'] = True
+
+
+class BankDetailsForm(forms.ModelForm):
+    payment_bank_holder_name = forms.CharField(max_length=255, required=False, label='', widget=forms.TextInput())
+    payment_bank_account_number = forms.CharField(max_length=255, required=False, label='', widget=forms.TextInput())
+    payment_bank_sort_code = forms.CharField(max_length=255, required=False, label='', widget=forms.TextInput())
+
+    class Meta:
+        model = OrganisationGeneralPractice
+        fields = ('payment_bank_holder_name', 'payment_bank_account_number', 'payment_bank_sort_code')

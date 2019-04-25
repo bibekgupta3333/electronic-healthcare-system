@@ -7,6 +7,7 @@ from instructions.models import Instruction
 from payment.tests.test_functions import CalculateInstructionFeeBaseTest
 from payment.functions import calculate_instruction_fee
 from instructions import model_choices
+from payment.model_choices import FEE_CLAIMS_TYPE, FEE_SARS_TYPE
 
 import csv
 import io
@@ -32,7 +33,8 @@ class ImportExportTest(CalculateInstructionFeeBaseTest):
             client_user=self.client_user,
             status=model_choices.INSTRUCTION_STATUS_COMPLETE,
             created=timezone.now(),
-            completed_signed_off_timestamp=timezone.now()
+            completed_signed_off_timestamp=timezone.now(),
+            type_catagory=FEE_CLAIMS_TYPE
         )
         self.sars_instruction = mommy.make(
             Instruction,
@@ -42,7 +44,8 @@ class ImportExportTest(CalculateInstructionFeeBaseTest):
             client_user=self.client_user,
             status=model_choices.INSTRUCTION_STATUS_COMPLETE,
             created=timezone.now(),
-            completed_signed_off_timestamp=timezone.now()
+            completed_signed_off_timestamp=timezone.now(),
+            type_catagory=FEE_SARS_TYPE
         )
         self.instruction_status_header = 'ID, MediRef, Surgery, Status'
         self.instruction_content = [

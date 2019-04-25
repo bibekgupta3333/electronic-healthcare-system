@@ -1,6 +1,11 @@
 from django.db import models
 from organisations.models import OrganisationGeneralPractice, OrganisationClient
 from common.models import TimeStampedModel
+from .model_choices import *
+
+from decimal import Decimal
+
+from typing import Union
 
 
 class OrganisationFeeRate(models.Model):
@@ -24,7 +29,7 @@ class OrganisationFeeRate(models.Model):
     def __str__(self):
         return "{band_name}: Top payment band is {top_payment}".format(band_name=self.name, top_payment=self.amount_rate_lvl_1)
 
-    def get_fee_rate(self, period_day):
+    def get_fee_rate(self, period_day: int) -> Union[Decimal, int]:
         payment_band = [self.max_day_lvl_1, self.max_day_lvl_2, self.max_day_lvl_3, self.max_day_lvl_4]
         amount_rate = [self.amount_rate_lvl_1, self.amount_rate_lvl_2, self.amount_rate_lvl_3, self.amount_rate_lvl_4]
         for index, band in enumerate(payment_band):
@@ -46,15 +51,18 @@ class GpOrganisationFee(models.Model):
 
 
 class InstructionVolumeFee(models.Model):
-    client_organisation = models.OneToOneField(OrganisationClient, on_delete=models.CASCADE, verbose_name='Client Organisation')
+    client_org = models.ForeignKey(OrganisationClient, on_delete=models.CASCADE, verbose_name='Client Organisation', null=True)
     max_volume_band_lowest = models.PositiveIntegerField(verbose_name='Max volume of Lowest band')
     max_volume_band_low = models.PositiveIntegerField(verbose_name='Max volume of Low band')
     max_volume_band_medium = models.PositiveIntegerField(verbose_name='Max volume of Medium band')
+    max_volume_band_high = models.PositiveIntegerField(verbose_name='Max volume of High band')
     max_volume_band_top = models.PositiveIntegerField(verbose_name='Max volume of Top band')
     fee_rate_lowest = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='Earnings for Lowest band(£)')
     fee_rate_low = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='Earnings for Low band(£)')
     fee_rate_medium = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='Earnings for Medium band(£)')
+    fee_rate_high = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='Earnings for High band(£)')
     fee_rate_top = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='Earnings for Top band(£)')
+    fee_rate_type = models.IntegerField(choices=FEE_TYPE_CHOICE, verbose_name='Type')
     vat = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='VAT(%)', default=20)
 
     class Meta:
@@ -62,12 +70,36 @@ class InstructionVolumeFee(models.Model):
         verbose_name_plural = 'Client Instruction Volume Fee structures'
 
     def __str__(self):
-        return "Fee Structure: {}".format(self.client_organisation)
+        return "Fee Structure: {} - {}".format(self.client_org, self.get_fee_type())
 
-    def get_fee_rate(self, volume_amount):
+    def get_fee_rate(self, volume_amount: int) -> Union[Decimal, int]:
         volume_band = [self.max_volume_band_lowest, self.max_volume_band_low, self.max_volume_band_medium, self.max_volume_band_top]
         fee_rate = [self.fee_rate_lowest, self.fee_rate_low, self.fee_rate_medium, self.fee_rate_top]
         for index, band in enumerate(volume_band):
             if volume_amount <= band:
                 return fee_rate[index]
         return 0
+
+    def get_fee_type(self):
+        if self.fee_rate_type == 1:
+            type = "AMRA CLAIMS"
+        elif self.fee_rate_type == 2:
+            type = "AMRA_UNDERWRITING"
+        elif self.fee_rate_type == 3:
+            type = "SARS"
+        else:
+            type = "Unknow"
+        return type
+
+
+class WeeklyInvoice(models.Model):
+    start_date = models.DateField()
+    end_date = models.DateField()
+    client_org = models.ForeignKey(OrganisationClient, on_delete=models.CASCADE, verbose_name='Client Organisation', null=True)
+    number_instructions = models.IntegerField(verbose_name='Number of Instructions', default=0)
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Total cost invoice')
+    paid = models.BooleanField(default=False)
+    weekly_invoice_pdf_file = models.FileField(upload_to='invoices', null=True, blank=True)
+
+    def __str__(self):
+        return "Week range : {} - {}".format(self.start_date, self.end_date)

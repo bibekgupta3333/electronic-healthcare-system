@@ -50,7 +50,7 @@ class InstructionTable(tables.Table):
     def render_client_ref(self, record):
         client_ref = record.your_ref
         if not client_ref:
-            client_ref = "—"
+            client_ref = "_"
         return format_html(client_ref)
 
     def render_client_user(self, value):
@@ -137,3 +137,100 @@ class InstructionTable(tables.Table):
             record.completed_signed_off_timestamp.strftime("%d/%m/%Y") if record.completed_signed_off_timestamp else '-',
             record.gp_earns,
         )
+
+
+class FeeInstructionTable(tables.Table):
+    patient_information = tables.Column()
+    client_ref = tables.Column(empty_values=(), default='-')
+    created = tables.DateTimeColumn(format='D j M Y')
+    status = tables.Column()
+    user = None
+
+    class Meta:
+        attrs = {
+            'class': 'table table-striped table-bordered table-hover',
+            'id': 'feeInstructionsTable'
+        }
+        model = Instruction
+        fields = (
+            'client_ref', 'client_user', 'gp_practice', 'type', 'patient_information', 'medi_ref', 'your_ref',
+            'gp_user', 'cost', 'created', 'completed_signed_off_timestamp', 'status', 'fee_note'
+        )
+        template_name = 'django_tables2/semantic.html'
+        row_attrs = {
+            'data-id': lambda record: record.pk
+        }
+
+    def before_render(self, request):
+        if request.user.type == models.CLIENT_USER:
+            self.columns.hide('client_user')
+        elif request.user.type == models.GENERAL_PRACTICE_USER:
+            self.columns.hide('gp_practice')
+            self.columns.hide('client_ref')
+
+        if request.resolver_match.url_name == 'view_pipeline':
+            self.columns.hide('medi_ref')
+            self.columns.hide('your_ref')
+            self.columns.hide('completed_signed_off_timestamp')
+            self.columns.hide('fee_note')
+        elif request.resolver_match.url_name == 'view_fee_payment_pipeline':
+            self.columns.hide('gp_user')
+            self.columns.hide('created')
+            self.columns.hide('client_ref')
+
+        self.user = request.user
+
+    def render_client_ref(self, record):
+        client_ref = record.your_ref
+        if not client_ref:
+            client_ref = "_"
+        return format_html(client_ref)
+
+    def render_client_user(self, value):
+        user = value.user
+        trading_name = ""
+        if hasattr(user, 'userprofilebase') and hasattr(user.userprofilebase, 'clientuser') and\
+            user.userprofilebase.organisation:
+            trading_name = user.userprofilebase.clientuser.organisation.trading_name
+        return format_html(trading_name)
+
+    def render_patient_information(self, value):
+        return format_html(
+            '{} {} {} <br><b>NHS: </b>{}', value.get_patient_title_display(), value.patient_first_name, value.patient_last_name, value.patient_nhs_number
+        )
+
+    def render_cost(self, record):
+        if self.user.type == models.CLIENT_USER or self.user.type == models.MEDIDATA_USER:
+            return record.gp_earns + record.medi_earns
+        elif self.user.type == models.GENERAL_PRACTICE_USER:
+            return record.gp_earns
+
+    def render_status(self, value, record):
+        STATUS_DICT = {
+            'New': 'badge-primary',
+            'In Progress': 'badge-warning',
+            'Paid': 'badge-info',
+            'Completed': 'badge-success',
+            'Rejected': 'badge-danger',
+            'Finalising': 'badge-secondary',
+            'Fail': 'badge-dark'
+        }
+        url = 'instructions:review_instruction'
+        view_report = view_complete_report(self.user.id, record.pk)
+        if value == 'Completed':
+            if self.user.type != models.GENERAL_PRACTICE_USER:
+                url = 'medicalreport:final_report'
+            elif view_report:
+                url = 'medicalreport:final_report'
+            else:
+                return format_html('<a><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
+        elif value == 'Rejected':
+            url = 'instructions:view_reject'
+        elif value == 'Fail':
+            url = 'instructions:view_fail'
+        elif value == 'In Progress' and self.user.type == models.GENERAL_PRACTICE_USER and not record.saved:
+            url = 'medicalreport:edit_report'
+        elif value == 'In Progress' and self.user.type == models.GENERAL_PRACTICE_USER and record.saved:
+            url = 'instructions:consent_contact'
+            return format_html('<a href='+reverse(url, args=[record.pk, record.patient_information.patient_emis_number])+'><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
+        return format_html('<a href='+reverse(url, args=[record.pk])+'><h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)

@@ -156,6 +156,74 @@
         </div>
     </div>
 
+    <!-- Block modal show when setup fee not complete -->
+    <div class="modal fade" id="check-fee-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="container pt-2">
+                    <div class='card'>
+                        <div class="card-body bg-primary text-light">
+                            <div class="text-center">
+                                <h4>AMRA Report are coming to eMR</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">&nbsp;</div>
+                    <p>
+                        You will soon be able to process AMRA reports through eMR. In order to do this we need you to select your ‘Fee Band’ <br>
+                        (you have already provided your Surgery bank account details to receive payments). <br>
+                        You can click the button below or update through the ‘Account’ menu option.<br>
+                        <br>
+                        You will still be able to process SARs at any time.
+                        <div class="col-12">&nbsp;</div>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <button class="btn-block btn btn-secondary btn-lg" type="button" data-dismiss="modal">Dismiss</button>
+                            </div>
+                            <div class="col-md-5">&nbsp;</div>
+                            <div class="col-md-4">
+                                <a href="/accounts/view-account/"><button class="btn-block btn btn-primary btn-lg" type="button">Select Fee Band</button></a>
+                            </div>
+                        </div>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="check-bank-detail-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="container pt-2">
+                    <div class='card'>
+                        <div class="card-body bg-primary text-light">
+                            <div class="text-center">
+                                <h4>AMRA Report are coming to eMR</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">&nbsp;</div>
+                    <p>
+                        You will soon be able to process AMRA reports through eMR. In order to do this we need you to provide your Surgery bank details <br>
+                        (we already have your instructions regarding the ‘Fee Band’). <br>
+                        You can click the button below or update through the ‘Account’ menu option. <br>
+                        <br>
+                        You will still be able to process SARs at any time. 
+                        <div class="col-12">&nbsp;</div>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <button class="btn-block btn btn-secondary btn-lg" type="button" data-dismiss="modal">Dismiss</button>
+                            </div>
+                            <div class="col-md-5">&nbsp;</div>
+                            <div class="col-md-4">
+                                <a href="/accounts/view-account/"><button class="btn-block btn btn-primary btn-lg" type="button">Provide Bank Detail</button></a>
+                            </div>
+                        </div>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 
 {% endblock %}
 
@@ -167,6 +235,7 @@
     <script>
         $(document).ready(function () {
             $('#instructionsTable').DataTable();
+            $('#feeInstructionsTable').DataTable();
             $('.dataTables_filter, .dataTables_info, .dataTables_paginate, .dataTables_length').hide();
             $('th.gp_practice > a').text('GP Practice');
             $('th.gp_practice > a').click(false);
@@ -224,6 +293,17 @@
             $('th a').click(function(e) {
                 e.preventDefault();
             });
+
+            if({{check_fee_status}} == 1) {
+                $("#check-bank-detail-modal").modal({
+                    backdrop: 'static'
+                });
+            } else if({{check_fee_status}} == 2) {
+               $("#check-fee-modal").modal({
+                    backdrop: 'static'
+                }); 
+            }
+
         });
 
         function instructionStatusFilter(selected_status, page, tableNumber){

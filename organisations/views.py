@@ -1,18 +1,18 @@
 from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpRequest, HttpResponse
 from django.db.models import Q
 
 from organisations.models import OrganisationGeneralPractice
+from typing import Union, Dict, Any
 
-
-def create_organisation(request):
+def create_organisation(request: HttpRequest) -> HttpResponse:
     header_title = 'Add New Organisation'
     return render(request, 'organisations/create_organisation.html', {
         'header_title': header_title,
     })
 
 
-def get_gporganisation_data(request, **kwargs):
+def get_gporganisation_data(request: HttpRequest, **kwargs) -> Union[Dict[str, Union[str, Any]], Dict[str, str], JsonResponse]:
     code = request.GET.get('code', '')
     data = {
         'name': '',
@@ -57,7 +57,7 @@ def get_gporganisation_data(request, **kwargs):
     return JsonResponse(data)
 
 
-def get_nhs_autocomplete(request):
+def get_nhs_autocomplete(request: HttpRequest) -> JsonResponse:
     data = {
         'items': [
             {
@@ -93,16 +93,16 @@ def get_nhs_autocomplete(request):
     if organisation_gps.exists():
         for organisation_gp in organisation_gps:
             data['items'][0]['children'].append(
-                {'id': organisation_gp.practcode, 'text': organisation_gp.name})
+                {'id': organisation_gp.practcode, 'text': ', '.join([organisation_gp.name, organisation_gp.billing_address_city, organisation_gp.billing_address_postalcode])})
 
     if nhs_gps.exists():
         for nhs_gp in nhs_gps:
-            data['items'][1]['children'].append({'id': nhs_gp.practcode, 'text': nhs_gp.name})
+            data['items'][1]['children'].append({'id': nhs_gp.practcode, 'text': ', '.join([nhs_gp.name, nhs_gp.billing_address_city, nhs_gp.billing_address_postalcode])})
 
     return JsonResponse(data)
 
 
-def get_sign_up_autocomplete(request):
+def get_sign_up_autocomplete(request: HttpRequest) -> JsonResponse:
     data = {
         'items': []
     }
@@ -125,7 +125,7 @@ def get_sign_up_autocomplete(request):
     return JsonResponse(data)
 
 
-def get_gp_sign_up_data(request, **kwargs):
+def get_gp_sign_up_data(request: HttpRequest, **kwargs) -> Union[Dict[str, str], JsonResponse]:
     code = request.GET.get('code', '')
     name = request.GET.get('name', '')
     data = {

@@ -47,6 +47,11 @@
                         <a href="{% url 'report:summary-report' %}"><i class="fas fa-chart-bar"></i>Dashboard</a>
                     </li>
                 {% endif %}
+                {% if perms.library.view_library %}
+                    <li class="{% if request.resolver_match.url_name == 'edit_library' %}active{% endif %}">
+                        <a href="{% url 'library:edit_library' event='index' %}"><i class="fas fa-book-open"></i>Surgery Library</a>
+                    </li>
+                {% endif %}
                 <li class="{% if request.resolver_match.url_name == 'view_fee_payment_pipeline' %}active{% endif %}">
                     <a href="{% url 'instructions:view_fee_payment_pipeline' %}" ><i class="fas fa-tasks"></i>Fee and Payment</a>
                 </li>

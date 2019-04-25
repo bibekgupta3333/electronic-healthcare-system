@@ -32,7 +32,7 @@ function pollingEmis(url) {
         $.ajax({
             url: url,
             success: function (data) {
-                if(data["status"] == 400){
+                if(data["status"] >= 200 && data["status"] < 400) {
                     $(".btn-checkSetup").hide();
                     $(".emisSetupSuccess").removeClass("d-none");
                     setTimeout(function () {
@@ -60,7 +60,7 @@ function pollingNewEmis(url) {
         $.ajax({
             url: url,
             success: function (data) {
-                if(data["status"] == 400){
+                if(data["status"] >= 200 && data["status"] < 400) {
                     $(".btn-checkChangeSetup").hide();
                     $(".emisSetupSuccess").removeClass("d-none");
                     setTimeout(function () {

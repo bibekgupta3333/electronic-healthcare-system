@@ -16,6 +16,6 @@ class InstructionPermission(models.Model):
     def __str__(self):
         return '%s : %s'%(self.get_role_display(),self.organisation.__str__())
 
-    def allocate_permission_to_gp(self):
+    def allocate_permission_to_gp(self) -> None:
         for gp in GeneralPracticeUser.objects.filter(organisation=self.organisation, role=self.role):
             gp.user.groups.add(self.group)

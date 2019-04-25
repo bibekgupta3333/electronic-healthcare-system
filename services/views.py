@@ -48,7 +48,7 @@ def get_patient_record(request):
     })
 
 
-def get_patient_attachment(request):
+def get_patient_attachment(request) -> HttpResponse:
     patient_number = '2820'
     attachment_identifier = '{5C37D79F-8DB5-4754-BBDE-43BF6AFE19DE}'
     raw_xml = services.GetAttachment(patient_number, attachment_identifier).call()
@@ -67,9 +67,21 @@ def handle_error(request, code):
     })
 
 
+def handler_403(request, reason=''):
+    status_code = 403
+    message = 'Permission Denied. Please try again later or contact the admin.'
+    response = render(request, 'errors/handle_errors.html', {
+        'code': status_code,
+        'message': message,
+        'reason': reason
+    })
+    response.status_code = status_code
+    return response
+
+
 def handler_404(request, exception=None, template_name='handle_errors.html'):
     status_code = 404
-    message = 'Page not found. Please try agian later or contact the admin.'
+    message = 'Page not found. Please try again later or contact the admin.'
     response = render(request, 'errors/handle_errors.html', {
         'code': status_code,
         'message': message
@@ -78,9 +90,9 @@ def handler_404(request, exception=None, template_name='handle_errors.html'):
     return response
 
 
-def handler_500(request, template_name='handle_errors.html'):
+def handler_500(request, template_name='handle_errors.html') -> HttpResponse:
     status_code = 500
-    message = 'Page is Error. Please try agian later or contact the admin.'
+    message = 'There is an error on this page. Please try again later or contact the admin.'
     response = render(request, 'errors/handle_errors.html', {
         'code': status_code,
         'message': message

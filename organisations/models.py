@@ -28,6 +28,10 @@ class OrganisationBase(models.Model):
 
 
 class OrganisationMedidata(OrganisationBase):
+    payment_bank_holder_name = models.CharField(max_length=255, blank=True)
+    payment_bank_account_number = models.CharField(max_length=255, blank=True)
+    payment_bank_sort_code = models.CharField(max_length=255, blank=True)
+    
     class Meta:
         verbose_name = 'Organisation Medidata'
 
@@ -149,7 +153,7 @@ class OrganisationGeneralPractice(models.Model):
     def __str__(self):
         return self.name
 
-    def set_operating_system_salt_and_encrypted_password(self, val):
+    def set_operating_system_salt_and_encrypted_password(self, val: str) -> None:
         salt = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
         iv_salt, iv_aes_key, ciphertext = aes_with_salt_encryption(val, salt)
         self.operating_system_salt_and_encrypted_iv = '{iv_salt}${iv_aes_key}'.format(
@@ -159,7 +163,7 @@ class OrganisationGeneralPractice(models.Model):
             salt=salt, aes_ciphertext=ciphertext
         )
 
-    def get_operating_system_salt_and_encrypted_password(self):
+    def get_operating_system_salt_and_encrypted_password(self) -> str:
         if self.operating_system_salt_and_encrypted_iv:
             return aes_with_salt_decryption(
                 self._operating_system_salt_and_encrypted_password,
@@ -172,6 +176,6 @@ class OrganisationGeneralPractice(models.Model):
         set_operating_system_salt_and_encrypted_password
     )
 
-    def is_active(self):
+    def is_active(self) -> bool:
         return self.live and self.accept_policy
 

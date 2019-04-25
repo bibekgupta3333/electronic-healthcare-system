@@ -45,6 +45,7 @@ function subMitMedicalReport(event){
         $('#medicalReportForm').submit();
     }
     else {
+        $('.attachments').hide();
         $('#confirmSubmitModal').modal("show");
     }
 }
@@ -67,6 +68,11 @@ function submitConfirmReport( event ) {
     }
 }
 
+function showHiddenReport(){
+    var el = $('.reports.active');
+    renderReport(el);
+}
+
 function saveReport(){
     var inst = arguments.length > 1 && arguments[0] !== undefined ? arguments[0] : false;
     var post_url = $('#medicalReportForm').attr("action"); //get form action url
@@ -83,4 +89,19 @@ function saveReport(){
     }).fail(function() {
         create_alert('Something went wrong, please try again.', 'error');
     });
+}
+
+function addWordLibrary() {
+  var post_url = $('#addWordForm').attr("action"); //get form action url
+  var request_method = $('#addWordForm').attr("method"); //get form GET/POST method
+  var form_data = $('#addWordForm').serialize(); //Encode form elements for submission
+  $.ajax({
+    url: post_url,
+    type: request_method,
+    data : form_data
+  }).done(function() {
+    create_alert('A word has been added.', 'success');
+  }).fail(function() {
+    create_alert('Something went wrong, please try again.', 'error');
+  });
 }

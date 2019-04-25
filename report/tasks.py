@@ -13,9 +13,12 @@ from services.emisapiservices import services
 from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_FAIL
 from report.mobile import SendSMS
-from report.models import ExceptionMerge
+from report.models import ExceptionMerge, UnsupportedAttachment
 import xhtml2pdf.pisa as pisa
 from medicalreport.templatetags.custom_filters import format_date_filter
+from medicalreport.reports import generate_redact_pdf
+from report.functions import redaction_image
+from pdf2image import convert_from_bytes, convert_from_path
 # from silk.profiling.profiler import silk_profile
 
 from celery import shared_task
@@ -39,7 +42,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPORT_DIR = BASE_DIR + '/medicalreport/templates/medicalreport/reports/unsupport_files.html'
 
 
-def send_patient_mail(scheme, host,  unique_url, instruction):
+def send_patient_mail(scheme: str, host: str,  unique_url: str, instruction: Instruction) -> None:
     report_link = scheme + '://' + host + '/report/' + str(instruction.pk) + '/patient/' + unique_url
     send_mail(
         'Notification from your GP surgery',
@@ -54,7 +57,7 @@ def send_patient_mail(scheme, host,  unique_url, instruction):
     )
 
 
-def link_callback(uri, rel):
+def link_callback(uri: str, rel) -> str:
     sUrl = settings.STATIC_URL
     sRoot = settings.STATIC_ROOT
 
@@ -72,7 +75,7 @@ def link_callback(uri, rel):
 
 
 @shared_task(bind=True)
-def generate_medicalreport_with_attachment(self, instruction_id, report_link_info):
+def generate_medicalreport_with_attachment(self, instruction_id: str, report_link_info: dict):
     start_time = timezone.now()
 
     try:
@@ -118,7 +121,16 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                         os.makedirs(os.path.dirname(save_path))
 
                     if file_type == 'pdf':
-                        attachments_pdf.append(PyPDF2.PdfFileReader(buffer))
+                        if settings.IMAGE_REDACTION_ENABLED:
+                            redacted_pdf = generate_redact_pdf(
+                                instruction.patient_information.patient_first_name,
+                                instruction.patient_information.patient_last_name,
+                                pdf_byte=raw_attachment
+                            )
+
+                            attachments_pdf.append(PyPDF2.PdfFileReader(redacted_pdf))
+                        else:
+                            attachments_pdf.append(PyPDF2.PdfFileReader(buffer))
                     elif file_type in ['doc', 'docx', 'rtf']:
                         tmp_file = 'temp_%s.' % unique + file_type
                         f = open(folder + tmp_file, 'wb')
@@ -128,8 +140,17 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                             ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
                             shell=True
                         )
-                        pdf = open(folder + 'temp_%s.pdf' % unique, 'rb')
-                        attachments_pdf.append(PyPDF2.PdfFileReader(pdf))
+                        if settings.IMAGE_REDACTION_ENABLED:
+                            pdf_path = folder + 'temp_%s.pdf' % unique
+                            redacted_pdf = generate_redact_pdf(
+                                instruction.patient_information.patient_first_name,
+                                instruction.patient_information.patient_last_name,
+                                pdf_path=pdf_path
+                            )
+                            attachments_pdf.append(PyPDF2.PdfFileReader(redacted_pdf))
+                        else:
+                            pdf = open(folder + 'temp_%s.pdf' % unique, 'rb')
+                            attachments_pdf.append(PyPDF2.PdfFileReader(pdf))
                     elif file_type in ['jpg', 'jpeg', 'png', 'tiff', 'tif']:
                         image = Image.open(buffer)
                         image_format = image.format
@@ -155,15 +176,33 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                                     break
                                 page += 1
                             c.save()
-                            attachments_pdf.append(PyPDF2.PdfFileReader(out_pdf_io))
+
+                            if settings.IMAGE_REDACTION_ENABLED:
+                                redacted_pdf = generate_redact_pdf(
+                                    instruction.patient_information.patient_first_name,
+                                    instruction.patient_information.patient_last_name,
+                                    pdf_byte=out_pdf_io.getvalue()
+                                )
+
+                                attachments_pdf.append(PyPDF2.PdfFileReader(redacted_pdf))
+                            else:
+                                attachments_pdf.append(PyPDF2.PdfFileReader(out_pdf_io))
                         else:
-                            pdf_bytes = img2pdf.convert('img_temp_%s.pdf' % unique)
-                            f = open(folder + 'img_temp_%s.pdf' % unique, 'wb')
-                            f.write(pdf_bytes)
-                            attachments_pdf.append(PyPDF2.PdfFileReader(f))
-                            image.close()
-                            f.close()
+                            image.save(folder + 'img_temp_%s.' % unique + image_format)
+                            pdf_bytes = img2pdf.convert(folder + 'img_temp_%s.' % unique + image_format)
+
+                            if settings.IMAGE_REDACTION_ENABLED:
+                                redacted_pdf = generate_redact_pdf(
+                                    instruction.patient_information.patient_first_name,
+                                    instruction.patient_information.patient_last_name,
+                                    pdf_byte=pdf_bytes
+                                )
+                                attachments_pdf.append(PyPDF2.PdfFileReader(redacted_pdf))
+                            else:
+                                buffer = io.BytesIO(pdf_bytes)
+                                attachments_pdf.append(PyPDF2.PdfFileReader(buffer))
                     else:
+                        # zipped unsupported file type
                         file_name = Base64Attachment(raw_xml_or_status_code).filename()
                         buffer = io.BytesIO()
                         buffer.write(raw_attachment)
@@ -172,6 +211,15 @@ def generate_medicalreport_with_attachment(self, instruction_id, report_link_inf
                         f.write(buffer.getvalue())
                         f.close()
                         download_attachments.append(save_file)
+
+                        # keep unsupported file type
+                        UnsupportedAttachment.objects.get_or_create(
+                            instruction=instruction,
+                            file_name=file_name,
+                            defaults={
+                                'file_type': file_type,
+                            }
+                        )
 
             except Exception as e:
                 exception_detail.append(date + ' ' + description)
