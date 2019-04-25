@@ -76,7 +76,7 @@ class SurgeryOnboard(TestCase):
 
     def emis_polling(self):
         response = self.client.get(reverse('onboarding:emis_polling', kwargs={'practice_code':self.practice_code}))
-        result = {'status': 400, 'practice_code': self.practice_code}
+        result = {'status': 200, 'practice_code': self.practice_code}
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), result)
         self.user = User.objects.get(email=self.email)

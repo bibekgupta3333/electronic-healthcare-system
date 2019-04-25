@@ -133,9 +133,6 @@ def account_view(request: HttpRequest) -> HttpResponse:
         if gp_fee_relation:
             organisation_fee = gp_fee_relation.organisation_fee
 
-        has_authorise_fee_perm = gp_user.user.has_perm('instructions.authorise_fee')
-        has_amend_fee_perm = gp_user.user.has_perm('instructions.amend_fee')
-
         band_fee_rate_data = []
         for fee_structure in OrganisationFeeRate.objects.filter(default=True):
             band_fee_rate_data.append([
@@ -146,7 +143,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
                 float(fee_structure.amount_rate_lvl_4),
             ])
 
-        if organisation_fee and (has_authorise_fee_perm or has_amend_fee_perm):
+        if organisation_fee:
             organisation_fee_data.append({
                 'pk': organisation_fee.pk,
                 'days': organisation_fee.max_day_lvl_1,
@@ -180,7 +177,6 @@ def account_view(request: HttpRequest) -> HttpResponse:
                 'gp_preferences_form': gp_preferences_form,
                 'new_password': new_organisation_password,
                 'practice_code': gp_organisation.pk,
-                'has_amend_fee_perm': has_amend_fee_perm,
                 'band_fee_rate_data': band_fee_rate_data
             })
 
@@ -188,7 +184,6 @@ def account_view(request: HttpRequest) -> HttpResponse:
             'header_title': header_title,
             'organisation_fee_data': organisation_fee_data,
             'gp_preferences_form': gp_preferences_form,
-            'has_amend_fee_perm': has_amend_fee_perm,
             'band_fee_rate_data': band_fee_rate_data,
             'bank_details_form': bank_details_form
         })
