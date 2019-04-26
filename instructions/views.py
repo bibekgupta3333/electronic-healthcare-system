@@ -665,7 +665,6 @@ def new_instruction(request):
                 gp_emails_list = [gp.user.email for gp in GeneralPracticeUser.objects.filter(organisation=gp_practice)]
 
             # Notification: client created new instruction
-            site_current = request.get_host()
             if settings.NEW_INSTRUCTION_SEND_MAIL_TO_MEDI:
                 send_mail(
                     'New Instruction',
