@@ -282,3 +282,6 @@ IMAGE_REDACTION_ENABLED = True
 
 # Set False for disable send new instruction email to Medidata User
 NEW_INSTRUCTION_SEND_MAIL_TO_MEDI = False
+
+# Set False for disable site_control
+SITE_CONTROL = True

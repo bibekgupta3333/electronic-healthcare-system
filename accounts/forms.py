@@ -1,6 +1,7 @@
 from django import forms
 from django.conf import settings
 from django.utils.timezone import now
+from django.contrib.auth.forms import AuthenticationForm
 from common.functions import verify_password
 from .models import GeneralPracticeUser, ClientUser, TITLE_CHOICE, User,\
         MEDIDATA_USER, CLIENT_USER, GENERAL_PRACTICE_USER, PATIENT_USER,\
@@ -9,6 +10,7 @@ from instructions.models import InstructionPatient
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 from report.mobile import AuthMobile
 from common.fields import MyChoiceField
+from services.models import SiteAccessControl
 import json
 DATE_INPUT_FORMATS = settings.DATE_INPUT_FORMATS
 
@@ -349,3 +351,23 @@ class BankDetailsForm(forms.ModelForm):
     class Meta:
         model = OrganisationGeneralPractice
         fields = ('payment_bank_holder_name', 'payment_bank_account_number', 'payment_bank_sort_code')
+
+
+class CustomLoginForm(AuthenticationForm):
+    def clean(self):
+        error_messages = '"%(username)s"' + " can't access in this site."
+        super().clean()
+        user = self.get_user()
+        if not user.is_superuser:
+            site = self.request.get_host()
+            access_control = SiteAccessControl.objects.filter(site_host=site).first()
+            access_permission = access_control.can_access_site(user_type=user.type)
+            if access_permission:
+                return self.cleaned_data
+            else:
+                raise forms.ValidationError(
+                    error_messages,
+                    params={'username': self.cleaned_data['username']}
+                ) 
+        else:
+            return self.cleaned_data
