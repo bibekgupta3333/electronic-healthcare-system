@@ -26,7 +26,7 @@ from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_
 from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences, ClientUser
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from payment.model_choices import *
-from .forms import PracticePreferencesForm, TwoFactorForm, BankDetailsForm
+from .forms import PracticePreferencesForm, TwoFactorForm, BankDetailsForm, CustomLoginForm
 from permissions.functions import access_user_management
 from organisations.models import OrganisationGeneralPractice
 from onboarding.views import generate_password
@@ -41,6 +41,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 DEFAULT_FROM = settings.DEFAULT_FROM
 
+from services.models import SiteAccessControl
 from .functions import change_role, remove_user, get_table_data,\
         get_post_new_user_data, get_user_type_form, reset_password,\
         check_ip_from_n3_hscn, get_client_ip
@@ -133,9 +134,6 @@ def account_view(request: HttpRequest) -> HttpResponse:
         if gp_fee_relation:
             organisation_fee = gp_fee_relation.organisation_fee
 
-        has_authorise_fee_perm = gp_user.user.has_perm('instructions.authorise_fee')
-        has_amend_fee_perm = gp_user.user.has_perm('instructions.amend_fee')
-
         band_fee_rate_data = []
         for fee_structure in OrganisationFeeRate.objects.filter(default=True):
             band_fee_rate_data.append([
@@ -146,7 +144,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
                 float(fee_structure.amount_rate_lvl_4),
             ])
 
-        if organisation_fee and (has_authorise_fee_perm or has_amend_fee_perm):
+        if organisation_fee:
             organisation_fee_data.append({
                 'pk': organisation_fee.pk,
                 'days': organisation_fee.max_day_lvl_1,
@@ -180,7 +178,6 @@ def account_view(request: HttpRequest) -> HttpResponse:
                 'gp_preferences_form': gp_preferences_form,
                 'new_password': new_organisation_password,
                 'practice_code': gp_organisation.pk,
-                'has_amend_fee_perm': has_amend_fee_perm,
                 'band_fee_rate_data': band_fee_rate_data
             })
 
@@ -188,7 +185,6 @@ def account_view(request: HttpRequest) -> HttpResponse:
             'header_title': header_title,
             'organisation_fee_data': organisation_fee_data,
             'gp_preferences_form': gp_preferences_form,
-            'has_amend_fee_perm': has_amend_fee_perm,
             'band_fee_rate_data': band_fee_rate_data,
             'bank_details_form': bank_details_form
         })
@@ -674,33 +670,39 @@ def check_email(request: HttpRequest) -> JsonResponse:
 
 
 def login(request: HttpRequest) -> HttpResponse:
-    if request.method == 'POST':
+    site = request.get_host()
+    access_control = SiteAccessControl.objects.filter(site_host=site).first()
+    if access_control:
+        if access_control.active_host or not settings.SITE_CONTROL:
+            if request.method == 'POST':
+                #Set client ip for axes
+                client_ip_attribute = 'axes_client_ip'
+                client_ip = get_client_ip(request)
+                setattr(request, client_ip_attribute, client_ip)
 
-        #Set client ip for axes
-        client_ip_attribute = 'axes_client_ip'
-        client_ip = get_client_ip(request)
-        setattr(request, client_ip_attribute, client_ip)
+                form = CustomLoginForm(request, request.POST)
+                if form.is_valid():
+                    username = request.POST['username']
+                    password = request.POST['password']
+                    user = authenticate(request, username=username, password=password)
+                    if user is not None and settings.TWO_FACTOR_ENABLED\
+                            and settings.SITE_CONTROL\
+                            and not check_ip_from_n3_hscn(request)\
+                            and not user.is_superuser:
+                        request.session['post_data'] = request.POST
+                        return redirect(reverse('accounts:two_factor'))
+                    elif user is not None:
+                        customlogin(request, user)
+                        return redirect(reverse('instructions:view_pipeline'))
+            else:
+                form = LoginForm()
+            if check_lock_out(request):
+                return redirect(reverse('accounts:locked_out'))
+            return render(request, 'registration/login.html', {
+                'form': form
+            })
 
-        form = LoginForm(request, request.POST)
-        if form.is_valid():
-            username = request.POST['username']
-            password = request.POST['password']
-            user = authenticate(request, username=username, password=password)
-            if user is not None and settings.TWO_FACTOR_ENABLED\
-                    and not check_ip_from_n3_hscn(request)\
-                    and not user.is_superuser:
-                request.session['post_data'] = request.POST
-                return redirect(reverse('accounts:two_factor'))
-            elif user is not None:
-                customlogin(request, user)
-                return redirect(reverse('instructions:view_pipeline'))
-    else:
-        form = LoginForm()
-    if check_lock_out(request):
-        return redirect(reverse('accounts:locked_out'))
-    return render(request, 'registration/login.html', {
-        'form': form
-    })
+    return HttpResponse('Site is not active !')
 
 
 def two_factor(request: HttpRequest) -> HttpResponse:

@@ -413,14 +413,7 @@ def instruction_pipeline_view(request):
 
     if request.user.type == GENERAL_PRACTICE_USER:
         cost_column_name = 'Income £'
-        gp_role = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.role')
-        if gp_role == GeneralPracticeUser.PRACTICE_MANAGER:
-            instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
-        elif request.user.has_perm('instructions.process_sars'):
-            instruction_query_set = instruction_query_set.filter(
-                Q(gp_user=user.userprofilebase.generalpracticeuser) | Q(gp_user__isnull=True),
-                gp_practice_id=gp_practice_code
-            )
+        instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
         
         if search_input:
             instruction_query_set_name = Q(patient_information__patient_first_name__icontains=search_input)
@@ -454,7 +447,9 @@ def instruction_pipeline_view(request):
         'header_title': header_title,
         'next_prev_data_all': next_prev_data_all,
         'next_prev_data_fee': next_prev_data_fee,
-        'check_fee_status': check_fee_status
+        'check_fee_status': check_fee_status,
+        'search_pagination': search_pagination,
+        'search_input': search_input
     })
 
     response.set_cookie('status', filter_status)
@@ -507,14 +502,7 @@ def instruction_fee_payment_view(request):
 
     if request.user.type == GENERAL_PRACTICE_USER:
         cost_column_name = 'Income £'
-        gp_role = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.role')
-        if gp_role == GeneralPracticeUser.PRACTICE_MANAGER:
-            instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
-        elif request.user.has_perm('instructions.process_sars'):
-            instruction_query_set = instruction_query_set.filter(
-                Q(gp_user=user.userprofilebase.generalpracticeuser) | Q(gp_user__isnull=True),
-                gp_practice_id=gp_practice_code
-            )
+        instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
 
     if request.method == 'POST':
         if request.POST.get('from_date', '') and request.POST.get('to_date', ''):
@@ -665,16 +653,18 @@ def new_instruction(request):
                 gp_emails_list = [gp.user.email for gp in GeneralPracticeUser.objects.filter(organisation=gp_practice)]
 
             # Notification: client created new instruction
-            send_mail(
-                'New Instruction',
-                'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
-                    protocol=request.scheme,
-                    link=request.get_host() + reverse('instructions:view_pipeline')
-                ),
-                'MediData',
-                medidata_emails_list + gp_emails_list,
-                fail_silently=True,
-            )
+            if settings.NEW_INSTRUCTION_SEND_MAIL_TO_MEDI:
+                send_mail(
+                    'New Instruction',
+                    'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
+                        protocol=request.scheme,
+                        link=request.get_host() + reverse('instructions:view_pipeline')
+                    ),
+                    'MediData',
+                    medidata_emails_list + gp_emails_list,
+                    fail_silently=True,
+                )
+                
             messages.success(request, 'Form submission successful')
             event_logger.info(
                 '{user}:{user_id} {action} {instruction_type} instruction'.format(
@@ -721,6 +711,31 @@ def new_instruction(request):
     if instruction_id:
         instruction = get_object_or_404(Instruction, pk=instruction_id)
         patient_instruction = instruction.patient_information
+        gp_organisation = instruction.gp_practice
+        
+        # Initial GP Practice Block
+        gp_address = ' '.join(
+            (
+                gp_organisation.region,
+                gp_organisation.comm_area,
+                gp_organisation.billing_address_street,
+                gp_organisation.billing_address_city,
+                gp_organisation.billing_address_state,
+                gp_organisation.billing_address_postalcode,
+            )
+        )
+        if gp_organisation.live:
+            gp_status = 'live surgery'
+            gp_status_class = 'text-success'
+        else:
+            if gp_organisation.gp_operating_system == 'EMISWeb':
+                gp_status = 'Access not set-up'
+                gp_status_class = 'text-danger'
+            else:
+                gp_status = 'Not applicable'
+                gp_status_class = 'text-dark'
+        
+
         # Initial Patient Form
         patient_form = InstructionPatientForm(
             instance=patient_instruction,
@@ -728,6 +743,8 @@ def new_instruction(request):
                 'first_name': patient_instruction.patient_first_name,
                 'last_name': patient_instruction.patient_last_name,
                 'address_postcode': patient_instruction.patient_postcode,
+                'patient_postcode': patient_instruction.patient_postcode,
+                'patient_address_number': patient_instruction.patient_address_number,
                 'edit_patient': True
             }
         )
@@ -739,11 +756,7 @@ def new_instruction(request):
         gp_practice_request = HttpRequest()
         gp_practice_request.GET['code'] = gp_practice_code
         nhs_address = get_gporganisation_data(gp_practice_request, need_dict=True)['address']
-        nhs_form = GeneralPracticeForm(
-            initial={
-                'gp_practice': instruction.gp_practice
-            }
-        )
+        nhs_form = GeneralPracticeForm()
         # Initial GP Practitioner Form
         gp_form = GPForm(
             initial={
@@ -790,7 +803,11 @@ def new_instruction(request):
             'selected_gp_adr_line1': patient_instruction.patient_address_line1,
             'selected_gp_adr_line2': patient_instruction.patient_address_line2,
             'selected_gp_adr_line3': patient_instruction.patient_address_line3,
-            'selected_gp_adr_county': patient_instruction.patient_county
+            'selected_gp_adr_county': patient_instruction.patient_county,
+            'selected_gp_code': gp_organisation,
+            'gp_address': gp_address,
+            'gp_status': gp_status,
+            'gp_status_class': gp_status_class
         })
     event_logger.info(
         '{user}:{user_id} ACCESS NEW instruction view'.format(
@@ -849,6 +866,16 @@ def review_instruction(request, instruction_id: str):
     date_format = patient_instruction.patient_dob.strftime("%d/%m/%Y")
     date_range_form = InstructionDateRangeForm(instance=instruction)
 
+    if request.method == "POST":
+        instruction.reject(request, request.POST)
+        event_logger.info(
+            '{user}:{user_id} REJECT instruction ID {instruction_id} on failed'.format(
+                user=request.user, user_id=request.user.id,
+                instruction_id=instruction_id
+            )
+        )
+        return HttpResponseRedirect("%s?%s"%(reverse('instructions:view_pipeline'),"status=%s&type=allType"%INSTRUCTION_STATUS_REJECT))            
+
     # Initial Patient Form
     patient_form = InstructionPatientForm(
         instance=patient_instruction,
@@ -861,6 +888,7 @@ def review_instruction(request, instruction_id: str):
             'patient_dob': date_format
         }
     )
+    # 
     gp_practice_code = instruction.gp_practice.pk
     gp_practice_request = HttpRequest()
     gp_practice_request.GET['code'] = gp_practice_code
@@ -925,7 +953,8 @@ def review_instruction(request, instruction_id: str):
         'consent_form_data': consent_form_data,
         'instruction_id': instruction_id,
         'instruction': instruction,
-        'can_process': can_process
+        'can_process': can_process,
+        'reject_reason_value': CANCEL_BY_CLIENT,
     })
 
 
