@@ -413,14 +413,7 @@ def instruction_pipeline_view(request):
 
     if request.user.type == GENERAL_PRACTICE_USER:
         cost_column_name = 'Income £'
-        gp_role = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.role')
-        if gp_role == GeneralPracticeUser.PRACTICE_MANAGER:
-            instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
-        elif request.user.has_perm('instructions.process_sars'):
-            instruction_query_set = instruction_query_set.filter(
-                Q(gp_user=user.userprofilebase.generalpracticeuser) | Q(gp_user__isnull=True),
-                gp_practice_id=gp_practice_code
-            )
+        instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
         
         if search_input:
             instruction_query_set_name = Q(patient_information__patient_first_name__icontains=search_input)
@@ -454,7 +447,9 @@ def instruction_pipeline_view(request):
         'header_title': header_title,
         'next_prev_data_all': next_prev_data_all,
         'next_prev_data_fee': next_prev_data_fee,
-        'check_fee_status': check_fee_status
+        'check_fee_status': check_fee_status,
+        'search_pagination': search_pagination,
+        'search_input': search_input
     })
 
     response.set_cookie('status', filter_status)
@@ -507,14 +502,7 @@ def instruction_fee_payment_view(request):
 
     if request.user.type == GENERAL_PRACTICE_USER:
         cost_column_name = 'Income £'
-        gp_role = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.role')
-        if gp_role == GeneralPracticeUser.PRACTICE_MANAGER:
-            instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
-        elif request.user.has_perm('instructions.process_sars'):
-            instruction_query_set = instruction_query_set.filter(
-                Q(gp_user=user.userprofilebase.generalpracticeuser) | Q(gp_user__isnull=True),
-                gp_practice_id=gp_practice_code
-            )
+        instruction_query_set = instruction_query_set.filter(gp_practice_id=gp_practice_code)
 
     if request.method == 'POST':
         if request.POST.get('from_date', '') and request.POST.get('to_date', ''):
