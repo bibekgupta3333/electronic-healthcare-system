@@ -7,7 +7,7 @@ from django.http import HttpRequest
 from django_clamd.validators import validate_file_infection
 from common.models import TimeStampedModel
 from common.functions import get_url_page
-from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser, User
+from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser, User, GENERAL_PRACTICE_USER
 from organisations.models import OrganisationGeneralPractice
 from accounts import models as account_models
 from snomedct.models import SnomedConcept, CommonSnomedConcepts
@@ -169,20 +169,29 @@ class Instruction(TimeStampedModel, models.Model):
         self.save()
 
     def reject(self, request: HttpRequest, context: Dict[str, str]) -> None:
-        self.gp_user = request.user.userprofilebase.generalpracticeuser
+        user = request.user
+        if user.type == GENERAL_PRACTICE_USER:
+            self.gp_user = user.userprofilebase.generalpracticeuser
+            send_mail_bool = True
+        else:
+            send_mail_bool = False
+
         self.rejected_timestamp = timezone.now()
-        self.rejected_by = request.user
+        self.rejected_by = user
         self.rejected_reason = context.get('rejected_reason', None)
         self.rejected_note = context.get('rejected_note', '')
         self.status = INSTRUCTION_STATUS_REJECT
-        patient_email = context.get('reject_patient_email', '')
-        if patient_email != '':
-            self.send_reject_email_to_patient(patient_email)
-        if self.client_user:
-            self.send_reject_email([self.client_user.user.email])
-        if self.gp_user and self.gp_user.role == GeneralPracticeUser.OTHER_PRACTICE:
-            emails = [medi.user.email for medi in MedidataUser.objects.all()]
-            self.send_reject_email(emails)
+
+        if send_mail_bool:
+            patient_email = context.get('reject_patient_email', '')
+            if patient_email != '':
+                self.send_reject_email_to_patient(patient_email)
+            if self.client_user:
+                self.send_reject_email([self.client_user.user.email])
+            if self.gp_user and self.gp_user.role == GeneralPracticeUser.OTHER_PRACTICE:
+                emails = [medi.user.email for medi in MedidataUser.objects.all()]
+                self.send_reject_email(emails)
+                
         self.save()
 
     def send_reject_email_to_patient(self, patient_email: str) -> None:
