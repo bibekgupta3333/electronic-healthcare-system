@@ -653,16 +653,18 @@ def new_instruction(request):
                 gp_emails_list = [gp.user.email for gp in GeneralPracticeUser.objects.filter(organisation=gp_practice)]
 
             # Notification: client created new instruction
-            send_mail(
-                'New Instruction',
-                'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
-                    protocol=request.scheme,
-                    link=request.get_host() + reverse('instructions:view_pipeline')
-                ),
-                'MediData',
-                medidata_emails_list + gp_emails_list,
-                fail_silently=True,
-            )
+            if settings.NEW_INSTRUCTION_SEND_MAIL_TO_MEDI:
+                send_mail(
+                    'New Instruction',
+                    'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
+                        protocol=request.scheme,
+                        link=request.get_host() + reverse('instructions:view_pipeline')
+                    ),
+                    'MediData',
+                    medidata_emails_list + gp_emails_list,
+                    fail_silently=True,
+                )
+                
             messages.success(request, 'Form submission successful')
             event_logger.info(
                 '{user}:{user_id} {action} {instruction_type} instruction'.format(
