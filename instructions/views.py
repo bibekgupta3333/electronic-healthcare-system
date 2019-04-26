@@ -459,6 +459,7 @@ def instruction_pipeline_view(request):
 
 @login_required(login_url='/accounts/login')
 def instruction_fee_payment_view(request):
+    # comment
     event_logger.info(
         '{user}:{user_id} ACCESS fee and payment pipeline view'.format(user=request.user, user_id=request.user.id)
     )
