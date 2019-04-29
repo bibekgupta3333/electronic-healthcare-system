@@ -260,10 +260,26 @@
             e.preventDefault();
             var word_span = $(this).parent().parent().find("span.bg-warning");
             var word = word_span.text();
+            var item = $(this).closest('.redaction-checkbox');
+            var item_parent = $(this).closest('.callout');
+            var header = item_parent.find('.callout__header').text();
+            var idx = -1;
+            item_parent.find('.redaction-checkbox').filter(function(index, obj){
+                if (item.is($(obj))) {
+                    idx = index;
+                    return 1;
+                }
+            });
             $.ajax({
                 url: "{% url 'library:replace_word' %}",
                 dataType: "json",
-                data: { word: word }
+                data: {
+                    word: word, 
+                    instruction_id: {{ instruction.id }}, 
+                    header: header, 
+                    index: idx, 
+                    content: item.html()
+                }
             }).done(function(response) {
                 if (response['message'] == 'Error') {
                     create_alert('Something went wrong, please try again.', 'error');
@@ -283,7 +299,7 @@
             $.ajax({
                 url: "{% url 'library:replace_allword' %}",
                 dataType: "json",
-                data: { word: word }
+                data: { word: word, instruction_id: {{ instruction.id }} }
             }).done(function(response) {
                 if (response['message'] == 'Error') {
                     create_alert('Something went wrong, please try again.', 'error');
@@ -305,6 +321,8 @@
             e.preventDefault();
             $.ajax({
                 url: "{% url 'library:undo_last' %}",
+                dataType: "json",
+                data: { instruction_id: {{ instruction.id }} }
             }).done(function(response) {
                 if (response['message'] == 'Error') {
                     create_alert('Something went wrong, please try again.', 'error');

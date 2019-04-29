@@ -1,6 +1,7 @@
 from django.db import models
 from common.models import TimeStampedModel
 from organisations.models import OrganisationGeneralPractice
+from instructions.models import Instruction
 
 
 class Library(TimeStampedModel):
@@ -18,7 +19,8 @@ class Library(TimeStampedModel):
 
 
 class LibraryHistory(TimeStampedModel):
-    gp_practice = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE)
+    instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)
     action = models.CharField(max_length=255, verbose_name='Action')
     old = models.CharField(max_length=255, blank=True, verbose_name='Old value')
     new = models.CharField(max_length=255, blank=True, verbose_name='New value')
+    change_info = models.TextField(blank=True, verbose_name='Change information')

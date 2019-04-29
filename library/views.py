@@ -11,6 +11,7 @@ from instructions.views import calculate_next_prev
 from .models import Library, LibraryHistory
 from .tables import LibraryTable
 from .forms import LibraryForm
+from instructions.models import Instruction
 
 
 @login_required(login_url='/accounts/login')
@@ -103,13 +104,19 @@ def replace_word(request):
     if request.is_ajax():
         try:
             word = request.GET.get('word').strip()
+            instruction_id = request.GET.get('instruction_id')
+            header = request.GET.get('header')
+            index = request.GET.get('index')
+            content = request.GET.get('content')
+
             gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
             library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
-            if library:
-                library_history = LibraryHistory(gp_practice=gp_practice, action='Replace', old=word, new=library.value)
-                library_history.save()
-                return JsonResponse({'replace_word': library.value, 'id': library_history.id})
-            return JsonResponse({'message': 'Error'})
+
+            change_info = '%s :-> %s :-> %s' % (header.strip(), index, content.strip())
+            instruction = Instruction.objects.get(pk=instruction_id)
+            library_history = LibraryHistory(instruction=instruction, action='Replace', old=word, new=library.value, change_info=change_info)
+            library_history.save()
+            return JsonResponse({'replace_word': library.value, 'id': library_history.id})
         except:
             return JsonResponse({'message': 'Error'})
 
@@ -118,13 +125,14 @@ def replace_allword(request):
     if request.is_ajax():
         try:
             word = request.GET.get('word').strip()
+            instruction_id = request.GET.get('instruction_id')
             gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
             library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
-            library_history = LibraryHistory(gp_practice=gp_practice, action='ReplaceAll', old=word, new=library.value)
+
+            instruction = Instruction.objects.get(pk=instruction_id)
+            library_history = LibraryHistory(instruction=instruction, action='ReplaceAll', old=word, new=library.value)
             library_history.save()
-            if library:
-                return JsonResponse({'replace_word': library.value})
-            return JsonResponse({'message': 'Error'})
+            return JsonResponse({'replace_word': library.value, 'id': library_history.id})
         except:
             return JsonResponse({'message': 'Error'})
 
@@ -132,8 +140,9 @@ def replace_allword(request):
 def undo_last(request):
     if request.is_ajax():
         try:
-            gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
-            recent_history = LibraryHistory.objects.filter(gp_practice=gp_practice).latest('id')
+            instruction_id = request.GET.get('instruction_id')
+            instruction = Instruction.objects.get(pk=instruction_id)
+            recent_history = LibraryHistory.objects.filter(instruction=instruction).latest('id')
             data = {
                 'action': recent_history.action,
                 'id': recent_history.id,
