@@ -1,6 +1,7 @@
 from django import template
 from django.utils.html import format_html
 from .helper import diagnosed_date, linked_problems, end_date, format_date, additional_medication_dates_description
+from library.models import Library
 import re
 register = template.Library()
 
@@ -50,14 +51,42 @@ def additional_medication_body(record):
         record.notes if record.notes else '-'
     )
 
-
+#
 @register.filter
-def additional_allergy_description(record):
+def additional_allergy_description(record, word_library):
+    print('----------------------')
+    print("'" + record.allergen + "'")
     prefix = ''
     if record.date_discovered:
         prefix = "{} - ".format(format_date(record.date_discovered))
 
-    return "{}{}, {}".format(prefix, record.allergen, record.reaction)
+    text_allergen = record.allergen
+    text_reaction = record.reaction
+    for word in word_library:
+        print('key : ' + word.key)
+        if str.upper(word.key) == str.upper(text_allergen):
+            text_allergen = '''
+                <span class="highlight-library">
+                    <span class="bg-warning">%s</span>
+                    <span class="dropdown-options">
+                        <a href="#" class="highlight-redact">Redact</a>
+                        <a href="#" class="highlight-replace">Replace</a>
+                        <a href="#" class="highlight-replaceall">Replace all</a>
+                    </span>
+                </span>
+            ''' % (text_allergen)
+        if str.upper(word.key) == str.upper(text_reaction):
+            text_reaction = '''
+                <span class="highlight-library">
+                    <span class="bg-warning">%s</span>
+                    <span class="dropdown-options">
+                        <a href="#" class="highlight-redact">Redact</a>
+                        <a href="#" class="highlight-replace">Replace</a>
+                        <a href="#" class="highlight-replaceall">Replace all</a>
+                    </span>
+                </span>
+            ''' % (text_reaction)
+    return format_html("{}{}, {}".format(prefix, text_allergen, text_reaction))
 
 
 @register.filter
@@ -191,8 +220,26 @@ def consultation_element_list(consultation):
 
 @register.filter
 def replace_ref_phrases(relations, value):
-    if relations:
-        return re.sub(relations, "[UNSPECIFIED THIRD PARTY]", value, flags=re.IGNORECASE)
+    word_library = relations['word_library']
+    if relations['relations']:
+        text = re.sub(relations['relations'], "[UNSPECIFIED THIRD PARTY]", value, flags=re.IGNORECASE)
+        if word_library:
+            split_word = value.split()
+            for word in word_library:
+                if str.upper(word.key) in map(str.upper, split_word):
+                    idx = list(map(str.upper, split_word)).index(str.upper(word.key))
+                    highlight_html = '''
+                        <span class="highlight-library">
+                            <span class="bg-warning">%s</span>
+                            <span class="dropdown-options">
+                                <a href="#" class="highlight-redact">Redact</a>
+                                <a href="#" class="highlight-replace">Replace</a>
+                                <a href="#" class="highlight-replaceall">Replace all</a>
+                            </span>
+                        </span>
+                    ''' % (split_word[idx])
+                    text = re.sub(word.key, highlight_html, text, flags=re.IGNORECASE)
+        return format_html(text)
     return value
 
 

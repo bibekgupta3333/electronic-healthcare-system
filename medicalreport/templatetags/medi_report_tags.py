@@ -115,9 +115,10 @@ def form_allergies(context):
 
 
 @register.inclusion_tag('medicalreport/inclusiontags/form_additional_allergies.html')
-def form_additional_allergies(additional_allergies_records):
+def form_additional_allergies(additional_allergies_records, word_library):
     return {
-        'additional_allergies_records': additional_allergies_records
+        'additional_allergies_records': additional_allergies_records,
+        'word_library': word_library
     }
 
 
@@ -156,6 +157,7 @@ def redaction_checkbox_with_body(model, redaction, header='', word_library='', b
                 </span>
             ''' % (split_word[idx])
             header = re.sub(word.key, highlight_html, header, flags=re.IGNORECASE)
+    print(split_word)
 
     return {
         'checked': checked,
@@ -202,7 +204,7 @@ def redaction_checkbox_with_list(model, redaction, header='', dict_data='', map_
 
 
 @register.inclusion_tag('medicalreport/inclusiontags/redaction_checkbox_with_body.html')
-def problem_redaction_checkboxes(model, redaction, problem_linked_lists, map_code, header=''):
+def problem_redaction_checkboxes(model, redaction, problem_linked_lists, map_code, header='', word_library=''):
     checked = ""
     matched_sensitive_conditions = NhsSensitiveConditions.objects.filter(snome_code__in=map_code)
     if redaction.re_redacted_codes:
@@ -221,10 +223,29 @@ def problem_redaction_checkboxes(model, redaction, problem_linked_lists, map_cod
     xpaths = problem_xpaths(model, problem_linked_lists)
     if redaction.redacted(xpaths) is True:
         checked = "checked"
+
+    title = header
+    split_word = header.split()
+    for word in word_library:
+        if str.upper(word.key) in map(str.upper, split_word):
+            idx = list(map(str.upper, split_word)).index(str.upper(word.key))
+            highlight_html = '''
+                <span class="highlight-library">
+                    <span class="bg-warning">%s</span>
+                    <span class="dropdown-options">
+                        <a href="#" class="highlight-redact">Redact</a>
+                        <a href="#" class="highlight-replace">Replace</a>
+                        <a href="#" class="highlight-replaceall">Replace all</a>
+                    </span>
+                </span>
+            ''' % (split_word[idx])
+            header = re.sub(word.key, highlight_html, header, flags=re.IGNORECASE)
+
     return {
         'checked': checked,
         'xpaths': xpaths,
         'header': header,
+        'title': title,
         'header_detail': format_html(header),
         'is_sensitive': is_sensitive
     }

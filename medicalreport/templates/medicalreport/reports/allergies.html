@@ -22,7 +22,7 @@
     <table style="width:100%;font-size:15px;">
         {% for record in additional_allergies %}
             <tr>
-                <td>{{ record|additional_allergy_description }}</td>
+                <td>{{ record|additional_allergy_description:word_library }}</td>
             </tr>
         {% endfor %}
     </table>

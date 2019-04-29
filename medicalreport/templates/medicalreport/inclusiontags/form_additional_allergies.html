@@ -9,7 +9,7 @@
         {{ checked }} readonly type="checkbox" class="redaction-checkbox__input" 
         value="{{ record.id }}">
       <span class="redaction-checkbox__icon float-right fas fa-check-circle"></span>
-      <span class="redaction-checkbox__header">{{ record|additional_allergy_description }}</span>
+      <span class="redaction-checkbox__header">{{ record|additional_allergy_description:word_library }}</span>
     </label>
     </div>
   {% endfor %}

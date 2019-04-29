@@ -221,6 +221,13 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     word_library = Library.objects.filter(gp_practice=gp_practice_code)
     library_history = LibraryHistory.objects.filter(gp_practice=gp_practice_code)
 
+    relations_dict = {
+        'relations': relations,
+        'word_library': word_library,
+    }
+    # import ipdb; ipdb.set_trace()
+
+
     response = render(request, 'medicalreport/medicalreport_edit.html', {
         'user': request.user,
         'medical_record': medical_record_decorator,
@@ -228,7 +235,7 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         'instruction': instruction,
         'finalise_submit_form': finalise_submit_form,
         'questions': questions,
-        'relations': relations,
+        'relations': relations_dict,
         'show_alert': True if inst_gp_user == cur_user else False,
         'patient_full_name': instruction.patient_information.get_full_name(),
         'library_form': library_form,
