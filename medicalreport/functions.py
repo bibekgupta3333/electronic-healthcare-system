@@ -1,7 +1,3 @@
-import uuid
-import logging
-import os
-import glob
 from datetime import datetime
 from django.conf import settings
 from django.contrib import messages
@@ -25,6 +21,10 @@ from report.models import PatientReportAuth
 from report.tasks import generate_medicalreport_with_attachment
 from instructions.models import Instruction
 
+import uuid
+import logging
+import os
+import glob
 
 UI_DATE_FORMAT = '%m/%d/%Y'
 logger = logging.getLogger('timestamp')
@@ -142,7 +142,7 @@ def save_medical_report(instruction: Instruction, amendments_for_record: Amendme
         os.remove(instruction.medical_xml_report.path)
         instruction.medical_xml_report.delete()
     medical_record_decorator = MedicalReportDecorator(parse_xml, instruction)
-    relations = '|'.join(relation.name for relation in ReferencePhrases.objects.all())
+    relations = " " + " | ".join(relation.name for relation in ReferencePhrases.objects.all()) + " "
     str_xml = lxml_to_string(parse_xml)
     params = {
         'medical_record': medical_record_decorator,

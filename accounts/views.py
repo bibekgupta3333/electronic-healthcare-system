@@ -1,4 +1,6 @@
 import datetime
+import dateutil
+import pytz
 
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
@@ -15,28 +17,73 @@ from django.contrib.auth.forms import AuthenticationForm as LoginForm
 from permissions.forms import InstructionPermissionForm, GroupPermissionForm
 from permissions.models import InstructionPermission
 from common.functions import multi_getattr, verify_password as verify_pass
-from payment.models import GpOrganisationFee, InstructionVolumeFee, OrganisationFeeRate
+from payment.models import GpOrganisationFee, InstructionVolumeFee, OrganisationFeeRate, WeeklyInvoice
 from django_tables2 import RequestConfig
 from accounts.forms import AllUserForm, NewGPForm, NewClientForm, NewMediForm,\
         UserProfileForm, UserProfileBaseForm
 from instructions.models import Instruction
-from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE
-
+from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_PAID
 from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences, ClientUser
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
-from .forms import PracticePreferencesForm, TwoFactorForm
+from payment.model_choices import *
+from .forms import PracticePreferencesForm, TwoFactorForm, BankDetailsForm, CustomLoginForm
 from permissions.functions import access_user_management
 from organisations.models import OrganisationGeneralPractice
 from onboarding.views import generate_password
+from onboarding.forms import BankDetailsEmrSetUpStage2Form
 from axes.models import AccessAttempt
+from .tables import AccountTable, PaymentLogTable
+from django_tables2 import RequestConfig, Column
+from instructions.views import calculate_next_prev
 from typing import Union, List, Dict
-
+from instructions.forms import DateRangeSearchForm
 from django.conf import settings
+from django.core.mail import send_mail
 DEFAULT_FROM = settings.DEFAULT_FROM
 
+from services.models import SiteAccessControl
 from .functions import change_role, remove_user, get_table_data,\
         get_post_new_user_data, get_user_type_form, reset_password,\
         check_ip_from_n3_hscn, get_client_ip
+
+
+def count_status_invoice_table(query) -> Dict[str, int]:
+    complete_total_count = query.filter(status=INSTRUCTION_STATUS_COMPLETE).count()
+    paid_total_count = query.filter(status=INSTRUCTION_STATUS_PAID).count()
+    all_total_count = query.count()
+    filter_number = {
+        'All': all_total_count,
+        'Completed': complete_total_count,
+        'Paid': paid_total_count
+    }
+
+    return filter_number
+
+
+def send_notification_org_email(request, gp_user, status):
+    gp_organisation = gp_user.organisation
+    gp_name = " ".join([gp_user.user.first_name, gp_user.user.last_name])
+    if status == 'is_fee_changed':
+        subject = 'Fee Band selected'
+        message = 'A fee band was selected for your Surgery by "{name}". To review please click this link {protocol}://{link}'.format(
+            name=gp_name,
+            protocol=request.scheme,
+            link=request.get_host() + reverse('accounts:view_account')
+        )
+    elif status == 'update_bank_details':
+        subject = 'Bank account details change'
+        message = 'Your Surgery bank account details were changed by "{name}".'.format(
+            name=gp_name
+        )
+
+    org_email = gp_organisation.organisation_email
+    send_mail(
+        subject,
+        message,
+        'MediData',
+        [org_email],
+        fail_silently=True
+    )
 
 
 @login_required(login_url='/accounts/login')
@@ -55,11 +102,25 @@ def account_view(request: HttpRequest) -> HttpResponse:
             practice_preferences.notification = 'NEW'
             practice_preferences.save()
 
+        bank_details_info = {
+            'payment_bank_holder_name': gp_organisation.payment_bank_holder_name,
+            'payment_bank_account_number': gp_organisation.payment_bank_account_number,
+            'payment_bank_sort_code': gp_organisation.payment_bank_sort_code,
+        }
+        bank_details_form = BankDetailsForm(initial=bank_details_info)
+
         if request.is_ajax():
             if request.POST.get('is_fee_changed'):
                 new_organisation_fee_id = request.POST.get('organisation_fee_id')
                 GpOrganisationFee.objects.filter(gp_practice=gp_organisation).update(organisation_fee_id=int(new_organisation_fee_id))
+                send_notification_org_email(request, gp_user, 'is_fee_changed')
                 return JsonResponse({'message': 'Preferences have been saved.'})
+            if request.POST.get('update_bank_details'):
+                bank_details_form = BankDetailsForm(request.POST, instance=gp_organisation)
+                if bank_details_form.is_valid():
+                    bank_details_form.save()
+                    send_notification_org_email(request, gp_user, 'update_bank_details')
+                    return JsonResponse({'message': 'Bank details have been saved.'})
             gp_preferences_form = PracticePreferencesForm(request.POST, instance=practice_preferences)
             if gp_preferences_form.is_valid():
                 gp_preferences_form.save()
@@ -73,9 +134,6 @@ def account_view(request: HttpRequest) -> HttpResponse:
         if gp_fee_relation:
             organisation_fee = gp_fee_relation.organisation_fee
 
-        has_authorise_fee_perm = gp_user.user.has_perm('instructions.authorise_fee')
-        has_amend_fee_perm = gp_user.user.has_perm('instructions.amend_fee')
-
         band_fee_rate_data = []
         for fee_structure in OrganisationFeeRate.objects.filter(default=True):
             band_fee_rate_data.append([
@@ -86,7 +144,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
                 float(fee_structure.amount_rate_lvl_4),
             ])
 
-        if organisation_fee and (has_authorise_fee_perm or has_amend_fee_perm):
+        if organisation_fee:
             organisation_fee_data.append({
                 'pk': organisation_fee.pk,
                 'days': organisation_fee.max_day_lvl_1,
@@ -120,80 +178,123 @@ def account_view(request: HttpRequest) -> HttpResponse:
                 'gp_preferences_form': gp_preferences_form,
                 'new_password': new_organisation_password,
                 'practice_code': gp_organisation.pk,
-                'has_amend_fee_perm': has_amend_fee_perm,
-                'band_fee_rate_data': band_fee_rate_data,
+                'band_fee_rate_data': band_fee_rate_data
             })
 
         return render(request, 'accounts/accounts_view.html', {
             'header_title': header_title,
             'organisation_fee_data': organisation_fee_data,
             'gp_preferences_form': gp_preferences_form,
-            'has_amend_fee_perm': has_amend_fee_perm,
             'band_fee_rate_data': band_fee_rate_data,
+            'bank_details_form': bank_details_form
         })
 
-    client_fee = InstructionVolumeFee.objects.filter(client_organisation_id = user.get_my_organisation().id).first()
-    client_volume_data = list()
-    client_fee_data = list()
+    client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
 
-    if client_fee:
-        #   Volume Data
-        client_volume_data.append({
-            'amount': client_fee.max_volume_band_lowest,
-            'label': 'Max volume of Lowest band : '
-        })
-        client_volume_data.append({
-            'amount': client_fee.max_volume_band_low,
-            'label': 'Max volume of Low band : '
-        })
-        client_volume_data.append({
-            'amount': client_fee.max_volume_band_medium,
-            'label': 'Max volume of Medium band : '
-        })
-        client_volume_data.append({
-            'amount': client_fee.max_volume_band_top,
-            'label': 'Max volume of Top band : '
-        })
-        
-        #   Fee Data
-        client_fee_data.append({
-            'amount': client_fee.fee_rate_lowest,
-            'label': 'Earnings for Lowest band : '
-        })
-        client_fee_data.append({
-            'amount': client_fee.fee_rate_low,
-            'label': 'Earnings for Low band : '
-        })
-        client_fee_data.append({
-            'amount': client_fee.fee_rate_medium,
-            'label': 'Earnings for Medium band : '
-        })
-        client_fee_data.append({
-            'amount': client_fee.fee_rate_top,
-            'label': 'Earnings for Top band : '
-        })
+    #   Table for block 1
+    date_range_form = DateRangeSearchForm()
+    cost_column_name = 'Cost £'
+    instruction_query_set = Instruction.objects.filter(
+        client_user__organisation=client_organisation,
+        status__in=[INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_PAID]
+    )
+    filter_number = count_status_invoice_table(instruction_query_set)
 
-        #   Tax Data
-        client_fee_data.append({
-            'amount': client_fee.vat,
-            'label': 'VAT : ',
-            'status': 'tax'
-        })
+    if request.method == 'POST':
+        if request.POST.get('from_date', '') and request.POST.get('to_date', ''):
+            from_date = dateutil.parser.parse(request.POST.get('from_date', '')).replace(tzinfo=pytz.UTC)
+            to_date = dateutil.parser.parse(request.POST.get('to_date', '')).replace(tzinfo=pytz.UTC)
+            instruction_query_set = instruction_query_set.filter(completed_signed_off_timestamp__range=(from_date, to_date))
+            filter_number = count_status_invoice_table(instruction_query_set)
 
-    currentYear = datetime.datetime.now().year
-    client = ClientUser.objects.filter( organisation_id = user.get_my_organisation().id ).first()
-    countInstructions =  Instruction.objects.filter( created__year = currentYear, status = INSTRUCTION_STATUS_COMPLETE, client_user = client ).count()
+    page_length = 10
+    if 'page_length' in request.GET:
+        page_length = int(request.GET.get('page_length'))
 
-    createTime = user.get_my_organisation().created_time
-    anniversaryDataStr = str( createTime.day ) + ' / ' + str( createTime.month ) + ' / ' + str( createTime.year + 1 )
+    filter_status_btn = int(request.GET.get('status', -1))
+    filter_status_search = int(request.GET.get('status_input', -1))
+    if filter_status_btn != -1:
+        instruction_query_set = instruction_query_set.filter(status=filter_status_btn)
+    elif filter_status_search != -1:
+        instruction_query_set = instruction_query_set.filter(status=filter_status_search)
 
-    return render( request, 'accounts/accounts_view_client.html', {
+    table_block_1 = AccountTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
+    table_block_1.order_by = '-created'
+    table_block_1.paginate(page=request.GET.get('page', 1), per_page=page_length)
+
+    #   Table for block 2
+    claim_table = dict()
+    under_table = dict()
+    sars_table = dict()
+    client_fee_query_set = InstructionVolumeFee.objects.filter(client_org=client_organisation)
+    for volume_query in client_fee_query_set:
+        range_1 = "0-" + str(volume_query.max_volume_band_lowest)
+        range_2 = "-".join([str(volume_query.max_volume_band_lowest + 1), str(volume_query.max_volume_band_low)])
+        range_3 = "-".join([str(volume_query.max_volume_band_low + 1), str(volume_query.max_volume_band_medium)])
+        range_4 = "-".join([str(volume_query.max_volume_band_medium + 1), str(volume_query.max_volume_band_high)])
+        range_5 = "-".join([str(volume_query.max_volume_band_high + 1), str(volume_query.max_volume_band_top)])
+
+        if volume_query.fee_rate_type == FEE_CLAIMS_TYPE:
+            claim_table[range_1] = round(volume_query.fee_rate_lowest, 2)
+            claim_table[range_2] = round(volume_query.fee_rate_low, 2)
+            claim_table[range_3] = round(volume_query.fee_rate_medium, 2)
+            claim_table[range_4] = round(volume_query.fee_rate_high, 2)
+            claim_table[range_5] = round(volume_query.fee_rate_top, 2)
+        elif volume_query.fee_rate_type == FEE_UNDERWRITE_TYPE:
+            under_table[range_1] = round(volume_query.fee_rate_lowest, 2)
+            under_table[range_2] = round(volume_query.fee_rate_low, 2)
+            under_table[range_3] = round(volume_query.fee_rate_medium, 2)
+            under_table[range_4] = round(volume_query.fee_rate_high, 2)
+            under_table[range_5] = round(volume_query.fee_rate_top, 2)
+        elif volume_query.fee_rate_type == FEE_SARS_TYPE:
+            sars_table[range_1] = round(volume_query.fee_rate_lowest, 2)
+            sars_table[range_2] = round(volume_query.fee_rate_low, 2)
+            sars_table[range_3] = round(volume_query.fee_rate_medium, 2)
+            sars_table[range_4] = round(volume_query.fee_rate_high, 2)
+            sars_table[range_5] = round(volume_query.fee_rate_top, 2)
+
+    #   Table for block 3
+    gp_rate_query_set = OrganisationFeeRate.objects.filter(default=True)
+    table_block_3 = dict()
+    value_amount_1 = list()
+    value_amount_2 = list()
+    value_amount_3 = list()
+    value_amount_4 = list()
+
+    key_1 = "0-3"
+    key_2 = "4-7"
+    key_3 = "8-11"
+    key_4 = "11+"
+
+    for record in gp_rate_query_set:
+        value_amount_1.append(round(record.amount_rate_lvl_1, 2))
+        value_amount_2.append(round(record.amount_rate_lvl_2, 2))
+        value_amount_3.append(round(record.amount_rate_lvl_3, 2))
+        value_amount_4.append(round(record.amount_rate_lvl_4, 2))
+
+    table_block_3[key_1] = value_amount_1
+    table_block_3[key_2] = value_amount_2
+    table_block_3[key_3] = value_amount_3
+    table_block_3[key_4] = value_amount_4
+
+    #   Table for block 4
+    weekly_query = WeeklyInvoice.objects.filter(client_org=client_organisation)
+    table_block_4 = PaymentLogTable(weekly_query)
+    table_block_4.order_by = '-start_date'
+    table_block_4.paginate(page=request.GET.get('page_weekly', 1), per_page=5)
+
+    return render(request, 'accounts/accounts_view_client.html', {
         'header_title': header_title,
-        # 'gp_preferences_form': client_preferences_form,
-        'client_volume_data': client_volume_data,
-        'client_fee_data': client_fee_data,
-        'completeNum': countInstructions,
-        'anniversaryData': anniversaryDataStr
+        'filter_number': filter_number,
+        'page_length': page_length,
+        'invoicing_table': table_block_1,
+        'filter_status': filter_status_btn,
+        'date_range_form': date_range_form,
+        'claim_table': claim_table,
+        'under_table': under_table,
+        'sars_table': sars_table,
+        'GPRate_table': table_block_3,
+        'weekly_table': table_block_4
     })        
 
 
@@ -569,33 +670,39 @@ def check_email(request: HttpRequest) -> JsonResponse:
 
 
 def login(request: HttpRequest) -> HttpResponse:
-    if request.method == 'POST':
+    site = request.get_host()
+    access_control = SiteAccessControl.objects.filter(site_host=site).first()
+    if access_control:
+        if access_control.active_host or not settings.SITE_CONTROL:
+            if request.method == 'POST':
+                #Set client ip for axes
+                client_ip_attribute = 'axes_client_ip'
+                client_ip = get_client_ip(request)
+                setattr(request, client_ip_attribute, client_ip)
 
-        #Set client ip for axes
-        client_ip_attribute = 'axes_client_ip'
-        client_ip = get_client_ip(request)
-        setattr(request, client_ip_attribute, client_ip)
+                form = CustomLoginForm(request, request.POST)
+                if form.is_valid():
+                    username = request.POST['username']
+                    password = request.POST['password']
+                    user = authenticate(request, username=username, password=password)
+                    if user is not None and settings.TWO_FACTOR_ENABLED\
+                            and settings.SITE_CONTROL\
+                            and not check_ip_from_n3_hscn(request)\
+                            and not user.is_superuser:
+                        request.session['post_data'] = request.POST
+                        return redirect(reverse('accounts:two_factor'))
+                    elif user is not None:
+                        customlogin(request, user)
+                        return redirect(reverse('instructions:view_pipeline'))
+            else:
+                form = LoginForm()
+            if check_lock_out(request):
+                return redirect(reverse('accounts:locked_out'))
+            return render(request, 'registration/login.html', {
+                'form': form
+            })
 
-        form = LoginForm(request, request.POST)
-        if form.is_valid():
-            username = request.POST['username']
-            password = request.POST['password']
-            user = authenticate(request, username=username, password=password)
-            if user is not None and settings.TWO_FACTOR_ENABLED\
-                    and not check_ip_from_n3_hscn(request)\
-                    and not user.is_superuser:
-                request.session['post_data'] = request.POST
-                return redirect(reverse('accounts:two_factor'))
-            elif user is not None:
-                customlogin(request, user)
-                return redirect(reverse('instructions:view_pipeline'))
-    else:
-        form = LoginForm()
-    if check_lock_out(request):
-        return redirect(reverse('accounts:locked_out'))
-    return render(request, 'registration/login.html', {
-        'form': form
-    })
+    return HttpResponse('Site is not active !')
 
 
 def two_factor(request: HttpRequest) -> HttpResponse:

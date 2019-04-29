@@ -16,8 +16,15 @@ import reportlab.lib.pagesizes as pdf_sizes
 from PIL import Image
 from django.conf import settings
 from instructions.models import Instruction
+import PyPDF2
+from report.functions import redaction_image
 #from silk.profiling.profiler import silk_profile
 import subprocess
+import io
+import os
+import uuid
+
+from pdf2image import convert_from_bytes, convert_from_path
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -41,6 +48,57 @@ def link_callback(uri: str, rel) -> str:
     if not os.path.isfile(path):
         raise Exception('static URI must start with %s' % (sUrl))
     return path
+
+
+def generate_redact_pdf(
+        patient_first_name: str, patient_last_name: str,
+        pdf_path: str = '', pdf_byte: str = '', image_name: str = ''):
+
+    images_name_list = []
+
+    if pdf_byte:
+        pages = convert_from_bytes(pdf_byte)
+    elif pdf_path:
+        pages = convert_from_path(pdf_path)
+    else:
+        pages = None
+
+    if pages:
+        # pdf case
+        for num, page in enumerate(pages):
+            file_name = TEMP_DIR + 'out_{unique}_{num}.jpg'.format(num=num, unique=uuid.uuid4().hex)
+            page.save(file_name, 'JPEG')
+            images_name_list.append(file_name)
+    else:
+        # image case
+        if image_name:
+            images_name_list.append(image_name)
+
+    output_pdf_list = []
+    for image in images_name_list:
+        output_pdf_list.append(redaction_image(
+            image_path=image,
+            east_path=BASE_DIR + '/config/frozen_east_text_detection.pb',
+            patient_info={
+                'first_name': patient_first_name,
+                'last_name': patient_last_name
+            }
+        ))
+
+    output = PyPDF2.PdfFileWriter()
+    for pdf in output_pdf_list:
+        if pdf.isEncrypted:
+            pdf.decrypt(password='')
+        for page_num in range(pdf.getNumPages()):
+            output.addPage(pdf.getPage(page_num))
+
+    pdf_page_buf = io.BytesIO()
+    output.write(pdf_page_buf)
+
+    for name in images_name_list:
+        os.remove(name)
+
+    return pdf_page_buf
 
 
 class MedicalReport:
@@ -127,12 +185,20 @@ class AttachmentReport:
 
     def render_pdf(self) -> HttpResponse:
         attachment = Base64Attachment(self.raw_xml).data()
-        buffer = BytesIO()
-        buffer.write(attachment)
+        pdf_page_buf = BytesIO()
+        pdf_page_buf.write(attachment)
+        if settings.IMAGE_REDACTION_ENABLED:
+            pdf_page_buf = generate_redact_pdf(
+                self.instruction.patient_information.patient_first_name,
+                self.instruction.patient_information.patient_last_name,
+                pdf_byte=attachment
+            )
+
         response = HttpResponse(
-            buffer.getvalue(),
+            pdf_page_buf.getvalue(),
             content_type="application/pdf",
         )
+
         return response
 
     def render_pdf_with_libreoffice(self) -> HttpResponse:
@@ -147,11 +213,21 @@ class AttachmentReport:
             ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + TEMP_DIR + " " + TEMP_DIR + "/" + tmp_file),
             shell=True
         )
-        pdf = open(TEMP_DIR + '%s_tmp.pdf'%self.instruction.pk, 'rb')
+        pdf = open(TEMP_DIR + '%s_tmp.pdf' % self.instruction.pk, 'rb')
+        redacted_pdf = None
+        if settings.IMAGE_REDACTION_ENABLED:
+            pdf_path = TEMP_DIR + '%s_tmp.pdf'%self.instruction.pk
+            redacted_pdf = generate_redact_pdf(
+                self.instruction.patient_information.patient_first_name,
+                self.instruction.patient_information.patient_last_name,
+                pdf_path=pdf_path
+            )
+
         response = HttpResponse(
-            pdf,
+            redacted_pdf.getvalue() if redacted_pdf else pdf,
             content_type="application/pdf",
         )
+
         return response
 
     def render_image(self) -> HttpResponse:
@@ -160,9 +236,26 @@ class AttachmentReport:
         image_format = image.format
         if image_format == "TIFF":
             return self.render_pdf_with_tiff(image)
+
         extension = str(image_format)
         response = HttpResponse(content_type="image/" + extension.lower())
         image.save(response, image_format)
+
+        if settings.IMAGE_REDACTION_ENABLED:
+            image_path = TEMP_DIR + 'out_{unique}_{num}.jpg'.format(num=1, unique=uuid.uuid4().hex)
+            image.save(image_path)
+
+            redacted_pdf = generate_redact_pdf(
+                self.instruction.patient_information.patient_first_name,
+                self.instruction.patient_information.patient_last_name,
+                image_name=image_path
+            )
+
+            response = HttpResponse(
+                redacted_pdf.getvalue(),
+                content_type="application/pdf",
+            )
+
         return response
 
     def render_pdf_with_tiff(self, image: Image, max_pages: int=200) -> HttpResponse:
@@ -188,6 +281,19 @@ class AttachmentReport:
         c.save()
         response = HttpResponse(
             out_pdf_io.getvalue(),
-            content_type="application/pdf",
+            content_type='application/pdf',
         )
+
+        if settings.IMAGE_REDACTION_ENABLED:
+            redacted_pdf = generate_redact_pdf(
+                self.instruction.patient_information.patient_first_name,
+                self.instruction.patient_information.patient_last_name,
+                pdf_byte=out_pdf_io.getvalue()
+            )
+
+            response = HttpResponse(
+                redacted_pdf.getvalue(),
+                content_type="application/pdf",
+            )
+
         return response

@@ -84,7 +84,7 @@ class ScopeInstructionForm(forms.Form):
             self.fields['type'] = forms.ChoiceField(
                 choices=FORM_INSTRUCTION_TYPE_CHOICES,
                 widget=forms.RadioSelect(
-                    attrs={'class': 'd-inline instructionType'}
+                    attrs={'class': 'd-inline instructionType', 'id':'type'}
                 )
             )
 

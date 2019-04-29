@@ -26,6 +26,7 @@ def edit_library(request, event):
     error_edit_link = ''
     if request.method == 'POST':
         library_form = LibraryForm(request.POST, gp_org_id=gp_practice.pk)
+        event = ''
         if library_form.is_valid():
             library_obj = library_form.save(commit=False)
             library_obj.gp_practice = gp_practice

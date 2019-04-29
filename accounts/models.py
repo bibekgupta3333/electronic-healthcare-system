@@ -22,7 +22,8 @@ TITLE_CHOICE = (
     ('MR', 'Mr.'),
     ('MIS', 'Miss'),
     ('MS', 'Ms.'),
-    ('MRS', 'Mrs.')
+    ('MRS', 'Mrs.'),
+    ('MX', 'Mx.'),
 )
 
 MEDIDATA_USER = 'MEDI'

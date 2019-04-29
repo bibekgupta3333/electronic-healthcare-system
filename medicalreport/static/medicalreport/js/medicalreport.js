@@ -45,6 +45,7 @@ function subMitMedicalReport(event){
         $('#medicalReportForm').submit();
     }
     else {
+        $('.attachments').hide();
         $('#confirmSubmitModal').modal("show");
     }
 }
@@ -65,6 +66,11 @@ function submitConfirmReport( event ) {
         create_alert('Invalid action. Please contact admin.', 'error');
         return false;
     }
+}
+
+function showHiddenReport(){
+    var el = $('.reports.active');
+    renderReport(el);
 }
 
 function saveReport(){

@@ -228,6 +228,7 @@ CRONJOBS = [
     ('0 8 * * *', 'instructions.cron.notification_mail.instruction_notification_email_job'),
     ('0 0 * * *', 'report.cron.notification_mail.report_notification_expired_authorisation_job'),
     ('0 11,16 * * *', 'instructions.cron.notification_mail.send_email_to_practice_job'),
+    ('1 0 * * SUN', 'payment.cron.genarate_invoice.genarated_weekly_invoice'),
 ]
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
@@ -275,3 +276,12 @@ SILKY_AUTHENTICATION = True
 
 #Set default handle 403!
 CSRF_FAILURE_VIEW = 'services.views.handler_403'
+
+#Set false for disable celery
+IMAGE_REDACTION_ENABLED = True
+
+# Set False for disable send new instruction email to Medidata User
+NEW_INSTRUCTION_SEND_MAIL_TO_MEDI = False
+
+# Set False for disable site_control
+SITE_CONTROL = True

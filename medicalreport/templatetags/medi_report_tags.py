@@ -25,6 +25,7 @@ def form_referrals(context):
         'minor_problems_list': context['medical_record'].minor_problems,
         'redaction': context['redaction'],
         'word_library': context['word_library'],
+        'sensitive_conditions': context['sensitive_conditions'],
     }
 
 
@@ -45,6 +46,7 @@ def form_consultations(context):
         'people': context['medical_record'].people,
         'redaction': context['redaction'],
         'word_library': context['word_library'],
+        'sensitive_conditions': context['sensitive_conditions'],
     }
 
 
@@ -73,6 +75,7 @@ def form_significant_problems(context):
         'problem_linked_lists': context['medical_record'].problem_linked_lists,
         'redaction': context['redaction'],
         'word_library': context['word_library'],
+        'sensitive_conditions': context['sensitive_conditions'],
     }
 
 
@@ -128,13 +131,14 @@ def form_new_additional_allergies():
 
 
 @register.inclusion_tag('medicalreport/inclusiontags/redaction_checkbox_with_body.html')
-def redaction_checkbox_with_body(model, redaction, header='', word_library='', body=''):
+def redaction_checkbox_with_body(model, redaction, header='', word_library='', body='', sensitive_conditions={}):
     checked = ""
     xpaths = model.xpaths()
-    snomed_codes = model.snomed_concepts()
+    snomed_codes = set(model.snomed_concepts())
+    readcodes = set(model.readcodes())
     is_sensitive = False
-    matched_sensitive_conditions = NhsSensitiveConditions.objects.values_list('snome_code').filter(snome_code__in=snomed_codes)
-    if matched_sensitive_conditions:
+    if sensitive_conditions and \
+            (sensitive_conditions['snome'].intersection(snomed_codes) or sensitive_conditions['readcodes'].intersection(readcodes)):
         checked = "checked"
         is_sensitive = True
 
@@ -171,24 +175,20 @@ def redaction_checkbox_with_body(model, redaction, header='', word_library='', b
 
 
 @register.inclusion_tag('medicalreport/inclusiontags/redaction_checkbox_with_list.html')
-def redaction_checkbox_with_list(model, redaction, header='', dict_data='', map_code='', label=None, relations=''):
+def redaction_checkbox_with_list(model, redaction, header='', dict_data='', map_code='', label=None, relations='', sensitive_conditions={}):
     checked = ""
-    matched_sensitive_conditions = NhsSensitiveConditions.objects.filter(snome_code__in=map_code)
     if redaction.re_redacted_codes:
-        matched_sensitive_conditions.filter(~Q(snome_code__in=redaction.re_redacted_codes))
-    matched_sensitive_conditions = matched_sensitive_conditions.values_list('snome_code')
-    sensitive_conditions = []
-    for sensitive_tuple in list(matched_sensitive_conditions):
-        sensitive_conditions = [sensitive_code for sensitive_code in sensitive_tuple]
+        sensitive_conditions['snome'] - set(redaction.re_redacted_codes)
+
+    is_sensitive_consultation = False
+    if sensitive_conditions['snome'].intersection(set(map_code)) or sensitive_conditions['readcodes'].intersection(set(model.readcodes())):
+        checked = "checked"
+        is_sensitive_consultation = True
 
     xpaths = model.xpaths()
-    is_sensitive_consultation = False
-    for code in map_code:
-        if code in sensitive_conditions:
-            checked = "checked"
-            is_sensitive_consultation = True
     if redaction.redacted(xpaths) is True:
         checked = "checked"
+
     return {
         'redaction_checks': redaction.redacted_xpaths,
         're_redaced_codes': redaction.re_redacted_codes,
@@ -204,21 +204,15 @@ def redaction_checkbox_with_list(model, redaction, header='', dict_data='', map_
 
 
 @register.inclusion_tag('medicalreport/inclusiontags/redaction_checkbox_with_body.html')
-def problem_redaction_checkboxes(model, redaction, problem_linked_lists, map_code, header='', word_library=''):
+def problem_redaction_checkboxes(model, redaction, problem_linked_lists, map_code, header='', word_library='', sensitive_conditions={}):
     checked = ""
-    matched_sensitive_conditions = NhsSensitiveConditions.objects.filter(snome_code__in=map_code)
     if redaction.re_redacted_codes:
-        matched_sensitive_conditions.filter(~Q(snome_code__in=redaction.re_redacted_codes))
-    matched_sensitive_conditions = matched_sensitive_conditions.values_list('snome_code')
-    sensitive_conditions = []
-    for sensitive_tuple in list(matched_sensitive_conditions):
-        sensitive_conditions = [sensitive_code for sensitive_code in sensitive_tuple]
+        sensitive_conditions['snome'] - set(redaction.re_redacted_codes)
 
     is_sensitive = False
-    for code in map_code:
-        if code in sensitive_conditions:
-            checked = "checked"
-            is_sensitive = True
+    if sensitive_conditions['snome'].intersection(set(map_code)) or sensitive_conditions['readcodes'].intersection(set(model.readcodes())):
+        checked = "checked"
+        is_sensitive = True
 
     xpaths = problem_xpaths(model, problem_linked_lists)
     if redaction.redacted(xpaths) is True:

@@ -6,6 +6,7 @@ from payment.models import OrganisationFeeRate, GpOrganisationFee
 
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 from accounts.models import ClientUser, GeneralPracticeUser, MedidataUser, User, GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
+from services.models import SiteAccessControl
 
 
 class TestAccountBase(TestCase):
@@ -286,7 +287,8 @@ class TestViews( TestCase ):
         self.assertEqual( 1, len( messages ) )
         self.assertEqual( expectedMassage, str( messages[0] ) )
 
-
+import logging
+event_logger = logging.getLogger('medidata.event')
 class LoginTestCase(TestCase):
     def setUp(self):
         user = User.objects.create(
@@ -295,6 +297,12 @@ class LoginTestCase(TestCase):
         )
         user.set_password('User1234')
         user.save()
+
+        site_control = SiteAccessControl.objects.create(
+            site_host = 'testserver',
+            gp_access = True,
+        )
+        site_control.save()
 
     def test_login_view(self):
         response = self.client.get('/accounts/login/')
@@ -315,3 +323,7 @@ class LoginTestCase(TestCase):
         self.assertEqual(302, response.status_code)
         self.assertEqual("/accounts/two-factor/", response.url)
 
+    def test_login_but_site_inactive(self):
+        SiteAccessControl.objects.all().delete()
+        response = self.client.post('/accounts/login/', {'username': 'user@gmail.com', 'password': 'User1234'})
+        self.assertEqual(200, response.status_code)

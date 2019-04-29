@@ -38,6 +38,29 @@
     display: none;
 }
 
+.bottom-panel {
+    background: #000000;
+    color: #FFF;
+    opacity: 0.8;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    height: 150px;
+    position: fixed;
+}
+.bottom-panel .container {
+    text-align: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    font-size: 20px;
+}
+.bottom-panel .panel-close{
+    float: right;
+    padding: 10px;
+    cursor: pointer;
+}
+
 .no-bullet {
     margin-left: 0px;
     padding-left: 0px;

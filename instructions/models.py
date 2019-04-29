@@ -7,13 +7,15 @@ from django.http import HttpRequest
 from django_clamd.validators import validate_file_infection
 from common.models import TimeStampedModel
 from common.functions import get_url_page
-from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser, User
+from accounts.models import ClientUser, GeneralPracticeUser, Patient, MedidataUser, User, GENERAL_PRACTICE_USER
 from organisations.models import OrganisationGeneralPractice
 from accounts import models as account_models
 from snomedct.models import SnomedConcept, CommonSnomedConcepts
 from .model_choices import *
 from django.conf import settings
 from typing import Set, Dict, Tuple, Iterable
+from payment.models import WeeklyInvoice
+from payment.model_choices import FEE_TYPE_CHOICE
 
 import datetime
 
@@ -80,6 +82,7 @@ class Instruction(TimeStampedModel, models.Model):
     rejected_note = models.TextField(blank=True)
     rejected_reason = models.IntegerField(choices=INSTRUCTION_REJECT_TYPE, null=True, blank=True)
     type = models.CharField(max_length=4, choices=INSTRUCTION_TYPE_CHOICES)
+    type_catagory = models.IntegerField(choices=FEE_TYPE_CHOICE, null=True)
     final_report_date = models.TextField(blank=True)
     gp_earns = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     medi_earns = models.DecimalField(max_digits=5, decimal_places=2, default=0)
@@ -108,6 +111,18 @@ class Instruction(TimeStampedModel, models.Model):
     gp_payment_reference = models.CharField(max_length=255, blank=True)
     fee_calculation_start_date = models.DateTimeField(null=True, blank=True)
 
+    ins_max_day_lvl_1 = models.PositiveSmallIntegerField(default=3)
+    ins_max_day_lvl_2 = models.PositiveSmallIntegerField(default=7)
+    ins_max_day_lvl_3 = models.PositiveSmallIntegerField(default=11)
+    ins_max_day_lvl_4 = models.PositiveSmallIntegerField(default=12)
+    ins_amount_rate_lvl_1 = models.DecimalField(max_digits=5, decimal_places=2, default=0, blank=True)
+    ins_amount_rate_lvl_2 = models.DecimalField(max_digits=5, decimal_places=2, default=0, blank=True)
+    ins_amount_rate_lvl_3 = models.DecimalField(max_digits=5, decimal_places=2, default=0, blank=True)
+    ins_amount_rate_lvl_4 = models.DecimalField(max_digits=5, decimal_places=2, default=0, blank=True)
+
+    invoice_in_week = models.ForeignKey(WeeklyInvoice, on_delete=models.SET_NULL, null=True, blank=True)
+    invoice_pdf_file = models.FileField(upload_to='invoices', null=True, blank=True)
+
     class Meta:
         verbose_name = "Instruction"
         ordering = ('-created',)
@@ -126,6 +141,8 @@ class Instruction(TimeStampedModel, models.Model):
             ('view_account_pages', 'view account page'),
             ('authorise_fee', 'Authorise Fee'),
             ('amend_fee', 'Amend Fee'),
+            ('authorise_bank_account', 'view Bank detail'),
+            ('amend_bank_account', 'view/edit Bank detail')
         )
 
     def __str__(self):
@@ -152,20 +169,29 @@ class Instruction(TimeStampedModel, models.Model):
         self.save()
 
     def reject(self, request: HttpRequest, context: Dict[str, str]) -> None:
-        self.gp_user = request.user.userprofilebase.generalpracticeuser
+        user = request.user
+        if user.type == GENERAL_PRACTICE_USER:
+            self.gp_user = user.userprofilebase.generalpracticeuser
+            send_mail_bool = True
+        else:
+            send_mail_bool = False
+
         self.rejected_timestamp = timezone.now()
-        self.rejected_by = request.user
+        self.rejected_by = user
         self.rejected_reason = context.get('rejected_reason', None)
         self.rejected_note = context.get('rejected_note', '')
         self.status = INSTRUCTION_STATUS_REJECT
-        patient_email = context.get('reject_patient_email', '')
-        if patient_email != '':
-            self.send_reject_email_to_patient(patient_email)
-        if self.client_user:
-            self.send_reject_email([self.client_user.user.email])
-        if self.gp_user and self.gp_user.role == GeneralPracticeUser.OTHER_PRACTICE:
-            emails = [medi.user.email for medi in MedidataUser.objects.all()]
-            self.send_reject_email(emails)
+
+        if send_mail_bool:
+            patient_email = context.get('reject_patient_email', '')
+            if patient_email != '':
+                self.send_reject_email_to_patient(patient_email)
+            if self.client_user:
+                self.send_reject_email([self.client_user.user.email])
+            if self.gp_user and self.gp_user.role == GeneralPracticeUser.OTHER_PRACTICE:
+                emails = [medi.user.email for medi in MedidataUser.objects.all()]
+                self.send_reject_email(emails)
+                
         self.save()
 
     def send_reject_email_to_patient(self, patient_email: str) -> None:
@@ -225,6 +251,15 @@ class Instruction(TimeStampedModel, models.Model):
             instructionconditionsofinterest__instruction=self.id
         )
 
+    def get_inner_selected_snomed_concepts(self):
+        snomed = set()
+        for snomed_value in self.selected_snomed_concepts():
+            snomed.add(snomed_value.fsn_description)
+        return snomed
+
+    def get_type(self):
+        return self.type
+
     def is_sars(self) -> bool:
         return self.type == SARS_TYPE
 
@@ -242,6 +277,7 @@ class Instruction(TimeStampedModel, models.Model):
         
     get_client_org_name.allow_tags = False
     get_client_org_name.short_description = 'Client organisation name'
+    
 
 
 class InstructionAdditionQuestion(models.Model):

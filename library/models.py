@@ -5,7 +5,7 @@ from organisations.models import OrganisationGeneralPractice
 
 class Library(TimeStampedModel):
     gp_practice = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE)
-    key = models.CharField(max_length=255, verbose_name='Text', unique=True)
+    key = models.CharField(max_length=255, verbose_name='Text')
     value = models.CharField(max_length=255, blank=True, verbose_name='Replaced by')
 
     def __str__(self):

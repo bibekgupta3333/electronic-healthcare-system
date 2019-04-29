@@ -357,6 +357,9 @@
                 if($('#id_password1').hasClass('is-invalid')){
                     match_error = true;
                 }
+                if($('#id_telephone_mobile').val().length > 11) {
+                    return false;
+                }
                 if(!match_error) {
                     $('#accept-policy').removeAttr("disabled");
                     if(!$('#accept-policy:checked').length) {
