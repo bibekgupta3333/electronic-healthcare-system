@@ -33,13 +33,13 @@ LONG_TIMES = 5
 CONSENT_NOT_PROPERLY = 6
 CANCEL_BY_CLIENT = 7
 INSTRUCTION_REJECT_TYPE = (
-    (PATIENT_NOT_FOUND, 'No suitable patient can be found'),
-    (PATIENT_NO_LONGER_REGISTERED, 'The patient is no longer registered at this practice'),
     (CONSENT_INVALID, 'The consent form is invalid'),
-    (INAPPROPRIATE_SAR, 'Inappropriate instruction for Subject Access Request'),
-    (GENERATOR_FAIL, 'The instruction has generated fail'),
-    (LONG_TIMES, 'Instruction not process until dute date'),
     (CONSENT_NOT_PROPERLY, 'Inappropriate consent / consent not properly obtained'),
+    (INAPPROPRIATE_SAR, 'Inappropriate instruction for Subject Access Request'),
+    (PATIENT_NOT_FOUND, 'No suitable patient can be found'),
+    (LONG_TIMES, 'The instruction can not be processed by the due date'),
+    (PATIENT_NO_LONGER_REGISTERED, 'The patient is no longer registered at this practice'),
+    (GENERATOR_FAIL, 'The report failed to generate'),
     (CANCEL_BY_CLIENT, 'Cancel instruction by client.')
 )
 
