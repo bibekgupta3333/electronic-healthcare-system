@@ -76,17 +76,17 @@ jobs:
     steps:
       - add_ssh_keys:
           fingerprints:
-            - "df:14:25:0d:9a:e8:85:25:da:0e:8a:99:33:f9:24:d6"
+            - "0c:36:ab:0a:c6:dc:19:70:c4:40:32:b5:da:fc:7e:b2"
       - run:
           name: Deploy staging
           working_directory: ~/repo
           command: |
-            ssh $STAGING_USER@$STAGING_HOST "$STAGING_COMMAND"
+            ssh -p 8022 $STAGING_USER@NEW_STAGING_HOST "NEW_STAGING_COMMAND"
       - run:
           name: Restart server
           working_directory: ~/repo
           command: |
-            ssh $STAGING_USER@$STAGING_HOST "$STAGING_RESTART"
+            ssh -p 8022 $STAGING_USER@NEW_STAGING_HOST "NEW_STAGING_RESTART"
   deploy_uat:
     machine:
       enable: true
