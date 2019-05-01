@@ -252,3 +252,11 @@ def ajax_emis_polling(request: HttpRequest, practice_code: str) -> JsonResponse:
 
     return JsonResponse(data, safe=False)
 
+
+def step1(request: HttpRequest) -> HttpResponse:
+    surgery_form = SurgeryForm()
+    pm_form = PMForm()
+    return render(request, 'onboarding/step1.html', {
+        'surgery_form': surgery_form,
+        'pm_form': pm_form,
+    })

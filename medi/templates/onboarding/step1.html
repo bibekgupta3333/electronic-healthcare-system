@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% load static %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% bootstrap_messages %}
+
+
+{% block ExtraHead %}
+    <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/strongPass.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block Content %}
+    <form id="signup_form" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="sign-up">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>About your surgery</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row subheader">
+                        <div class="col-12">
+                            <p>To be completed by an authorised member of the practice</p>
+                            <p class="mb-0">You can use your Practice Code or Surgery name to search for your Surgery, but if any information is incorrect please feel free to overwrite with the correct details.</p>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-12">
+                            <h5>Surgery details</h5>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row" id="practice_form">
+                                <div class="col-md-4 title-pos font-weight-bold">Practice Code <span class="red">*</span></div>
+                                {% bootstrap_field surgery_form.practice_code show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4 title-pos">Surgery Name <span class="red">*</span></div>
+                                {% bootstrap_field surgery_form.surgery_name show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4 title-pos">Postcode <span class="red">*</span></div>
+                                {% bootstrap_field surgery_form.postcode show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4 title-pos">Find Address</div>
+                                {% bootstrap_field surgery_form.address show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4 title-pos">Address Line 1 <span class="red">*</span></div>
+                                {% bootstrap_field surgery_form.address_line1 show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4 title-pos">Address Line 2</div>
+                                {% bootstrap_field surgery_form.address_line2 show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4 title-pos">Address Line 3</div>
+                                {% bootstrap_field surgery_form.address_line3 show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4 title-pos">City <span class="red">*</span></div>
+                                {% bootstrap_field surgery_form.city show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4 title-pos">County</div>
+                                {% bootstrap_field surgery_form.county show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4 title-pos">Contact Number <span class="red">*</span></div>
+                                {% bootstrap_field surgery_form.contact_num show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label for="id_operating_system" class="col-form-label">Primary Care System<span class="red">*</span></label>
+                                </div>
+                                {% bootstrap_field surgery_form.operating_system show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4">Clinical System Code<span class="red">*</span></div>
+                                {% bootstrap_field surgery_form.emis_org_code show_label=False form_group_class='col-md-7' placeholder='' %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+		</div>
+	</form>
+{% endblock %}
