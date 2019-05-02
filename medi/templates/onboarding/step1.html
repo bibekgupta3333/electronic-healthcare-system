@@ -9,12 +9,13 @@
 {% block ExtraHead %}
     <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/strongPass.css' %}" rel="stylesheet">
+    <link href="{% static 'css/onboarding/onboarding.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block Content %}
-    <form id="signup_form" method="POST" enctype="multipart/form-data">
+    <form id="step1_form" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
-        <div class="sign-up">
+        <div class="step1">
             <div class="card">
                 <div class="card-header">
                     <div class="row">
@@ -123,6 +124,34 @@
                     </div>
                 </div>
             </div>
-		</div>
-	</form>
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Central contact email for the Surgery <span class="red">*</span></h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row subheader">
+                        <div class="col-12">
+                            <p>Please provide a central contact email for the Surgery, where all instructions and notifications will be sent (in addition to notification choices of the individual users)</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3"><b>Surgery email</b></div>
+                        <div class="col-md-6">
+                            {% bootstrap_field surgery_email_form.organisation_email placeholder='' %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3"><b>Confirm email</b></div>
+                        <div class="col-md-6">
+                            {% bootstrap_field surgery_email_form.confirm_email placeholder='' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
 {% endblock %}
