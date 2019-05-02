@@ -133,21 +133,46 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="row subheader">
+                    <div class="row subheader form-group">
                         <div class="col-12">
                             <p>Please provide a central contact email for the Surgery, where all instructions and notifications will be sent (in addition to notification choices of the individual users)</p>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row form-group">
                         <div class="col-md-3"><b>Surgery email</b></div>
                         <div class="col-md-6">
                             {% bootstrap_field surgery_email_form.organisation_email placeholder='' %}
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row form-group">
                         <div class="col-md-3"><b>Confirm email</b></div>
                         <div class="col-md-6">
                             {% bootstrap_field surgery_email_form.confirm_email placeholder='' %}
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-12">
+                            <input type="checkbox" class="accept-policy" name="accept_policy" id="accept-policy" disabled>
+                                Click  <a href="#" class="active-a" data-toggle="modal" data-target="#acceptTCs">here</a> to view and accept all T&amp;Cs, End User Licence and data policy.
+                                <p class="mt-2 ml-4 text-secondary">These will appear in a pop-up, so please make sure any pop-up blockers are disabled temporarily to enable this.</p>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-12">
+                            <input type="checkbox" id="consent" class="consent" name="consented">I consent to MediData Exchange contacting the surgery regarding our services.
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-12">
+                            <input class="form-control-lg" type="checkbox" id="consentCheckBox">
+                            <label for="consentCheckBox">
+                                I consent to MediData Exchange Ltd securely retaining this information and to be able to contact the Surgery about eMR via contact details provided.
+                            </label>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2 mt-3">
+                                {% bootstrap_button content='Submit' button_type='submit' size='medium' button_class='btn btn-primary'  %}
+                            </div>
                         </div>
                     </div>
                 </div>
