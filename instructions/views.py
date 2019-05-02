@@ -14,9 +14,8 @@ from .model_choices import *
 from .forms import ScopeInstructionForm, AdditionQuestionFormset, SarsConsentForm, MdxConsentForm,\
         ReferenceForm, ConsentForm, InstructionDateRangeForm, DateRangeSearchForm
 from accounts.models import User, GeneralPracticeUser, PracticePreferences
-from accounts.models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER, PATIENT_USER
+from accounts.models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from accounts.forms import InstructionPatientForm, GPForm
-from accounts.functions import create_or_update_patient_user
 from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice, OrganisationClient
 from organisations.views import get_gporganisation_data
@@ -69,19 +68,7 @@ def count_instructions(user: User, gp_practice_code: str, client_organisation: O
     naive = parse_datetime("2000-01-1 00:00:00")
     origin_date = pytz.timezone("Europe/London").localize(naive, is_dst=None)
     query_condition = Q(created__gt=origin_date)
-    if user.type == PATIENT_USER:
-        overall_instructions_number = {
-            'All': 0,
-            'New': 0,
-            'In Progress': 0,
-            'Paid': 0,
-            'Completed': 0,
-            'Rejected': 0,
-            'Finalising': 0,
-            'Fail': 0,
-        }
-        return overall_instructions_number
-    elif user.type == GENERAL_PRACTICE_USER:
+    if user.type == GENERAL_PRACTICE_USER:
         if user.userprofilebase.generalpracticeuser.role == GeneralPracticeUser.PRACTICE_MANAGER:
             query_condition = Q(gp_practice_id=gp_practice_code)
         else:
@@ -216,19 +203,7 @@ def count_model_search(request: HttpRequest, client_organisation: OrganisationCl
     else:
         instruction_query_set = Instruction.objects.all()
 
-    if request.user.type == PATIENT_USER:
-        overall_instructions_number = {
-            'All': 0,
-            'New': 0,
-            'In Progress': 0,
-            'Paid': 0,
-            'Completed': 0,
-            'Rejected': 0,
-            'Finalising': 0,
-            'Fail': 0,
-        }
-        return overall_instructions_number
-    elif request.user.type == CLIENT_USER:
+    if request.user.type == CLIENT_USER:
         instruction_query_set = instruction_query_set.filter(client_user__organisation=client_organisation)
         instruction_query_set_client_ref = Q(your_ref__icontains=search_input)
         instruction_query_set_name = Q(patient_information__patient_first_name__icontains=search_input)
@@ -446,9 +421,6 @@ def instruction_pipeline_view(request):
             overall_instructions_number = count_model_search(request, gp_practice_code=gp_practice_code)
             search_status = True
 
-    if request.user.type == PATIENT_USER:
-        instruction_query_set = instruction_query_set.none()
-
     if search_status:
         table_all = InstructionTable(instruction_query_set, extra_columns=[('cost', Column(empty_values=(), verbose_name=cost_column_name))])
         table_all.order_by = request.GET.get('sort', '-created')
@@ -461,9 +433,6 @@ def instruction_pipeline_view(request):
 
     if table_all:
         next_prev_data_all = calculate_next_prev(table_all.page, filter_status=filter_status, filter_type=filter_type)
-
-    if table_fee:
-        next_prev_data_fee = calculate_next_prev(table_fee.page, filter_status=filter_status, filter_type=filter_type)
 
     response = render(request, 'instructions/pipeline_views_instruction.html', {
         'user': user,
@@ -1146,8 +1115,6 @@ def consent_contact(request, instruction_id, patient_emis_number):
             patient_instruction.patient_alternate_code = request.POST.get('patient_alternate_code', '')
             patient_instruction.patient_emis_number = patient_emis_number
             patient_instruction.save()
-            patient_user = create_or_update_patient_user(patient_instruction, patient_emis_number)
-            instruction.patient = patient_user
             instruction.save()
             event_logger.info(
                 '{user}:{user_id} UPDATED consent contact of patient instruction ID {instruction_id}'.format(
