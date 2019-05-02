@@ -212,6 +212,7 @@ def create_or_update_patient_user(patient_information: InstructionPatient, patie
             user.email = patient_information.patient_email
         user.first_name = patient_information.patient_first_name
         user.last_name = patient_information.patient_last_name
+        user.is_active = False
         user.save()
     else:
         if patient_information.patient_email and not User.objects.filter(email=patient_information.patient_email).exists():
@@ -221,6 +222,7 @@ def create_or_update_patient_user(patient_information: InstructionPatient, patie
                 password=password,
                 first_name=patient_information.patient_first_name,
                 last_name=patient_information.patient_last_name,
+                is_active=False,
                 type=PATIENT_USER,
             )
 
