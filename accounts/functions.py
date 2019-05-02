@@ -233,6 +233,8 @@ def create_or_update_patient_user(patient_information: InstructionPatient, patie
                 address_postcode=patient_information.patient_postcode,
                 title=patient_information.patient_title
             )
+    # TODO remove this line when our system support patient user
+    patient.is_active = False
 
     return patient
 
