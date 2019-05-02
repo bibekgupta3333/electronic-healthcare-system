@@ -50,8 +50,6 @@ class TestInstructionBase(TestCase):
         self.client_user = mommy.make(User, email='client_user1@gmail.com', password='test1234', type=account_models.CLIENT_USER)
         self.client_admin_1 = mommy.make(ClientUser, user=self.client_user, organisation=self.client_organisation)
 
-        self.patient_user = mommy.make(User, email='patient_user@gmail.com', password='test1234', type=account_models.PATIENT_USER)
-
         self.instruction_patient_1 = mommy.make(
             InstructionPatient,
             patient_title='MR',
@@ -153,20 +151,6 @@ class TestCountInstructions(TestInstructionBase):
             'All': 2,
             'New': 1,
             'In Progress': 1,
-            'Paid': 0,
-            'Completed': 0,
-            'Rejected': 0,
-            'Finalising': 0,
-            'Fail': 0
-        }
-        self.assertDictEqual(expected, result)
-
-    def test_count_instruction_of_patient(self):
-        result = count_instructions(self.patient_user, None, None, page='pipline_view')
-        expected = {
-            'All': 0,
-            'New': 0,
-            'In Progress': 0,
             'Paid': 0,
             'Completed': 0,
             'Rejected': 0,
