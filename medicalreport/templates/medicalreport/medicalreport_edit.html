@@ -42,7 +42,7 @@
                                 <li>Do not include information about negative blood borne virus tests (HIV, Hepatitis B, Hepatitis C).</li>
                                 <li>Do not include genetic test results unless there is a favourable test result stating that the patient has not inherited a condition.</li>
                             </ul>
-                            <p>A full list of sensitive conditions (GP Summary Exclusion Code Lists) can be found<a target="_blank" href="https://isd.digital.nhs.uk/trud3/user/guest/group/0/pack/9/subpack/141/releases"> here.</a></p>
+                            <p>A full list of sensitive conditions (GP Summary Exclusion Code Lists) can be found<a id="here-link" href="#"> here.</a></p>
                             <div class="inst_chk">
                                 <div class="pretty p-default right">
                                     {{ finalise_submit_form.instruction_checked }}
@@ -51,6 +51,17 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="trud-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-sm">
+                        <div class="modal-content sensitive-information-instructions">
+                            <h6>Human readable conditions</h6>
+                            <ul>
+                                <li><a href="{% url 'medicalreport:trud_ivf' %}">IVF</a></li>
+                                <li><a href="{% url 'medicalreport:trud_std' %}">STD</a></li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -230,6 +241,11 @@
             addWordLibrary();
             $("#addWordModal").modal('hide');
             return false;
+        });
+
+        $('#here-link').click(function(e) {
+            e.preventDefault();
+            $('#trud-modal').modal('show');
         });
     </script>
 {% endblock %}

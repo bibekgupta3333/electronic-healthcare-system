@@ -350,3 +350,13 @@ def final_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         )
     )
     return response
+
+@login_required(login_url='/accounts/login')
+def trud_ivf(request: HttpRequest) -> HttpResponse:
+    response = render(request, 'medicalreport/trud_ivf.html')
+    return response
+
+@login_required(login_url='/accounts/login')
+def trud_std(request: HttpRequest) -> HttpResponse:
+    response = render(request, 'medicalreport/trud_std.html')
+    return response
