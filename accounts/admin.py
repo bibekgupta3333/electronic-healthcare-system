@@ -52,7 +52,7 @@ class UserAdmin(BaseUserAdmin):
     inlines = []
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
-    list_display = ('email', 'first_name', 'last_name', 'type', 'is_staff')
+    list_display = ('email', 'first_name', 'last_name', 'type', 'is_active')
     list_filter = ('type',)
     change_list_template = "admin/accounts/change_list.html"
 
