@@ -19,7 +19,6 @@ from instructions.models import Instruction, InstructionPatient
 from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT
 from .functions import create_or_update_redaction_record, create_patient_report
 from accounts.models import  Patient, GENERAL_PRACTICE_USER
-from accounts.functions import create_or_update_patient_user
 from organisations.models import OrganisationGeneralPractice
 from .forms import AllocateInstructionForm
 from permissions.functions import check_permission, check_user_type
@@ -91,8 +90,6 @@ def select_patient(request: HttpRequest, instruction_id: str, patient_emis_numbe
         if allocate_instruction_form.is_valid():
             allocate_option = int(allocate_instruction_form.cleaned_data['allocate_options'])
             if allocate_option == AllocateInstructionForm.PROCEED_REPORT:
-                patient_user = create_or_update_patient_user(instruction.patient_information, patient_emis_number)
-                instruction.patient = patient_user
                 patient_instruction = instruction.patient_information
                 patient_instruction.patient_emis_number = patient_emis_number
                 patient_instruction.save()
@@ -104,11 +101,9 @@ def select_patient(request: HttpRequest, instruction_id: str, patient_emis_numbe
                 instruction.save()
                 gp_name = ' '.join([instruction.gp_user.user.first_name, instruction.gp_user.user.last_name])
                 if request.user.id == instruction.gp_user.user.id:
-                    patient_user = create_or_update_patient_user(instruction.patient_information, patient_emis_number)
                     patient_instruction = instruction.patient_information
                     patient_instruction.patient_emis_number = patient_emis_number
                     patient_instruction.save()
-                    instruction.patient = patient_user
                     instruction.save()
                     event_logger.info(
                         '{user}:{user_id} ALLOCATED instruction ID {instruction_id} to self'.format(
@@ -349,4 +344,14 @@ def final_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
             instruction_id=instruction_id
         )
     )
+    return response
+
+@login_required(login_url='/accounts/login')
+def trud_ivf(request: HttpRequest) -> HttpResponse:
+    response = render(request, 'medicalreport/trud_ivf.html')
+    return response
+
+@login_required(login_url='/accounts/login')
+def trud_std(request: HttpRequest) -> HttpResponse:
+    response = render(request, 'medicalreport/trud_std.html')
     return response
