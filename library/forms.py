@@ -15,8 +15,8 @@ class LibraryForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
     def clean(self):
-        cleaned_data = self.cleaned_data
-        if self.gp_org_id and Library.objects.filter(gp_practice=self.gp_org_id, key=cleaned_data['key']).exists():
+        cleaned_data = super().clean()
+        if self.gp_org_id and Library.objects.filter(gp_practice=self.gp_org_id, key__iexact=cleaned_data['key']).exists():
             raise ValidationError(
                 'This word already exists in your library. If you wish to edit it, please go back to the Library and edit from there'
             )
