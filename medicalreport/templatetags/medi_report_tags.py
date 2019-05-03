@@ -3,6 +3,7 @@ from django.db.models import Q
 from .helper import problem_xpaths
 from django.utils.html import format_html
 from medicalreport.models import NhsSensitiveConditions
+from library.models import LibraryHistory, Library
 import re
 
 register = template.Library()
@@ -147,27 +148,68 @@ def redaction_checkbox_with_body(model, redaction, header='', word_library='', b
 
     title = header
     split_word = header.split()
+    xpaths_value = xpaths[0]
+
+    library_history = LibraryHistory.objects.filter(instruction=redaction.instruction)
     for word in word_library:
         if str.upper(word.key) in map(str.upper, split_word):
             idx = list(map(str.upper, split_word)).index(str.upper(word.key))
+            highlight_class = 'bg-warning'
+            if library_history:
+                for history in library_history:
+                    num = 0
+                    action = history.action
+                    while num < len(split_word):
+                        if history.old == split_word[num]:
+                            if action == 'Replace' and history.xpath in xpaths:
+                                split_word[num] = history.new
+                                highlight_class = 'text-danger'
+                            elif action == 'Redact' and history.xpath in xpaths:
+                                highlight_class = 'bg-dark'
+                            elif action == 'ReplaceAll':
+                                split_word[num] = history.new
+                                highlight_class = 'text-danger'
+                        num = num + 1
+
             highlight_html = '''
                 <span class="highlight-library">
-                    <span class="bg-warning">%s</span>
-                    <span class="dropdown-options">
+                    <span class="{}">{}</span>
+                    <span class="dropdown-options" data-xpath="{}">
                         <a href="#" class="highlight-redact">Redact</a>
                         <a href="#" class="highlight-replace">Replace</a>
                         <a href="#" class="highlight-replaceall">Replace all</a>
                     </span>
                 </span>
-            ''' % (split_word[idx])
-            header = re.sub(word.key, highlight_html, header, flags=re.IGNORECASE)
-    print(split_word)
+            '''
+
+            for word_str in split_word:
+                gp_org = redaction.instruction.gp_user.organisation
+                library_object = Library.objects.filter(gp_practice=gp_org, key=word_str)
+                for library in library_object:
+                    if not library.value:
+                        highlight_html = '''
+                            <span class="highlight-library">
+                                <span class="{}">{}</span>
+                                <span class="dropdown-options" data-xpath="{}">
+                                    <a href="#" class="highlight-redact">Redact</a>
+                                </span>
+                            </span>
+                        '''
+            header_detail = re.sub(word.key, highlight_html, header, flags=re.IGNORECASE)
+            return {
+                'checked': checked,
+                'xpaths': xpaths,
+                'header': header,
+                'title': title,
+                'header_detail': format_html(header_detail, highlight_class, split_word[idx], xpaths_value),
+                'is_sensitive': is_sensitive
+            }
 
     return {
         'checked': checked,
         'xpaths': xpaths,
         'header': header,
-        'header_detail': format_html(header if header else ''),
+        'header_detail': header,
         'title': title,
         'body': body,
         'is_sensitive': is_sensitive
@@ -189,6 +231,7 @@ def redaction_checkbox_with_list(model, redaction, header='', dict_data='', map_
     if redaction.redacted(xpaths) is True:
         checked = "checked"
 
+    relations['xpath'] = xpaths
     return {
         'redaction_checks': redaction.redacted_xpaths,
         're_redaced_codes': redaction.re_redacted_codes,
@@ -220,29 +263,73 @@ def problem_redaction_checkboxes(model, redaction, problem_linked_lists, map_cod
 
     title = header
     split_word = header.split()
+    xpaths_value = xpaths[0]
+    gp_org = redaction.instruction.gp_user.organisation
+
+    library_history = LibraryHistory.objects.filter(instruction=redaction.instruction)
     for word in word_library:
         if str.upper(word.key) in map(str.upper, split_word):
             idx = list(map(str.upper, split_word)).index(str.upper(word.key))
+            highlight_class = 'bg-warning'
+            if library_history:
+                for history in library_history:
+                    num = 0
+                    action = history.action
+                    while num < len(split_word):
+                        if history.old == split_word[num]:
+                            if action == 'Replace' and history.xpath in xpaths:
+                                split_word[num] = history.new
+                                highlight_class = 'text-danger'
+                            elif action == 'Redact' and history.xpath in xpaths:
+                                highlight_class = 'bg-dark'
+                            elif action == 'ReplaceAll':
+                                split_word[num] = history.new
+                                highlight_class = 'text-danger'
+                        num = num + 1
+
             highlight_html = '''
                 <span class="highlight-library">
-                    <span class="bg-warning">%s</span>
-                    <span class="dropdown-options">
+                    <span class="{}">{}</span>
+                    <span class="dropdown-options" data-xpath="{}">
                         <a href="#" class="highlight-redact">Redact</a>
                         <a href="#" class="highlight-replace">Replace</a>
                         <a href="#" class="highlight-replaceall">Replace all</a>
                     </span>
                 </span>
-            ''' % (split_word[idx])
-            header = re.sub(word.key, highlight_html, header, flags=re.IGNORECASE)
+            '''
+
+            for word_str in split_word:
+                gp_org = redaction.instruction.gp_user.organisation
+                library_object = Library.objects.filter(gp_practice=gp_org, key=word_str)
+                for library in library_object:
+                    if not library.value:
+                        highlight_html = '''
+                            <span class="highlight-library">
+                                <span class="{}">{}</span>
+                                <span class="dropdown-options" data-xpath="{}">
+                                    <a href="#" class="highlight-redact">Redact</a>
+                                </span>
+                            </span>
+                        '''
+
+            header_detail = re.sub(word.key, highlight_html, header, flags=re.IGNORECASE)
+            return {
+                'checked': checked,
+                'xpaths': xpaths,
+                'header': header,
+                'title': title,
+                'header_detail': format_html(header_detail, highlight_class, split_word[idx], xpaths_value),
+                'is_sensitive': is_sensitive
+            }
 
     return {
-        'checked': checked,
-        'xpaths': xpaths,
-        'header': header,
-        'title': title,
-        'header_detail': format_html(header),
-        'is_sensitive': is_sensitive
-    }
+            'checked': checked,
+            'xpaths': xpaths,
+            'header': header,
+            'title': title,
+            'header_detail': header,
+            'is_sensitive': is_sensitive
+        }
 
 
 @register.inclusion_tag('medicalreport/inclusiontags/form_comments.html', takes_context=True)

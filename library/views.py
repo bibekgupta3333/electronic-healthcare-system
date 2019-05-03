@@ -100,6 +100,36 @@ def edit_word_library(request, library_id):
 
 
 @login_required(login_url='/accounts/login')
+def redact_word(request):
+    if request.is_ajax():
+        try:
+            word = request.GET.get('word').strip()
+            instruction_id = request.GET.get('instruction_id')
+            header = request.GET.get('header')
+            index = request.GET.get('index')
+            content = request.GET.get('content')
+            xpath = request.GET.get('xpath')
+
+            gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
+            library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
+
+            change_info = '%s :-> %s :-> %s' % (header.strip(), index, content.strip())
+            instruction = Instruction.objects.get(pk=instruction_id)
+            library_history = LibraryHistory(
+                instruction= instruction,
+                action= 'Redact',
+                old= word,
+                new= '',
+                change_info= change_info,
+                xpath= xpath,
+            )
+            library_history.save()
+            return JsonResponse({'redact_word': library.value, 'id': library_history.id})
+        except:
+            return JsonResponse({'message': 'Error'})
+
+
+@login_required(login_url='/accounts/login')
 def replace_word(request):
     if request.is_ajax():
         try:
@@ -108,13 +138,21 @@ def replace_word(request):
             header = request.GET.get('header')
             index = request.GET.get('index')
             content = request.GET.get('content')
+            xpath = request.GET.get('xpath')
 
             gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
             library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
 
             change_info = '%s :-> %s :-> %s' % (header.strip(), index, content.strip())
             instruction = Instruction.objects.get(pk=instruction_id)
-            library_history = LibraryHistory(instruction=instruction, action='Replace', old=word, new=library.value, change_info=change_info)
+            library_history = LibraryHistory(
+                instruction= instruction,
+                action= 'Replace',
+                old= word,
+                new= library.value,
+                change_info= change_info,
+                xpath= xpath,
+            )
             library_history.save()
             return JsonResponse({'replace_word': library.value, 'id': library_history.id})
         except:
@@ -136,19 +174,128 @@ def replace_allword(request):
         except:
             return JsonResponse({'message': 'Error'})
 
+
 @login_required(login_url='/accounts/login')
 def undo_last(request):
     if request.is_ajax():
         try:
             instruction_id = request.GET.get('instruction_id')
             instruction = Instruction.objects.get(pk=instruction_id)
-            recent_history = LibraryHistory.objects.filter(instruction=instruction).latest('id')
+            recent_history = LibraryHistory.objects.filter(instruction=instruction).last()
+
+            highlight_html = '''
+                <span class="highlight-library">
+                    <span class="bg-warning">{}</span>
+                    <span class="dropdown-options" data-xpath="{}">
+                        <a href="#" class="highlight-redact">Redact</a>
+                        <a href="javascript:test_2();" class="highlight-replace" id="book">Replace</a>
+                        <a href="#" class="highlight-replaceall">Replace all</a>
+                    </span>
+                </span>
+            '''.format(recent_history.old, recent_history.xpath)
+
+            gp_org = instruction.gp_user.organisation
+            library_object = Library.objects.filter(gp_practice=gp_org, key=recent_history.old)
+            for library in library_object:
+                if not library.value:
+                    highlight_html = '''
+                        <span class="highlight-library">
+                            <span class="bg-warning">{}</span>
+                            <span class="dropdown-options" data-xpath="{}">
+                                <a href="#" class="highlight-redact">Redact</a>
+                            </span>
+                        </span>
+                    '''.format(recent_history.old, recent_history.xpath)
+
             data = {
                 'action': recent_history.action,
-                'id': recent_history.id,
                 'old': recent_history.old,
+                'new': recent_history.new,
+                'text': highlight_html,
+                'xpath': recent_history.xpath,
+                'key': recent_history.key
+            }
+            # recent_history.hard_delete()
+            return JsonResponse(data)
+        except:
+            return JsonResponse({'message': 'Error'})
+
+
+@login_required(login_url='/accounts/login')
+def undo_all(request):
+    if request.is_ajax():
+        try:
+            instruction_id = request.GET.get('instruction_id')
+            instruction = Instruction.objects.get(pk=instruction_id)
+            recent_history = LibraryHistory.objects.filter(instruction=instruction).last()
+
+            highlight_html = '''
+                <span class="highlight-library">
+                    <span class="bg-warning">{}</span>
+                    <span class="dropdown-options" data-xpath="{}">
+                        <a href="#" class="highlight-redact">Redact</a>
+                        <a href="javascript:test_2();" class="highlight-replace" id="book">Replace</a>
+                        <a href="#" class="highlight-replaceall">Replace all</a>
+                    </span>
+                </span>
+            '''.format(recent_history.old, recent_history.xpath)
+
+            gp_org = instruction.gp_user.organisation
+            library_object = Library.objects.filter(gp_practice=gp_org, key=recent_history.old)
+            for library in library_object:
+                if not library.value:
+                    highlight_html = '''
+                        <span class="highlight-library">
+                            <span class="bg-warning">{}</span>
+                            <span class="dropdown-options" data-xpath="{}">
+                                <a href="#" class="highlight-redact">Redact</a>
+                            </span>
+                        </span>
+                    '''.format(recent_history.old, recent_history.xpath)
+
+            data = {
+                'action': recent_history.action,
+                'old': recent_history.old,
+                'new': recent_history.new,
+                'text': highlight_html,
+                'xpath': recent_history.xpath,
             }
             recent_history.hard_delete()
             return JsonResponse(data)
+        except:
+            return JsonResponse({'message': 'Error'})
+
+
+@login_required(login_url='/accounts/login')
+def manual_redact(request):
+    if request.is_ajax():
+        try:
+            instruction_id = request.GET.get('instruction_id')
+            xpath = request.GET.get('xpath')
+            key = request.GET.get('key')
+            action = 'mRedact'
+            instruction = Instruction.objects.get(pk=instruction_id)
+
+            last_action = LibraryHistory.objects.filter(
+                action__in=['mRedact', 'rmRedact'],
+                instruction= instruction,
+                xpath= xpath,
+            ).last()
+
+            if last_action:
+                if last_action.action == 'mRedact':
+                    action = 'rmRedact'
+
+            library_history = LibraryHistory(
+                instruction= instruction,
+                action= action,
+                old= '',
+                new= '',
+                change_info= '',
+                xpath= xpath,
+                key= key
+            )
+            library_history.save()
+            return JsonResponse({'message': 'Complete'})
         except:
             return JsonResponse({'message': 'Error'})

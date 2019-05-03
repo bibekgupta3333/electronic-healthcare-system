@@ -24,3 +24,5 @@ class LibraryHistory(TimeStampedModel):
     old = models.CharField(max_length=255, blank=True, verbose_name='Old value')
     new = models.CharField(max_length=255, blank=True, verbose_name='New value')
     change_info = models.TextField(blank=True, verbose_name='Change information')
+    xpath = models.CharField(max_length=255, blank=True, verbose_name='xpath')
+    key = models.CharField(max_length=255, blank=True, verbose_name='Key')
