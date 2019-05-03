@@ -395,6 +395,10 @@ h1 {
     background-color: #fff3cd;
 }
 
+#trud-modal {
+    top: 100px;
+}
+
 .right {
     float: right;
 }
