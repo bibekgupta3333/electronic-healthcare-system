@@ -344,9 +344,9 @@ def view_users(request: HttpRequest) -> HttpResponse:
     query_set = user.get_query_set_within_organisation().filter(type__in=user_types)
 
     if filter_type == 'active':
-        query_set = query_set.filter(userprofilebase__in=profiles.alive())
+        query_set = query_set.filter(is_active=True)
     elif filter_type == 'deactivated':
-        query_set = query_set.filter(userprofilebase__in=profiles.dead())
+        query_set = query_set.filter(is_active=False)
 
     filter_query = query_set
     if filter_status != -1:
