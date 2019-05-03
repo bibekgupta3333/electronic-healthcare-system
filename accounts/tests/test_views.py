@@ -1,11 +1,12 @@
 from django.test import TestCase, RequestFactory
 from django.shortcuts import reverse
-from django.test import Client
 from model_mommy import mommy
 from payment.models import OrganisationFeeRate, GpOrganisationFee
 
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
-from accounts.models import ClientUser, GeneralPracticeUser, MedidataUser, User, GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
+from accounts.models import ClientUser, GeneralPracticeUser, MedidataUser, User, \
+    GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER, PATIENT_USER
+
 from services.models import SiteAccessControl
 
 
@@ -162,8 +163,8 @@ class TestViewUser(TestAccountBase):
     #    self.assertTemplateUsed(response, 'user_management/user_management.html')
 
 
-class TestViews( TestCase ):
-    def setUp( self ):
+class TestViews(TestCase):
+    def setUp(self):
         #   Prepare request for test.
         self.factory = RequestFactory()
         self.userNameTest = 'testMedi007'
@@ -182,29 +183,29 @@ class TestViews( TestCase ):
         self.organisation_A = 'Test organisation.'
         self.practCode_A = 'TEST0001'
 
-        self.gp_practice = mommy.make( OrganisationGeneralPractice, name = self.organisation_A, practcode = self.practCode_A )
-        self.userProfileA = mommy.make( User, username = self.userName_A, password = self.password_A, first_name = self.firstName_A, last_name = self.lastName_A, email = self.email_A )
-        self.userA = mommy.make( GeneralPracticeUser,
-            organisation = self.gp_practice,
-            user = self.userProfileA,
-            role = self.role_A,
-            title = 'DR'
+        self.gp_practice = mommy.make(OrganisationGeneralPractice, name=self.organisation_A, practcode=self.practCode_A)
+        self.userProfileA = mommy.make(User, username=self.userName_A, password=self.password_A, first_name=self.firstName_A, last_name=self.lastName_A, email=self.email_A)
+        self.userA = mommy.make(GeneralPracticeUser,
+            organisation=self.gp_practice,
+            user=self.userProfileA,
+            role=self.role_A,
+            title='DR'
         )
         
         #   create userTest for request
-        user = User.objects.create( username='testuser', email = 'testuser@mohara.co', first_name='testuser', is_active = True, type = GENERAL_PRACTICE_USER )
+        user = User.objects.create(username='testuser', email='testuser@mohara.co', first_name='testuser', is_active=True, type=GENERAL_PRACTICE_USER )
         user.set_password('secret')
         user.save()
 
         self.request_user = mommy.make(
             GeneralPracticeUser,
-            organisation = self.gp_practice,
-            user = user,
-            role = 0,
-            title = 'MR'
+            organisation=self.gp_practice,
+            user=user,
+            role=0,
+            title='MR'
         )
 
-    def test_create_user_exist( self ):
+    def test_create_user_exist(self):
         #   Test create function but fail. Because exist account
         firstName = 'Jirayu'
         lastName = 'Oopipat'
@@ -227,13 +228,13 @@ class TestViews( TestCase ):
         })
 
         expectedMassage = 'User Account Existing In Database'
-        messages = list( response.context[ 'messages' ] )
+        messages = list(response.context['messages'])
 
-        self.assertEqual( 200, response.status_code )
-        self.assertEqual( 1, len( messages ) )
-        self.assertEqual( expectedMassage, str( messages[0] ) )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(1, len(messages))
+        self.assertEqual(expectedMassage, str(messages[0]))
 
-    def test_create_user_success( self ):
+    def test_create_user_success(self):
         #   Test create user and success.
         firstName = 'Jirayu'
         lastName = 'Oopipat'
@@ -258,15 +259,15 @@ class TestViews( TestCase ):
         queryResultUser = User.objects.all()
         resultUser = queryResultUser[2]
 
-        self.assertEqual( 302, response.status_code )
-        self.assertEqual( 3, len( queryResultUser ) )
-        self.assertEqual( email, resultUser.email )
-        self.assertEqual( email, resultUser.username )
-        self.assertEqual( firstName, resultUser.first_name )
-        self.assertEqual( lastName, resultUser.last_name )
-        self.assertEqual( 'General Practice User', resultUser.get_my_role() )
-        self.assertEqual( telephone_mobile, resultUser.userprofilebase.telephone_mobile)
-        self.assertEqual( telephone_code, resultUser.userprofilebase.telephone_code)
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(3, len( queryResultUser))
+        self.assertEqual(email, resultUser.email)
+        self.assertEqual(email, resultUser.username)
+        self.assertEqual(firstName, resultUser.first_name)
+        self.assertEqual(lastName, resultUser.last_name)
+        self.assertEqual('General Practice User', resultUser.get_my_role())
+        self.assertEqual(telephone_mobile, resultUser.userprofilebase.telephone_mobile)
+        self.assertEqual(telephone_code, resultUser.userprofilebase.telephone_code)
 
     def test_create_user_fail( self ):
         #   Test create user but fail. Because invalid form.
@@ -281,14 +282,13 @@ class TestViews( TestCase ):
         })
 
         expectedMassage = 'Please input all the fields properly.'
-        messages = list( response.context[ 'messages' ] )
+        messages = list(response.context['messages'])
 
-        self.assertEqual( 200, response.status_code )
-        self.assertEqual( 1, len( messages ) )
-        self.assertEqual( expectedMassage, str( messages[0] ) )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(1, len(messages))
+        self.assertEqual(expectedMassage, str(messages[0]))
 
-import logging
-event_logger = logging.getLogger('medidata.event')
+
 class LoginTestCase(TestCase):
     def setUp(self):
         user = User.objects.create(
@@ -298,9 +298,17 @@ class LoginTestCase(TestCase):
         user.set_password('User1234')
         user.save()
 
+        patient_user = User.objects.create(
+            email='patient_user@gmail.com',
+            username='patient_user@gmail.com',
+            type=PATIENT_USER
+        )
+        patient_user.set_password('patient1234')
+        patient_user.save()
+
         site_control = SiteAccessControl.objects.create(
-            site_host = 'testserver',
-            gp_access = True,
+            site_host='testserver',
+            gp_access=True,
         )
         site_control.save()
 
@@ -327,3 +335,13 @@ class LoginTestCase(TestCase):
         SiteAccessControl.objects.all().delete()
         response = self.client.post('/accounts/login/', {'username': 'user@gmail.com', 'password': 'User1234'})
         self.assertEqual(200, response.status_code)
+
+    def test_patient_login(self):
+        """
+         Patient user should not pass through login page.
+        :return:
+        """
+        response = self.client.post('/accounts/login/', {'username': 'patient_user@gmail.com', 'password': 'patient1234'})
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('login', response.resolver_match.url_name)
+

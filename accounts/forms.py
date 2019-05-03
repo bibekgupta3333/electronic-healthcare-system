@@ -358,7 +358,12 @@ class CustomLoginForm(AuthenticationForm):
         error_messages = '"%(username)s"' + " can't access in this site."
         super().clean()
         user = self.get_user()
-        if not user.is_superuser:
+        if user.type == PATIENT_USER:
+            error_messages = 'This site is not available for patient user'
+            raise forms.ValidationError(
+                error_messages
+            )
+        elif not user.is_superuser:
             site = self.request.get_host()
             access_control = SiteAccessControl.objects.filter(site_host=site).first()
             access_permission = access_control.can_access_site(user_type=user.type)

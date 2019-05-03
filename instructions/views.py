@@ -16,7 +16,6 @@ from .forms import ScopeInstructionForm, AdditionQuestionFormset, SarsConsentFor
 from accounts.models import User, GeneralPracticeUser, PracticePreferences
 from accounts.models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from accounts.forms import InstructionPatientForm, GPForm
-from accounts.functions import create_or_update_patient_user
 from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice, OrganisationClient
 from organisations.views import get_gporganisation_data
@@ -434,9 +433,6 @@ def instruction_pipeline_view(request):
 
     if table_all:
         next_prev_data_all = calculate_next_prev(table_all.page, filter_status=filter_status, filter_type=filter_type)
-
-    if table_fee:
-        next_prev_data_fee = calculate_next_prev(table_fee.page, filter_status=filter_status, filter_type=filter_type)
 
     response = render(request, 'instructions/pipeline_views_instruction.html', {
         'user': user,
@@ -1119,8 +1115,6 @@ def consent_contact(request, instruction_id, patient_emis_number):
             patient_instruction.patient_alternate_code = request.POST.get('patient_alternate_code', '')
             patient_instruction.patient_emis_number = patient_emis_number
             patient_instruction.save()
-            patient_user = create_or_update_patient_user(patient_instruction, patient_emis_number)
-            instruction.patient = patient_user
             instruction.save()
             event_logger.info(
                 '{user}:{user_id} UPDATED consent contact of patient instruction ID {instruction_id}'.format(
