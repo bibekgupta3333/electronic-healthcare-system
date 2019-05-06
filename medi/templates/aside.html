@@ -4,7 +4,7 @@
     <nav class="navigation navbar-dark">
         <div class="sidebar-header">
             <div class="logo">
-                {% if user.type == 'GP' %}
+                {% if user.type == 'GP' or user.type == 'MEDI' %}
                     <img src="{% static "images/logo/eMR_med.png" %}">
                 {% else %}
                     <img src="{% static "images/logo/mdX_med.png" %}">
