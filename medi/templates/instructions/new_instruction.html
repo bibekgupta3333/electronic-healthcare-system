@@ -326,7 +326,11 @@
 
     <!-- Hidden tooltip -->
     {% for template in templates %}
-      <p id="template_{{template.pk}}" class="tooltip">{{template.description}}</p>
+        <p id="template_{{template.pk}}" class="tooltip">{{template.description}} <br>
+        ({% for concept in template.common_snomed_concepts.all %}
+            {% if forloop.counter != 1 %},{% endif %}{{ concept }}
+        {% endfor %})
+        </p>
     {% endfor %}
 {% endblock %}
 
