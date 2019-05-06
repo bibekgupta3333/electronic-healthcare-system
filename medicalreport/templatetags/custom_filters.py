@@ -226,53 +226,59 @@ def replace_ref_phrases(relations, value):
     xpaths = relations['xpath']
 
     if relations['relations']:
-        text = re.sub(relations['relations'], "[UNSPECIFIED THIRD PARTY]", value, flags=re.IGNORECASE)
-        
-        if word_library:
-            split_word = value.split()
-            for word in word_library:
-                if str.upper(word.key) in map(str.upper, split_word):
-                    idx = list(map(str.upper, split_word)).index(str.upper(word.key))
-                    highlight_class = 'bg-warning'
-                    if library_history:
-                        for history in library_history:
-                            num = 0
-                            action = history.action
-                            while num < len(split_word):
-                                if history.old == split_word[num]:
-                                    if action == 'Replace' and history.xpath in xpaths:
-                                        split_word[num] = history.new
-                                        highlight_class = 'text-danger'
-                                    elif action == 'Redact' and history.xpath in xpaths:
-                                        highlight_class = 'bg-dark'
-                                    elif action == 'ReplaceAll':
-                                        split_word[num] = history.new
-                                        highlight_class = 'text-danger'
-                                num = num + 1
+        text = re.sub(relations['relations'], " [UNSPECIFIED THIRD PARTY] ", value, flags=re.IGNORECASE)
 
+    if word_library:
+        split_word = text.split()
+        for word in word_library:
+            if str.upper(word.key) in map(str.upper, split_word):
+                idx = list(map(str.upper, split_word)).index(str.upper(word.key))
+                highlight_class = 'bg-warning'
+                if library_history:
+                    for history in library_history:
+                        num = 0
+                        action = history.action
+                        while num < len(split_word):
+                            if history.old == split_word[num]:
+                                if action == 'Replace' and history.xpath in xpaths:
+                                    split_word[num] = history.new
+                                    highlight_class = 'text-danger'
+                                elif action == 'Redact' and history.xpath in xpaths:
+                                    highlight_class = 'bg-dark'
+                                elif action == 'ReplaceAll':
+                                    split_word[num] = history.new
+                                    highlight_class = 'text-danger'
+                            num = num + 1
+
+                highlight_html = '''
+                    <span class="highlight-library">
+                        <span class="{}">{}</span>
+                        <span class="dropdown-options" data-xpath="{}">
+                            <a href="#" class="highlight-redact">Redact</a>
+                            <a href="#" class="highlight-replace">Replace</a>
+                            <a href="#" class="highlight-replaceall">Replace all</a>
+                        </span>
+                    </span>
+                '''
+
+                if not word.value:
                     highlight_html = '''
                         <span class="highlight-library">
                             <span class="{}">{}</span>
                             <span class="dropdown-options" data-xpath="{}">
                                 <a href="#" class="highlight-redact">Redact</a>
-                                <a href="#" class="highlight-replace">Replace</a>
-                                <a href="#" class="highlight-replaceall">Replace all</a>
                             </span>
                         </span>
                     '''
 
-                    if not word.value:
-                        highlight_html = '''
-                            <span class="highlight-library">
-                                <span class="{}">{}</span>
-                                <span class="dropdown-options" data-xpath="{}">
-                                    <a href="#" class="highlight-redact">Redact</a>
-                                </span>
-                            </span>
-                        '''
+                # header_detail = re.sub(word.key, highlight_html, text, flags=re.IGNORECASE)
+                # html_format = format_html(highlight_html, highlight_class, text, xpaths)
+                text = re.sub(word.key, format_html(text, highlight_class, text, xpaths), text, flags=re.IGNORECASE)
+                print( text )
+                return format_html(text, highlight_class, text, xpaths)
+                # return format_html(highlight_html, highlight_class, value, xpaths)
+                # return format_html(highlight_html, highlight_class, split_word[idx], xpaths)
 
-                    # header_detail = re.sub(word.key, highlight_html, text, flags=re.IGNORECASE)
-                    return format_html(highlight_html, highlight_class, split_word[idx], xpaths)
     return value
 
 
