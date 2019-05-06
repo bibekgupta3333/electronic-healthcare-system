@@ -250,6 +250,9 @@
                 "href='{% url 'instructions:view_pipeline' %}?search={{search_input}}&page_ts={{ next_prev_data_all|keyvalue:'prev_page' }}&status={{ next_prev_data_all|keyvalue:'status' }}&type={{ next_prev_data_all|keyvalue:'type' }}'>&lt;</a>/li").insertAfter('#all_block .prev');
                 $("<li class='page-item {{ next_prev_data_all|keyvalue:'next_disabled' }}'><a class='page-link'" +
                 "href='{% url 'instructions:view_pipeline' %}?search={{search_input}}&page_ts={{ next_prev_data_all|keyvalue:'next_page' }}&status={{ next_prev_data_all|keyvalue:'status' }}&type={{ next_prev_data_all|keyvalue:'type' }}'>&gt;</a></li>").insertBefore('#all_block .last'); 
+
+                // Set default for text input
+                $('#search').val('{{search_input}}');
             } else {
                 $("<li class='page-item {{ next_prev_data_all|keyvalue:'prev_disabled' }}'><a class='page-link'" +
                 "href='{% url 'instructions:view_pipeline' %}?page={{ next_prev_data_all|keyvalue:'prev_page' }}&status={{ next_prev_data_all|keyvalue:'status' }}&type={{ next_prev_data_all|keyvalue:'type' }}'>&lt;</a>/li").insertAfter('#all_block .prev');

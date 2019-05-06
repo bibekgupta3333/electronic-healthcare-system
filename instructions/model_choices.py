@@ -24,21 +24,23 @@ INSTRUCTION_STATUS_CHOICES = (
     (INSTRUCTION_STATUS_FAIL, 'Fail')
 )
 
-PATIENT_NOT_FOUND = 0
-PATIENT_NO_LONGER_REGISTERED = 1
-CONSENT_INVALID = 2
-INAPPROPRIATE_SAR = 3
-GENERATOR_FAIL = 4
-LONG_TIMES = 5
-CONSENT_NOT_PROPERLY = 6
+CONSENT_INVALID = 0
+CONSENT_NOT_PROPERLY = 1
+INAPPROPRIATE_SAR = 2
+PATIENT_NOT_FOUND = 3
+LONG_TIMES = 4
+PATIENT_NO_LONGER_REGISTERED = 5
+GENERATOR_FAIL = 6
+CANCEL_BY_CLIENT = 7
 INSTRUCTION_REJECT_TYPE = (
-    (PATIENT_NOT_FOUND, 'No suitable patient can be found'),
-    (PATIENT_NO_LONGER_REGISTERED, 'The patient is no longer registered at this practice'),
     (CONSENT_INVALID, 'The consent form is invalid'),
+    (CONSENT_NOT_PROPERLY, 'Inappropriate consent / consent not properly obtained'),
     (INAPPROPRIATE_SAR, 'Inappropriate instruction for Subject Access Request'),
-    (GENERATOR_FAIL, 'The instruction has generated fail'),
-    (LONG_TIMES, 'Instruction not process until dute date'),
-    (CONSENT_NOT_PROPERLY, 'Inappropriate consent / consent not properly obtained')
+    (PATIENT_NOT_FOUND, 'No suitable patient can be found'),
+    (LONG_TIMES, 'The instruction can not be processed by the due date'),
+    (PATIENT_NO_LONGER_REGISTERED, 'The patient is no longer registered at this practice'),
+    (GENERATOR_FAIL, 'The report failed to generate'),
+    (CANCEL_BY_CLIENT, 'Cancel instruction by client.')
 )
 
 REJECT_PENDING_INSTRUCTION_DAY = 23

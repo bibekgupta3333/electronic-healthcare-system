@@ -13,5 +13,7 @@ urlpatterns = [
     path('<int:instruction_id>/view-report/', views.view_report, name='view_report'),
     path('<int:instruction_id>/update/', views.update_report, name='update_report'),
     path('<int:instruction_id>/attachment/<str:path_file>', views.view_attachment, name='view_attachment'),
-    path('<int:instruction_id>/download-attachment/<str:path_file>', views.download_attachment, name='download_attachment')
+    path('<int:instruction_id>/download-attachment/<str:path_file>', views.download_attachment, name='download_attachment'),
+    path('trud-ivf', views.trud_ivf, name="trud_ivf"),
+    path('trud-std', views.trud_std, name="trud_std"),
 ]
