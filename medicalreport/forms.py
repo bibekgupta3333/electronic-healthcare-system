@@ -62,11 +62,9 @@ class MedicalReportFinaliseSubmitForm(forms.Form):
 
 class AllocateInstructionForm(forms.Form):
     PROCEED_REPORT = 0
-    ALLOCATE = 1
-    RETURN_TO_PIPELINE = 2
+    RETURN_TO_PIPELINE = 1
     ALLOCATE_OPTIONS_CHOICE = (
         (PROCEED_REPORT, 'Proceed with report'),
-        (ALLOCATE, 'Allocate to'),
         (RETURN_TO_PIPELINE, 'Return to pipeline view')
     )
     allocate_options = forms.ChoiceField(choices=ALLOCATE_OPTIONS_CHOICE, widget=forms.RadioSelect())
@@ -94,9 +92,7 @@ class AllocateInstructionForm(forms.Form):
     def set_allocate_by_permission(self, user: User, instruction_id: str, queryset) -> forms.ChoiceField:
         can_proceed = process_instruction(user.id, instruction_id)
         ALLOCATE_OPTIONS_CHOICE = [(self.RETURN_TO_PIPELINE, 'Return to pipeline view')]
-        if user.has_perm('instructions.allocate_gp'):
-            ALLOCATE_OPTIONS_CHOICE.append((self.ALLOCATE, 'Allocate to'))
-        else:
+        if not user.has_perm('instructions.allocate_gp'):
             self.fields['gp_practitioner'] = forms.ModelChoiceField(queryset, required=False, widget=forms.HiddenInput())
         if can_proceed:
             ALLOCATE_OPTIONS_CHOICE.append((self.PROCEED_REPORT, 'Proceed with report'))
