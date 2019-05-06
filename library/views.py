@@ -49,6 +49,7 @@ def edit_library(request, event):
     if 'search' in request.GET:
         search_input = request.GET.get('search')
         library = library.filter(Q(key__icontains=search_input) | Q(value__icontains=search_input))
+        event = 'index'
 
     if event.split(':')[0] == 'edit_error':
         error_edit_id = event.split(':')[1]

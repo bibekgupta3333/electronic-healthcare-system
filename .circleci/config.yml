@@ -81,12 +81,12 @@ jobs:
           name: Deploy staging
           working_directory: ~/repo
           command: |
-            ssh -p 8022 $NEW_STAGING_USER@$NEW_STAGING_HOST "NEW_STAGING_COMMAND"
+            ssh -p 8022 $NEW_STAGING_USER@$NEW_STAGING_HOST "$NEW_STAGING_COMMAND"
       - run:
           name: Restart server
           working_directory: ~/repo
           command: |
-            ssh -p 8022 $NEW_STAGING_USER@$NEW_STAGING_HOST "NEW_STAGING_RESTART"
+            ssh -p 8022 $NEW_STAGING_USER@$NEW_STAGING_HOST "$NEW_STAGING_RESTART"
   deploy_uat:
     machine:
       enable: true
