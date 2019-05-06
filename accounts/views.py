@@ -699,7 +699,8 @@ def login(request: HttpRequest) -> HttpResponse:
             if check_lock_out(request):
                 return redirect(reverse('accounts:locked_out'))
             return render(request, 'registration/login.html', {
-                'form': form
+                'form': form,
+                'mdx_url': settings.MDX_URL
             })
 
     return HttpResponse('Site is not active !')
