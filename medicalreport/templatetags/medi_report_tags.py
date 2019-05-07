@@ -165,7 +165,7 @@ def redaction_checkbox_with_body(model, redaction, header='', word_library='', b
                                 split_word[num] = history.new
                                 highlight_class = 'text-danger'
                             elif action == 'Redact' and history.xpath in xpaths:
-                                highlight_class = 'bg-dark'
+                                highlight_class = 'bg-dark text-light'
                             elif action == 'ReplaceAll':
                                 split_word[num] = history.new
                                 highlight_class = 'text-danger'
@@ -281,7 +281,7 @@ def problem_redaction_checkboxes(model, redaction, problem_linked_lists, map_cod
                                 split_word[num] = history.new
                                 highlight_class = 'text-danger'
                             elif action == 'Redact' and history.xpath in xpaths:
-                                highlight_class = 'bg-dark'
+                                highlight_class = 'bg-dark text-light'
                             elif action == 'ReplaceAll':
                                 split_word[num] = history.new
                                 highlight_class = 'text-danger'

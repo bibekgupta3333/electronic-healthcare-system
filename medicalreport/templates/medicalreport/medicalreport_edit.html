@@ -200,8 +200,6 @@
             }).done(function(response) {
                 if (response['message'] == 'Error') {
                     create_alert('Something went wrong, please try again.', 'error');
-                } else if (response['message'] == 'Complete') {
-                    console.log('Complete');
                 }
             }).fail(function() {
                 create_alert('Something went wrong, please try again.', 'error');
@@ -312,7 +310,8 @@
                 }
             }).done(function(response) {
                 word_span.removeClass("bg-warning");
-                word_span.addClass('bg-dark');
+                word_span.addClass('bg-dark').addClass('text-light');
+                create_alert('Redact complete.', 'success');
             }).fail(function() {
                 create_alert('Something went wrong, please try again.', 'error');
             });
@@ -352,6 +351,7 @@
                     word_span.removeClass("bg-warning");
                     word_span.addClass('change-'+response['id']).addClass('text-danger');
                 }
+                create_alert('Replace complete.', 'success');
             }).fail(function() {
                 create_alert('Something went wrong, please try again.', 'error');
             });
@@ -373,10 +373,11 @@
                         if ($(obj).text() == word) {
                             $(obj).text(response['replace_word']);
                             $(obj).removeClass("bg-warning");
-                            $(obj).addClass('change-'+response['id']);
+                            $(obj).addClass('change-'+response['id']).addClass('text-danger');
                         }
                     });
                 }
+                create_alert('ReplaceAll complete.', 'success');
             }).fail(function() {
                 create_alert('Something went wrong, please try again.', 'error');
             });
@@ -411,16 +412,71 @@
                                 $(this).parent().html( response['text'] );
                             }
                         });
+                    }   else if (response['action'] == 'mRedact') {
+                        $('input').each( function() {
+                            if( $(this).val() == response['xpath']) {
+                                $(this).prop('checked', false);
+                            }
+                        });
                     }   else if (response['action'] == 'rmRedact') {
-                        
-                        $('.dropdown-options').each( function() {
-                            console.log( $(this).parent().find('input.redaction-checkbox__input').attr('key') );
-                            if( $(this).data('xpath') == response['xpath']) {
-                                
-                                alert( $(this).parent().find('input.redaction-checkbox__input').key());
+                        $('input').each( function() {
+                            if( $(this).val() == response['xpath']) {
+                                $(this).prop('checked', true);
                             }
                         });
                     }
+                    create_alert('Undo complete.', 'success');
+                }
+            }).fail(function() {
+                create_alert('Something went wrong, please try again.', 'error');
+            })
+        });
+
+        $('#report-toolbox-modal-undoall').click( function(e) {
+            e.preventDefault();
+            $.ajax({
+                url: "{% url 'library:undo_all' %}",
+                dataType: "json",
+                data: { instruction_id: {{ instruction.id }} }
+            }).done(function(response) {
+                if (response['message'] == 'Error') {
+                    create_alert('Something went wrong, please try again.', 'error');
+                } else {
+                    response.history.forEach( function(value) {
+                        if (value.action == 'Replace') {
+                            $('span .dropdown-options').each( function() {
+                                if( $(this).data('xpath') == value.xpath) {
+                                    $(this).parent().html( value.text );
+                                }
+                            });
+                        }   else if (value.action == 'ReplaceAll') {
+                            $('span .dropdown-options').each( function() {
+                                if( $(this).parent().find("span.text-danger").text() == value.new) {
+                                    $(this).parent().find("span.text-danger").text( value.old ).removeClass().addClass('bg-warning');
+                                }
+                            });
+                        }   else if (value.action == 'Redact') {
+                            $('span .dropdown-options').each( function() {
+                                if( $(this).data('xpath') == value.xpath) {
+                                    $(this).removeClass('bg-dark');
+                                    $(this).parent().html( value.text );
+                                }
+                            });
+                        }   else if (value.action == 'mRedact') {
+                            $('input').each( function() {
+                                if( $(this).val() == value.xpath) {
+                                    $(this).prop('checked', false);
+                                }
+                            });
+                        }   else if (value.action == 'rmRedact') {
+                            $('input').each( function() {
+                                if( $(this).val() == value.xpath) {
+                                    $(this).prop('checked', true);
+                                }
+                            });
+                        }
+                    });
+                    create_alert('Undo All complete.', 'success');
                 }
             }).fail(function() {
                 create_alert('Something went wrong, please try again.', 'error');

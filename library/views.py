@@ -189,7 +189,7 @@ def undo_last(request):
                     <span class="bg-warning">{}</span>
                     <span class="dropdown-options" data-xpath="{}">
                         <a href="#" class="highlight-redact">Redact</a>
-                        <a href="javascript:test_2();" class="highlight-replace" id="book">Replace</a>
+                        <a href="javascript:;" class="highlight-replace">Replace</a>
                         <a href="#" class="highlight-replaceall">Replace all</a>
                     </span>
                 </span>
@@ -216,7 +216,7 @@ def undo_last(request):
                 'xpath': recent_history.xpath,
                 'key': recent_history.key
             }
-            # recent_history.hard_delete()
+            recent_history.hard_delete()
             return JsonResponse(data)
         except:
             return JsonResponse({'message': 'Error'})
@@ -228,40 +228,55 @@ def undo_all(request):
         try:
             instruction_id = request.GET.get('instruction_id')
             instruction = Instruction.objects.get(pk=instruction_id)
-            recent_history = LibraryHistory.objects.filter(instruction=instruction).last()
+            recent_history = LibraryHistory.objects.filter(instruction=instruction).order_by('-id')
+            xpath_exist_list = list()                
 
-            highlight_html = '''
-                <span class="highlight-library">
-                    <span class="bg-warning">{}</span>
-                    <span class="dropdown-options" data-xpath="{}">
-                        <a href="#" class="highlight-redact">Redact</a>
-                        <a href="javascript:test_2();" class="highlight-replace" id="book">Replace</a>
-                        <a href="#" class="highlight-replaceall">Replace all</a>
-                    </span>
-                </span>
-            '''.format(recent_history.old, recent_history.xpath)
+            data = dict()
+            data_list = list()
 
-            gp_org = instruction.gp_user.organisation
-            library_object = Library.objects.filter(gp_practice=gp_org, key=recent_history.old)
-            for library in library_object:
-                if not library.value:
-                    highlight_html = '''
-                        <span class="highlight-library">
-                            <span class="bg-warning">{}</span>
-                            <span class="dropdown-options" data-xpath="{}">
-                                <a href="#" class="highlight-redact">Redact</a>
+            for history in recent_history:
+                if history.xpath not in xpath_exist_list:
+                    highlight_html = str()
+                    data_dict = dict()
+                    if history.action not in ['mRedact', 'rmRedact',]:
+                        highlight_html = '''
+                            <span class="highlight-library">
+                                <span class="bg-warning">{}</span>
+                                <span class="dropdown-options" data-xpath="{}">
+                                    <a href="#" class="highlight-redact">Redact</a>
+                                    <a href="javascript:;" class="highlight-replace">Replace</a>
+                                    <a href="#" class="highlight-replaceall">Replace all</a>
+                                </span>
                             </span>
-                        </span>
-                    '''.format(recent_history.old, recent_history.xpath)
+                        '''.format(history.old, history.xpath)
 
-            data = {
-                'action': recent_history.action,
-                'old': recent_history.old,
-                'new': recent_history.new,
-                'text': highlight_html,
-                'xpath': recent_history.xpath,
-            }
-            recent_history.hard_delete()
+                        gp_org = instruction.gp_user.organisation
+                        library_object = Library.objects.filter(gp_practice=gp_org, key=history.old)
+                        for library in library_object:
+                            if not library.value:
+                                highlight_html = '''
+                                    <span class="highlight-library">
+                                        <span class="bg-warning">{}</span>
+                                        <span class="dropdown-options" data-xpath="{}">
+                                            <a href="#" class="highlight-redact">Redact</a>
+                                        </span>
+                                    </span>
+                                '''.format(history.old, history.xpath)
+
+                    data_dict['action'] = history.action
+                    data_dict['old'] = history.old
+                    data_dict['new'] = history.new
+                    data_dict['text'] = highlight_html
+                    data_dict['xpath'] = history.xpath
+                    data_dict['key'] = history.key
+
+                    xpath_exist_list.append(history.xpath)
+                    data_list.append(data_dict)
+                    history.hard_delete()
+                else:
+                    continue
+
+            data['history'] = data_list
             return JsonResponse(data)
         except:
             return JsonResponse({'message': 'Error'})

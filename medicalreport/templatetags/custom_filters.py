@@ -229,21 +229,25 @@ def replace_ref_phrases(relations, value):
         split_word = value.split()
         for word in word_library:
             if str.upper(word.key) in map(str.upper, split_word):
-                idx = list(map(str.upper, split_word)).index(str.upper(word.key))
-                highlight_class = 'bg-warning'
-                highlight_html = '''
-                    <span class="highlight-library">
-                        <span class="{}">{}</span>
-                        <span class="dropdown-options" data-xpath="{}">
-                            <a href="#" class="highlight-redact">Redact</a>
-                            <a href="#" class="highlight-replace">Replace</a>
-                            <a href="#" class="highlight-replaceall">Replace all</a>
-                        </span>
-                    </span>
-                '''.format(highlight_class, split_word[idx], xpaths)
+                num = 0
+                while num < len(split_word):
+                    if str.upper(split_word[num]) == str.upper(word.key):
+                        highlight_class = 'bg-warning'
+                        highlight_html = '''
+                            <span class="highlight-library">
+                                <span class="{}">{}</span>
+                                <span class="dropdown-options" data-xpath="{}">
+                                    <a href="#" class="highlight-redact">Redact</a>
+                                    <a href="#" class="highlight-replace">Replace</a>
+                                    <a href="#" class="highlight-replaceall">Replace all</a>
+                                </span>
+                            </span>
+                        '''
+                        split_word[num] = format_html(highlight_html, highlight_class, split_word[num], xpaths)
+                    num = num + 1
 
-        text = ' '.join(split_word)
-        return format_html(text)
+        # text = ' '.join(split_word)
+        return split_word
 
     # if word_library:
     #     split_word = value.split()
