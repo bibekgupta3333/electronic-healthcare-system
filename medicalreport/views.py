@@ -222,7 +222,7 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     relations_dict = {
         'relations': relations,
         'word_library': word_library,
-        'library_history':library_history
+        'library_history': library_history,
     }
 
     response = render(request, 'medicalreport/medicalreport_edit.html', {

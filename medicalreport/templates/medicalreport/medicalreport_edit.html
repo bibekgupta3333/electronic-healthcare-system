@@ -185,10 +185,19 @@
         });
 
         $('input:checkbox').on('change', function() {
-            $("input[key='" + $(this).attr('key') + "']:checkbox").prop('checked', this.checked);
-            saveReport();
             var xpath = $(this).val();
             var key = $(this).attr('key');
+
+            if(Array.isArray(xpath)) {
+                xpath = xpath[0];
+            }
+
+            if(Array.isArray(key)) {
+                key = key[0];
+            }
+            $("input[key='" + key + "']:checkbox").prop('checked', this.checked);
+            saveReport();
+
             $.ajax({
                 url: "{% url 'library:manual_radact' %}",
                 dataType: "json",
@@ -297,6 +306,9 @@
                         return 1;
                     }
                 });
+            if(Array.isArray(xpath)) {
+                xpath = xpath[0];
+            }
             $.ajax({
                 url: "{% url 'library:redact_word' %}",
                 dataType: "json",
@@ -310,7 +322,7 @@
                 }
             }).done(function(response) {
                 word_span.removeClass("bg-warning");
-                word_span.addClass('bg-dark').addClass('text-light');
+                word_span.addClass('bg-dark');
                 create_alert('Redact complete.', 'success');
             }).fail(function() {
                 create_alert('Something went wrong, please try again.', 'error');
@@ -325,13 +337,16 @@
             var item_parent = $(this).closest('.callout');
             var header = item_parent.find('.callout__header').text();
             var idx = -1;
-            var xpath = $(this).parent().data('xpath')
+            var xpath = $(this).parent().data('xpath');
             item_parent.find('.redaction-checkbox').filter(function(index, obj) {
-                    if (item.is($(obj))) {
-                        idx = index;
-                        return 1;
-                    }
-                });
+                if (item.is($(obj))) {
+                    idx = index;
+                    return 1;
+                }
+            });
+            if(Array.isArray(xpath)) {
+                xpath = xpath[0];
+            }
             $.ajax({
                 url: "{% url 'library:replace_word' %}",
                 dataType: "json",
@@ -340,8 +355,8 @@
                     instruction_id: {{ instruction.id }}, 
                     header: header, 
                     index: idx, 
+                    xpath: xpath,
                     content: item.html(),
-                    xpath: xpath
                 }
             }).done(function(response) {
                 if (response['message'] == 'Error') {
@@ -350,8 +365,8 @@
                     word_span.text(response['replace_word']);
                     word_span.removeClass("bg-warning");
                     word_span.addClass('change-'+response['id']).addClass('text-danger');
+                    create_alert('Replace complete.', 'success');
                 }
-                create_alert('Replace complete.', 'success');
             }).fail(function() {
                 create_alert('Something went wrong, please try again.', 'error');
             });

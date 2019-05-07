@@ -243,6 +243,30 @@ def replace_ref_phrases(relations, value):
                                 </span>
                             </span>
                         '''
+
+                        if not word.value:
+                            highlight_html = '''
+                                <span class="highlight-library">
+                                    <span class="{}">{}</span>
+                                    <span class="dropdown-options" data-xpath="{}">
+                                        <a href="#" class="highlight-redact">Redact</a>
+                                    </span>
+                                </span>
+                            '''
+
+                        if library_history:
+                            for history in library_history:
+                                action = history.action
+                                if history.old == split_word[num]:
+                                    if action == 'Replace' and history.xpath in xpaths:
+                                        split_word[num] = history.new
+                                        highlight_class = 'text-danger'
+                                    elif action == 'Redact' and history.xpath in xpaths:
+                                        highlight_class = 'bg-dark'
+                                    elif action == 'ReplaceAll':
+                                        split_word[num] = history.new
+                                        highlight_class = 'text-danger'
+
                         split_word[num] = format_html(highlight_html, highlight_class, split_word[num], xpaths)
                     num = num + 1
 

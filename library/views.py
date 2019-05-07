@@ -140,7 +140,6 @@ def replace_word(request):
             index = request.GET.get('index')
             content = request.GET.get('content')
             xpath = request.GET.get('xpath')
-
             gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
             library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
 
