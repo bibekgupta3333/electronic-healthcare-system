@@ -195,7 +195,11 @@
             if(Array.isArray(key)) {
                 key = key[0];
             }
-            $("input[key='" + key + "']:checkbox").prop('checked', this.checked);
+            $('input:checkbox').each( function() {
+                if( $(this).attr('key') == key) {
+                    $(this).prop('checked', this.checked);
+                }
+            });
             saveReport();
 
             $.ajax({
