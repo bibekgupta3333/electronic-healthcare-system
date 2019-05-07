@@ -85,44 +85,13 @@ def reject_request(request: HttpRequest, instruction_id: str) -> HttpResponse:
 @check_user_type(GENERAL_PRACTICE_USER)
 def select_patient(request: HttpRequest, instruction_id: str, patient_emis_number: int) -> HttpResponseRedirect:
     instruction = get_object_or_404(Instruction, pk=instruction_id)
-    if request.method == 'POST':
-        allocate_instruction_form = AllocateInstructionForm(request.user, instruction_id, request.POST)
-        if allocate_instruction_form.is_valid():
-            allocate_option = int(allocate_instruction_form.cleaned_data['allocate_options'])
-            if allocate_option == AllocateInstructionForm.PROCEED_REPORT:
-                patient_instruction = instruction.patient_information
-                patient_instruction.patient_emis_number = patient_emis_number
-                patient_instruction.save()
-                instruction.gp_user = request.user.userprofilebase.generalpracticeuser
-                instruction.save()
-                messages.success(request, 'Allocated to self successful')
-            elif allocate_option == AllocateInstructionForm.ALLOCATE:
-                instruction.gp_user = allocate_instruction_form.cleaned_data['gp_practitioner'].userprofilebase.generalpracticeuser
-                instruction.save()
-                gp_name = ' '.join([instruction.gp_user.user.first_name, instruction.gp_user.user.last_name])
-                if request.user.id == instruction.gp_user.user.id:
-                    patient_instruction = instruction.patient_information
-                    patient_instruction.patient_emis_number = patient_emis_number
-                    patient_instruction.save()
-                    instruction.save()
-                    event_logger.info(
-                        '{user}:{user_id} ALLOCATED instruction ID {instruction_id} to self'.format(
-                            user=request.user, user_id=request.user.id,
-                            instruction_id=instruction_id,
-                        )
-                    )
-                else:
-                    messages.success(request, 'Allocated to {gp_name} successful'.format(gp_name=gp_name))
-                    event_logger.info(
-                        '{user}:{user_id} ALLOCATED instruction ID {instruction_id} to {allocated_gp}'.format(
-                            user=request.user, user_id=request.user.id,
-                            instruction_id=instruction_id,
-                            allocated_gp=instruction.gp_user
-                        )
-                    )
-                    return redirect('instructions:view_pipeline')
-            elif allocate_option == AllocateInstructionForm.RETURN_TO_PIPELINE:
-                return redirect('instructions:view_pipeline')
+    patient_instruction = instruction.patient_information
+    patient_instruction.patient_emis_number = patient_emis_number
+    patient_instruction.save()
+    instruction.gp_user = request.user.userprofilebase.generalpracticeuser
+    instruction.save()
+    messages.success(request, 'Allocated to self successful')
+
     if not AmendmentsForRecord.objects.filter(instruction=instruction).exists():
         AmendmentsForRecord.objects.create(instruction=instruction)
     instruction.in_progress(context={'gp_user': request.user.userprofilebase.generalpracticeuser})
