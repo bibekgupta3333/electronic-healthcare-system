@@ -20,9 +20,11 @@
 {% endblock %}
 
 {% block Content %}
-    <div class="alert alert-danger" role="alert">
+    <div class="alert alert-danger text-wrap" role="alert">
       <h5>Instruction Rejected</h5>
-      <span>Rejected by <label class="text-bold">{{instruction.rejected_by.get_full_name}}</label> at {{instruction.rejected_timestamp|format_date}} for reason: <label class="reject-reason">{{instruction.get_rejected_reason_display}}.</label></span>
+      <span>Rejected by <label class="text-bold">{{instruction.rejected_by.get_full_name}}</label> at {{instruction.rejected_timestamp|format_date}} for reason: <label class="reject-reason">{{instruction.get_rejected_reason_display}}.</label><br>
+        Rejected note: <span class="reject-reason">{{instruction.rejected_note}}</span>
+      </span>
     </div>
     <div class="card-deck instruction">
         <div class="pr-0 col-md-6">
