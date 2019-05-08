@@ -128,7 +128,43 @@
                             <p class="red mb-3">You can skip this step and add users later if you wish.</p>
                         </div>
                     </div>
+                    {{ user_formset.management_form }}
+                    <div class="table-responsive">
+                        <table class="table table-bordered vertical-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width: 9%;">Title*</th>
+                                    <th style="width: 13%;">First Name*</th>
+                                    <th style="width: 13%;">Surname*</th>
+                                    <th style="width: 13%;">Email*</th>
+                                    <th style="width: 11%;">Role(GP, Other)</th>
+                                    <th style="width: 30%;">
+                                        Mobile Phone*
+                                        <p class="font-weight-light text-secondary mb-0">(required to set up two factor authentication)</p>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for form in user_formset.forms %}
+                                <tr>
+                                    <td>{% bootstrap_field form.title placeholder='' %}</td>
+                                    <td>{% bootstrap_field form.first_name placeholder='' %}</td>
+                                    <td>{% bootstrap_field form.last_name placeholder='' %}</td>
+                                    <td>{% bootstrap_field form.email placeholder='' %}</td>
+                                    <td>{% bootstrap_field form.role placeholder='' %}</td>
+                                    <td>
+                                        {% bootstrap_field form.mobile_phone  form_group_class='col-md-12' show_label=false placeholder='' %}
+                                        {% bootstrap_field form.mobile_code %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                     <div class="row form-group">
+                        <div class="col-12">
+                            {% bootstrap_button content='Proceed' button_type='submit' size='large' button_class='btn btn-primary'  %}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -260,8 +260,8 @@ def step1(request: HttpRequest) -> HttpResponse:
         surgery_form = SurgeryForm(request.POST)
         if surgery_form.is_valid():
             gp_organisation = surgery_form.save()
+            surgery_email_form = SurgeryForm(request.POST, instance=gp_organisation)
             if surgery_email_form.is_valid():
-                surgery_email_form = SurgeryForm(request.POST, instance=gp_organisation)
                 if not surgery_form.cleaned_data.get('operating_system') == 'EMISWeb':
                     message_1 = 'Thank you for completing part one of the eMR registration process. It’s great to have you on board.'
                     message_2 = 'We will be in touch with you shortly to complete the set up process so that you can process SARs in seconds.'
@@ -288,6 +288,9 @@ def step1(request: HttpRequest) -> HttpResponse:
 
 def step2(request: HttpRequest) -> HttpResponse:
     pm_form = PMForm()
+    UserEmrSetUpStage2Formset = formset_factory(UserEmrSetUpStage2Form, validate_min=True, extra=4)
+    user_formset = UserEmrSetUpStage2Formset()
     return render(request, 'onboarding/step2.html', {
         'pm_form': pm_form,
+        'user_formset': user_formset,
     })
