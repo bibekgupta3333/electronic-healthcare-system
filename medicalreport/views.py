@@ -115,7 +115,6 @@ def set_patient_emis_number(request: HttpRequest, instruction_id: str) -> HttpRe
     patient_list = get_matched_patient(instruction.patient_information, gp_organisation=instruction.gp_practice)
     if isinstance(patient_list, HttpResponseRedirect):
         return patient_list
-    allocate_instruction_form = AllocateInstructionForm(user=request.user, instruction_id=instruction_id)
     event_logger.info(
         '{user}:{user_id} ACCESS select EMIS patient List view'.format(
             user=request.user, user_id=request.user.id,
@@ -126,8 +125,7 @@ def set_patient_emis_number(request: HttpRequest, instruction_id: str) -> HttpRe
         'patient_list': patient_list,
         'reject_types': INSTRUCTION_REJECT_TYPE,
         'instruction': instruction,
-        'amra_type': AMRA_TYPE,
-        'allocate_instruction_form': allocate_instruction_form
+        'amra_type': AMRA_TYPE
     })
 
 

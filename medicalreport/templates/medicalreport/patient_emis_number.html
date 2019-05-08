@@ -187,12 +187,18 @@
                 let instruction_id = $(this).data('instruction_id');
                 let instruction_type = $(this).data('instruction_type');
                 let patient_ref_id = $(this).data('patient_ref_id');
-                let action_url = '/medicalreport/'+ instruction_id+'/select-patient/' + patient_ref_id + '/';
+                let action_url = "{% url 'medicalreport:select_patient' 1 2 %}";
 
                 if (instruction_type == "SARS"){
-                    action_url = '/instruction/consent-contact/'+  instruction_id + '/select-patient/' + patient_ref_id;
+                    action_url = "{% url 'instructions:consent_contact' 1 2 %}";
                 }
-                window.location = action_url
+
+                action_url = action_url
+                  .replace('1', '+=')
+                  .replace('2', '+*')
+                  .replace('+=', instruction_id)
+                  .replace('+*', patient_ref_id);
+                window.location = action_url;
             });
         });
     </script>
