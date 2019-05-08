@@ -252,3 +252,36 @@ def ajax_emis_polling(request: HttpRequest, practice_code: str) -> JsonResponse:
 
     return JsonResponse(data, safe=False)
 
+
+def step1(request: HttpRequest) -> HttpResponse:
+    surgery_form = SurgeryForm()
+    surgery_email_form = SurgeryEmailForm()
+    if request.method == "POST":
+        surgery_form = SurgeryForm(request.POST)
+        if surgery_form.is_valid():
+            gp_organisation = surgery_form.save()
+            if surgery_email_form.is_valid():
+                surgery_email_form = SurgeryForm(request.POST, instance=gp_organisation)
+                if not surgery_form.cleaned_data.get('operating_system') == 'EMISWeb':
+                    message_1 = 'Thank you for completing part one of the eMR registration process. It’s great to have you on board.'
+                    message_2 = 'We will be in touch with you shortly to complete the set up process so that you can process SARs in seconds.'
+                    message_3 = 'We look forward to working with you in the very near future. eMR Support Team'
+                    return render(request, 'onboarding/emr_message.html', context={
+                        'message_1': message_1,
+                        'message_2': message_2,
+                        'message_3': message_3
+                    })
+                if gp_organisation.practcode[:4] == 'TEST':
+                    gp_organisation.operating_system_username = 'michaeljtbrooks'
+                    gp_organisation.operating_system_salt_and_encrypted_password = 'Medidata2019'
+                else:
+                    password = generate_password(initial_range=1, body_rage=12, tail_rage=1)
+                    gp_organisation.operating_system_salt_and_encrypted_password = password
+                    gp_organisation.operating_system_username = 'medidata_access'
+                gp_organisation.save()
+                return redirect('onboarding:step2', practice_code=gp_organisation.practcode)
+
+    return render(request, 'onboarding/step1.html', {
+        'surgery_form': surgery_form,
+        'surgery_email_form': surgery_email_form,
+    })
