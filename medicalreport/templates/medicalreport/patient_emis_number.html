@@ -66,35 +66,28 @@
                                   <h5>{{instruction.patient_information.patient_nhs_number|default:"N/A"}}</h5>
                               </div>
                           </div>
-                          {% if instruction.type == 'AMRA' %}
-                              <div class="col-md-6">
-                                  <div class="row">
-                                      <h4 class="text-bold">{{instruction.client_user.organisation.trading_name|default:"N/A"}}</h4>
-                                  </div>
-                                  <div class="row">
-                                      <div>
-                                          <h5 class="text-bold">Requested Conditions:</h5>
-                                          <ul>
-                                          {% if not instruction.selected_snomed_concepts %}
-                                              <li>No conditions</li>
-                                          {% else %}
-                                              {% for snomed in instruction.selected_snomed_concepts %}
-                                                  <li>{{ snomed.fsn_description }}</li>
-                                              {% endfor %}
-                                          {% endif %}
-                                          </ul>
-                                      </div>
+                          <div class="col-md-6">
+                              <div class="row">
+                                  <h4 class="text-bold">{{instruction.client_user.organisation.trading_name|default:"N/A"}}</h4>
+                              </div>
+                              <div class="row">
+                                  <div>
+                                      <h5 class="text-bold">Requested Conditions:</h5>
+                                      <ul>
+                                      {% if not instruction.selected_snomed_concepts %}
+                                          <li>No conditions</li>
+                                      {% else %}
+                                          {% for snomed in instruction.selected_snomed_concepts %}
+                                              <li>{{ snomed.fsn_description }}</li>
+                                          {% endfor %}
+                                      {% endif %}
+                                      </ul>
                                   </div>
                               </div>
-                              <div class="patient-consent">
-                                <button class="btn btn-consent" data-toggle="modal" data-target="#pdfModal"><i class="fas fa-file-medical icon"></i> View consent form</button>
-                              </div>
-                          {% endif %}
-                          {% ifequal instruction.type amra_type %}
-                              <div class="patient-consent">
-                                  <button class="btn btn-consent" data-toggle="modal" data-target="#pdfModal"><i class="fas fa-file-medical icon"></i> View consent form</button>
-                              </div>
-                          {% endifequal %}
+                          </div>
+                          <div class="patient-consent">
+                            <button class="btn btn-consent" data-toggle="modal" data-target="#pdfModal"><i class="fas fa-file-medical icon"></i> View consent form</button>
+                          </div>
                       </div>
                   </div>
               </div>
