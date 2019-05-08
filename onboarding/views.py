@@ -285,3 +285,9 @@ def step1(request: HttpRequest) -> HttpResponse:
         'surgery_form': surgery_form,
         'surgery_email_form': surgery_email_form,
     })
+
+def step2(request: HttpRequest) -> HttpResponse:
+    pm_form = PMForm()
+    return render(request, 'onboarding/step2.html', {
+        'pm_form': pm_form,
+    })

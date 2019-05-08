@@ -1,8 +1,20 @@
-.step1 .card-header {
+#step_form .card-header {
     background-color: #36569a;
     color: whitesmoke;
 }
 
-.step1 .card {
+#step_form .card-body {
+    color: black;
+}
+
+#step_form .card {
     margin-bottom: 10px;
+}
+
+.subheader {
+    margin-bottom: 20px;
+}
+
+.red{
+    color: #e80000;
 }
