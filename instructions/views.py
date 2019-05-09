@@ -675,10 +675,6 @@ def new_instruction(request):
             else:
                 return redirect('instructions:view_pipeline')
         else:
-            messages.error(
-                request,
-                "You must supply a valid consent form, or the patient's e-mail address when creating an AMRA instruction!"
-            )
             return render(request, 'instructions/new_instruction.html', {
                 'header_title': header_title,
                 'patient_form': patient_form,
