@@ -18,3 +18,30 @@
 .red{
     color: #e80000;
 }
+
+.active-a {
+    text-decoration: underline;
+    color: #007bff;
+}
+
+.policy-modal {
+    max-width: 80%;
+}
+
+.title-pos {
+    line-height: 2.5rem;
+}
+
+.emrMessage {
+    text-align: center;
+    height: 50vh;
+}
+
+.welcomeMessage {
+    margin: 0px;
+    font-size: 30px;
+}
+
+.centerMessage {
+    margin-top: 6rem;
+}
