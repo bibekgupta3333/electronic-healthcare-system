@@ -442,7 +442,8 @@ class TestConsentContact(TestInstructionBase):
                 'mdx_consent': mock_mdx_file,
                 'mdx_consent_loaded': 'loaded',
                 'patient_email': 'change@gmail.com',
-                'patient_telephone_mobile': '1111111111'
+                'patient_telephone_mobile': '1111111111',
+                'proceed_option': '0'
             }
         )
         self.assertEqual(302, response.status_code)
