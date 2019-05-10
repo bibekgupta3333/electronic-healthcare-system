@@ -342,9 +342,8 @@
                 if($('#id_proceed_option_0').is(':checked')){
                     $('#AsyncOptionModal').modal('hide');
                     $('#loadingModal').modal({backdrop: "static"});
-                } else {
-                    $('#consentContactForm').submit();
                 }
+                $('#consentContactForm').submit();
             }
         });
 
