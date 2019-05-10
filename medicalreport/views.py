@@ -250,7 +250,6 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
 @check_user_type(GENERAL_PRACTICE_USER)
 def update_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     instruction = get_object_or_404(Instruction, id=instruction_id)
-
     if request.is_ajax():
         create_or_update_redaction_record(request, instruction)
         return JsonResponse({'message': 'Report has been saved.'})
@@ -313,11 +312,21 @@ def submit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         )
     )
 
+    gp_org = redaction.instruction.gp_user.organisation
+    word_library = Library.objects.filter(gp_practice=gp_org)
+    library_history = LibraryHistory.objects.filter(instruction=instruction)
+
+    relations_dict = {
+        'relations': relations,
+        'word_library': word_library,
+        'library_history': library_history,
+    }
+
     return render(request, 'medicalreport/medicalreport_submit.html', {
         'header_title': header_title,
         'attachments': attachments,
         'redaction': redaction,
-        'relations': relations,
+        'relations': relations_dict,
         'instruction': instruction,
         'finalise_submit_form': finalise_submit_form,
         'patient_full_name': instruction.patient_information.get_full_name()

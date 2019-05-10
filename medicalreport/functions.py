@@ -20,6 +20,7 @@ from medicalreport.reports import MedicalReport, TEMP_DIR
 from report.models import PatientReportAuth
 from report.tasks import generate_medicalreport_with_attachment
 from instructions.models import Instruction
+from library.models import Library, LibraryHistory
 
 import uuid
 import logging
@@ -114,7 +115,6 @@ def create_or_update_redaction_record(request, instruction: Instruction) -> bool
                 save_medical_report(instruction, amendments_for_record)
             if status and status not in ['submit', 'draft', 'preview']:
                 return False
-
             return True
         else:
             if status not in ['add-medication', 'add-allergies']:
@@ -142,11 +142,26 @@ def save_medical_report(instruction: Instruction, amendments_for_record: Amendme
         os.remove(instruction.medical_xml_report.path)
         instruction.medical_xml_report.delete()
     medical_record_decorator = MedicalReportDecorator(parse_xml, instruction)
+
     relations = " " + " | ".join(relation.name for relation in ReferencePhrases.objects.all()) + " "
+    gp_org = instruction.gp_user.organisation
+    word_library = Library.objects.filter(gp_practice=gp_org)
+    library_history = LibraryHistory.objects.filter(instruction=instruction)
+    redact_xpaths = list()
+    for history in library_history:
+        redact_xpaths.append(history.xpath)
+    relations_dict = {
+        'relations': relations,
+        'word_library': word_library,
+        'library_history': library_history,
+        'xpath': redact_xpaths,
+        'status': 'final'
+    }
+
     str_xml = lxml_to_string(parse_xml)
     params = {
         'medical_record': medical_record_decorator,
-        'relations': relations,
+        'relations': relations_dict,
         'redaction': amendments_for_record,
         'instruction': instruction,
         'surgery_name': instruction.gp_practice,

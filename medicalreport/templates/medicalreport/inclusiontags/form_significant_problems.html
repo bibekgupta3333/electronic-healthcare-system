@@ -23,7 +23,7 @@
             <h6 class='header'>Past</h6>
             <div>
             {% for model in significant_past_problems %}
-            {% with header=model|past_problem_header map_code=model|map_code  %}
+            {% with header=model|past_problem_header:problem_linked_lists map_code=model|map_code  %}
                 {% problem_redaction_checkboxes model redaction problem_linked_lists header=header word_library=word_library map_code=map_code sensitive_conditions=sensitive_conditions %}
             {% endwith %}
             {% endfor %}

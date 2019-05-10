@@ -1,10 +1,10 @@
 from django import template
 
 from services.xml.problem import Problem
-
+from django.utils.html import format_html
 from datetime import date as Date
 from typing import List, Optional
-
+from library.models import Library
 register = template.Library()
 
 
@@ -61,3 +61,37 @@ def problem_xpaths(problem, problem_link_list):
 
     xpaths = problem.xpaths() + problem_link_xpaths
     return list(set(xpaths))
+
+
+def generate_toolbox_report(library_history=None, value='', xpath='', instruction=None):
+    gp_org = instruction.gp_user.organisation
+    library_object = Library.objects.filter(gp_practice=gp_org)
+    highlight_html = '''
+        <span class="highlight-library">
+            <span class="{}">{}</span>
+    '''
+    if library_history:
+        split_word = value.split()
+        for word in library_object:
+            for history in library_history:
+                num = 0
+                action = history.action
+                while num < len(split_word):
+                    if str.upper(split_word[num]) == str.upper(word.key):
+                        text = split_word[num]
+                        highlight_class = ''
+                        if history.old == split_word[num]:
+                            if action == 'Replace' and history.xpath in xpath:
+                                split_word[num] = history.new
+                                text = highlight_html.format(highlight_class, split_word[num])
+                            elif action == 'Redact' and history.xpath in xpath:
+                                highlight_class = 'bg-dark'
+                                text = highlight_html.format(highlight_class, split_word[num])
+                            elif action == 'ReplaceAll':
+                                split_word[num] = history.new
+                                text = highlight_html.format(highlight_class, split_word[num])
+                            split_word[num] = format_html(text)
+                    num = num + 1
+            value = " ".join(split_word)
+    return value
+                        

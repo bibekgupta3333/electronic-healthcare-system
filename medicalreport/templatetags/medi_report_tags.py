@@ -265,7 +265,7 @@ def problem_redaction_checkboxes(model, redaction, problem_linked_lists, map_cod
     split_word = header.split()
     xpaths_value = xpaths[0]
     gp_org = redaction.instruction.gp_user.organisation
-
+    
     library_history = LibraryHistory.objects.filter(instruction=redaction.instruction)
     for word in word_library:
         if str.upper(word.key) in map(str.upper, split_word):
