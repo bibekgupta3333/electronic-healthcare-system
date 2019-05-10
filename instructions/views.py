@@ -1087,47 +1087,51 @@ def consent_contact(request, instruction_id, patient_emis_number):
         return patient_registration
 
     if request.method == "POST":
-        sars_consent_form = SarsConsentForm(request.POST, request.FILES, instance=instruction)
-        mdx_consent_form = MdxConsentForm(request.POST, request.FILES, instance=instruction)
-        if request.POST.get('sars_consent_loaded') == 'loaded' and sars_consent_form.is_valid():
-            sars_consent_form.save()
-        elif request.POST.get('sars_consent_loaded') != 'loaded':
-            instruction.sars_consent.delete()
-        if request.POST.get('mdx_consent_loaded') == 'loaded' and mdx_consent_form.is_valid():
-            mdx_consent_form.save()
-        elif request.POST.get('mdx_consent_loaded') != 'loaded':
-            instruction.mdx_consent.delete()
+        if request.POST.get('proceed_option') == '0':
+            sars_consent_form = SarsConsentForm(request.POST, request.FILES, instance=instruction)
+            mdx_consent_form = MdxConsentForm(request.POST, request.FILES, instance=instruction)
+            if request.POST.get('sars_consent_loaded') == 'loaded' and sars_consent_form.is_valid():
+                sars_consent_form.save()
+            elif request.POST.get('sars_consent_loaded') != 'loaded':
+                instruction.sars_consent.delete()
+            if request.POST.get('mdx_consent_loaded') == 'loaded' and mdx_consent_form.is_valid():
+                mdx_consent_form.save()
+            elif request.POST.get('mdx_consent_loaded') != 'loaded':
+                instruction.mdx_consent.delete()
 
-        patient_email = request.POST.get('patient_email', '')
-        patient_telephone_mobile = request.POST.get('patient_telephone_mobile', '')
-        patient_alternate_phone = request.POST.get('patient_alternate_phone', '')
+            patient_email = request.POST.get('patient_email', '')
+            patient_telephone_mobile = request.POST.get('patient_telephone_mobile', '')
+            patient_alternate_phone = request.POST.get('patient_alternate_phone', '')
 
-        if (request.POST.get('sars_consent_loaded') != 'loaded' or sars_consent_form.is_valid())\
-                and (request.POST.get('mdx_consent_loaded') != 'loaded' or mdx_consent_form.is_valid()):
-            patient_instruction.patient_email = patient_email
-            patient_instruction.patient_telephone_mobile = patient_telephone_mobile
-            patient_instruction.patient_telephone_code = request.POST.get('patient_telephone_code', '')
-            patient_instruction.patient_alternate_phone = patient_alternate_phone
-            patient_instruction.patient_alternate_code = request.POST.get('patient_alternate_code', '')
-            patient_instruction.patient_emis_number = patient_emis_number
-            patient_instruction.save()
-            instruction.save()
-            event_logger.info(
-                '{user}:{user_id} UPDATED consent contact of patient instruction ID {instruction_id}'.format(
-                    user=request.user, user_id=request.user.id,
-                    instruction_id=instruction_id
-                )
-            )
-            next_step = request.POST.get('next_step', '')
-            if next_step == 'view_pipeline':
-                instruction.saved = True
+            if (request.POST.get('sars_consent_loaded') != 'loaded' or sars_consent_form.is_valid())\
+                    and (request.POST.get('mdx_consent_loaded') != 'loaded' or mdx_consent_form.is_valid()):
+                patient_instruction.patient_email = patient_email
+                patient_instruction.patient_telephone_mobile = patient_telephone_mobile
+                patient_instruction.patient_telephone_code = request.POST.get('patient_telephone_code', '')
+                patient_instruction.patient_alternate_phone = patient_alternate_phone
+                patient_instruction.patient_alternate_code = request.POST.get('patient_alternate_code', '')
                 patient_instruction.patient_emis_number = patient_emis_number
                 patient_instruction.save()
-                gp_user = get_object_or_404(GeneralPracticeUser, user_id=request.user.id)
-                instruction.in_progress(context={'gp_user': gp_user})
-                return redirect('instructions:view_pipeline')
-            elif next_step == 'proceed':
-                return redirect('medicalreport:select_patient', instruction_id=instruction_id, patient_emis_number=patient_emis_number)
+                instruction.save()
+                event_logger.info(
+                    '{user}:{user_id} UPDATED consent contact of patient instruction ID {instruction_id}'.format(
+                        user=request.user, user_id=request.user.id,
+                        instruction_id=instruction_id
+                    )
+                )
+                next_step = request.POST.get('next_step', '')
+                if next_step == 'view_pipeline':
+                    instruction.saved = True
+                    patient_instruction.patient_emis_number = patient_emis_number
+                    patient_instruction.save()
+                    gp_user = get_object_or_404(GeneralPracticeUser, user_id=request.user.id)
+                    instruction.in_progress(context={'gp_user': gp_user})
+                    return redirect('instructions:view_pipeline')
+                elif next_step == 'proceed':
+                    return redirect('medicalreport:select_patient', instruction_id=instruction_id, patient_emis_number=patient_emis_number)
+        else:
+            # do some asynchronous task
+            return redirect('instructions:view_pipeline')
 
     patient_email = patient_registration.email() if not patient_instruction.patient_email else patient_instruction.patient_email
     patient_telephone_mobile = patient_registration.mobile_number() if not patient_instruction.patient_telephone_mobile else patient_instruction.patient_telephone_mobile
