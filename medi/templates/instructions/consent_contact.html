@@ -64,107 +64,182 @@
             {% endcache %}
             <div class="col-md-12 mt-4">
                 <input type="hidden" name="next_step" id="id_next_step" value="" />
-                <div class="card">
-                    <div class="card-header"><h5>Patient consent(s) and contact information (mandatory)</h5></div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-8">
-                                <div class="row">
-                                    <div class="col-md-6 mt-2">
-                                        <div class="col-12 text-center">
-                                            <h6><strong>SAR Patient Request</strong></h6>
+                {% if request.user.type == 'GP' %}
+                    <div class="card mb-2">
+                        <div class="card-header"><h5>Ways to share the record</h5></div>
+                        <div class="card-body">
+                            <p class="card-text">There are different ways to return the record to your patient / third party. You can select multiple options.</p>
+                        </div>
+                    </div>
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <div class="card-title">1. Direct to the patient (if this option is applicable, please select one option)</div>
+                            <div class="panel-group driving-license-settings" id="accordion">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                        <h4 class="panel-title"> </h4>
+                                        <div class="checkbox col-md-6" id="mdx-consent">
+                                            <label data-target="#collapseOne">
+                                                <input type="checkbox" name="" id="ch-mdx-consent"> Use MDX Dual Consent
+                                            </label>
                                         </div>
-                                        <div class="col-12">&nbsp;</div>
-                                        <div class="col-12 pt-5 text-center">
-                                            <h6>Uploading consent is required if initiated by third party (solicitor)</h6>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mt-2">
-                                        <div class="col-12 text-center">
-                                            <h6><strong>SAR dual consent</strong></h6>
-                                        </div>
-                                        <div class="col-12">&nbsp;</div>
-                                        <div class="col-12">
-                                            <button class="btn btn-primary btn-lg btn-block" type="button" id="downloadBtn">
-                                                Print Pre-Populated Consent Form
-                                            </button>
-                                            <div class="col-12">&nbsp;</div>
-                                            Once printed off and signed, 
-                                            scan document to a folder on your system, and upload the document to this screen by using the ‘browse’ button below.
+                                        <div class="checkbox col-md-6" id="confirmed-agreement">
+                                            <label data-target="#collapseTwo">
+                                                <input type="checkbox" name="" id="ch-confirmed-agreement"> Confirmed to patient that agreement exists with Medidata Exchange Limited
+                                            </label>
                                         </div>
                                     </div>
-                                    <div class="col-12">&nbsp;</div>
-
-                                    <!-- SARS Request Form Upload -->
-                                    <div class="col-6">
-                                        <div class="col-12">
-                                            <div class="form-group">
-                                                <div class="file-loading">
-                                                    <input type="hidden" name="sars_consent_loaded" id="id_sars_consent_loaded" />
-                                                    {% bootstrap_field sars_consent_form.sars_consent show_label=false %}
-                                                </div>
+                                    <div id="collapseOne" class="panel-collapse collapse in">
+                                        <div class="panel-body">
+                                            <div class="driving-license-kind">
+                                                <span>Collapse for Use MDX Dual Consent</span>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <!-- MDX Dual Consent Form Upload -->
-                                    <div class="col-6">
-                                        <div class="col-12">
-                                            <div class="form-group">
-                                                <div class="file-loading">
-                                                    <input type="hidden" name="mdx_consent_loaded" id="id_mdx_consent_loaded" />
-                                                    {% bootstrap_field mdx_consent_form.mdx_consent show_label=false %}
-                                                </div>
+                                    <div id="collapseTwo" class="panel-collapse collapse in">
+                                        <div class="panel-body">
+                                            <div class="driving-license-kind">
+                                                <span>Collapse for Confirmed agreement</span>
                                             </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                            <div class="col-4 mt-2">
-                                <div class="col-12 text-center">
-                                    <h6><strong>Contact information</strong></h6>
-                                </div>
-                                <div class="row mt-4">
-                                    <div class="col-md-4 rowTitle">Email</div>
-                                    {% bootstrap_field patient_form.patient_email size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
-                                </div>
-                                <div class="row mt-4">
-                                    <div class="col-md-4 rowTitle">Confirm Email</div>
-                                    {% bootstrap_field patient_form.confirm_email size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
-                                </div>
-                                <div class="row mt-4">
-                                    <div class="col-md-4 rowTitle">Mobile Phone</div>
-                                    <div class="col-md-8">
-                                        {% bootstrap_field patient_form.patient_telephone_mobile size='small' show_label=false placeholder='' %}
-                                        {% bootstrap_field patient_form.patient_telephone_code %}
-                                    </div>
-                                </div>
-                                <div class="row mt-4">
-                                    <div class="col-md-4">
-                                        <label for="id_patient_alternate_phone" class="col-form-label">Alternate Phone <br> (optional)</label>
-                                    </div>
-                                    <div class="col-md-8">
-                                        {% bootstrap_field patient_form.patient_alternate_phone size='small' show_label=false placeholder='' %}
-                                        {% bootstrap_field patient_form.patient_alternate_code %}
-                                    </div>
-                                </div>
-                                <div class="row mt-4">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <p>
-                                                In order for your patient to have secure access to a copy of their patient record, 
-                                                the above information fields need to be completed.
-                                                Without this information, your patient will not be provided secure online access to a copy of their record, 
-                                                but you will be able to print out a hard copy to provide to your patient directly. 
-                                            </p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <div class="card-title">2. Return to a third party</div>
+                            <div class="panel-group driving-license-settings" id="accordion">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                        <h4 class="panel-title"> </h4>
+                                        <div class="checkbox col-md-6" id="report-third-party">
+                                            <label data-target="#collapseThird">
+                                                <input type="checkbox" name="" id="ch-report-third-party"> Send report back to a third party
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div id="collapseThird" class="panel-collapse collapse in">
+                                        <div class="panel-body">
+                                            <div class="driving-license-kind">
+                                                <span>Collapse for sending report back to a third party</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="card-title">3. Print within the Surgery</div>
+                            <div class="card-text col-md-12">You will always have the option of printing the record in the Surgery. You can do this from the pipeline view, by clicking on a any completed record. You do not need to select this option.</div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="card">
+                        <div class="card-header"><h5>Patient consent(s) and contact information (mandatory)</h5></div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-8">
+                                    <div class="row">
+                                        <div class="col-md-6 mt-2">
+                                            <div class="col-12 text-center">
+                                                <h6><strong>SAR Patient Request</strong></h6>
+                                            </div>
+                                            <div class="col-12">&nbsp;</div>
+                                            <div class="col-12 pt-5 text-center">
+                                                <h6>Uploading consent is required if initiated by third party (solicitor)</h6>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mt-2">
+                                            <div class="col-12 text-center">
+                                                <h6><strong>SAR dual consent</strong></h6>
+                                            </div>
+                                            <div class="col-12">&nbsp;</div>
+                                            <div class="col-12">
+                                                <button class="btn btn-primary btn-lg btn-block" type="button" id="downloadBtn">
+                                                    Print Pre-Populated Consent Form
+                                                </button>
+                                                <div class="col-12">&nbsp;</div>
+                                                Once printed off and signed, 
+                                                scan document to a folder on your system, and upload the document to this screen by using the ‘browse’ button below.
+                                            </div>
+                                        </div>
+                                        <div class="col-12">&nbsp;</div>
+
+                                        <!-- SARS Request Form Upload -->
+                                        <div class="col-6">
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <div class="file-loading">
+                                                        <input type="hidden" name="sars_consent_loaded" id="id_sars_consent_loaded" />
+                                                        {% bootstrap_field sars_consent_form.sars_consent show_label=false %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- MDX Dual Consent Form Upload -->
+                                        <div class="col-6">
+                                            <div class="col-12">
+                                                <div class="form-group">
+                                                    <div class="file-loading">
+                                                        <input type="hidden" name="mdx_consent_loaded" id="id_mdx_consent_loaded" />
+                                                        {% bootstrap_field mdx_consent_form.mdx_consent show_label=false %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div class="col-4 mt-2">
+                                    <div class="col-12 text-center">
+                                        <h6><strong>Contact information</strong></h6>
+                                    </div>
+                                    <div class="row mt-4">
+                                        <div class="col-md-4 rowTitle">Email</div>
+                                        {% bootstrap_field patient_form.patient_email size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
+                                    </div>
+                                    <div class="row mt-4">
+                                        <div class="col-md-4 rowTitle">Confirm Email</div>
+                                        {% bootstrap_field patient_form.confirm_email size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
+                                    </div>
+                                    <div class="row mt-4">
+                                        <div class="col-md-4 rowTitle">Mobile Phone</div>
+                                        <div class="col-md-8">
+                                            {% bootstrap_field patient_form.patient_telephone_mobile size='small' show_label=false placeholder='' %}
+                                            {% bootstrap_field patient_form.patient_telephone_code %}
+                                        </div>
+                                    </div>
+                                    <div class="row mt-4">
+                                        <div class="col-md-4">
+                                            <label for="id_patient_alternate_phone" class="col-form-label">Alternate Phone <br> (optional)</label>
+                                        </div>
+                                        <div class="col-md-8">
+                                            {% bootstrap_field patient_form.patient_alternate_phone size='small' show_label=false placeholder='' %}
+                                            {% bootstrap_field patient_form.patient_alternate_code %}
+                                        </div>
+                                    </div>
+                                    <div class="row mt-4">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <p>
+                                                    In order for your patient to have secure access to a copy of their patient record, 
+                                                    the above information fields need to be completed.
+                                                    Without this information, your patient will not be provided secure online access to a copy of their record, 
+                                                    but you will be able to print out a hard copy to provide to your patient directly. 
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
         </form>
     </div>
@@ -187,13 +262,13 @@
         <div class="col-md-12">
             <button class="btn btn-primary btn-lg" id="backButton"><i class="fas fa-chevron-left"></i > Go back</button>
             {% if perms.instructions.process_sars %}
-                <button class="btn btn-success btn-lg" id="proceedBtn">Proceed<i class="fas fa-chevron-right"></i>
+                <button class="btn btn-success btn-lg mr-1 rightBtn" id="proceedBtn">Proceed<i class="fas fa-chevron-right"></i>
                 </button>
             {% endif %}
             </button>
-            <button class="btn btn-primary btn-lg rightBtn mr-4" id="saveBtn">Save and Return to Pipeline</button>
+            <button class="btn btn-secondary btn-lg" id="saveBtn">Save and Return to Pipeline</button>
             {% if perms.instructions.reject_sars %}
-                <button class="btn btn-danger btn-lg dropdown-toggle mr-1 rightBtn" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <button class="btn btn-danger btn-lg dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Reject Instruction
                 </button>
             {% endif %}
@@ -226,6 +301,24 @@
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+    <input type="button" id="permit_modal_button" data-toggle="modal" data-target="#permit_modal" style="display: none;">
+    <!-- Modal -->
+    <div class="modal fade" id="permit_modal" tabindex="-1" role="dialog" aria-labelledby="permitModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white text-center">
+                    <h5 class="modal-title mx-auto" id="ModalLongTitle">You haven't selected any options</h5>
+                </div>
+                <div class="modal-body bg-white" style="color: black; text-align: center;">
+                You haven't chosen any options to send the medical record out. You will anyway be able to print the record in your Surgery. Alternatively you can go back and choose other options.
+                </div>
+                <div class="modal-footer bg-white">
+                    <button type="button" class="btn btn-secondary btn-lg" data-dismiss="modal">Go Back</button>
+                    <button type="button" class="btn btn-primary btn-lg ml-auto" id="sarsProceed">Proceed</button>
+                </div>
+            </div>
         </div>
     </div>
     <div id="noSarsConsent" class="well">
@@ -454,20 +547,23 @@
             window.location.href = '/medicalreport/'+'{{instruction.id}}'+'/patient-emis-number/';
         });
         $('#sarsProceed').click(function(){
-            $('#noSarsConsent').popup('hide');
-            var mdx_loaded = $('.file-caption-name').last().attr('title');
-            if(!mdx_loaded) {
-                $('#noMdxConsent').popup('show');
-                $('#id_next_step').val('proceed');
-                proceedAction();
-            }
-            else if($('#id_patient_email').val() == ''){
-                $('#noEmailAddress').popup('show');
-            }
-            else{
-                $('#id_next_step').val('proceed');
-                proceedAction();
-            }
+            $('#permit_modal').modal('hide');
+            setTimeout(function(){
+                $('#noSarsConsent').popup('hide');
+                var mdx_loaded = $('.file-caption-name').last().attr('title');
+                if(!mdx_loaded) {
+                    $('#noMdxConsent').popup('show');
+                    $('#id_next_step').val('proceed');
+                    proceedAction();
+                }
+                else if($('#id_patient_email').val() == ''){
+                    $('#noEmailAddress').popup('show');
+                }
+                else{
+                    $('#id_next_step').val('proceed');
+                    proceedAction();
+                }
+            }, 200);
         });
         $('#emailProceed').click(function(){
             $('#id_next_step').val('proceed');
@@ -475,24 +571,33 @@
         });
         $('#proceedBtn').click(function(){
             $('#proceedBtn').blur();
-            var sars_loaded = $('.file-caption-name').first().attr('title');
-            var mdx_loaded = $('.file-caption-name').last().attr('title');
-            if(!mdx_loaded) {
-                $('#noMdxConsent').popup('show');
-                $('#id_mdx_consent_loaded').val('');
-            } else if(!sars_loaded) {
-                $('#noSarsConsent').popup('show');
-                $('#id_sars_consent_loaded').val('');
-                $('#id_mdx_consent_loaded').val('loaded');
-            } else if($('#id_patient_email').val() == ''){
-                $('#id_mdx_consent_loaded').val('loaded');
-                $('#id_sars_consent_loaded').val('loaded');
-                $('#noEmailAddress').popup('show');
-            } else {
-                $('#id_sars_consent_loaded').val('loaded');
-                $('#id_mdx_consent_loaded').val('loaded');
-                $('#id_next_step').val('proceed');
-                proceedAction();
+
+            if (!$('#ch-mdx-consent').is(':checked') &&
+                !$('#ch-confirmed-agreement').is(':checked') &&
+                !$('#ch-report-third-party').is(':checked')) {
+                $('#permit_modal_button').click();
+            }
+            else {
+                var sars_loaded = $('.file-caption-name').first().attr('title');
+                var mdx_loaded = $('.file-caption-name').last().attr('title');
+
+                if(!mdx_loaded) {
+                    $('#noMdxConsent').popup('show');
+                    $('#id_mdx_consent_loaded').val('');
+                } else if(!sars_loaded) {
+                    $('#noSarsConsent').popup('show');
+                    $('#id_sars_consent_loaded').val('');
+                    $('#id_mdx_consent_loaded').val('loaded');
+                } else if($('#id_patient_email').val() == ''){
+                    $('#id_mdx_consent_loaded').val('loaded');
+                    $('#id_sars_consent_loaded').val('loaded');
+                    $('#noEmailAddress').popup('show');
+                } else {
+                    $('#id_sars_consent_loaded').val('loaded');
+                    $('#id_mdx_consent_loaded').val('loaded');
+                    $('#id_next_step').val('proceed');
+                    proceedAction();
+                }
             }
         });
         $('#noMdxConsent_btn_process').click( function() {
