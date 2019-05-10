@@ -380,7 +380,7 @@ def step3(request: HttpRequest, practice_code: str) -> HttpResponse:
         'operating_system': gp_organisation.gp_operating_system
     })
 
-    return render(request, 'onboarding/emis_setup.html', {
+    return render(request, 'onboarding/step3.html', {
         'header_title': header_title,
         'organisation_code': gp_organisation.operating_system_organisation_code,
         'practice_code': gp_organisation.practcode,

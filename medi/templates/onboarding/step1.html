@@ -13,6 +13,7 @@
 {% endblock %}
 
 {% block Content %}
+    {% include 'onboarding/progress_bar_onboard.html' %}
     <form id="step_form" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="step1">
