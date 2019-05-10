@@ -36,7 +36,7 @@ function pollingEmis(url) {
                     $(".btn-checkSetup").hide();
                     $(".emisSetupSuccess").removeClass("d-none");
                     setTimeout(function () {
-                        document.location.href = "/onboarding/emr-setup-final/" + data["practice_code"]
+                        document.location.href = "{% url 'accounts:login' %}";
                     }, 2000)
                 } else {
                     $('#checkingEmisButton').prop("disabled", false);

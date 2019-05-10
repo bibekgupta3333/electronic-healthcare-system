@@ -159,19 +159,22 @@
                     </div>
                     <div class="row form-group">
                         <div class="col-md-12">
-                            <input type="checkbox" id="consent" class="consent" name="consented">I consent to MediData Exchange contacting the surgery regarding our services.
+                            <input type="checkbox" id="consentCheckBox1" class="consent" name="consented">
+                            <label for="consent">
+                                I consent to MediData Exchange contacting the surgery regarding our services.
+                            </label>
                         </div>
                     </div>
                     <div class="row form-group">
                         <div class="col-md-12">
-                            <input class="form-control-lg" type="checkbox" id="consentCheckBox">
+                            <input type="checkbox" id="consentCheckBox2" class="consent">
                             <label for="consentCheckBox">
                                 I consent to MediData Exchange Ltd securely retaining this information and to be able to contact the Surgery about eMR via contact details provided.
                             </label>
                         </div>
                         <div class="row">
                             <div class="col-md-2 mt-3">
-                                {% bootstrap_button content='Submit' button_type='submit' size='medium' button_class='btn btn-primary'  %}
+                                <button id="BtnSubmit" class="btn btn-primary btn-lg" type="submit" disabled>Submit</button>
                             </div>
                         </div>
                     </div>
@@ -197,6 +200,26 @@
                     <button id="acceptPolicy" type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Accept</button>
                 </div>
             </div>
+        </div>
+    </div>
+    <div class="modal fade confirm-modal" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-body">
+                    The terms and conditions are not accepted. You can proceed but you will not be able to receive or initiate instructions until reviewed and accepted
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button id="closeConfirm" type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">Go back and review</button>
+                <button id="proceed" type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Proceed</button>
+            </div>
+        </div>
         </div>
     </div>
 {% endblock %}
@@ -234,6 +257,17 @@
             $('#goBack').click(function() {
               $('#accept-policy').attr("checked", false);
               $('#accept-policy').trigger('change');
+            });
+
+            $('#step_form').submit(function(event) {
+                $('#accept-policy').removeAttr("disabled");
+                if(!$('#accept-policy:checked').length) {
+                    event.preventDefault();
+                    $('#confirmModal').modal();
+                    $('#proceed').click(function() {
+                        $form.submit();
+                    });
+                }
             });
 
             $('#id_postcode').on('change', function () {
@@ -289,6 +323,97 @@
                   });
                }
             });
+
+            $('#id_practice_code').change(function () {
+                $('#id_postcode').empty();
+                $('#id_address').empty();
+                $('#id_surgery_name').empty();
+                init_select2_surgery_name(
+                    [$('#step_form').data('surgery-name')],
+                    "{% url 'organisations:sign_up_autocomplete' %}"
+                );
+
+                init_select2_postcode([$('#id_postcode').data('post-code')]);
+                if($('#id_postcode').data('post-code')){
+                    $('#id_postcode').trigger('change');
+                }
+            });
+
+            $('#accept-policy').change(function () {
+                if($('#accept-policy').is(':checked') == true && 
+                    $('#consentCheckBox1').is(':checked') == true && 
+                    $('#consentCheckBox2').is(':checked') == true) {
+                    $('#BtnSubmit').prop('disabled', false);
+                } else {
+                    $('#BtnSubmit').prop('disabled', true);
+                }
+            });
+            $(".consent").change(function() {
+                if($('#accept-policy').is(':checked') == true && 
+                    $('#consentCheckBox1').is(':checked') == true && 
+                    $('#consentCheckBox2').is(':checked') == true) {
+                    $('#BtnSubmit').prop('disabled', false);
+                } else {
+                    $('#BtnSubmit').prop('disabled', true);
+                }
+            });
+
+            $('#id_surgery_name').change(function () {
+                $('#id_postcode').empty();
+                $('#id_address').empty();
+                $('#id_practice_code').empty();
+                init_select2_practice_code(
+                    [$('#step_form').data('practice-code')],
+                    "{% url 'organisations:sign_up_autocomplete' %}"
+                );
+
+                init_select2_postcode([$('#id_postcode').data('post-code')]);
+                if($('#id_postcode').data('post-code')){
+                    $('#id_postcode').trigger('change');
+                }
+            });
+            $('#id_postcode').trigger('change');
+
+            $(document).on({
+                mouseover: function(){
+                    $.ajax({
+                        type: "GET",
+                        url: "{% url 'organisations:get_gp_sign_up_data' %}",
+                        data: {
+                            'code': $(this).text(),
+                            'name': $(this).text()
+                        },
+                        dataType: 'json',
+                        success: function (data) {
+                            if(data.name){
+                                $('#step_form').data('surgery-name', data.name);
+                            } else {
+                                $('#step_form').data(
+                                    'surgery-name',
+                                    $('#select2-id_surgery_name-container').text()
+                                );
+                            }
+
+                            if(data.code){
+                                $('#step_form').data('practice-code', data.code);
+                            } else {
+                                $('#step_form').data(
+                                    'practice-code',
+                                    $('#select2-id_practice_code-container').text()
+                                );
+                            }
+
+                            $('#id_address_line1').val(data.street);
+                            $('#id_city').val(data.city);
+                            $('#id_county').val(data.county);
+                            $('#id_contact_num').val(data.phone_office);
+                            $('#id_postcode').data('post-code', data.postcode);
+                        }
+                    });
+                }
+              },
+              '#select2-id_surgery_name-results > .select2-results__option, #select2-id_practice_code-results > .select2-results__option'
+            );
         });
     </script>
 {% endblock %}

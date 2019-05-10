@@ -10,6 +10,7 @@
     <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/strongPass.css' %}" rel="stylesheet">
     <link href="{% static 'css/onboarding/onboarding.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/intlTelInput.min.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block Content %}
@@ -170,4 +171,94 @@
             </div>
         </div>
     </form>
+{% endblock %}
+
+{% block Script %}
+    <script src="{% static 'js/jquery.formset.js' %}"></script>
+    <script src="{% static 'js/intlTelInput.min.js' %}"></script>
+    <script src="{% static 'js/intlTel.js' %}"></script>
+    <script src="{% static 'js/onboarding/emr_signup.js' %}"></script>
+    <script src="{% static 'js/axcvbn.min.js' %}"></script>
+    <script src="{% static 'js/zxcvbn-bootstrap-strength-meter.js' %}" ></script>
+    <script>
+        $(document).ready(function() {
+            $("#StrengthProgressBar").zxcvbnProgressBar({
+                  passwordInput: "#id_password1",
+                  ratings: ["Very Weak", "Weak", "OK", "Strong", "Very strong"]
+            });
+            setUpTel('id_telephone_mobile', 'id_telephone_code');
+            let csrf_token = '{{ csrf_token }}';
+
+            $('#step_form').submit(function(event) {
+                var $form = this;
+                var match_error = false;
+                if($('#id_email1').val() != $('#id_email2').val()) {
+                    $('#email_error').text("Email doesn't match");
+                    match_error = true;
+                } else {
+                    $('#email_error').text("");
+                }
+                if($('#id_password1').val() != $('#id_password2').val()) {
+                    $('#password_error').text("Password doesn't match");
+                    match_error = true;
+                } else {
+                    $('#password_error').text("");
+                }
+                if($('#id_password1').hasClass('is-invalid')){
+                    match_error = true;
+                }
+                if($('#id_telephone_mobile').val().length > 11) {
+                    return false;
+                }
+                if(match_error) {
+                    event.preventDefault();
+                }
+            });
+
+            $('#id_password1').keyup(delay(function() {
+                $.ajax({
+                    url: "{% url 'accounts:verify_password' %}",
+                    type: "POST",
+                    dataType: "json",
+                    data:{
+                        "password": $(this).val(),
+                        "first_name": $('#id_first_name').val(),
+                        "surname": $('#id_surname').val(),
+                        "email": $('#id_email1').val(),
+                        "csrfmiddlewaretoken": csrf_token
+                    },
+                    success:function(data) {
+                        $('#password_form').find('.invalid-feedback').remove();
+                        $('#id_password1').removeClass("is-invalid");
+                        if (!data.results.verified){
+                            $('#id_password1').addClass("is-invalid");
+                            data.results.warning.map(function(item){
+                                $('#id_password1').after('<div class="invalid-feedback">' + item + '</div>');
+                            });
+                        }
+                    }
+                });
+            }, 500));
+
+            $('#id_email1').change(function() {
+              $.ajax({
+                  url: "{% url 'accounts:check_email' %}",
+                  type: "POST",
+                  dataType: "json",
+                  data:{
+                      "email": $(this).val() ,
+                      "csrfmiddlewaretoken": csrf_token
+                  },
+                  success:function(data) {
+                    $('#id_email1').removeClass("is-invalid");
+                    $('#email_form').find('.invalid-feedback').remove();
+                    if (data.exists){
+                      $('#id_email1').addClass("is-invalid");
+                      $('#id_email1').after('<div class="invalid-feedback">This email address has already been used to register.</div>');
+                    }
+                  }
+              });
+            });
+        });
+    </script>
 {% endblock %}
