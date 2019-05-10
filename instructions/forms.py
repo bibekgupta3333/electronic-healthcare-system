@@ -90,9 +90,11 @@ class ScopeInstructionForm(forms.Form):
 
     def clean(self):
         super().clean()
-        if not self.errors and self.cleaned_data.get('type') == "AMRA" and not self.patient_email and not self.cleaned_data['consent_form']:
+        if not self.errors and not self.patient_email and not self.cleaned_data['consent_form']:
             raise ValidationError(
-                "You must supply a valid consent form, or the patient's e-mail address when creating an AMRA instruction!")
+                "You must supply a valid consent form, " + \
+                "or the patient's e-mail address when creating an %s instruction!" % \
+                self.cleaned_data.get('type'))
         return self.cleaned_data
 
 
