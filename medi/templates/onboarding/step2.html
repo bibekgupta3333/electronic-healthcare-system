@@ -270,6 +270,15 @@
                   }
               });
             });
+
+            $('#id_telephone_mobile').after('<div style="margin-left: 10px; display: inline; position: relative;">' +
+                                    '<img class="info-icon" id="phone_info_icon" src="{% static 'images/information-icon.png' %}">' +
+                                    '<div id="phone_info">We require a mobile phone number in order to set up two-factor authentication, which is a very important security step.</div></div>');
+            $('#phone_info_icon').on("mouseenter", function() {
+                $('#phone_info').show();
+            }).on("mouseleave", function() {
+                $('#phone_info').hide();
+            });
         });
     </script>
 {% endblock %}
