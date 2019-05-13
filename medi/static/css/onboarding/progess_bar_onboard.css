@@ -45,3 +45,8 @@
 #last_waypoint {
     margin-left: calc(100% - 30px);
 }
+
+#btn_setup_guide {
+    margin-right: 20px;
+    text-decoration: none;
+}
