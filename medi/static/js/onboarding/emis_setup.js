@@ -78,13 +78,13 @@ function pollingNewEmis(url) {
 }
 
 function validateBTN( progressPercent ) {
-    if( progressPercent == 20 || progressPercent == 35 || progressPercent == 55 ){
+    if( progressPercent == 20 || progressPercent == 47 || progressPercent == 63 ){
         $('#backBTN').prop('disabled',true);
     } else {
         $('#backBTN').prop('disabled',false);
     }
     
-    if( progressPercent == 30 || progressPercent == 50 || progressPercent == 85 ){
+    if( progressPercent == 43 || progressPercent == 59 || progressPercent == 87 ){
         $('#nextBTN').prop('disabled',true);
         $('#completeBTN').prop('disabled',false);
         $('#username-block').show();
@@ -101,9 +101,9 @@ function fromReload() {
     $('#id_label').addClass('text-success');
     $('#progress_bar').addClass('bg-success');
 
-    $('#progress_percent').text('90%');
-    $('#progress_bar').attr('aria-valuenow', '90');
-    $('#progress_bar').css('width', '90%');
+    $('#progress_percent').text('91%');
+    $('#progress_bar').attr('aria-valuenow', '91');
+    $('#progress_bar').css('width', '91%');
 
     picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2004.png';
     titleCaption = 'c) Enter the username and password below, and give the user a suitable role where it can read records';
@@ -136,14 +136,14 @@ function changeAttr( status ) {
     var percent = parseInt( $('#progress_bar').attr('aria-valuenow') );
     switch( percent ) {
         // Step 1 Control.
-        case 20:
+        case 35:
             picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2003.png';
             titleCaption = 'b) Click the "Add" button, select "New user"';
             $('#setup-min-pic').attr('href', picPath );
             $('#setup-full-pic').attr('src', picPath );
             $('#setup-caption').text( titleCaption );
             break;
-        case 25:
+        case 39:
             if( status == 'next' ){
                 picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2004.png';
                 titleCaption = 'c) Enter the username and password below, and give the user a suitable role where it can read records';
@@ -158,7 +158,7 @@ function changeAttr( status ) {
                 $('#setup-caption').text( titleCaption );
             }
             break;
-        case 30:
+        case 43:
             picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2003.png';
             titleCaption = 'b) Click the "Add" button, select "New user"';
             $('#setup-min-pic').attr('href', picPath );
@@ -166,7 +166,7 @@ function changeAttr( status ) {
             $('#setup-caption').text( titleCaption );
             break;
         // Step 2 Control.
-        case 40:
+        case 51:
             if( status == 'next' ){
                 picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2009.png';
                 titleCaption = 'e) Select "Partner API" at the bottom';
@@ -181,7 +181,7 @@ function changeAttr( status ) {
                 $('#setup-caption_2').text( titleCaption );
             }
             break;
-        case 45:
+        case 55:
             if( status == 'next' ){
                 picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2010.png';
                 titleCaption = 'f) Select "eMR" in the Partner API list';
@@ -196,7 +196,7 @@ function changeAttr( status ) {
                 $('#setup-caption_2').text( titleCaption );
             }
             break;
-        case 50:
+        case 59:
             if( status == 'next' ){
                 picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2011.png';
                 titleCaption = 'g) Click "Activate Application" at the top';
@@ -212,7 +212,7 @@ function changeAttr( status ) {
                 $('#setup-caption_2').text( titleCaption );
             }
         // Step 3 control.
-        case 60:
+        case 67:
             if( status == 'next' ){
                 picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2013.png';
                 titleCaption = 'i) Find the new user you created and tick the box next to it';
@@ -227,7 +227,7 @@ function changeAttr( status ) {
                 $('#setup-caption_3').text( titleCaption );
             }
             break;
-        case 65:
+        case 71:
             if( status == 'next' ){
                 picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2014.png';
                 titleCaption = "j) You'll be asked for that password we gave you above again";
@@ -242,7 +242,7 @@ function changeAttr( status ) {
                 $('#setup-caption_3').text( titleCaption );
             }
             break;
-        case 70:
+        case 75:
             if( status == 'next' ){
                 picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2015.png';
                 titleCaption = 'k) Click "OK"';
@@ -257,7 +257,7 @@ function changeAttr( status ) {
                 $('#setup-caption_3').text( titleCaption );
             }
             break;
-        case 75:
+        case 79:
             if( status == 'next' ){
                 picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2016.png';
                 titleCaption = 'l) Click "Login Access" button';
@@ -272,7 +272,7 @@ function changeAttr( status ) {
                 $('#setup-caption_3').text( titleCaption );
             }
             break;
-        case 80:
+        case 83:
             if( status == 'next' ){
                 picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2017.png';
                 titleCaption = 'm) Find the new user you created and tick the boxes to the right of it';
@@ -287,7 +287,7 @@ function changeAttr( status ) {
                 $('#setup-caption_3').text( titleCaption );
             }
             break;
-        case 85:
+        case 87:
             if( status == 'next' ){
                 picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2018.png';
                 titleCaption = 'n) Click "OK". Setup is complete';

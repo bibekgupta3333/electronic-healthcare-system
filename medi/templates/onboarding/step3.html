@@ -12,6 +12,7 @@
 {% endblock %}
 
 {% block Content %}
+{% include 'onboarding/progress_bar_onboard.html' %}
 <div class="col-12">&nbsp;</div>
     <div class="modal fade" id="surgeryUpdateModal">
         <div class="modal-dialog modal-lg" role="document">
@@ -185,16 +186,16 @@
             {% if reload_status == 1 %}
                 fromReload();
             {% else %}
-                $('#progress_percent').text('20%');
-                $('#progress_bar').attr('aria-valuenow', '20');
-                $('#progress_bar').css('width', '20%');
+                $('#progress_percent').text('35%');
+                $('#progress_bar').attr('aria-valuenow', '35');
+                $('#progress_bar').css('width', '35%');
             {% endif %}
 
             validateBTN( $('#progress_bar').attr('aria-valuenow') );
 
             $('#backBTN').click( function() {
                 var percentNow = $('#progress_bar').attr('aria-valuenow');
-                var percentNext = parseInt(percentNow) - 5;
+                var percentNext = parseInt(percentNow) - 4;
 
                 $('#progress_percent').text( percentNext + ' % ');
                 $('#progress_bar').attr('aria-valuenow', percentNext);
@@ -205,7 +206,7 @@
 
             $('#nextBTN').click( function() {
                 var percentNow = $('#progress_bar').attr('aria-valuenow');
-                var percentNext = parseInt(percentNow) + 5;
+                var percentNext = parseInt(percentNow) + 4;
 
                 $('#progress_percent').text( percentNext + ' % ');
                 $('#progress_bar').attr('aria-valuenow', percentNext);
@@ -217,7 +218,7 @@
             $('#completeBTN').click( function() {
                 var percentNow = parseInt( $('#progress_bar').attr('aria-valuenow') );
                 switch( percentNow ) {
-                    case 30:
+                    case 43:
                         $('#id_label').removeClass('text-danger');
                         $('#progress_bar').removeClass('bg-danger');
 
@@ -228,12 +229,12 @@
                         $('#step2-block').show();
                         $('#nextBTN').trigger('click');
                         break;
-                    case 50:
+                    case 59:
                         $('#completeBTN').html('<i class="fas fa-check"></i>&nbsp;&nbsp;&nbsp;Step 3 : Complete');
                         $('#step3-block').show();
                         $('#nextBTN').trigger('click');
                         break;
-                    case 85:
+                    case 87:
                         $('#id_label').removeClass('text-warning');
                         $('#progress_bar').removeClass('bg-warning');
 
