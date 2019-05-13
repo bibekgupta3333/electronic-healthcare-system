@@ -268,7 +268,7 @@ CELERY_BROKER_URL = 'amqp://localhost'
 CELERY_RESULT_BACKEND = 'django-db'
 
 MDX_URL = 'https://mdx.medi2data.com'
-EMR_URM = 'https://emr.medi2data.com'
+EMR_URL = 'https://emr.medi2data.com'
 
 SILKY_PYTHON_PROFILER = True
 SILKY_PYTHON_PROFILER_BINARY = True

@@ -13,6 +13,7 @@ from .tables import InstructionTable, FeeInstructionTable
 from .model_choices import *
 from .forms import ScopeInstructionForm, AdditionQuestionFormset, SarsConsentForm, MdxConsentForm,\
         ReferenceForm, ConsentForm, InstructionDateRangeForm, DateRangeSearchForm
+from .tasks import prepare_medicalreport_data
 from accounts.models import User, GeneralPracticeUser, PracticePreferences
 from accounts.models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from accounts.forms import InstructionPatientForm, GPForm
@@ -1088,6 +1089,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
 
     if request.method == "POST":
         if request.POST.get('proceed_option') == '0':
+            # Synchronous preparing task case
             sars_consent_form = SarsConsentForm(request.POST, request.FILES, instance=instruction)
             mdx_consent_form = MdxConsentForm(request.POST, request.FILES, instance=instruction)
             if request.POST.get('sars_consent_loaded') == 'loaded' and sars_consent_form.is_valid():
@@ -1130,7 +1132,10 @@ def consent_contact(request, instruction_id, patient_emis_number):
                 elif next_step == 'proceed':
                     return redirect('medicalreport:select_patient', instruction_id=instruction_id, patient_emis_number=patient_emis_number)
         else:
-            # do some asynchronous task
+            # Asynchronous preparing task case
+            instruction.status = INSTRUCTION_STATUS_REDACTING
+            instruction.save()
+            prepare_medicalreport_data.delay(instruction_id)
             return redirect('instructions:view_pipeline')
 
     patient_email = patient_registration.email() if not patient_instruction.patient_email else patient_instruction.patient_email

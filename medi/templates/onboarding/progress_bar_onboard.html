@@ -8,10 +8,20 @@
                 <div class="col-2 text-center">
                     <h6>Progress : <label class="text-danger" id="id_label"><strong id="progress_percent">0 %</strong></label></h6>
                 </div>
-                <div class="col-10">
+                <div class="col-7">
                     <div class="progress">
                         <div class="progress-bar bg-danger" id="progress_bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        <div class="waypoint" id="step1_waypoint">Your Surgery</div>
+                        <div class="waypoint" id="step2_waypoint">Your Users</div>
+                        <div class="waypoint" id="step3_waypoint">Connect eMR to EMIS</div>
+                        <div class="waypoint" id="last_waypoint"></div>
                     </div>
+                </div>
+                <div class="col-3">
+                    <a href="{% static 'documents/Set Up Guide Final 4 .1.pdf' %}" target="_blank" id="btn_setup_guide">
+                        <button type="button" class="btn btn-primary btn-sm">Set up Guide</button>
+                    </a>
+                    <button id="btn_get_help" class="btn btn-primary btn-sm" onclick="Intercom('show');">Get Help</button>
                 </div>
             </div>
         </div>

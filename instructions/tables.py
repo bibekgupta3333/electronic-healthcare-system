@@ -80,7 +80,8 @@ class InstructionTable(tables.Table):
             'Completed': 'badge-success',
             'Rejected': 'badge-danger',
             'Finalising': 'badge-secondary',
-            'Fail': 'badge-dark'
+            'Fail': 'badge-dark',
+            'Redacting': 'badge-light',
         }
         url = 'instructions:review_instruction'
         view_report = view_complete_report(self.user.id, record.pk)
@@ -213,7 +214,8 @@ class FeeInstructionTable(tables.Table):
             'Completed': 'badge-success',
             'Rejected': 'badge-danger',
             'Finalising': 'badge-secondary',
-            'Fail': 'badge-dark'
+            'Fail': 'badge-dark',
+            'Redacting': 'badge-light',
         }
         url = 'instructions:review_instruction'
         view_report = view_complete_report(self.user.id, record.pk)

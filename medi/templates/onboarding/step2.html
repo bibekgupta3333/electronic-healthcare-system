@@ -14,6 +14,7 @@
 {% endblock %}
 
 {% block Content %}
+    {% include 'onboarding/progress_bar_onboard.html' %}
     <form id="step_form" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="step2">
@@ -182,6 +183,16 @@
     <script src="{% static 'js/zxcvbn-bootstrap-strength-meter.js' %}" ></script>
     <script>
         $(document).ready(function() {
+            $('#progress_percent').text('20%');
+            $('#progress_bar').attr('aria-valuenow', '20');
+            $('#progress_bar').css('width', '20%');
+
+            $('#id_label').removeClass('text-danger');
+            $('#progress_bar').removeClass('bg-danger');
+
+            $('#id_label').addClass('text-success');
+            $('#progress_bar').addClass('bg-success');
+
             $("#StrengthProgressBar").zxcvbnProgressBar({
                   passwordInput: "#id_password1",
                   ratings: ["Very Weak", "Weak", "OK", "Strong", "Very strong"]
@@ -258,6 +269,15 @@
                     }
                   }
               });
+            });
+
+            $('#id_telephone_mobile').after('<div style="margin-left: 10px; display: inline; position: relative;">' +
+                                    '<img class="info-icon" id="phone_info_icon" src="{% static 'images/information-icon.png' %}">' +
+                                    '<div id="phone_info">We require a mobile phone number in order to set up two-factor authentication, which is a very important security step.</div></div>');
+            $('#phone_info_icon').on("mouseenter", function() {
+                $('#phone_info').show();
+            }).on("mouseleave", function() {
+                $('#phone_info').hide();
             });
         });
     </script>
