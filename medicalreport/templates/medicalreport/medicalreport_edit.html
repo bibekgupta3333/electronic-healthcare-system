@@ -34,7 +34,7 @@
                 {% cache 300 sensitive_information %}
                 <div class="modal fade" id="form-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg">
-                        <div class="modal-content sensitive-information-instructions alert-warning">
+                        <div class="modal-content sensitive-information-instructions alert-warning modal-warning-block">
                             <h6>Sensitive information instructions:</h6>
                             <ul>
                                 <li>Do not include any history of sensitive conditions (e.g. sexually transmitted infections, terminations of pregnancy, domestic abuse) unless they have long term health implications and the patient consents to disclose such information.</li>
@@ -150,7 +150,7 @@
     <div class="report-toolbox-modal" id="report-toolbox-modal">
         {% include "library/report_toolbox_modal.html" %}
     </div>
-    <form method="POST" action="{% url 'library:add_word_library' %}" id="addWordForm">
+    <form method="POST" action="{% url 'library:edit_library' event='add' %}" id="addWordForm">
         {% csrf_token %}
         {% include "library/add_word_modal.html" %}
     </form>
@@ -184,8 +184,39 @@
            $('#report-toolbox-modal').toggle();
         });
 
-        $('input:checkbox').on('change', function(){
-            $('input[key="' + $(this).attr('key') + '"]:checkbox').prop('checked', this.checked);
+        $('input:checkbox').on('change', function() {
+            var xpath = $(this).val();
+            var key = $(this).attr('key');
+
+            if(Array.isArray(xpath)) {
+                xpath = xpath[0];
+            }
+
+            if(Array.isArray(key)) {
+                key = key[0];
+            }
+            $('input:checkbox').each( function() {
+                if( $(this).attr('key') == key) {
+                    $(this).prop('checked', this.checked);
+                }
+            });
+            saveReport();
+
+            $.ajax({
+                url: "{% url 'library:manual_radact' %}",
+                dataType: "json",
+                data: {
+                    instruction_id: {{ instruction.id }}, 
+                    xpath: xpath,
+                    key: key
+                }
+            }).done(function(response) {
+                if (response['message'] == 'Error') {
+                    create_alert('Something went wrong, please try again.', 'error');
+                }
+            }).fail(function() {
+                create_alert('Something went wrong, please try again.', 'error');
+            });
         });
 
         $('.finaliseChoice').css('font-size', 'large');
@@ -239,8 +270,236 @@
 
         $('#addWordForm').submit(function(e) {
             addWordLibrary();
-            $("#addWordModal").modal('hide');
             return false;
+        });
+
+        var timeoutId;
+        $(".dropdown-options").hide();
+        $(".highlight-library").hover(function() {
+            if (!timeoutId) {
+                var highlight_div = $(this);
+                if (highlight_div.find('.bg-warning').length) {
+                    timeoutId = window.setTimeout(function() {
+                        timeoutId = null;
+                        highlight_div.find('.dropdown-options').slideDown('fast');
+                   }, 400);
+                }
+            }
+        }, function () {
+            if (timeoutId) {
+                window.clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+            else {
+               $(".dropdown-options").slideUp('fast');
+            }
+        });
+
+        $(".highlight-redact").on("click", function(e) {
+            e.preventDefault();
+            var word_span = $(this).parent().parent().find("span.bg-warning");
+            var word = word_span.text();
+            var item = $(this).closest('.redaction-checkbox');
+            var item_parent = $(this).closest('.callout');
+            var header = item_parent.find('.callout__header').text();
+            var idx = -1;
+            var xpath = $(this).parent().data('xpath')
+            item_parent.find('.redaction-checkbox').filter(function(index, obj) {
+                    if (item.is($(obj))) {
+                        idx = index;
+                        return 1;
+                    }
+                });
+            if(Array.isArray(xpath)) {
+                xpath = xpath[0];
+            }
+            $.ajax({
+                url: "{% url 'library:redact_word' %}",
+                dataType: "json",
+                data: {
+                    word: word, 
+                    instruction_id: {{ instruction.id }}, 
+                    header: header, 
+                    index: idx, 
+                    content: item.html(),
+                    xpath: xpath
+                }
+            }).done(function(response) {
+                word_span.removeClass("bg-warning");
+                word_span.addClass('bg-dark');
+                create_alert('Redact complete.', 'success');
+            }).fail(function() {
+                create_alert('Something went wrong, please try again.', 'error');
+            });
+        });
+
+        $(".highlight-replace").on("click", function(e) {
+            e.preventDefault();
+            var word_span = $(this).parent().parent().find("span.bg-warning");
+            var word = word_span.text();
+            var item = $(this).closest('.redaction-checkbox');
+            var item_parent = $(this).closest('.callout');
+            var header = item_parent.find('.callout__header').text();
+            var idx = -1;
+            var xpath = $(this).parent().data('xpath');
+            item_parent.find('.redaction-checkbox').filter(function(index, obj) {
+                if (item.is($(obj))) {
+                    idx = index;
+                    return 1;
+                }
+            });
+            if(Array.isArray(xpath)) {
+                xpath = xpath[0];
+            }
+            $.ajax({
+                url: "{% url 'library:replace_word' %}",
+                dataType: "json",
+                data: {
+                    word: word, 
+                    instruction_id: {{ instruction.id }}, 
+                    header: header, 
+                    index: idx, 
+                    xpath: xpath,
+                    content: item.html(),
+                }
+            }).done(function(response) {
+                if (response['message'] == 'Error') {
+                    create_alert('Something went wrong, please try again.', 'error');
+                } else {
+                    word_span.text(response['replace_word']);
+                    word_span.removeClass("bg-warning");
+                    word_span.addClass('change-'+response['id']).addClass('text-danger');
+                    create_alert('Replace complete.', 'success');
+                }
+            }).fail(function() {
+                create_alert('Something went wrong, please try again.', 'error');
+            });
+        });
+
+        $(".highlight-replaceall").on("click", function(e) {
+            e.preventDefault();
+            var word_span = $(this).parent().parent().find("span.bg-warning");
+            var word = word_span.text();
+            $.ajax({
+                url: "{% url 'library:replace_allword' %}",
+                dataType: "json",
+                data: { word: word, instruction_id: {{ instruction.id }} }
+            }).done(function(response) {
+                if (response['message'] == 'Error') {
+                    create_alert('Something went wrong, please try again.', 'error');
+                } else {
+                    $(".highlight-library .bg-warning").each(function(i, obj) {
+                        if ($(obj).text() == word) {
+                            $(obj).text(response['replace_word']);
+                            $(obj).removeClass("bg-warning");
+                            $(obj).addClass('change-'+response['id']).addClass('text-danger');
+                        }
+                    });
+                }
+                create_alert('ReplaceAll complete.', 'success');
+            }).fail(function() {
+                create_alert('Something went wrong, please try again.', 'error');
+            });
+        });
+
+        $('#report-toolbox-modal-undolast').on('click', function(e) {
+            e.preventDefault();
+            $.ajax({
+                url: "{% url 'library:undo_last' %}",
+                dataType: "json",
+                data: { instruction_id: {{ instruction.id }} }
+            }).done(function(response) {
+                if (response['message'] == 'Error') {
+                    create_alert('Something went wrong, please try again.', 'error');
+                } else {
+                    if (response['action'] == 'Replace') {
+                        $('span .dropdown-options').each( function() {
+                            if( $(this).data('xpath') == response['xpath']) {
+                                $(this).parent().html( response['text'] );
+                            }
+                        });
+                    }   else if (response['action'] == 'ReplaceAll') {
+                        $('span .dropdown-options').each( function() {
+                            if( $(this).parent().find("span.text-danger").text() == response['new']) {
+                                $(this).parent().find("span.text-danger").text( response['old'] ).removeClass().addClass('bg-warning');
+                            }
+                        });
+                    }   else if (response['action'] == 'Redact') {
+                        $('span .dropdown-options').each( function() {
+                            if( $(this).data('xpath') == response['xpath']) {
+                                $(this).removeClass('bg-dark');
+                                $(this).parent().html( response['text'] );
+                            }
+                        });
+                    }   else if (response['action'] == 'mRedact') {
+                        $('input').each( function() {
+                            if( $(this).val() == response['xpath']) {
+                                $(this).prop('checked', false);
+                            }
+                        });
+                    }   else if (response['action'] == 'rmRedact') {
+                        $('input').each( function() {
+                            if( $(this).val() == response['xpath']) {
+                                $(this).prop('checked', true);
+                            }
+                        });
+                    }
+                    create_alert('Undo complete.', 'success');
+                }
+            }).fail(function() {
+                create_alert('Something went wrong, please try again.', 'error');
+            })
+        });
+
+        $('#report-toolbox-modal-undoall').click( function(e) {
+            e.preventDefault();
+            $.ajax({
+                url: "{% url 'library:undo_all' %}",
+                dataType: "json",
+                data: { instruction_id: {{ instruction.id }} }
+            }).done(function(response) {
+                if (response['message'] == 'Error') {
+                    create_alert('Something went wrong, please try again.', 'error');
+                } else {
+                    response.history.forEach( function(value) {
+                        if (value.action == 'Replace') {
+                            $('span .dropdown-options').each( function() {
+                                if( $(this).data('xpath') == value.xpath) {
+                                    $(this).parent().html( value.text );
+                                }
+                            });
+                        }   else if (value.action == 'ReplaceAll') {
+                            $('span .dropdown-options').each( function() {
+                                if( $(this).parent().find("span.text-danger").text() == value.new) {
+                                    $(this).parent().find("span.text-danger").text( value.old ).removeClass().addClass('bg-warning');
+                                }
+                            });
+                        }   else if (value.action == 'Redact') {
+                            $('span .dropdown-options').each( function() {
+                                if( $(this).data('xpath') == value.xpath) {
+                                    $(this).removeClass('bg-dark');
+                                    $(this).parent().html( value.text );
+                                }
+                            });
+                        }   else if (value.action == 'mRedact') {
+                            $('input').each( function() {
+                                if( $(this).val() == value.xpath) {
+                                    $(this).prop('checked', false);
+                                }
+                            });
+                        }   else if (value.action == 'rmRedact') {
+                            $('input').each( function() {
+                                if( $(this).val() == value.xpath) {
+                                    $(this).prop('checked', true);
+                                }
+                            });
+                        }
+                    });
+                    create_alert('Undo All complete.', 'success');
+                }
+            }).fail(function() {
+                create_alert('Something went wrong, please try again.', 'error');
+            })
         });
 
         $('#here-link').click(function(e) {

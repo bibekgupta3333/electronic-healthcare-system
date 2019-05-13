@@ -6,7 +6,7 @@
            value="{{ xpath }}">
     {% endfor %}
     <span class="redaction-checkbox__icon float-right fas fa-check-circle"></span>
-    <span class="redaction-checkbox__header" title="{{ header }}" data-toggle="tooltip">{{ header }}</span>
+    <span class="redaction-checkbox__header" title="{{ title }}" data-toggle="tooltip">{{ header_detail }}</span>
     <span class="redaction-checkbox__text">{{ body }}</span>
     {% if is_sensitive %}
         <span class="badge badge-warning">Sensitive Condition</span>
