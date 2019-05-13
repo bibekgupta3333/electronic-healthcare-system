@@ -215,17 +215,17 @@ class OnboardingEmisSetUpTest(OnboardingBaseTest):
     def test_get_emis_setup_view(self):
         self.client.force_login(self.inactive_user)
         response = self.client.get(
-            reverse('onboarding:emis_setup', kwargs={'practice_code': self.inactice_gp_practice.practcode})
+            reverse('onboarding:step3', kwargs={'practice_code': self.inactice_gp_practice.practcode})
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'onboarding/emis_setup.html')
+        self.assertTemplateUsed(response, 'onboarding/step3.html')
         self.client.logout()
 
     def test_post_emis_setup_view(self):
         self.client.force_login(self.inactive_user)
         response = self.client.post(
-            reverse('onboarding:emis_setup', kwargs={'practice_code': self.inactice_gp_practice.practcode}),
+            reverse('onboarding:step3', kwargs={'practice_code': self.inactice_gp_practice.practcode}),
             {
                 'surgery_name': self.inactice_gp_practice.name,
                 'surgery_code': self.inactice_gp_practice.practcode,
