@@ -106,8 +106,15 @@ class TestAccountView(TestAccountBase):
             reverse('accounts:view_account')
         )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'accounts/accounts_view.html')
+        self.assertEqual(response.status_code == 200 or response.status_code == 302, True)
+
+        if response.status_code == 200:
+            self.assertTemplateUsed(response, 'accounts/accounts_view.html')
+        elif response.status_code == 302:
+            self.assertRedirects(
+                response,
+                reverse('instructions:view_pipeline'),
+                response.status_code, response.status_code)
 
 
 class TestManageUser(TestAccountBase):
