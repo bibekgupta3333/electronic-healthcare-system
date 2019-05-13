@@ -23,19 +23,27 @@ def patient_profile(context):
 
 @register.inclusion_tag('medicalreport/reports/significant_conditions.html', takes_context=True)
 def significant_conditions(context):
+    problem_params = dict()
+    problem_params['problem_list'] = context['medical_record'].problem_linked_lists
+    problem_params['instruction'] = context['instruction']
+    problem_params['relations'] = context['relations']
     return {
         'significant_active_problems': context['medical_record'].significant_active_problems,
         'significant_past_problems': context['medical_record'].significant_past_problems,
-        'problem_linked_lists': context['medical_record'].problem_linked_lists,
-        'redaction': context['redaction']
+        'problem_params': problem_params,
+        'redaction': context['redaction'],
     }
 
 @register.inclusion_tag('medicalreport/reports/allergies.html', takes_context=True)
 def allergies(context):
+    toolbox_params = dict()
+    toolbox_params['instruction'] = context['instruction']
+    toolbox_params['relations'] = context['relations']
     return {
         'all_allergies': context['medical_record'].all_allergies,
         'redaction': context['redaction'],
         'additional_allergies': context['redaction'].additional_allergies,
+        'toolbox_params': toolbox_params,
     }
 
 @register.inclusion_tag('medicalreport/reports/consultations.html', takes_context=True)
@@ -56,20 +64,28 @@ def bloods(context):
 
 @register.inclusion_tag('medicalreport/reports/referrals.html', takes_context=True)
 def referrals(context):
+    toolbox_params = dict()
+    toolbox_params['instruction'] = context['instruction']
+    toolbox_params['relations'] = context['relations']
     return {
         'referrals': context['medical_record'].referrals,
         'locations': context['medical_record'].locations,
-        'redaction': context['redaction']
+        'redaction': context['redaction'],
+        'toolbox_params': toolbox_params,
     }
 
 @register.inclusion_tag('medicalreport/reports/medications.html', takes_context=True)
 def medications(context):
+    toolbox_params = dict()
+    toolbox_params['instruction'] = context['instruction']
+    toolbox_params['relations'] = context['relations']
     return {
         'acute_medications': context['medical_record'].acute_medications,
         'repeat_medications': context['medical_record'].repeat_medications,
         'additional_acute_medications': context['redaction'].additional_acute_medications,
         'additional_repeat_medications': context['redaction'].additional_repeat_medications,
-        'redaction': context['redaction']
+        'redaction': context['redaction'],
+        'toolbox_params': toolbox_params,
     }
 
 @register.inclusion_tag('medicalreport/reports/appendices.html', takes_context=True)

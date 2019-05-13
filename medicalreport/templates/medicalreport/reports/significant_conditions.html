@@ -12,7 +12,7 @@
               <td style="font-size:17px;font-weight:bold;">Active</td>
           </tr>
           {% for model in significant_active_problems %}
-              {% with header=model|active_problem_header:problem_linked_lists  %} 
+              {% with header=model|active_problem_header:problem_params %} 
                   <tr>
                       <td>{{ header }}</td>
                   </tr>
@@ -24,7 +24,7 @@
               <td style="font-size:17px;font-weight:bold;">Past</td>
           </tr>
           {% for model in significant_past_problems %}
-              {% with header=model|past_problem_header  %} 
+              {% with header=model|past_problem_header:problem_params %} 
                   <tr>
                       <td>{{ header }}</td>
                   </tr>

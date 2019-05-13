@@ -32,11 +32,13 @@
                         <p class="mt-2 ml-4 text-secondary smaller-text">Replaces the word with an replacement. This is optional</p>
                     </div>
                     <div class="row">
+                        <div class="mt-2 ml-4 text-danger smaller-text" id="errorMessage">
                         {% if add_word_error_message %}
-                            <p class="mt-2 ml-4 text-danger smaller-text" id="errorMessage">{{ add_word_error_message }}</p>
+                            {{ add_word_error_message }}
                         {% elif edit_word_error_message %}
-                            <p class="mt-2 ml-4 text-danger smaller-text" id="errorMessage">{{ edit_word_error_message }}</p>
+                            {{ edit_word_error_message }}
                         {% endif %}
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer custom-modal-footer">
