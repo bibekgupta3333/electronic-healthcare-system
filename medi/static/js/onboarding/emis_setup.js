@@ -36,7 +36,7 @@ function pollingEmis(url) {
                     $(".btn-checkSetup").hide();
                     $(".emisSetupSuccess").removeClass("d-none");
                     setTimeout(function () {
-                        document.location.href = "{% url 'accounts:login' %}";
+                        document.location.href = "/onboarding/emis-setup-success/";
                     }, 2000)
                 } else {
                     $('#checkingEmisButton').prop("disabled", false);
