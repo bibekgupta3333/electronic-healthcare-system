@@ -1,5 +1,7 @@
 from django import template
-from .helper import diagnosed_date, linked_problems, end_date, format_date, additional_medication_dates_description
+from django.utils.html import format_html
+from .helper import diagnosed_date, linked_problems, end_date, format_date, additional_medication_dates_description, generate_toolbox_report, problem_xpaths
+from library.models import Library
 import re
 register = template.Library()
 
@@ -51,29 +53,80 @@ def additional_medication_body(record):
         medical_addition += " Additional contextual information:{}".format(record.notes)
     return medical_addition
 
-
+#
 @register.filter
-def additional_allergy_description(record):
+def additional_allergy_description(record, word_library):
     prefix = ''
     if record.date_discovered:
         prefix = "{} - ".format(format_date(record.date_discovered))
 
-    return "{}{}, {}".format(prefix, record.allergen, record.reaction)
+    text_allergen = record.allergen
+    text_reaction = record.reaction
+    for word in word_library:
+        if str.upper(word.key) == str.upper(text_allergen):
+            text_allergen = '''
+                <span class="highlight-library">
+                    <span class="bg-warning">%s</span>
+                    <span class="dropdown-options">
+                        <a href="#" class="highlight-redact">Redact</a>
+                        <a href="#" class="highlight-replace">Replace</a>
+                        <a href="#" class="highlight-replaceall">Replace all</a>
+                    </span>
+                </span>
+            ''' % (text_allergen)
+        if str.upper(word.key) == str.upper(text_reaction):
+            text_reaction = '''
+                <span class="highlight-library">
+                    <span class="bg-warning">%s</span>
+                    <span class="dropdown-options">
+                        <a href="#" class="highlight-redact">Redact</a>
+                        <a href="#" class="highlight-replace">Replace</a>
+                        <a href="#" class="highlight-replaceall">Replace all</a>
+                    </span>
+                </span>
+            ''' % (text_reaction)
+    return format_html("{}{}, {}".format(prefix, text_allergen, text_reaction))
 
 
 @register.filter
-def active_problem_header(problem, problem_list):
-    return "{} {}".format(problem.description(), diagnosed_date(problem, linked_problems(problem, problem_list)))
+def active_problem_header(problem, problem_params):
+    if type(problem_params) == dict:
+        problem_list = problem_params['problem_list']
+        instruction = problem_params['instruction']
+        library_history = problem_params['relations']['library_history']
+        xpaths = problem_xpaths(problem, problem_list())
+        description = generate_toolbox_report(library_history, problem.description(), xpaths, instruction)
+        text = "{} {}".format(description, diagnosed_date(problem, linked_problems(problem, problem_list())))
+        return format_html(text)
+    else:
+        problem_list = problem_params
+        return "{} {}".format(problem.description(), diagnosed_date(problem, linked_problems(problem, problem_list)))
 
 
 @register.filter
-def past_problem_header(problem):
-    return "{} {}".format(problem.description(), end_date(problem))
+def past_problem_header(problem, problem_params):
+    if type(problem_params) == dict:
+        instruction = problem_params['instruction']
+        library_history = problem_params['relations']['library_history']
+        xpaths = problem_params['relations']['xpath']
+        description = generate_toolbox_report(library_history, problem.description(), problem.xpaths(), instruction)
+        text = "{} {}".format(description, end_date(problem))
+        return format_html(text)
+    else:
+        return "{} {}".format(problem.description(), end_date(problem))
 
 
 @register.filter
-def general_header(model):
-    return "{} - {}".format(format_date(model.parsed_date()), model.description())
+def general_header(model, toolbox_params='', word_library=''):
+    if type(toolbox_params) == dict:
+        instruction = toolbox_params['instruction']
+        library_history = toolbox_params['relations']['library_history']
+        xpaths = toolbox_params['relations']['xpath']
+        description = generate_toolbox_report(library_history, model.description(), model.xpaths(), instruction)
+        text = "{} - {}".format(format_date(model.parsed_date()), description)
+        return format_html(text)
+    else:
+        return "{} - {}".format(format_date(model.parsed_date()), model.description())
 
 
 @register.filter
@@ -87,12 +140,6 @@ def referral_body(referral, locations):
         return ', '.join(provider.address_lines())
     except:
         return ''
-
-
-@register.filter
-def is_linked_with_minor_problem(referral, minor_problems_list):
-    guid_minor_problems = [p.get_element_text('GUID') for p in minor_problems_list]
-    return referral.get_element_text('ProblemLinkList/Link/Target/GUID') in guid_minor_problems
 
 
 @register.filter
@@ -197,9 +244,70 @@ def consultation_element_list(consultation):
 
 @register.filter
 def replace_ref_phrases(relations, value):
-    if relations:
-        ret = re.sub(relations, " [UNSPECIFIED THIRD PARTY] ", ' ' + value + ' ', flags=re.IGNORECASE).strip()
-        return ret
+    word_library = relations.get('word_library')
+    library_history = relations.get('library_history')
+    xpaths = relations.get('xpath')
+    status = relations.get('status')
+
+    if relations['relations']:
+        value = re.sub(relations['relations'], " [UNSPECIFIED THIRD PARTY] ", value, flags=re.IGNORECASE)
+
+    if word_library:
+        split_word = value.split()
+        for word in word_library:
+            if str.upper(word.key) in map(str.upper, split_word):
+                num = 0
+                while num < len(split_word):
+                    if str.upper(split_word[num]) == str.upper(word.key):
+                        highlight_class = 'bg-warning'
+                        highlight_html = '''
+                            <span class="highlight-library">
+                                <span class="{}">{}</span>
+                                <span class="dropdown-options" data-xpath="{}">
+                                    <a href="#" class="highlight-redact">Redact</a>
+                                    <a href="#" class="highlight-replace">Replace</a>
+                                    <a href="#" class="highlight-replaceall">Replace all</a>
+                                </span>
+                            </span>
+                        '''
+
+                        if not word.value:
+                            highlight_html = '''
+                                <span class="highlight-library">
+                                    <span class="{}">{}</span>
+                                    <span class="dropdown-options" data-xpath="{}">
+                                        <a href="#" class="highlight-redact">Redact</a>
+                                    </span>
+                                </span>
+                            '''
+
+                        if library_history:
+                            for history in library_history:
+                                action = history.action
+                                if history.old == split_word[num]:
+                                    if action == 'Replace' and history.xpath in xpaths:
+                                        split_word[num] = history.new
+                                        highlight_class = 'text-danger'
+                                    elif action == 'Redact' and history.xpath in xpaths:
+                                        highlight_class = 'bg-dark'
+                                    elif action == 'ReplaceAll':
+                                        split_word[num] = history.new
+                                        highlight_class = 'text-danger'
+
+                        if status:
+                            highlight_html = '''
+                                <span class="highlight-library">
+                                    <span class="{}">{}</span>
+                            '''
+                            split_word[num] = format_html(highlight_html, highlight_class, split_word[num])
+                        else:
+                            split_word[num] = format_html(highlight_html, highlight_class, split_word[num], xpaths)
+
+                    num = num + 1
+        if status:
+            text = " ".join(split_word)
+            return format_html(text)
+        return split_word
     return value
 
 

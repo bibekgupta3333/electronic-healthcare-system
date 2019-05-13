@@ -24,7 +24,10 @@ from .forms import AllocateInstructionForm
 from permissions.functions import check_permission, check_user_type
 from payment.functions import calculate_instruction_fee
 from typing import List
+from common.functions import multi_getattr
 from library.forms import LibraryForm
+from library.models import Library, LibraryHistory
+from django.core import serializers
 #from silk.profiling.profiler import silk_profile
 
 logger = logging.getLogger('timestamp')
@@ -210,7 +213,17 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         )
     )
 
-    library_form = LibraryForm(gp_org_id=instruction.gp_practice.pk)
+    gp_practice_code = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation.pk', default=None)
+    library_form = LibraryForm(gp_org_id=gp_practice_code)
+
+    word_library = Library.objects.filter(gp_practice=gp_practice_code)
+    library_history = LibraryHistory.objects.filter(instruction=instruction)
+
+    relations_dict = {
+        'relations': relations,
+        'word_library': word_library,
+        'library_history': library_history,
+    }
 
     response = render(request, 'medicalreport/medicalreport_edit.html', {
         'user': request.user,
@@ -219,11 +232,13 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         'instruction': instruction,
         'finalise_submit_form': finalise_submit_form,
         'questions': questions,
-        'relations': relations,
+        'relations': relations_dict,
         'sensitive_conditions': sensitive_conditions,
         'show_alert': True if inst_gp_user == cur_user else False,
         'patient_full_name': instruction.patient_information.get_full_name(),
         'library_form': library_form,
+        'word_library': word_library,
+        'library_history': library_history,
     })
     end_time = timezone.now()
     total_time = end_time - start_time
@@ -235,7 +250,6 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
 @check_user_type(GENERAL_PRACTICE_USER)
 def update_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     instruction = get_object_or_404(Instruction, id=instruction_id)
-
     if request.is_ajax():
         create_or_update_redaction_record(request, instruction)
         return JsonResponse({'message': 'Report has been saved.'})
@@ -298,11 +312,21 @@ def submit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         )
     )
 
+    gp_org = redaction.instruction.gp_user.organisation
+    word_library = Library.objects.filter(gp_practice=gp_org)
+    library_history = LibraryHistory.objects.filter(instruction=instruction)
+
+    relations_dict = {
+        'relations': relations,
+        'word_library': word_library,
+        'library_history': library_history,
+    }
+
     return render(request, 'medicalreport/medicalreport_submit.html', {
         'header_title': header_title,
         'attachments': attachments,
         'redaction': redaction,
-        'relations': relations,
+        'relations': relations_dict,
         'instruction': instruction,
         'finalise_submit_form': finalise_submit_form,
         'patient_full_name': instruction.patient_information.get_full_name()
