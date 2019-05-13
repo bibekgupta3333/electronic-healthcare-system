@@ -25,12 +25,16 @@ def prepare_medicalreport_data(self, instruction_id):
         instruction = Instruction.objects.get(id=instruction_id)
         instruction.status = INSTRUCTION_STATUS_PROGRESS
         instruction.save()
+
+        body_message = 'The redaction processes are now complete for instruction {medi_ref}. ' \
+                       'You can now proceed this instruction on this link {hyperlink_pipeline}.'.format(
+                            medi_ref=instruction.medi_ref,
+                            hyperlink_pipeline=settings.MDX_URL + reverse('instructions:view_pipeline')
+                        )
+
         send_mail(
             'Redaction process now complete for instruction {medi_ref}'.format(medi_ref=instruction_id.medi_ref),
-            'The redaction processes are now complete for instruction {medi_ref}.'
-            'You can now proceed this instruction on this link {hyperlink_pipeline}.'.format(
-                medi_ref=instruction.medi_ref, hyperlink_pipeline=settings.MDX_URL + reverse('instructions:view_pipeline')
-            ),
+            body_message,
             'MediData',
             [instruction.gp_user.user.email, instruction.gp_practice.organisation_email],
             fail_silently=False
