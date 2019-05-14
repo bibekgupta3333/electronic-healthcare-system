@@ -86,15 +86,10 @@
                                       </div>
                                   </div>
                               </div>
-                              <div class="patient-consent">
-                                <button class="btn btn-consent" data-toggle="modal" data-target="#pdfModal"><i class="fas fa-file-medical icon"></i> View consent form</button>
-                              </div>
                           {% endif %}
-                          {% ifequal instruction.type amra_type %}
-                              <div class="patient-consent">
-                                  <button class="btn btn-consent" data-toggle="modal" data-target="#pdfModal"><i class="fas fa-file-medical icon"></i> View consent form</button>
-                              </div>
-                          {% endifequal %}
+                          <div class="patient-consent">
+                              <button class="btn btn-consent" data-toggle="modal" data-target="#pdfModal"><i class="fas fa-file-medical icon"></i> View consent form</button>
+                          </div>
                       </div>
                   </div>
               </div>
@@ -140,10 +135,20 @@
                           {% endif %}
                           <div class="dropdown-menu dropdown-menu-right reject" aria-labelledby="dropdownMenuButton">
                               {% for reject_type in reject_types %}
-                                {% if instruction.type != 'SARS' or reject_type.1 != 'The consent form is invalid' %}
-                                    <div id="rejected_reason-{{reject_type.0}}" data-toggle="modal" data-target="#modal-reject" class="dropdown-item" onclick="updateRejectType(this);">
-                                        {{reject_type.1}}
-                                    </div>
+                                {% if instruction.type == 'AMRA' %}
+                                    {% if reject_type.1 != 'Inappropriate consent / consent not properly obtained' %}
+                                        <div id="rejected_reason-{{reject_type.0}}" data-toggle="modal" data-target="#modal-reject" class="dropdown-item" onclick="updateRejectType(this);">
+                                            {{reject_type.1}}
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+
+                                {% if instruction.type == 'SARS' %}
+                                    {% if reject_type.1 != 'The consent form is invalid' %}
+                                        <div id="rejected_reason-{{reject_type.0}}" data-toggle="modal" data-target="#modal-reject" class="dropdown-item" onclick="updateRejectType(this);">
+                                            {{reject_type.1}}
+                                        </div>
+                                    {% endif %}
                                 {% endif %}
                               {% endfor %}
                           </div>

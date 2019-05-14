@@ -4,10 +4,10 @@
     <nav class="navigation navbar-dark">
         <div class="sidebar-header">
             <div class="logo">
-                {% if request.get_host == 'https://mdx.medi2data.com' %}
-                    <img src="{% static "images/logo/mdX_med.png" %}">
-                {% else %}
+                {% if user.type == 'GP' or user.type == 'MEDI' %}
                     <img src="{% static "images/logo/eMR_med.png" %}">
+                {% else %}
+                    <img src="{% static "images/logo/mdX_med.png" %}">
                 {% endif %}
             </div>
             <div class="profile">

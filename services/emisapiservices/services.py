@@ -120,7 +120,7 @@ class GetMedicalRecord(EmisAPIServiceBase):
 
 class GetEmisStatusCode(EmisAPIServiceBase):
     def uri(self) -> str:
-        uri = "{host}/api/organisations/{organisation_id}/patients".format(
+        uri = "{host}/api/organisations/{organisation_id}/patients?q=medidataemislogintest".format(
             host=settings.EMIS_API_HOST,
             organisation_id=self.emis_organisation_code
         )
@@ -135,5 +135,5 @@ class GetEmisStatusCode(EmisAPIServiceBase):
                 self.emis_password,
             )
         )
-        event_logger.info('EMIS Polling Status {result}'.format(result='SUCCESS' if r.status_code == 400 else 'UNAUTHORIZED'))
+        event_logger.info('EMIS Polling Status {result}'.format(result='SUCCESS' if r.status_code == 200 else 'UNAUTHORIZED'))
         return r.status_code

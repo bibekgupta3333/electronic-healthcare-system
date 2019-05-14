@@ -179,5 +179,7 @@ INSTRUCTION_PERMISSIONS=[
     'view_account_pages',
     'authorise_fee',
     'amend_fee',
-    'view_library'
+    'view_library',
+    'amend_bank_account',
+    'authorise_bank_account'
 ]

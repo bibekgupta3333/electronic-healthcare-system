@@ -53,86 +53,95 @@
                 </div>
             </div>
             {% if organisation_fee_data %}
-                <div class="card contactPreferences mt-4">
-                    <div class="card-header">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h5>Bank Details for Fee Payments</h5>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3">Bank Account Name</div>
-                            <div class="col-md-4">
-                                {% bootstrap_field bank_details_form.payment_bank_holder_name placeholder='' %}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-3">Bank Account Number</div>
-                            <div class="col-md-4">
-                                {% bootstrap_field bank_details_form.payment_bank_account_number placeholder='' %}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-3">Bank Account Sort Code</div>
-                            <div class="col-md-4">
-                                {% bootstrap_field bank_details_form.payment_bank_sort_code placeholder='' %}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-5">
-                                <button class="btn btn-primary" id="update_bank_details" type="button">
-                                    Update Bank Details
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card contactPreferences mt-4">
-                    <div class="card-header">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h5>Practice Fee Income</h5>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="col-md-12 OrgaisationFee">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="mt-2 mb-3">
-                                        <h6 ><b>Fees</b></h6>
-                                    </div>
-                                    <div class="mt-2 mb-4">
-                                        Your fees depend on the speed in which you're able to return the medical report. Your agreed fee levels are shown below. To discuss different fee levels, please contact a member of the Medidata team.
+                {% if perms.instructions.authorise_bank_account or perms.instructions.amend_bank_account %}
+                    <div id="bank_detail_block">
+                        <div class="card contactPreferences mt-4">
+                            <div class="card-header">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5>Bank Details for Fee Payments</h5>
                                     </div>
                                 </div>
                             </div>
-                            {% for data in organisation_fee_data %}
-                                <div class="row FeeLevel">
-                                    <div class="col-md-3 rowTitle">
-                                      {{ data.label }}
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">Bank Account Name</div>
+                                    <div class="col-md-4">
+                                        {% bootstrap_field bank_details_form.payment_bank_holder_name placeholder='' %}
                                     </div>
-                                    <div class="col-md-9">
-                                        <div class="row">
-                                            <input type="text" class="form-control currency display-inline" value="£" readonly="true">
-                                            {% if has_amend_fee_perm and forloop.counter == 1 %}
-                                            <select name="organisation_fee_id" id="first_fee" class="form-control feeData" title="">
-                                                {% for band_fee in band_fee_rate_data %}
-                                                <option value="{{ band_fee.0 }}" {% if band_fee.0 == data.pk %}selected{% endif %}>{{ band_fee.1 }}</option>
-                                                {% endfor %}
-                                            </select>
-                                            {% else %}
-                                            <input type="text" id="fee_within_{{ data.days }}" class="form-control feeData display-inline" value="{{ data.amount }}" readonly="true">
-                                            {% endif %}
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">Bank Account Number</div>
+                                    <div class="col-md-4">
+                                        {% bootstrap_field bank_details_form.payment_bank_account_number placeholder='' %}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">Bank Account Sort Code</div>
+                                    <div class="col-md-4">
+                                        {% bootstrap_field bank_details_form.payment_bank_sort_code placeholder='' %}
+                                    </div>
+                                </div>
+                                {% if perms.instructions.amend_bank_account %}
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <button class="btn btn-primary" id="update_bank_details" type="button">
+                                                Update Bank Details
+                                            </button>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if perms.instructions.authorise_fee or perms.instructions.amend_fee %}
+                    <div class="card contactPreferences mt-4">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Practice Fee Income</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="col-md-12 OrgaisationFee">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mt-2 mb-3">
+                                            <h6 ><b>Fees</b></h6>
+                                        </div>
+                                        <div class="mt-2 mb-4">
+                                            Your fees depend on the speed in which you're able to return the medical report. Your agreed fee levels are shown below. To discuss different fee levels, please contact a member of the Medidata team.
                                         </div>
                                     </div>
                                 </div>
-                            {% endfor %}
+                                {% for data in organisation_fee_data %}
+                                    <div class="row FeeLevel">
+                                        <div class="col-md-3 rowTitle">
+                                        {{ data.label }}
+                                        </div>
+                                        <div class="col-md-9">
+                                            <div class="row">
+                                                <input type="text" class="form-control currency display-inline" value="£" readonly="true">
+                                                {% if perms.instructions.amend_fee and forloop.counter == 1 %}
+                                                <select name="organisation_fee_id" id="first_fee" class="form-control feeData" title="">
+                                                    {% for band_fee in band_fee_rate_data %}
+                                                    <option value="{{ band_fee.0 }}" {% if band_fee.0 == data.pk %}selected{% endif %}>{{ band_fee.1 }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                {% else %}
+                                                <input type="text" id="fee_within_{{ data.days }}" class="form-control feeData display-inline" value="{{ data.amount }}" readonly="true">
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
-                </div>
+                {% endif %}
             {% endif %}
                 <div class="card contactPreferences mt-4">
                     <div class="card-header">
@@ -243,6 +252,12 @@
             $("#first_fee > option").each(function() {
                 $(this).text(Number(this.text).toFixed(2));
             });
+
+            {% if not perms.instructions.amend_bank_account %}
+                $('#id_payment_bank_holder_name').prop('disabled', true);
+                $('#id_payment_bank_account_number').prop('disabled', true);
+                $('#id_payment_bank_sort_code').prop('disabled', true);
+            {% endif %}
         });
     </script>
 {% endblock %}
