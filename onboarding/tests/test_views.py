@@ -20,44 +20,26 @@ class OnboardingHackingURLTestCase(TestCase):
 
     def test_logged_in_hacking_emis_setup_views(self):
         self.client.force_login(self.active_user)
-        response = self.client.get('/onboarding/emis-setup/GP0001')
-        self.assertEqual(302, response.status_code)
-        self.assertEqual('/accounts/login/', response.url)
-        self.client.logout()
-
-    def test_logged_in_hacking_emr_setup_final_views(self):
-        self.client.force_login(self.active_user)
-        response = self.client.get('/onboarding/emr-setup-final/GP0001')
+        response = self.client.get('/onboarding/step-3/GP0001')
         self.assertEqual(302, response.status_code)
         self.assertEqual('/accounts/login/', response.url)
         self.client.logout()
 
     def test_non_logged_in_hacking_emis_setup_views(self):
-        response = self.client.get('/onboarding/emis-setup/GP0001')
+        response = self.client.get('/onboarding/step-3/GP0001')
         self.assertEqual(302, response.status_code)
-        self.assertEqual('/accounts/login?next=/onboarding/emis-setup/GP0001', response.url)
-
-    def test_non_logged_in_hacking_emr_setup_final_views(self):
-        response = self.client.get('/onboarding/emr-setup-final/GP0001')
-        self.assertEqual(302, response.status_code)
-        self.assertEqual('/accounts/login?next=/onboarding/emr-setup-final/GP0001', response.url)
+        self.assertEqual('/accounts/login/', response.url)
 
     def test_non_active_user_redirect_from_pipeline_views_to_emis_setup(self):
         self.client.force_login(self.inactive_user)
         response = self.client.get('/instruction/view-pipeline/')
         self.assertEqual(302, response.status_code)
-        self.assertEqual('/onboarding/emis-setup/GP0001', response.url)
+        self.assertEqual('/onboarding/step-3/GP0001', response.url)
         self.client.logout()
 
     def test_success_access_emis_setup_views(self):
         self.client.force_login(self.inactive_user)
-        response = self.client.get('/onboarding/emis-setup/GP0001')
-        self.assertEqual(200, response.status_code)
-        self.client.logout()
-
-    def test_success_access_emr_setup_final_views(self):
-        self.client.force_login(self.inactive_user)
-        response = self.client.get('/onboarding/emr-setup-final/GP0001')
+        response = self.client.get('/onboarding/step-3/GP0001')
         self.assertEqual(200, response.status_code)
         self.client.logout()
 

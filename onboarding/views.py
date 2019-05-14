@@ -356,7 +356,7 @@ def step3(request: HttpRequest, practice_code: str) -> HttpResponse:
     header_title = "Sign up: eMR with EMISweb - please make sure to only minimise this browser tab, do not close this screen "
     gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
     reload_status = 0
-    if request.user.get_my_organisation() != gp_organisation:
+    if not request.user.pk or request.user.get_my_organisation() != gp_organisation:
         return redirect('accounts:login')
 
     if request.method == "POST":
