@@ -79,3 +79,7 @@
     text-align: center;
     display: none;
 }
+
+#step_form .btn-continue {
+    float: right;
+}
