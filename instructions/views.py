@@ -369,7 +369,7 @@ def instruction_pipeline_view(request):
             check_fee_status = checkFeeStatus(gp_practice)
 
         if gp_practice and not gp_practice.is_active():
-            return redirect('onboarding:emis_setup', practice_code=gp_practice.pk)
+            return redirect('onboarding:step3', practice_code=gp_practice.pk)
 
         table_fee = get_table_fee_sensitive(request, gp_practice_code)
 
@@ -467,7 +467,7 @@ def instruction_fee_payment_view(request):
     if user.type == GENERAL_PRACTICE_USER:
         gp_practice = multi_getattr(request, 'user.userprofilebase.generalpracticeuser.organisation', default=None)
         if gp_practice and not gp_practice.is_active():
-            return redirect('onboarding:emis_setup', practice_code=gp_practice.pk)
+            return redirect('onboarding:step3', practice_code=gp_practice.pk)
 
     filter_type = ''
     filter_status = -1
