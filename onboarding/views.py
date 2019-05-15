@@ -247,6 +247,11 @@ def ajax_emis_polling(request: HttpRequest, practice_code: str) -> JsonResponse:
     gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
     if gp_organisation:
         status = GetEmisStatusCode(gp_organisation=gp_organisation).call()
+        if status >= 200 and status < 400:
+            if gp_organisation.gp_operating_system == 'EMISWeb' and gp_organisation.accept_policy:
+                gp_organisation.live =True
+                gp_organisation.save()
+            generate_gp_permission(gp_organisation)
         data['status'] = status
         data['practice_code'] = gp_organisation.practcode
 
@@ -279,6 +284,7 @@ def step1(request: HttpRequest) -> HttpResponse:
             gp_organisation.save()
 
             surgery_email_form = SurgeryEmailForm(request.POST, instance=gp_organisation)
+
             if surgery_email_form.is_valid():
                 surgery_email = surgery_email_form.save()
                 if surgery_email.organisation_email:
@@ -350,7 +356,7 @@ def step3(request: HttpRequest, practice_code: str) -> HttpResponse:
     header_title = "Sign up: eMR with EMISweb - please make sure to only minimise this browser tab, do not close this screen "
     gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
     reload_status = 0
-    if request.user.get_my_organisation() != gp_organisation:
+    if not request.user.pk or request.user.get_my_organisation() != gp_organisation:
         return redirect('accounts:login')
 
     if request.method == "POST":

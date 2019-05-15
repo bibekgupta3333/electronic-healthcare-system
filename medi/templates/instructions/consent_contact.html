@@ -242,18 +242,6 @@
                                         </div>
                                         <div class="col-12">&nbsp;</div>
 
-                                        <!-- SARS Request Form Upload -->
-                                        <div class="col-6">
-                                            <div class="col-12">
-                                                <div class="form-group">
-                                                    <div class="file-loading">
-                                                        <input type="hidden" name="sars_consent_loaded" id="id_sars_consent_loaded" />
-                                                        {% bootstrap_field sars_consent_form.sars_consent show_label=false %}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
                                         <!-- MDX Dual Consent Form Upload -->
                                         <div class="col-6">
                                             <div class="col-12">
@@ -539,24 +527,6 @@
         setUpTel("id_patient_alternate_phone", "id_patient_alternate_code");
         $('.InstructionPatientForm input').attr('readonly', true);
         if((navigator.userAgent.indexOf("MSIE") != -1 ) || (!!document.documentMode == true )){
-            $("#id_sars_consent").fileinput({
-                theme: 'fas',
-                showUpload: false,
-                showPreview: false,
-                {% if sars_consent_form_data.path %}
-                    initialPreview: [
-                        "{{ sars_consent_form_data.path }}"
-                    ],
-                    initialPreviewAsData: true,
-                    initialPreviewConfig: [
-                        {
-                            type: "{{ sars_consent_form_data.type }}",
-                            url: "{{ sars_consent_form_data.path }}",
-                            extra: {csrfmiddlewaretoken: csrftoken}
-                        }
-                    ]
-                {% endif %}
-            });
             $("#id_mdx_consent").fileinput({
                 theme: 'fas',
                 showUpload: false,
@@ -577,23 +547,6 @@
             });
         }
         else {
-            $("#id_sars_consent").fileinput({
-                theme: 'fas',
-                showUpload: false,
-                {% if sars_consent_form_data.path %}
-                    initialPreview: [
-                        "{{ sars_consent_form_data.path }}"
-                    ],
-                    initialPreviewAsData: true,
-                    initialPreviewConfig: [
-                        {
-                            type: "{{ sars_consent_form_data.type }}",
-                            url: "{{ sars_consent_form_data.path }}",
-                            extra: {csrfmiddlewaretoken: csrftoken}
-                        }
-                    ]
-                {% endif %}
-            });
             $("#id_mdx_consent").fileinput({
                 theme: 'fas',
                 showUpload: false,
@@ -650,7 +603,6 @@
                 $('#permit_modal_button').click();
             }
             else {
-                var sars_loaded = $('.file-caption-name').first().attr('title');
                 var mdx_loaded = $('.file-caption-name').last().attr('title');
                 var is_allowed = true;
 
@@ -680,19 +632,12 @@
             }
         });
         $('#noMdxConsent_btn_process').click( function() {
-            $('#id_sars_consent_loaded').val('loaded');
             $('#id_mdx_consent_loaded').val('loaded');
             $('#id_next_step').val('proceed');
             proceedAction();
         });
         $('#noMdxConsent_btn_back').click( function() {
             $('#noMdxConsent').modal('hide');
-        });
-        $('#id_sars_consent').on('change', function(){
-            var sars_loaded = $('.file-caption-name').first().attr('title');
-            if (sars_loaded){
-                $('#id_sars_consent_loaded').val('loaded');
-            }
         });
         $('#id_mdx_consent').on('change', function(){
             var mdx_loaded = $('.file-caption-name').last().attr('title');
@@ -701,13 +646,8 @@
             }
         });
         $('#saveBtn').click(function(){
-            var sars_loaded = $('.file-caption-name').first().attr('title');
             var mdx_loaded = $('.file-caption-name').last().attr('title');
-            if(sars_loaded) {
-                $('#id_sars_consent_loaded').val('loaded');
-            } else {
-                $('#id_sars_consent_loaded').val('');
-            }
+
             if(mdx_loaded) {
                 $('#id_mdx_consent_loaded').val('loaded');
             } else {
