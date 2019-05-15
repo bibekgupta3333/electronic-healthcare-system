@@ -260,8 +260,8 @@ def step1(request: HttpRequest) -> HttpResponse:
         surgery_form = SurgeryForm(request.POST)
         if surgery_form.is_valid():
             gp_organisation = surgery_form.save()
+            surgery_email_form = SurgeryForm(request.POST, instance=gp_organisation)
             if surgery_email_form.is_valid():
-                surgery_email_form = SurgeryForm(request.POST, instance=gp_organisation)
                 if not surgery_form.cleaned_data.get('operating_system') == 'EMISWeb':
                     message_1 = 'Thank you for completing part one of the eMR registration process. It’s great to have you on board.'
                     message_2 = 'We will be in touch with you shortly to complete the set up process so that you can process SARs in seconds.'
@@ -284,4 +284,50 @@ def step1(request: HttpRequest) -> HttpResponse:
     return render(request, 'onboarding/step1.html', {
         'surgery_form': surgery_form,
         'surgery_email_form': surgery_email_form,
+    })
+
+def step2(request: HttpRequest, practice_code: str) -> HttpResponse:
+    gp_organisation = get_object_or_404(OrganisationGeneralPractice, pk=practice_code)
+    pm_form = PMForm()
+    UserEmrSetUpStage2Formset = formset_factory(UserEmrSetUpStage2Form, validate_min=True, extra=4)
+    user_formset = UserEmrSetUpStage2Formset()
+    if request.method == 'POST':
+        home_page_link = request.scheme + '://' + get_url_page('home', request=request)
+        pm_form = PMForm(request.POST)
+        user_formset = UserEmrSetUpStage2Formset(request.POST)
+        if pm_form.is_valid() and user_formset.is_valid():
+            pm_form.save__with_gp(gp_organisation=gp_organisation)
+
+            for user in user_formset:
+                if user.is_valid() and user.cleaned_data:
+                    created_user_dict = create_gp_user(gp_organisation, user_form=user.cleaned_data)
+                    if created_user_dict:
+                        created_user_list.append(created_user_dict)
+
+            for user in created_user_list:
+                html_message = loader.render_to_string('onboarding/emr_setup_2_email.html', {
+                    'user_email': user['general_pratice_user'].user.email,
+                    'user_password': user['password'],
+                    'home_page_link': home_page_link
+                })
+                send_mail(
+                    'eMR New User Account information',
+                    '',
+                    settings.DEFAULT_FROM,
+                    [user['general_pratice_user'].user.email],
+                    fail_silently=True,
+                    html_message=html_message,
+                )
+
+            new_pm_user = authenticate(
+                request,
+                email=pm_form.cleaned_data['email1'],
+                password=pm_form.cleaned_data['password1'],
+            )
+            login(request, new_pm_user)
+            return redirect('onboarding:step3', practice_code=gp_organisation.practcode)
+
+    return render(request, 'onboarding/step2.html', {
+        'pm_form': pm_form,
+        'user_formset': user_formset,
     })
