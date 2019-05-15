@@ -467,8 +467,6 @@ class TestConsentContact(TestInstructionBase):
                 'next_step': 'proceed',
                 'mdx_consent': mock_mdx_file,
                 'mdx_consent_loaded': 'loaded',
-                'sars_consent': mock_consent_file,
-                'sars_consent_loaded': 'loaded',
                 'patient_email': 'alan@gmail.com',
                 'patient_telephone_mobile': '1111111111',
                 'proceed_option': '0',
