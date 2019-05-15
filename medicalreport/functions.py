@@ -300,7 +300,7 @@ def send_surgery_email(instruction: Instruction) -> None:
 
 def create_patient_report(request: HttpRequest, instruction: Instruction) -> None:
     unique_url = uuid.uuid4().hex
-    PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
+    PatientReportAuth.objects.get_or_create(patient=instruction.patient, instruction=instruction, url=unique_url)
     report_link_info = {
         'scheme': request.scheme,
         'host': request.get_host(),

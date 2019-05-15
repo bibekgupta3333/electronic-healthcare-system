@@ -9,6 +9,7 @@ from .models import InstructionAdditionQuestion, Instruction, InstructionClientN
 from template.models import TemplateInstruction
 from common.functions import multi_getattr
 from snomedct.models import CommonSnomedConcepts
+from report.models import ThirdPartyAuthorisation
 
 
 DATE_INPUT_FORMATS = settings.DATE_INPUT_FORMATS
@@ -191,3 +192,54 @@ class DateRangeSearchForm(forms.Form):
         input_formats=DATE_INPUT_FORMATS, required=False,
         widget=forms.DateInput(attrs={'autocomplete': 'off', 'placeholder': 'To'})
     )
+
+
+class ConsentThirdParty(forms.ModelForm):
+    error_messages = {
+        'email_mismatch': "The two email fields didn't match.",
+        'phone_number_input': "Please enter office phone"
+    }
+
+    email_1 = forms.EmailField()
+    email_2 = forms.EmailField()
+
+    class Meta:
+        model = ThirdPartyAuthorisation
+        exclude = ('email', 'patient_report_auth', 'count', 'expired_date')
+        widgets = {
+            'office_phone_number_code': forms.HiddenInput(attrs={'placeholder': ''})
+        }
+
+    def clean_email_2(self):
+        email_1 = self.cleaned_data.get("email_1")
+        email_2 = self.cleaned_data.get("email_2")
+        if email_1 and email_2 and email_1 != email_2:
+            raise forms.ValidationError(
+                self.error_messages['email_mismatch'],
+                code='email_mismatch',
+            )
+        return email_2
+
+    def clean(self):
+        office_phone_number = self.cleaned_data.get("office_phone_number")
+        
+        if not office_phone_number:
+            raise forms.ValidationError(
+                self.error_messages['phone_number_input'],
+            )
+
+    def save(self, report_auth, commit=True):
+        third_party = super().save(commit=False)
+        third_party.patient_report_auth = report_auth
+        third_party.email = self.cleaned_data['email_2']
+        unique_url = uuid.uuid4().hex
+        third_party.unique = unique_url
+
+        third_party.expired_date = datetime.datetime.now().date() + datetime.timedelta(days=30)
+        if third_party.modified:
+            third_party.expired_date = third_party.modified + datetime.timedelta(days=30)
+
+        if commit:
+            third_party.save()
+
+        return third_party
