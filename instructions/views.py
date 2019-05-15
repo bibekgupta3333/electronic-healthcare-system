@@ -1,3 +1,12 @@
+import ast
+import json
+import re
+import pytz
+import uuid
+import requests
+import dateutil
+import logging
+
 from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -34,15 +43,9 @@ from payment.model_choices import FEE_STATUS_INVALID_DETAIL, FEE_STATUS_INVALID_
 #from silk.profiling.profiler import silk_profile
 
 from datetime import timedelta
-import pytz
 from itertools import chain
 from typing import Dict, List
-import ast
-import requests
-import json
-import re
-import dateutil
-import logging
+
 
 event_logger = logging.getLogger('medidata.event')
 
@@ -1085,6 +1088,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
     patient_instruction = instruction.patient_information
     mdx_consent_form = MdxConsentForm()
     patient_registration = get_patient_registration(str(patient_emis_number), gp_organisation=instruction.gp_practice)
+
     if isinstance(patient_registration, HttpResponseRedirect):
         return patient_registration
 
@@ -1103,7 +1107,8 @@ def consent_contact(request, instruction_id, patient_emis_number):
 
             if request.POST.get('send-to-third'):
                 if not PatientReportAuth.objects.filter(instruction=instruction):
-                    create_patient_report(request, instruction)
+                    unique_url = uuid.uuid4().hex
+                    PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
                 
                 report_auth = get_object_or_404(PatientReportAuth, instruction=instruction)
                 third_party_form = ConsentThirdParty(request.POST)
