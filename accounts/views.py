@@ -87,6 +87,7 @@ def send_notification_org_email(request, gp_user, status):
 
 
 @login_required(login_url='/accounts/login')
+@access_user_management('instructions.view_account_pages')
 def account_view(request: HttpRequest) -> HttpResponse:
     header_title = 'Account'
     user = request.user
