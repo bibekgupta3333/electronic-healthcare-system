@@ -8,9 +8,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'medi',
-        'USER': 'medi',
-        'PASSWORD': 'medi',
-        'HOST': '',
+        'USER': 'root',
+        'PASSWORD': 'password',
+        'HOST': 'localhost',
     }
 }
 
@@ -38,18 +38,9 @@ LOGGING = {
             'formatter': 'simple',
         },
         'file': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': 'medi_event.log',
-            'when': 'w0',
-            'interval': 1,
-            'backupCount': 10,
-            'formatter': 'simple'
-        },
-        'err_file': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': 'medi_err.log',
             'when': 'w0',
             'interval': 1,
             'backupCount': 10,
@@ -57,19 +48,15 @@ LOGGING = {
         }
     },
     'loggers': {
-        '': {
-            'level': 'DEBUG',
-            'handlers': ['err_file'],
-        },
         'raven': {
             'level': 'ERROR',
             'handlers': ['sentry','console'],
-            'propagate': True,
+            'propagate': False,
         },
         'django.request': {
             'level': 'ERROR',
             'handlers': ['sentry','console'],
-            'propagate': True,
+            'propagate': False,
         },
         'medidata.event': {
             'level': 'INFO',

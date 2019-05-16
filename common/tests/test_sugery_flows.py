@@ -30,9 +30,10 @@ class SurgeryOnboard(TestCase):
         self.month_of_dob = '9'
         self.year_of_dob = '1962'
         self.create_fee()
-        self.onboarding()
+        self.onboarding_step1()
+        self.onboarding_step2()
         self.emis_polling()
-        self.emr_setup_final()
+        self.onboarding_step3()
 
     def create_fee(self):
         self.fee = OrganisationFeeRate.objects.create(
@@ -44,9 +45,12 @@ class SurgeryOnboard(TestCase):
             default=True
         )
 
-    def onboarding(self):
+    def onboarding_step1(self):
         data = {
+            'practice_code': self.practice_code,
+            'surgery_name': 'TESTSURGERY',
             'accept_policy': 'on',
+            'postcode': 'AB10 1AF',
             'address': self.address,
             'address_line1': 'Child Protection Partnership',
             'address_line2': 'Business Hub 2',
@@ -55,37 +59,26 @@ class SurgeryOnboard(TestCase):
             'consented': 'on',
             'contact_num': '29390',
             'county': 'Aberdeenshire',
+            'emis_org_code': self.emis_org_code,
+            'operating_system': 'EMISWeb',
+            'organisation_email': 'test@test.com',
+            'confirm_email': 'test@test.com',
+        }
+        response = self.client.post(reverse('onboarding:step1'), data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/onboarding/step-2/' + self.practice_code)
+
+    def onboarding_step2(self):
+        data = {
             'email1': self.email,
             'email2': self.email,
-            'emis_org_code': self.emis_org_code,
             'first_name': 'Surgery',
-            'operating_system': 'EMISWeb',
+            'surname': 'Medi',
             'password1': self.password,
             'password2': self.password,
-            'postcode': 'AB10 1AF',
-            'practice_code': self.practice_code,
-            'surgery_name': 'TESTSURGERY',
-            'surname': 'Medi',
             'telephone_code': self.phone_code,
             'telephone_mobile': self.phone_number,
-            'title': 'MR'
-        }
-        response = self.client.post(reverse('onboarding:sign_up'), data)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/onboarding/emis-setup/' + self.practice_code)
-
-    def emis_polling(self):
-        response = self.client.get(reverse('onboarding:emis_polling', kwargs={'practice_code':self.practice_code}))
-        result = {'status': 200, 'practice_code': self.practice_code}
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), result)
-        self.user = User.objects.get(email=self.email)
-        self.client.force_login(self.user)
-
-    def emr_setup_final(self):
-        data = {
-            'completed_by': 'Surgery',
-            'confirm_email': self.surgery_email,
+            'title': 'MR',
             'form-0-email': 'manager@mohara.co',
             'form-0-first_name': 'Manager',
             'form-0-last_name': 'GP',
@@ -111,19 +104,25 @@ class SurgeryOnboard(TestCase):
             'form-MAX_NUM_FORMS': '1000',
             'form-MIN_NUM_FORMS': '0',
             'form-TOTAL_FORMS': '3',
-            'job_title': 'Surgery',
-            'bank_account_name': 'SURGERY',
-            'bank_account_number': '1234567890',
-            'bank_account_sort_code': '1234567890',
-            'received_after_11_days': '40',
-            'received_within_8_to_11_days': '50',
-            'received_within_4_to_7_days': '60',
-            'received_within_3_days': self.fee.pk,
-            'organisation_email': self.surgery_email
         }
-        response = self.client.post(reverse('onboarding:emr_setup_final', kwargs={'practice_code':self.practice_code}), data)
+        response = self.client.post(reverse('onboarding:step2', kwargs={'practice_code': self.practice_code}), data)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/onboarding/emis-setup-success/')
+        self.assertEqual(response.url, '/onboarding/step-3/' + self.practice_code)
+
+    def emis_polling(self):
+        response = self.client.get(reverse('onboarding:emis_polling', kwargs={'practice_code':self.practice_code}))
+        result = {'status': 200, 'practice_code': self.practice_code}
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), result)
+        self.user = User.objects.get(email=self.email)
+        self.client.force_login(self.user)
+
+    def onboarding_step3(self):
+        response = self.client.get(
+            reverse('onboarding:step3', kwargs={'practice_code': self.practice_code})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'onboarding/step3.html')
 
 
 class SurgerySARSFlow(SurgeryOnboard):
