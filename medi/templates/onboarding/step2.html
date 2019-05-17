@@ -10,9 +10,11 @@
     <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/strongPass.css' %}" rel="stylesheet">
     <link href="{% static 'css/onboarding/onboarding.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/intlTelInput.min.css' %}" rel="stylesheet"/>
 {% endblock %}
 
 {% block Content %}
+    {% include 'onboarding/progress_bar_onboard.html' %}
     <form id="step_form" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="step2">
@@ -124,8 +126,7 @@
                 <div class="card-body">
                     <div class="row subheader form-group">
                         <div class="col-12">
-                            <p class="mt-3 mb-0 red">You can use your Practice Code or Surgery name to search for your Surgery, but if any information is incorrect please feel free to overwrite with the correct details.</p>
-                            <p class="red mb-3">You can skip this step and add users later if you wish.</p>
+                            <p class="mt-3 mb-0">You can set up additional users of eMR within this step. Alternatively you can skip this step and add users later if you wish.</p>
                         </div>
                     </div>
                     {{ user_formset.management_form }}
@@ -162,12 +163,121 @@
                         </table>
                     </div>
                     <div class="row form-group">
-                        <div class="col-12">
-                            {% bootstrap_button content='Proceed' button_type='submit' size='large' button_class='btn btn-primary'  %}
+                        <div class="col-11">
+                            {% bootstrap_button content='Continue' button_type='submit' size='large' button_class='btn btn-primary btn-continue'  %}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </form>
+{% endblock %}
+
+{% block Script %}
+    <script src="{% static 'js/jquery.formset.js' %}"></script>
+    <script src="{% static 'js/intlTelInput.min.js' %}"></script>
+    <script src="{% static 'js/intlTel.js' %}"></script>
+    <script src="{% static 'js/onboarding/emr_signup.js' %}"></script>
+    <script src="{% static 'js/axcvbn.min.js' %}"></script>
+    <script src="{% static 'js/zxcvbn-bootstrap-strength-meter.js' %}" ></script>
+    <script>
+        $(document).ready(function() {
+            $('#progress_percent').text('20%');
+            $('#progress_bar').attr('aria-valuenow', '20');
+            $('#progress_bar').css('width', '20%');
+
+            $('#id_label').removeClass('text-danger');
+            $('#progress_bar').removeClass('bg-danger');
+
+            $('#id_label').addClass('text-success');
+            $('#progress_bar').addClass('bg-success');
+
+            $("#StrengthProgressBar").zxcvbnProgressBar({
+                  passwordInput: "#id_password1",
+                  ratings: ["Very Weak", "Weak", "OK", "Strong", "Very strong"]
+            });
+            setUpTel('id_telephone_mobile', 'id_telephone_code');
+            let csrf_token = '{{ csrf_token }}';
+
+            $('#step_form').submit(function(event) {
+                var $form = this;
+                var match_error = false;
+                if($('#id_email1').val() != $('#id_email2').val()) {
+                    $('#email_error').text("Email doesn't match");
+                    match_error = true;
+                } else {
+                    $('#email_error').text("");
+                }
+                if($('#id_password1').val() != $('#id_password2').val()) {
+                    $('#password_error').text("Password doesn't match");
+                    match_error = true;
+                } else {
+                    $('#password_error').text("");
+                }
+                if($('#id_password1').hasClass('is-invalid')){
+                    match_error = true;
+                }
+                if($('#id_telephone_mobile').val().length > 11) {
+                    return false;
+                }
+                if(match_error) {
+                    event.preventDefault();
+                }
+            });
+
+            $('#id_password1').keyup(delay(function() {
+                $.ajax({
+                    url: "{% url 'accounts:verify_password' %}",
+                    type: "POST",
+                    dataType: "json",
+                    data:{
+                        "password": $(this).val(),
+                        "first_name": $('#id_first_name').val(),
+                        "surname": $('#id_surname').val(),
+                        "email": $('#id_email1').val(),
+                        "csrfmiddlewaretoken": csrf_token
+                    },
+                    success:function(data) {
+                        $('#password_form').find('.invalid-feedback').remove();
+                        $('#id_password1').removeClass("is-invalid");
+                        if (!data.results.verified){
+                            $('#id_password1').addClass("is-invalid");
+                            data.results.warning.map(function(item){
+                                $('#id_password1').after('<div class="invalid-feedback">' + item + '</div>');
+                            });
+                        }
+                    }
+                });
+            }, 500));
+
+            $('#id_email1').change(function() {
+              $.ajax({
+                  url: "{% url 'accounts:check_email' %}",
+                  type: "POST",
+                  dataType: "json",
+                  data:{
+                      "email": $(this).val() ,
+                      "csrfmiddlewaretoken": csrf_token
+                  },
+                  success:function(data) {
+                    $('#id_email1').removeClass("is-invalid");
+                    $('#email_form').find('.invalid-feedback').remove();
+                    if (data.exists){
+                      $('#id_email1').addClass("is-invalid");
+                      $('#id_email1').after('<div class="invalid-feedback">This email address has already been used to register.</div>');
+                    }
+                  }
+              });
+            });
+
+            $('#id_telephone_mobile').after('<div style="margin-left: 10px; display: inline; position: relative;">' +
+                                    '<img class="info-icon" id="phone_info_icon" src="{% static 'images/information-icon.png' %}">' +
+                                    '<div id="phone_info">We require a mobile phone number in order to set up two-factor authentication, which is a very important security step.</div></div>');
+            $('#phone_info_icon').on("mouseenter", function() {
+                $('#phone_info').show();
+            }).on("mouseleave", function() {
+                $('#phone_info').hide();
+            });
+        });
+    </script>
 {% endblock %}

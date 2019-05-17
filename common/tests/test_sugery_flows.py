@@ -180,7 +180,8 @@ class SurgerySARSFlow(SurgeryOnboard):
             'patient_telephone_mobile': self.phone_number,
             'patient_title': 'Mr.',
             'sars_consent': '',
-            'sars_consent_loaded': ''
+            'sars_consent_loaded': '',
+            'proceed_option': '0'
         }
         response = self.client.post(reverse(
             'instructions:consent_contact',

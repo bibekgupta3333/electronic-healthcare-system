@@ -17,8 +17,6 @@ from report.models import ExceptionMerge, UnsupportedAttachment
 import xhtml2pdf.pisa as pisa
 from medicalreport.templatetags.custom_filters import format_date_filter
 from medicalreport.reports import generate_redact_pdf
-from report.functions import redaction_image
-from pdf2image import convert_from_bytes, convert_from_path
 # from silk.profiling.profiler import silk_profile
 
 from celery import shared_task

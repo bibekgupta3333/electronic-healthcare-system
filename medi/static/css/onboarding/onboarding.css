@@ -18,3 +18,68 @@
 .red{
     color: #e80000;
 }
+
+.active-a {
+    text-decoration: underline;
+    color: #007bff;
+}
+
+.policy-modal {
+    max-width: 80%;
+}
+
+.title-pos {
+    line-height: 2.5rem;
+}
+
+.emrMessage {
+    text-align: center;
+    height: 50vh;
+}
+
+.welcomeMessage {
+    margin: 0px;
+    font-size: 30px;
+}
+
+.centerMessage {
+    margin-top: 6rem;
+}
+
+.info-icon {
+    width: 38px;
+    margin: 0 auto;
+    max-width: 100%;
+}
+
+#clinical_info {
+    position: absolute;
+    width: 300px;
+    height: 160px;
+    top: -165px;
+    left: -240px;
+    border: 2px solid;
+    background-color: #e7e6e6;
+    font-size: 19px;
+    padding: 20px 16px;
+    text-align: center;
+    display: none;
+}
+
+#phone_info {
+    position: absolute;
+    width: 300px;
+    height: 160px;
+    top: -175px;
+    left: -140px;
+    border: 2px solid;
+    background-color: #e7e6e6;
+    font-size: 18px;
+    padding: 20px 16px;
+    text-align: center;
+    display: none;
+}
+
+#step_form .btn-continue {
+    float: right;
+}

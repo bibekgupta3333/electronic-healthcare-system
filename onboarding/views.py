@@ -247,6 +247,11 @@ def ajax_emis_polling(request: HttpRequest, practice_code: str) -> JsonResponse:
     gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
     if gp_organisation:
         status = GetEmisStatusCode(gp_organisation=gp_organisation).call()
+        if status >= 200 and status < 400:
+            if gp_organisation.gp_operating_system == 'EMISWeb' and gp_organisation.accept_policy:
+                gp_organisation.live =True
+                gp_organisation.save()
+            generate_gp_permission(gp_organisation)
         data['status'] = status
         data['practice_code'] = gp_organisation.practcode
 
@@ -260,25 +265,39 @@ def step1(request: HttpRequest) -> HttpResponse:
         surgery_form = SurgeryForm(request.POST)
         if surgery_form.is_valid():
             gp_organisation = surgery_form.save()
-            surgery_email_form = SurgeryForm(request.POST, instance=gp_organisation)
+            if not surgery_form.cleaned_data.get('operating_system') == 'EMISWeb':
+                message_1 = 'Thank you for completing part one of the eMR registration process. It’s great to have you on board.'
+                message_2 = 'We will be in touch with you shortly to complete the set up process so that you can process SARs in seconds.'
+                message_3 = 'We look forward to working with you in the very near future. eMR Support Team'
+                return render(request, 'onboarding/emr_message.html', context={
+                    'message_1': message_1,
+                    'message_2': message_2,
+                    'message_3': message_3
+                })
+            if gp_organisation.practcode[:4] == 'TEST':
+                gp_organisation.operating_system_username = 'michaeljtbrooks'
+                gp_organisation.operating_system_salt_and_encrypted_password = 'Medidata2019'
+            else:
+                password = generate_password(initial_range=1, body_rage=12, tail_rage=1)
+                gp_organisation.operating_system_salt_and_encrypted_password = password
+                gp_organisation.operating_system_username = 'medidata_access'
+            gp_organisation.save()
+
+            surgery_email_form = SurgeryEmailForm(request.POST, instance=gp_organisation)
+
             if surgery_email_form.is_valid():
-                if not surgery_form.cleaned_data.get('operating_system') == 'EMISWeb':
-                    message_1 = 'Thank you for completing part one of the eMR registration process. It’s great to have you on board.'
-                    message_2 = 'We will be in touch with you shortly to complete the set up process so that you can process SARs in seconds.'
-                    message_3 = 'We look forward to working with you in the very near future. eMR Support Team'
-                    return render(request, 'onboarding/emr_message.html', context={
-                        'message_1': message_1,
-                        'message_2': message_2,
-                        'message_3': message_3
-                    })
-                if gp_organisation.practcode[:4] == 'TEST':
-                    gp_organisation.operating_system_username = 'michaeljtbrooks'
-                    gp_organisation.operating_system_salt_and_encrypted_password = 'Medidata2019'
-                else:
-                    password = generate_password(initial_range=1, body_rage=12, tail_rage=1)
-                    gp_organisation.operating_system_salt_and_encrypted_password = password
-                    gp_organisation.operating_system_username = 'medidata_access'
-                gp_organisation.save()
+                surgery_email = surgery_email_form.save()
+                if surgery_email.organisation_email:
+                    html_message = loader.render_to_string('onboarding/surgery_email.html')
+                    send_mail(
+                        'eMR successful set up',
+                        '',
+                        settings.DEFAULT_FROM,
+                        [surgery_email.organisation_email],
+                        fail_silently=True,
+                        html_message=html_message,
+                    )
+
                 return redirect('onboarding:step2', practice_code=gp_organisation.practcode)
 
     return render(request, 'onboarding/step1.html', {
@@ -296,6 +315,7 @@ def step2(request: HttpRequest, practice_code: str) -> HttpResponse:
         pm_form = PMForm(request.POST)
         user_formset = UserEmrSetUpStage2Formset(request.POST)
         if pm_form.is_valid() and user_formset.is_valid():
+            created_user_list = []
             pm_form.save__with_gp(gp_organisation=gp_organisation)
 
             for user in user_formset:
@@ -330,4 +350,47 @@ def step2(request: HttpRequest, practice_code: str) -> HttpResponse:
     return render(request, 'onboarding/step2.html', {
         'pm_form': pm_form,
         'user_formset': user_formset,
+    })
+
+def step3(request: HttpRequest, practice_code: str) -> HttpResponse:
+    header_title = "Sign up: eMR with EMISweb - please make sure to only minimise this browser tab, do not close this screen "
+    gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
+    reload_status = 0
+    if not request.user.pk or request.user.get_my_organisation() != gp_organisation:
+        return redirect('accounts:login')
+
+    if request.method == "POST":
+        surgery_update_form = SurgeryUpdateForm(request.POST)
+        if surgery_update_form.is_valid():
+            gp_organisation.operating_system_organisation_code = surgery_update_form.cleaned_data['emis_org_code']
+            gp_organisation.gp_operating_system = surgery_update_form.cleaned_data['operating_system']
+            gp_organisation.save()
+
+            event_logger.info('Onboarding: {gp_name}, EDITED surgery information completed'.format(gp_name=gp_organisation.name))
+            #   If User selected the another os. Will redirect to thank you Page.
+            if not gp_organisation.gp_operating_system == 'EMISWeb':
+                message_1 = 'Thank you for completing part one of the eMR registration process. It’s great to have you on board.'
+                message_2 = 'We will be in touch with you shortly to complete the set up process so that you can process SARs in seconds.'
+                message_3 = 'We look forward to working with you in the very near future. eMR Support Team'
+                return render(request, 'onboarding/emr_message.html', context={
+                    'message_1': message_1,
+                    'message_2': message_2,
+                    'message_3': message_3
+                })
+            reload_status = 1
+
+    surgery_update_form = SurgeryUpdateForm(initial={
+        'surgery_name': gp_organisation.name,
+        'surgery_code': gp_organisation.practcode,
+        'emis_org_code': gp_organisation.operating_system_organisation_code,
+        'operating_system': gp_organisation.gp_operating_system
+    })
+
+    return render(request, 'onboarding/step3.html', {
+        'header_title': header_title,
+        'organisation_code': gp_organisation.operating_system_organisation_code,
+        'practice_code': gp_organisation.practcode,
+        'practice_password': gp_organisation.operating_system_salt_and_encrypted_password,
+        'surgery_update_form': surgery_update_form,
+        'reload_status': reload_status
     })

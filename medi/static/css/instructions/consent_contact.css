@@ -120,3 +120,7 @@ textarea {
 #printModal .modal-lg {
     max-width: 90%;
 }
+
+#AsyncOptionModal {
+    font-size: large;
+}
