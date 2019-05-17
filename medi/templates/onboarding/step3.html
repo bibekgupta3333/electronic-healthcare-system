@@ -195,6 +195,9 @@
 
             $('#backBTN').click( function() {
                 var percentNow = $('#progress_bar').attr('aria-valuenow');
+                if (parseInt(percentNow) == 35) {
+                    return;
+                }
                 var percentNext = parseInt(percentNow) - 4;
 
                 $('#progress_percent').text( percentNext + ' % ');
