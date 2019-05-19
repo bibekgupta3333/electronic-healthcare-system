@@ -254,26 +254,21 @@ def update_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         create_or_update_redaction_record(request, instruction)
         return JsonResponse({'message': 'Report has been saved.'})
     else:
-        if instruction.is_amra() and not instruction.consent_form:
-            messages.error(request, "You do not have a consent form")
-        elif instruction.is_sars() and not instruction.mdx_consent:
-            messages.error(request, "You do not have a mdx consent")
-        else:
-            is_valid = create_or_update_redaction_record(request, instruction)
-            if is_valid:
-                if request.POST.get('event_flag') == 'submit':
-                    event_logger.info(
-                        '{user}:{user_id} SUBMITTED medical report of instruction ID {instruction_id}'.format(
-                            user=request.user, user_id=request.user.id,
-                            instruction_id=instruction_id
-                        )
+        is_valid = create_or_update_redaction_record(request, instruction)
+        if is_valid:
+            if request.POST.get('event_flag') == 'submit':
+                event_logger.info(
+                    '{user}:{user_id} SUBMITTED medical report of instruction ID {instruction_id}'.format(
+                        user=request.user, user_id=request.user.id,
+                        instruction_id=instruction_id
                     )
-                    if instruction.client_user:
-                        calculate_instruction_fee(instruction)
-                    create_patient_report(request, instruction)
-                if request.POST.get('event_flag') == 'preview':
-                    return redirect('medicalreport:submit_report', instruction_id=instruction_id)
-                return redirect('instructions:view_pipeline')
+                )
+                if instruction.client_user:
+                    calculate_instruction_fee(instruction)
+                create_patient_report(request, instruction)
+            if request.POST.get('event_flag') == 'preview':
+                return redirect('medicalreport:submit_report', instruction_id=instruction_id)
+            return redirect('instructions:view_pipeline')
 
         return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 

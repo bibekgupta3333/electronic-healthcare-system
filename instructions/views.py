@@ -1,3 +1,12 @@
+import ast
+import json
+import re
+import pytz
+import uuid
+import requests
+import dateutil
+import logging
+
 from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -12,7 +21,7 @@ from .models import Instruction, InstructionAdditionQuestion, InstructionConditi
 from .tables import InstructionTable, FeeInstructionTable
 from .model_choices import *
 from .forms import ScopeInstructionForm, AdditionQuestionFormset, SarsConsentForm, MdxConsentForm,\
-        ReferenceForm, ConsentForm, InstructionDateRangeForm, DateRangeSearchForm
+        ReferenceForm, ConsentForm, InstructionDateRangeForm, DateRangeSearchForm, ConsentThirdParty
 from .tasks import prepare_medicalreport_data
 from accounts.models import User, GeneralPracticeUser, PracticePreferences
 from accounts.models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
@@ -29,19 +38,14 @@ from report.models import ExceptionMerge
 from medicalreport.functions import create_patient_report
 from template.models import TemplateInstruction
 from payment.models import GpOrganisationFee
+from report.models import PatientReportAuth
 from payment.model_choices import FEE_STATUS_INVALID_DETAIL, FEE_STATUS_INVALID_FEE
 #from silk.profiling.profiler import silk_profile
 
 from datetime import timedelta
-import pytz
 from itertools import chain
 from typing import Dict, List
-import ast
-import requests
-import json
-import re
-import dateutil
-import logging
+
 
 event_logger = logging.getLogger('medidata.event')
 
@@ -1080,9 +1084,11 @@ def view_fail(request, instruction_id: str):
 @check_permission
 def consent_contact(request, instruction_id, patient_emis_number):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
+    third_party_form = ConsentThirdParty()
     patient_instruction = instruction.patient_information
     mdx_consent_form = MdxConsentForm()
     patient_registration = get_patient_registration(str(patient_emis_number), gp_organisation=instruction.gp_practice)
+
     if isinstance(patient_registration, HttpResponseRedirect):
         return patient_registration
 
@@ -1098,6 +1104,20 @@ def consent_contact(request, instruction_id, patient_emis_number):
             patient_email = request.POST.get('patient_email', '')
             patient_telephone_mobile = request.POST.get('patient_telephone_mobile', '')
             patient_alternate_phone = request.POST.get('patient_alternate_phone', '')
+
+            if request.POST.get('send-to-third'):
+                if not PatientReportAuth.objects.filter(instruction=instruction):
+                    unique_url = uuid.uuid4().hex
+                    PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
+                
+                report_auth = get_object_or_404(PatientReportAuth, instruction=instruction)
+                third_party_form = ConsentThirdParty(request.POST)
+
+                if third_party_form.is_valid():
+                    third_party_authorisation = third_party_form.save(report_auth)
+                    event_logger.info('CREATED third party authorised model ID {model_id}'.format(
+                        model_id=third_party_authorisation.id)
+                    )
 
             if request.POST.get('mdx_consent_loaded') != 'loaded' or mdx_consent_form.is_valid():
                 patient_instruction.patient_email = patient_email
@@ -1184,6 +1204,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
 
     return render(request, 'instructions/consent_contact.html', {
         'patient_form': patient_form,
+        'third_party_form': third_party_form,
         'instruction': instruction,
         'patient_emis_number': patient_emis_number,
         'mdx_consent_form': mdx_consent_form,
