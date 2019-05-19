@@ -224,6 +224,8 @@ class ConsentThirdParty(forms.ModelForm):
         return email_2
 
     def clean(self):
+        super().clean()
+
         office_phone_number = self.cleaned_data.get("office_phone_number")
         
         if not office_phone_number:
