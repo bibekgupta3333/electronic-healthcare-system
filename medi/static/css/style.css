@@ -18,9 +18,17 @@ html {
   min-height: 100%;
 }
 
+.collapse-check {
+  cursor: pointer;
+}
+
 .sidebar-header {
   color: #ffffffed;
   padding: 10% 0;
+}
+
+.text-wrap {
+  word-break: break-word;
 }
 
 .sidebar-header .profile{

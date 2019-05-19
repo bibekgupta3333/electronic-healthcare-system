@@ -26,7 +26,7 @@
         {% csrf_token %}
         <div class="modal fade" id="form-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
-                <div class="modal-content sensitive-information-instructions alert-warning">
+                <div class="modal-content sensitive-information-instructions alert-warning modal-warning-block">
                     <h6>Confidentiality Policies:</h6>
                     <ul>
                         <li class="mt-2">
@@ -294,6 +294,23 @@
         <p>Phone number invalid</p>
         <button class="phoneDialog_close rightBtn btn btn-sm btn-default">Close</button>
     </div>
+    <input type="button" id="modal_button" data-toggle="modal" data-target="#exampleModalCenter" style="display: none;">
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white text-center">
+                    <h5 class="modal-title mx-auto" id="exampleModalLongTitle">You must provide a copy of the patient's consent</h5>
+                </div>
+                <div class="modal-body bg-white" style="color: black; text-align: center;">
+                You must provide a copy of the patient's consent before you can proceed this instruction.
+                </div>
+                <div class="modal-footer bg-white">
+                    <button type="button" class="btn btn-secondary mx-auto" data-dismiss="modal">Go Back</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Create Template Modal -->
     <div class="modal fade" id="create_template_modal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -345,6 +362,8 @@
     <script>
         $(document).ready(function () {
             var isPopup = false;
+            var is_concent_uploaded = false;
+
             setUpTel("id_patient_telephone_mobile", "id_patient_telephone_code");
 
             {% if request.user.type == 'GP' %}
@@ -353,7 +372,7 @@
                 });
             {% endif %}
 
-            $('#submit-all').click( function() {
+            $('#submit-all').click( function(e) {
                 {% if request.user.type == 'CLT' %}
                     if ($('#confirm_email').val() !='' && $('#confirm_email').val() != $('#id_patient_email').val() && !isPopup){
                         isPopup = true;
@@ -366,7 +385,23 @@
                     else if( $('#id_patient_telephone_mobile').val().length > 11 ) {
                         setTimeout(function(){$("#phoneDialog").popup('show')}, 300);
                     }
+                    else {
+                        if ( !is_concent_uploaded ) {
+                            e.preventDefault();
+                            $('#modal_button').click();
+                        }
+                    }
+
                 {% endif %}
+            });
+
+            // Check if file uploaded or not.
+            $('.file-loading').on('filecleared', function(event) {
+                is_concent_uploaded = false;
+            });
+
+            $('.file-loading').on('fileloaded', function(event, file, previewId, index, reader) {
+                is_concent_uploaded = true;
             });
 
             // Function for hidden field if choose SARS type.

@@ -128,6 +128,8 @@ def set_default_gp_perm(group: Group, role: str) -> None:
         if codename == 'view_account_pages' and role == GeneralPracticeUser.OTHER_PRACTICE: continue
         if codename == 'authorise_fee' and role != GeneralPracticeUser.PRACTICE_MANAGER and role != GeneralPracticeUser.GENERAL_PRACTICE: continue
         if codename == 'amend_fee' and role != GeneralPracticeUser.PRACTICE_MANAGER and role != GeneralPracticeUser.GENERAL_PRACTICE: continue
+        if codename == 'amend_bank_account' and role != GeneralPracticeUser.PRACTICE_MANAGER and role != GeneralPracticeUser.GENERAL_PRACTICE: continue
+        if codename == 'authorise_bank_account' and role != GeneralPracticeUser.PRACTICE_MANAGER and role != GeneralPracticeUser.GENERAL_PRACTICE: continue
         perm = Permission.objects.get(codename=codename)
         group.permissions.add(perm)
     group.save()

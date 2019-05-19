@@ -10,8 +10,6 @@ MANAGER_PERMISSIONS=[
     'change_instructionpermission',
     'delete_instructionpermission',
     'view_library',
-    'amend_bank_account',
-    'authorise_bank_account'
 ]
 
 GP_PERMISSIONS=[

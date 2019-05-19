@@ -43,7 +43,7 @@ def send_email_amra(instruction):
 
     # Send Email for GP.
     gp_email = set()
-    instruction_link = settings.EMR_URM + reverse('instructions:view_reject', kwargs={'instruction_id': instruction.id})
+    instruction_link = settings.EMR_URL + reverse('instructions:view_reject', kwargs={'instruction_id': instruction.id})
     gp_managers = User.objects.filter(
             userprofilebase__generalpracticeuser__organisation=instruction.gp_practice.pk,
             userprofilebase__generalpracticeuser__role=GeneralPracticeUser.PRACTICE_MANAGER
@@ -127,7 +127,7 @@ def instruction_notification_sars():
                     send_mail(
                         'Pending Instruction',
                         'You have a pending or not started instruction. Click here {link} to see it.'.format(
-                            link=settings.MDX_URL + reverse('instructions:view_pipeline')
+                            link=settings.EMR_URL + reverse('instructions:view_pipeline')
                         ),
                         'MediData',
                         [gp['email'] for gp in gp_managers],
@@ -162,7 +162,7 @@ def send_email_to_practice_job():
         if practice_preferences.notification == 'DIGEST':
             send_mail(
                 'Unstarted Instruction',
-                'You have unstarted instructions. Click here {link} to see it.'.format(link=settings.MDX_URL + reverse('instructions:view_pipeline')),
+                'You have unstarted instructions. Click here {link} to see it.'.format(link=settings.EMR_URL + reverse('instructions:view_pipeline')),
                 'MediData',
                 [gp_practice.organisation_email],
                 fail_silently=True,
