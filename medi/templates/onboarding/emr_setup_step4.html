@@ -21,7 +21,7 @@
                         Your Surgery is now ready to process medical records.
                     </p>
                     <p>
-                        <a href="{% url 'accounts:login' %}" style="color: #33aea0; font-size: 18px"><strong>Click here</strong></a> if nothing happens.
+                        <a href="{% url 'accounts:login' %}" style="color: #33aea0; font-size: 18px"><strong>Click here</strong></a> to be taken to the sign-in screen.
                     </p>
                 </div>
                 <button class="btn btn-checkSetup" onclick="this.disabled=true; pollingEmis('{% url "onboarding:emis_polling" practice_code %}')" type="button" id="checkingEmisButton">
