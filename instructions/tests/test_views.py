@@ -470,6 +470,9 @@ class TestConsentContact(TestInstructionBase):
                 'patient_email': 'alan@gmail.com',
                 'patient_telephone_mobile': '1111111111',
                 'proceed_option': '0',
+                'send-to-third': ['on'],
+                'email_2': 'gianttiny123@gmail.com', 
+                'office_phone_number': '1111111111'
             }
         )
 

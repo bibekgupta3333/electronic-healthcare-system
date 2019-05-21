@@ -303,16 +303,13 @@ class UpdateReportTest(EmisAPITestCase):
         })
         self.assertEqual(response.url, '/instruction/view-pipeline/')
 
-    def test_view_adds_error_message_and_redirects_to_correct_url_if_no_consent_form(self):
+    def test_redirects_to_correct_url_if_no_consent_form(self):
         os.remove(self.instruction.consent_form.path)
         self.instruction.consent_form = None
         self.instruction.type = AMRA_TYPE
         self.instruction.save()
-        response = self.client.get('/medicalreport/1/update/', follow=True)
-        self.assertEquals(
-            "You do not have a consent form",
-            list(response.context.get('messages'))[0].message
-        )
+        response = self.client.post('/medicalreport/1/update/', {'event_flag': 'submit'})
+        self.assertEqual(response.url, '/medicalreport/1/edit/')
 
 
 class ViewReportTest(EmisAPITestCase):
