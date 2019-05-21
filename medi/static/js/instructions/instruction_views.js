@@ -4,6 +4,7 @@ var inst_statusDict = {}, gpuser_roleDict = {};
 var clientuser_roleDict = {}, medidatauser_roleDict = {};
 inst_statusDict["All"] = -1;
 inst_statusDict["New"] = 0;
+inst_statusDict["Redacting"] = 7;
 inst_statusDict["In Progress"] = 1;
 inst_statusDict["Completed"] = 2;
 inst_statusDict["Rejected"] = 3;

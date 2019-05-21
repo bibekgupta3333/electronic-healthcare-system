@@ -99,10 +99,18 @@ class Instruction(TimeStampedModel, models.Model):
     gp_practice = models.ForeignKey(OrganisationGeneralPractice, on_delete=models.CASCADE)
     sars_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
     mdx_consent = models.FileField(upload_to='consent_forms', null=True, blank=True)
+
+    # TODO Have to remove this field in the future because we already don't use file system anymore
     medical_report = models.FileField(upload_to='medical_reports', null=True, blank=True)
     medical_xml_report = models.FileField(upload_to='medical_xml_reports', null=True, blank=True)
     medical_with_attachment_report = models.FileField(upload_to='medical_with_attachment_reports', null=True, blank=True)
     download_attachments = models.TextField(blank=True)
+
+    # File bytes content
+    medical_report_byte = models.BinaryField()
+    medical_with_attachment_report_byte = models.BinaryField()
+    final_raw_medical_xml_report = models.TextField(blank=True)
+
     saved = models.BooleanField(default=False)
     deactivated = models.BooleanField(default=False, verbose_name="Deactivated at patient request")
     medi_ref = models.IntegerField(null=True, blank=True, verbose_name="Medi Ref.")

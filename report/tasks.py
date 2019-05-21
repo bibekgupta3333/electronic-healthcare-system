@@ -31,7 +31,7 @@ import io
 import uuid
 import glob
 import os
-import re
+import requests
 
 logger = logging.getLogger(__name__)
 time_logger = logging.getLogger('timestamp')
@@ -73,19 +73,21 @@ def link_callback(uri: str, rel) -> str:
 
 
 @shared_task(bind=True)
-def generate_medicalreport_with_attachment(self, instruction_id: str, report_link_info: dict):
+def generate_medicalreport_with_attachment(self, instruction_info: dict, report_link_info: dict):
     start_time = timezone.now()
 
     try:
+        instruction_id = instruction_info['id']
         instruction = get_object_or_404(Instruction, id=instruction_id)
         redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
-        medical_record_decorator = MedicalReportDecorator(instruction.medical_xml_report.read().decode('utf-8'),
-                                                          instruction)
+        medical_record_decorator = MedicalReportDecorator(instruction.final_raw_medical_xml_report, instruction)
         output = PyPDF2.PdfFileWriter()
 
+        final_report_buffer = io.BytesIO(instruction.medical_report_byte)
+        medical_report = PyPDF2.PdfFileReader(final_report_buffer)
+
         # add each page of medical report to output file
-        medical_report = PyPDF2.PdfFileReader(instruction.medical_report)
         for page_num in range(medical_report.getNumPages()):
             output.addPage(medical_report.getPage(page_num))
 
@@ -120,7 +122,7 @@ def generate_medicalreport_with_attachment(self, instruction_id: str, report_lin
 
                     if file_type == 'pdf':
                         if settings.IMAGE_REDACTION_ENABLED:
-                            redacted_pdf = generate_redact_pdf(
+                            redacted_count, redacted_pdf = generate_redact_pdf(
                                 instruction.patient_information.patient_first_name,
                                 instruction.patient_information.patient_last_name,
                                 pdf_byte=raw_attachment
@@ -135,12 +137,12 @@ def generate_medicalreport_with_attachment(self, instruction_id: str, report_lin
                         f.write(buffer.getvalue())
                         f.close()
                         subprocess.call(
-                            ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
+                            ("cd /Applications/LibreOffice.app/Contents/MacOS && ./soffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
                             shell=True
                         )
                         if settings.IMAGE_REDACTION_ENABLED:
                             pdf_path = folder + 'temp_%s.pdf' % unique
-                            redacted_pdf = generate_redact_pdf(
+                            redacted_count, redacted_pdf = generate_redact_pdf(
                                 instruction.patient_information.patient_first_name,
                                 instruction.patient_information.patient_last_name,
                                 pdf_path=pdf_path
@@ -176,7 +178,7 @@ def generate_medicalreport_with_attachment(self, instruction_id: str, report_lin
                             c.save()
 
                             if settings.IMAGE_REDACTION_ENABLED:
-                                redacted_pdf = generate_redact_pdf(
+                                redacted_count, redacted_pdf = generate_redact_pdf(
                                     instruction.patient_information.patient_first_name,
                                     instruction.patient_information.patient_last_name,
                                     pdf_byte=out_pdf_io.getvalue()
@@ -190,7 +192,7 @@ def generate_medicalreport_with_attachment(self, instruction_id: str, report_lin
                             pdf_bytes = img2pdf.convert(folder + 'img_temp_%s.' % unique + image_format)
 
                             if settings.IMAGE_REDACTION_ENABLED:
-                                redacted_pdf = generate_redact_pdf(
+                                redacted_count, redacted_pdf = generate_redact_pdf(
                                     instruction.patient_information.patient_first_name,
                                     instruction.patient_information.patient_last_name,
                                     pdf_byte=pdf_bytes
@@ -214,9 +216,11 @@ def generate_medicalreport_with_attachment(self, instruction_id: str, report_lin
                         UnsupportedAttachment.objects.get_or_create(
                             instruction=instruction,
                             file_name=file_name,
+                            file_content=buffer.getvalue(),
                             defaults={
                                 'file_type': file_type,
-                            }
+                            },
+
                         )
 
             except Exception as e:
@@ -242,8 +246,10 @@ def generate_medicalreport_with_attachment(self, instruction_id: str, report_lin
         output.write(pdf_page_buf)
 
         uuid_hex = uuid.uuid4().hex
+        instruction.medical_with_attachment_report_byte = pdf_page_buf.getvalue()
         instruction.medical_with_attachment_report.save('report_with_attachments_%s.pdf' % uuid_hex,
                                                         ContentFile(pdf_page_buf.getvalue()))
+        instruction.save()
 
         # remove temp files
         for unique in unique_file_name:
@@ -262,21 +268,20 @@ def generate_medicalreport_with_attachment(self, instruction_id: str, report_lin
         instruction.status = INSTRUCTION_STATUS_FAIL
         instruction.save()
     else:
-        if instruction.medical_with_attachment_report:
-            msg_line_1 = "Your GP surgery has completed your SAR request. We have sent you an email to access a copy."
-            msg_line_2 = "This may have landed in your 'Junk mail'. Move to your inbox to activate the link."
-            msg = "%s %s"%(msg_line_1, msg_line_2)
-            SendSMS(number=instruction.patient_information.get_telephone_e164()).send(msg)
-            send_patient_mail(
-                report_link_info['scheme'],
-                report_link_info['host'],
-                report_link_info['unique_url'],
-                instruction
-            )
+        msg_line_1 = "Your GP surgery has completed your SAR request. We have sent you an email to access a copy."
+        msg_line_2 = "This may have landed in your 'Junk mail'. Move to your inbox to activate the link."
+        msg = "%s %s"%(msg_line_1, msg_line_2)
+        SendSMS(number=instruction.patient_information.get_telephone_e164()).send(msg)
+        send_patient_mail(
+            report_link_info['scheme'],
+            report_link_info['host'],
+            report_link_info['unique_url'],
+            instruction
+        )
 
-            instruction.download_attachments = ",".join(download_attachments)
-            instruction.status = INSTRUCTION_STATUS_COMPLETE
-            instruction.save()
+        instruction.download_attachments = ",".join(download_attachments)
+        instruction.status = INSTRUCTION_STATUS_COMPLETE
+        instruction.save()
 
     end_time = timezone.now()
     total_time = end_time - start_time

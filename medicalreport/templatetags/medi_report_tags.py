@@ -4,6 +4,7 @@ from .helper import problem_xpaths
 from django.utils.html import format_html
 from medicalreport.models import NhsSensitiveConditions
 from library.models import LibraryHistory, Library
+from medicalreport.models import RedactedAttachment
 import re
 
 register = template.Library()
@@ -35,7 +36,8 @@ def form_attachments(context):
     return {
         'attachments': context['medical_record'].attachments,
         'instruction': context['instruction'],
-        'redaction': context['redaction']
+        'redaction': context['redaction'],
+        'section': 'attachments',
     }
 
 
@@ -132,7 +134,7 @@ def form_new_additional_allergies():
 
 
 @register.inclusion_tag('medicalreport/inclusiontags/redaction_checkbox_with_body.html')
-def redaction_checkbox_with_body(model, redaction, header='', word_library='', body='', sensitive_conditions={}):
+def redaction_checkbox_with_body(model, redaction, header='', word_library='', body='', section='', sensitive_conditions={}):
     checked = ""
     xpaths = model.xpaths()
     snomed_codes = set(model.snomed_concepts())
@@ -145,6 +147,15 @@ def redaction_checkbox_with_body(model, redaction, header='', word_library='', b
 
     if redaction.redacted(xpaths) is True:
         checked = "checked"
+
+    redacted_count = 0
+    if section == 'attachments':
+        dds_identifier = model.dds_identifier()
+        redacted_count = RedactedAttachment.objects.filter(
+            instruction=redaction.instruction,
+            dds_identifier=dds_identifier
+        ).values_list('redacted_count', flat=True)[0]
+
 
     title = header
     split_word = header.split()
@@ -212,7 +223,9 @@ def redaction_checkbox_with_body(model, redaction, header='', word_library='', b
         'header_detail': header,
         'title': title,
         'body': body,
-        'is_sensitive': is_sensitive
+        'is_sensitive': is_sensitive,
+        'section': section,
+        'redacted_count': redacted_count
     }
 
 

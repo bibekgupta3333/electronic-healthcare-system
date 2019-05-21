@@ -273,17 +273,15 @@ def get_report(request: HttpRequest, access_type:  str) -> Union[HttpResponse, S
 
     if request.method == 'POST':
             instruction = get_object_or_404(Instruction, id=report_auth.instruction_id)
-            path_file = instruction.medical_with_attachment_report.path
             if request.POST.get('button') == 'Download Report':
                 response = StreamingHttpResponse(FileWrapper(get_zip_medical_report(instruction)), content_type='application/octet-stream')
                 response['Content-Disposition'] = 'attachment; filename="medical_report.zip"'
                 return response
-
             elif request.POST.get('button') == 'View Report':
-                return StreamingHttpResponse(FileWrapper(open(path_file, 'rb')), content_type='application/pdf')
+                return HttpResponse(bytes(instruction.medical_with_attachment_report_byte), content_type='application/pdf')
 
             elif request.POST.get('button') == 'Print Report':
-                return StreamingHttpResponse(FileWrapper(open(path_file, 'rb')), content_type='application/pdf')
+                return HttpResponse(bytes(instruction.medical_with_attachment_report_byte), content_type='application/pdf')
 
     return render(request, 'patient/auth_4_select_report.html', {
         'verified_pin': verified_pin,
