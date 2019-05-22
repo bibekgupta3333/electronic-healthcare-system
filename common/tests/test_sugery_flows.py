@@ -372,9 +372,9 @@ class SurgeryAMRAFlow(SurgeryOnboard):
     @tag('end_to_end')
     def test_instruction_files(self):
         instruction = Instruction.objects.get(pk=self.instruction.pk)
-        if not instruction.medical_report:
+        if not bytes(instruction.medical_report_byte):
             self.fail("Medical report is missing")
-        if not instruction.medical_xml_report:
+        if not instruction.final_raw_medical_xml_report:
             self.fail("Medical report xml is missing")
         if instruction.status not in [INSTRUCTION_STATUS_FINALISE, INSTRUCTION_STATUS_FAIL, INSTRUCTION_STATUS_COMPLETE]:
             self.fail("Instruction invalid status")
