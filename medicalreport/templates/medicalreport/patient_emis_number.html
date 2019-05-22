@@ -14,6 +14,8 @@
 {% endblock %}
 
 {% block Content %}
+      <!-- Proceeding consent contact modal -->
+      {% include 'instructions/modal/proceed_consent_contact.html' %}
       <div class="container-fluid">
           <div class="card-deck">
               <div class="card">
@@ -84,10 +86,12 @@
                               <div class="col-md-2">{{ patient.date_of_birth }}</div>
                               <div class="col-md-4">{{ patient|patient_address }}</div>
                               <div class="col-md-2 select-btn">
-                                  <button data-instruction_id="{{ instruction.id }}"
-                                          data-instruction_type="{{ instruction.type }}"
-                                          data-patient_ref_id="{{ patient.ref_id }}"
-                                          class="btn btn-primary selectPatientButton">
+                                  <button data-instruction_id = "{{ instruction.id }}"
+                                          data-instruction_type = "{{ instruction.type }}"
+                                          data-client_info = "{{ instruction.client_user }}"
+                                          data-patient_ref_id = "{{ patient.ref_id }}"
+                                          data-viewline_url = "{% url 'instructions:view_pipeline' %}"
+                                          class = "btn btn-primary selectPatientButton">
                                       Select
                                   </button>
                                </div>
@@ -172,19 +176,56 @@
         </div>
       </div>
     </div>
+
+    <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg bg-info">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="col-12 text-center mt-2">
+                            <img src="{% static 'images/custom_images/loading.gif'%}" class="img-fluid">
+                            <div class="col-12">&nbsp;</div>
+                            <h4>Patient : <strong>{{ patient_full_name }}</strong></h4>
+                            <h4 class="mt-2">The medical record or report will be generated soon.</h4>
+                            <label class="text-danger mt-4">Please don't leave this page. Process is running ....</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
 {% endblock %}
 {% block Script %}
     <script src="{% static 'medicalreport/js/medicalreport.js' %}"></script>
     <script>
         $(document).ready(function () {
-            $('.selectPatientButton').on('click', function () {
-                let instruction_id = $(this).data('instruction_id');
-                let instruction_type = $(this).data('instruction_type');
-                let patient_ref_id = $(this).data('patient_ref_id');
+            console.log("asdf");
+            function proceed_action() {
+                $('#AsyncOptionModal').modal({
+                    backdrop: "static"
+                });
+            }
+
+            $('#ProceedContinueButton').on('click', function () {
+                if ($('#id_proceed_option_0').is(':checked')){
+                    $('#AsyncOptionModal').modal('hide');
+                    $('#loadingModal').modal({backdrop: "static"});
+                    navigate_action(false);
+                }
+                else if ($('#id_proceed_option_1').is(':checked')) {
+                    $('#AsyncOptionModal').modal('hide');
+                    window.location = $('.selectPatientButton').data('viewline_url');
+                }
+            });
+
+            function navigate_action(flag_modal = true) {
+                let instruction_id = $('.selectPatientButton').data('instruction_id');
+                let instruction_type = $('.selectPatientButton').data('instruction_type');
+                let patient_ref_id = $('.selectPatientButton').data('patient_ref_id');
                 let action_url = "{% url 'medicalreport:select_patient' 1 2 %}";
 
-                if (instruction_type == "SARS"){
+                if (instruction_type == "SARS" && flag_modal){
                     action_url = "{% url 'instructions:consent_contact' 1 2 %}";
                 }
 
@@ -194,6 +235,17 @@
                   .replace('+=', instruction_id)
                   .replace('+*', patient_ref_id);
                 window.location = action_url;
+            }
+
+            $('.selectPatientButton').on('click', function () {
+                let client_info = $(this).data('client_info');
+
+                if (client_info != 'None') {
+                    proceed_action();
+                }
+                else {
+                    navigate_action();
+                }
             });
         });
     </script>
