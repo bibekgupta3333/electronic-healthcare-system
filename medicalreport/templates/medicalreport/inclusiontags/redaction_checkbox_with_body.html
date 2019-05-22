@@ -8,7 +8,7 @@
     <span class="redaction-checkbox__icon float-right fas fa-check-circle"></span>
     <span class="redaction-checkbox__header" title="{{ title }}" data-toggle="tooltip">
         {{ header_detail }}
-        {% if section == 'attachments' %}
+        {% if section == 'attachments' and redacted_count != -1 %}
             <div class="numberCircle">{{ redacted_count }}</div>
         {% endif %}
     </span>

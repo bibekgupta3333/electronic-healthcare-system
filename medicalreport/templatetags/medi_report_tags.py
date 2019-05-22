@@ -154,8 +154,12 @@ def redaction_checkbox_with_body(model, redaction, header='', word_library='', b
         redacted_count = RedactedAttachment.objects.filter(
             instruction=redaction.instruction,
             dds_identifier=dds_identifier
-        ).values_list('redacted_count', flat=True)[0]
+        ).values_list('redacted_count', flat=True)
 
+        if redacted_count:
+            redacted_count = redacted_count[0]
+        else:
+            redacted_count = -1  # attachment still not redacted
 
     title = header
     split_word = header.split()

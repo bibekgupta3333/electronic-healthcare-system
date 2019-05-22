@@ -4456,8 +4456,8 @@
             uploadBatch: 'batch file upload',
             uploadExtra: 'form data upload'
         },
-        dropZoneTitle: 'Drag & drop files here &hellip;',
-        dropZoneDetail: 'Warning: It is the Surgery’s responsibility to ensure that all consent forms are signed correctly by the patient and the Surgery, where appropriate.',
+        dropZoneTitle: 'Drag and drop files here.',
+        dropZoneDetail: 'You must upload a valid consent form to proceed with the instruction. Your instruction may be rejected by the Surgery if it is considered invalid.',
         dropZoneClickTitle: '<br>(or click to select {files})',
         previewZoomButtonTitles: {
             prev: 'View previous file',

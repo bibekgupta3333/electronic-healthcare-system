@@ -86,8 +86,6 @@ def generate_redact_pdf(
                 'last_name': patient_last_name
             }
         )
-        print("Finished")
-        print(redacted_count, out_pdf_obj)
         total_redacted_count += redacted_count
         output_pdf_list.append(out_pdf_obj)
 
@@ -227,7 +225,7 @@ class AttachmentReport:
                 pdf_byte=attachment
             )
 
-            if not RedactedAttachment.objects.filter(instruction_id=self.instruction.id).exists():
+            if not RedactedAttachment.objects.filter(instruction_id=self.instruction.id, dds_identifier=self.path_file).exists():
                 RedactedAttachment.objects.create(
                     instruction=self.instruction,
                     dds_identifier=self.path_file,
@@ -265,7 +263,7 @@ class AttachmentReport:
                 pdf_path=pdf_path
             )
 
-            if not RedactedAttachment.objects.filter(instruction_id=self.instruction.id).exists():
+            if not RedactedAttachment.objects.filter(instruction_id=self.instruction.id, dds_identifier=self.path_file).exists():
                 RedactedAttachment.objects.create(
                     instruction=self.instruction,
                     dds_identifier=self.path_file,
@@ -302,7 +300,7 @@ class AttachmentReport:
                 image_name=image_path
             )
 
-            if not RedactedAttachment.objects.filter(instruction_id=self.instruction.id).exists():
+            if not RedactedAttachment.objects.filter(instruction_id=self.instruction.id, dds_identifier=self.path_file).exists():
                 RedactedAttachment.objects.create(
                     instruction=self.instruction,
                     dds_identifier=self.path_file,
@@ -333,7 +331,7 @@ class AttachmentReport:
                 pdf_byte=out_pdf_io.getvalue()
             )
 
-            if not RedactedAttachment.objects.filter(instruction_id=self.instruction.id).exists():
+            if not RedactedAttachment.objects.filter(instruction_id=self.instruction.id, dds_identifier=self.path_file).exists():
                 RedactedAttachment.objects.create(
                     instruction=self.instruction,
                     dds_identifier=self.path_file,

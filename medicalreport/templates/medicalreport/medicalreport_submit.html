@@ -158,7 +158,7 @@
                 <div class="panel-close"><i class="fa fa-times"></i></div>
                 <div class="container">
                     <p>If you wish to download the report or record, or print a consolidated version, please use the buttons below. Please note that not all file types can be processed to print via eMR, and therefore you may need to print those separately.</p>
-                    <a href="{{ instruction.medical_report.url }}" class="btn btn-success" download>Download Report</a>
+                    <a href="{% url 'medicalreport:download_medicalreport' instruction_id=instruction.id %}" class="btn btn-success" download>Download Report</a>
                     <button type="button" class="print-report btn btn-default">Print Report</button>
                 </div>
             </div>
