@@ -146,7 +146,7 @@ a {
 /******** 2. Left Panel (aside navigation) ********/
 aside.left-panel {
   background-color: #212529;
-  width: 220px;
+  width: 250px;
   position: fixed;
   height: 100%;
   top: 0px;
@@ -534,7 +534,7 @@ header {
 /***************** 4.Content Area (right) ****************/
 
 .content {
-  margin-left: 220px;
+  margin-left: 250px;
 }
 
 .content > .container-fluid {
