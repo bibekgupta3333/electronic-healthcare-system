@@ -137,6 +137,9 @@ function changeAttr( status ) {
     switch( percent ) {
         // Step 1 Control.
         case 35:
+            if( status == 'back' ) {
+                break;
+            }
             picPath = '/static/images/emis_setup/Medidata%20-%20Activating%20in%20EMIS%2003.png';
             titleCaption = 'b) Click the "Add" button, select "New user"';
             $('#setup-min-pic').attr('href', picPath );
