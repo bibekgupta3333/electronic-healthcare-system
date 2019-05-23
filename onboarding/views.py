@@ -13,6 +13,7 @@ from accounts.forms import PMForm
 from services.emisapiservices.services import GetEmisStatusCode
 from organisations.models import OrganisationGeneralPractice
 from permissions.functions import generate_gp_permission
+from payment.models import GpOrganisationFee, OrganisationFeeRate
 from common.functions import get_url_page
 import random
 import string
@@ -87,6 +88,22 @@ def step1(request: HttpRequest) -> HttpResponse:
                 gp_organisation.operating_system_username = 'medidata_access'
             gp_organisation.save()
 
+            if not OrganisationFeeRate.objects.filter(default=True).exists():
+                OrganisationFeeRate.objects.create(
+                    name='Default Band',
+                    amount_rate_lvl_1=60,
+                    amount_rate_lvl_2=57,
+                    amount_rate_lvl_3=51,
+                    amount_rate_lvl_4=45,
+                    default=True
+                )
+
+            # setup default fee policy
+            GpOrganisationFee.objects.create(
+                gp_practice=gp_organisation,
+                organisation_fee=OrganisationFeeRate.objects.filter(default=True).first()
+            )
+
             surgery_email_form = SurgeryEmailForm(request.POST, instance=gp_organisation)
 
             if surgery_email_form.is_valid():
@@ -108,6 +125,7 @@ def step1(request: HttpRequest) -> HttpResponse:
         'surgery_form': surgery_form,
         'surgery_email_form': surgery_email_form,
     })
+
 
 def step2(request: HttpRequest, practice_code: str) -> HttpResponse:
     gp_organisation = get_object_or_404(OrganisationGeneralPractice, pk=practice_code)
@@ -155,6 +173,7 @@ def step2(request: HttpRequest, practice_code: str) -> HttpResponse:
         'pm_form': pm_form,
         'user_formset': user_formset,
     })
+
 
 @login_required(login_url='/accounts/login')
 def step3(request: HttpRequest, practice_code: str) -> HttpResponse:
