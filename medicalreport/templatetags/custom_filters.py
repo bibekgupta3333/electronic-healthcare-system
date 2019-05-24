@@ -308,7 +308,7 @@ def replace_ref_phrases(relations, value):
             text = " ".join(split_word)
             return format_html(text)
         return split_word
-    return value
+    return value.split()
 
 
 @register.filter
