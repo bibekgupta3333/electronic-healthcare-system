@@ -154,14 +154,6 @@
                     </div>
                 </div>
             </div>
-            <div class="bottom-panel">
-                <div class="panel-close"><i class="fa fa-times"></i></div>
-                <div class="container">
-                    <p>If you wish to download the report or record, or print a consolidated version, please use the buttons below. Please note that not all file types can be processed to print via eMR, and therefore you may need to print those separately.</p>
-                    <a href="{{ instruction.medical_report.url }}" class="btn btn-success" download>Download Report</a>
-                    <button type="button" class="print-report btn btn-default">Print Report</button>
-                </div>
-            </div>
         </form>
     </div>
 
@@ -192,11 +184,6 @@
                     backdrop: "static"
                 });
             }
-        });
-        $('.print-report').click(function(e) {
-            e.preventDefault();
-            var print_win = window.open("{% url 'medicalreport:view_report' instruction.id %}");
-            print_win.print();
         });
         $('.panel-close').click(function() {
             $('.bottom-panel').hide(500);
