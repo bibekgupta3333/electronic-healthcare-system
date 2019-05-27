@@ -13,8 +13,7 @@ register = template.Library()
 def patient_info(context):
     return {
         'medical_record': context['medical_record'],
-        'instruction': context['instruction'],
-        'user': context['user']
+        'instruction': context['instruction']
     }
 
 
