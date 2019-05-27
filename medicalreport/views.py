@@ -302,6 +302,14 @@ def view_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     return HttpResponse(instruction.medical_report, content_type='application/pdf')
 
 
+@login_required(login_url='/accounts/login')
+def view_total_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
+    instruction = get_object_or_404(Instruction, id=instruction_id)
+
+    return HttpResponse(instruction.medical_with_attachment_report,
+                        content_type='application/pdf')
+
+
 #@silk_profile(name='Final Report')
 @login_required(login_url='/accounts/login')
 @check_permission
