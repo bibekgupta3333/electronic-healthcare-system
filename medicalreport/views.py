@@ -128,7 +128,8 @@ def set_patient_emis_number(request: HttpRequest, instruction_id: str) -> HttpRe
         'patient_list': patient_list,
         'reject_types': INSTRUCTION_REJECT_TYPE,
         'instruction': instruction,
-        'amra_type': AMRA_TYPE
+        'amra_type': AMRA_TYPE,
+        'patient_full_name': instruction.patient_information.get_full_name()
     })
 
 
