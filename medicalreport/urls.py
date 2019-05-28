@@ -17,4 +17,5 @@ urlpatterns = [
     path('<int:instruction_id>/download-attachment/<str:path_file>', views.download_attachment, name='download_attachment'),
     path('trud-ivf', views.trud_ivf, name="trud_ivf"),
     path('trud-std', views.trud_std, name="trud_std"),
+    path('trud-other', views.trud_other, name="trud_other"),
 ]
