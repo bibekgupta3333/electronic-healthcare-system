@@ -92,7 +92,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
     user = request.user
 
     if request.user.type == 'GP':
-        header_title = 'Account'
+        header_title = 'Account Management'
         gp_user = GeneralPracticeUser.objects.get(pk=user.userprofilebase.generalpracticeuser.pk)
         gp_organisation = gp_user.organisation
         try:
@@ -190,7 +190,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
             'bank_details_form': bank_details_form
         })
 
-    header_title = 'Fee'
+    header_title = 'Fees'
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
 
     #   Table for block 1
