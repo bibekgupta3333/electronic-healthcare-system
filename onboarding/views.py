@@ -121,6 +121,7 @@ def step1(request: HttpRequest) -> HttpResponse:
 
                 return redirect('onboarding:step2', practice_code=gp_organisation.practcode)
 
+    set_timeout_onboarding(request)
     return render(request, 'onboarding/step1.html', {
         'surgery_form': surgery_form,
         'surgery_email_form': surgery_email_form,
@@ -169,6 +170,7 @@ def step2(request: HttpRequest, practice_code: str) -> HttpResponse:
             login(request, new_pm_user)
             return redirect('onboarding:step3', practice_code=gp_organisation.practcode)
 
+    set_timeout_onboarding(request)
     return render(request, 'onboarding/step2.html', {
         'pm_form': pm_form,
         'user_formset': user_formset,
@@ -210,6 +212,7 @@ def step3(request: HttpRequest, practice_code: str) -> HttpResponse:
         'operating_system': gp_organisation.gp_operating_system
     })
 
+    set_timeout_onboarding(request)
     return render(request, 'onboarding/step3.html', {
         'header_title': header_title,
         'organisation_code': gp_organisation.operating_system_organisation_code,
