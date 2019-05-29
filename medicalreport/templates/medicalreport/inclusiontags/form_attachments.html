@@ -18,7 +18,7 @@
                href="/medicalreport/{{ instruction.id }}/attachment/{{ model.dds_identifier }}">
                <i class="fas fa-paperclip"></i>
             </a>
-                {% redaction_checkbox_with_body model redaction header %}
+                {% redaction_checkbox_with_body model redaction header section='attachments' %}
             {% endwith %}
             {% endfor %}
             </div>
