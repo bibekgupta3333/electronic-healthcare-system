@@ -128,7 +128,8 @@ def set_patient_emis_number(request: HttpRequest, instruction_id: str) -> HttpRe
         'patient_list': patient_list,
         'reject_types': INSTRUCTION_REJECT_TYPE,
         'instruction': instruction,
-        'amra_type': AMRA_TYPE
+        'amra_type': AMRA_TYPE,
+        'patient_full_name': instruction.patient_information.get_full_name()
     })
 
 
@@ -299,6 +300,14 @@ def submit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
 def view_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     instruction = get_object_or_404(Instruction, id=instruction_id)
     return HttpResponse(instruction.medical_report, content_type='application/pdf')
+
+
+@login_required(login_url='/accounts/login')
+def view_total_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
+    instruction = get_object_or_404(Instruction, id=instruction_id)
+
+    return HttpResponse(instruction.medical_with_attachment_report,
+                        content_type='application/pdf')
 
 
 #@silk_profile(name='Final Report')

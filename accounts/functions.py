@@ -6,8 +6,8 @@ from .forms import NewGPForm, NewClientForm
 from instructions.models import InstructionPatient
 from .tables import UserTable
 from .models import User, GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER, PATIENT_USER,\
-        Patient, GeneralPracticeUser, ClientUser, UserProfileBase
-from accounts.n3_hscn_ips import IPS, NET_ADDRS
+        Patient, GeneralPracticeUser, ClientUser, UserProfileBase, Whitelist
+from accounts.n3_hscn_ips import NET_ADDRS
 from netaddr import IPNetwork, IPAddress
 DEFAULT_FROM = settings.DEFAULT_FROM
 
@@ -315,10 +315,12 @@ def check_ipv4_in(addr: str, start: str, end: str) -> bool:
 
 def check_ip_from_n3_hscn(request) -> bool:
     client_ip = get_client_ip(request)
+    whitelist_ips = Whitelist().get_all_objects()
+
     for addr in NET_ADDRS:
         if IPAddress(client_ip) in IPNetwork(addr):
             return True
-    for start, end in IPS:
+    for start, end in whitelist_ips:
         if check_ipv4_in(client_ip, start, end):
             return True
     return False

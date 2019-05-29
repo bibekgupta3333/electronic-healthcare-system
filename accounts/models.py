@@ -430,3 +430,19 @@ class Patient(UserProfileBase):
 
     def __str__(self):
         return self.user.first_name        
+
+
+class Whitelist(models.Model):
+    from_ip = models.GenericIPAddressField()
+    to_ip   = models.GenericIPAddressField()
+
+    class Meta:
+        verbose_name = 'Whitelist'
+
+    def __str__(self):
+        return ','.join([self.from_ip, self.to_ip])
+
+    def get_all_objects(self):
+        queryset = self._meta.model.objects.all().values_list('from_ip', 'to_ip')
+
+        return queryset

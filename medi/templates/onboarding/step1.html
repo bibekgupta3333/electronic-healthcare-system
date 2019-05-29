@@ -164,19 +164,13 @@
                     </div>
                     <div class="row form-group">
                         <div class="col-md-12">
-                            <input type="checkbox" id="consentCheckBox1" class="consent" name="consented">
+                            <input type="checkbox" id="consentCheckBox" class="consent" name="consented">
                             <label for="consent">
                                 I consent to MediData Exchange contacting the surgery regarding our services.
                             </label>
                         </div>
                     </div>
                     <div class="row form-group">
-                        <div class="col-md-12">
-                            <input type="checkbox" id="consentCheckBox2" class="consent">
-                            <label for="consentCheckBox">
-                                I consent to MediData Exchange Ltd securely retaining this information and to be able to contact the Surgery about eMR via contact details provided.
-                            </label>
-                        </div>
                         <div class="row">
                             <div class="col-md-2 mt-3">
                                 <button id="BtnSubmit" class="btn btn-primary btn-lg" type="submit" disabled>Submit</button>
@@ -346,8 +340,7 @@
 
             $('#accept-policy').change(function () {
                 if($('#accept-policy').is(':checked') == true && 
-                    $('#consentCheckBox1').is(':checked') == true && 
-                    $('#consentCheckBox2').is(':checked') == true) {
+                    $('#consentCheckBox').is(':checked') == true) {
                     $('#BtnSubmit').prop('disabled', false);
                 } else {
                     $('#BtnSubmit').prop('disabled', true);
@@ -355,8 +348,7 @@
             });
             $(".consent").change(function() {
                 if($('#accept-policy').is(':checked') == true && 
-                    $('#consentCheckBox1').is(':checked') == true && 
-                    $('#consentCheckBox2').is(':checked') == true) {
+                    $('#consentCheckBox').is(':checked') == true) {
                     $('#BtnSubmit').prop('disabled', false);
                 } else {
                     $('#BtnSubmit').prop('disabled', true);

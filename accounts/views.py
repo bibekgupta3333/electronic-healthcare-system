@@ -89,10 +89,10 @@ def send_notification_org_email(request, gp_user, status):
 @login_required(login_url='/accounts/login')
 @access_user_management('instructions.view_account_pages')
 def account_view(request: HttpRequest) -> HttpResponse:
-    header_title = 'Account'
     user = request.user
 
     if request.user.type == 'GP':
+        header_title = 'Account Management'
         gp_user = GeneralPracticeUser.objects.get(pk=user.userprofilebase.generalpracticeuser.pk)
         gp_organisation = gp_user.organisation
         try:
@@ -190,6 +190,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
             'bank_details_form': bank_details_form
         })
 
+    header_title = 'Fees'
     client_organisation = multi_getattr(request, 'user.userprofilebase.clientuser.organisation', default=None)
 
     #   Table for block 1

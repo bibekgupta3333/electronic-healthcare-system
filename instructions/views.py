@@ -459,12 +459,12 @@ def instruction_pipeline_view(request):
 
 
 @login_required(login_url='/accounts/login')
-def instruction_fee_payment_view(request):
+def instruction_invoice_payment_view(request):
     # comment
     event_logger.info(
-        '{user}:{user_id} ACCESS fee and payment pipeline view'.format(user=request.user, user_id=request.user.id)
+        '{user}:{user_id} ACCESS Invoicing and Payments pipeline view'.format(user=request.user, user_id=request.user.id)
     )
-    header_title = "Instructions Pipeline"
+    header_title = "Invoicing and Payments"
     user = request.user
     date_range_form = DateRangeSearchForm()
 
@@ -519,7 +519,7 @@ def instruction_fee_payment_view(request):
     table.order_by = request.GET.get('sort', '-created')
     RequestConfig(request, paginate={'per_page': 5}).configure(table)
 
-    response = render(request, 'instructions/fee_payment_pipline_view_instructions.html', {
+    response = render(request, 'instructions/invoice_payment_pipline_view_instructions.html', {
         'user': user,
         'table': table,
         'overall_instructions_number': overall_instructions_number,
