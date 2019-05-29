@@ -24,6 +24,7 @@ from contextlib import suppress
 
 
 medical_report = SimpleUploadedFile('report.pdf', b'consent')
+mdx_consent = SimpleUploadedFile('report.pdf', b'consent')
 medical_with_attachment_report = SimpleUploadedFile('report.pdf', b'consent')
 medical_xml_report = SimpleUploadedFile('report.xml', b'<MedicalRecord></MedicalRecord>')
 
@@ -62,7 +63,7 @@ class EmisAPITestCase(TestCase):
             patient=self.patient, gp_user=self.gp_user,
             gp_practice=gp_practice,
             patient_information=self.instruction_patient,
-            mdx_consent=consent_form,
+            mdx_consent=mdx_consent,
             medical_report=medical_report,
             medical_with_attachment_report=medical_with_attachment_report,
             medical_xml_report=medical_xml_report
@@ -354,6 +355,26 @@ class ViewReportAttachmentTest(EmisAPITestCase):
         self.assertEqual('application/pdf', response.get('Content-Type'))
 
 
+class ViewConsentTest(EmisAPITestCase):
+    def test_view_url(self):
+        response = self.client.get('/medicalreport/1/view-consent-pdf/')
+        self.assertEqual(200, response.status_code)
+
+    def test_view_url_by_name(self):
+        response = self.client.get(
+            reverse('medicalreport:view_consent_pdf', args=(1,))
+        )
+        self.assertEqual(200, response.status_code)
+
+    def test_view_returns_404_if_redaction_does_not_exist(self):
+        response = self.client.get('/medicalreport/2/view-consent-pdf/')
+        self.assertEqual(404, response.status_code)
+
+    def test_view_returns_pdf(self):
+        response = self.client.get('/medicalreport/1/view-consent-pdf/')
+        self.assertEqual('application/pdf', response.get('Content-Type'))
+
+
 class FinalReportTest(EmisAPITestCase):
     def setUp(self):
         super().setUp()
@@ -364,6 +385,7 @@ class FinalReportTest(EmisAPITestCase):
             patient=self.patient, gp_user=self.gp_user,
             patient_information=self.patient_information,
             gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_COMPLETE,
+            mdx_consent=mdx_consent,
             medical_report=medical_report,
             medical_with_attachment_report=medical_with_attachment_report,
             medical_xml_report=medical_xml_report
