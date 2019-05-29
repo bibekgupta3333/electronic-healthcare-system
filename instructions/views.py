@@ -462,9 +462,9 @@ def instruction_pipeline_view(request):
 def instruction_invoice_payment_view(request):
     # comment
     event_logger.info(
-        '{user}:{user_id} ACCESS invoice and payment pipeline view'.format(user=request.user, user_id=request.user.id)
+        '{user}:{user_id} ACCESS Invoicing and Payments pipeline view'.format(user=request.user, user_id=request.user.id)
     )
-    header_title = "Invoice And Payment"
+    header_title = "Invoicing and Payments"
     user = request.user
     date_range_form = DateRangeSearchForm()
 
