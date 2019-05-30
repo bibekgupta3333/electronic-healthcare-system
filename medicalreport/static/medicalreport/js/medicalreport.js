@@ -11,18 +11,6 @@ function renderReport(element){
   $('#attachment-' + reportID).show();
 }
 
-function enable_submit_button(){
-  $('#submitButton').prop("disabled", true);
-  if($('#id_prepared_and_signed_0').is(":checked")){
-      $('#submitButton').prop("disabled", false);
-  } else if($('#id_prepared_and_signed_1').is(":checked")){
-      if($('#id_prepared_by').val()){
-          $('#submitButton').prop("disabled", false);
-      }
-  }
-
-}
-
 function subMitMedicalReport(event){
     if(event == "draft"){
         $('#event_flag').val('draft');

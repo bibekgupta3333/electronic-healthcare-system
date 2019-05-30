@@ -187,7 +187,7 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     word_library = Library.objects.filter(gp_practice=gp_practice_code)
     library_history = LibraryHistory.objects.filter(instruction=instruction)
 
-    relations_dict = {
+    relations = {
         'relations': relations,
         'word_library': word_library,
         'library_history': library_history,
@@ -200,7 +200,7 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         'instruction': instruction,
         'finalise_submit_form': finalise_submit_form,
         'questions': questions,
-        'relations': relations_dict,
+        'relations': relations,
         'sensitive_conditions': sensitive_conditions,
         'show_alert': True if inst_gp_user == cur_user else False,
         'patient_full_name': instruction.patient_information.get_full_name(),
