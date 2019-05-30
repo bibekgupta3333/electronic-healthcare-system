@@ -74,12 +74,18 @@
                                     <div class="col-md-3">Bank Account Number</div>
                                     <div class="col-md-4">
                                         {% bootstrap_field bank_details_form.payment_bank_account_number placeholder='' %}
+                                        <div class="invalid-feedback">
+                                            <label id="invalid_bank_number">The account number is too short, as it must be eight digits long.</label>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-3">Bank Account Sort Code</div>
                                     <div class="col-md-4">
                                         {% bootstrap_field bank_details_form.payment_bank_sort_code placeholder='' %}
+                                        <div class="invalid-feedback">
+                                            <label id="invalid_sort_code">The sort code is too short, as it must be six digits long.</label>
+                                        </div>
                                     </div>
                                 </div>
                                 {% if perms.instructions.amend_bank_account %}
@@ -223,8 +229,8 @@
                     url: $('#update_bank_details').attr("action"),
                     type: 'POST',
                     data: $('#preferencesForm').serialize()+'&update_bank_details=1'
-                }).done(function() {
-                    create_alert('Bank details setting has been changed.', 'success');
+                }).done(function(response) {
+                    create_alert(response['message'], response['status']);
                 }).fail(function() {
                     create_alert('Something went wrong, please try again.', 'error');
                 });
@@ -258,6 +264,31 @@
                 $('#id_payment_bank_account_number').prop('disabled', true);
                 $('#id_payment_bank_sort_code').prop('disabled', true);
             {% endif %}
+
+            // Check range sortcode - bank Number
+            $('#invalid_sort_code').hide();
+            $('#id_payment_bank_sort_code').change( function() {
+                var sort_code_value = $('#id_payment_bank_sort_code').val();
+                if(sort_code_value.length < 6) {
+                    $('#id_payment_bank_sort_code').addClass('is-invalid');
+                    $('#invalid_sort_code').show();
+                } else {
+                    $('#id_payment_bank_sort_code').removeClass('is-invalid');   
+                    $('#invalid_sort_code').hide();
+                }
+            });
+
+            $('#invalid_bank_number').hide();
+            $('#id_payment_bank_account_number').change( function() {
+                var sort_code_value = $('#id_payment_bank_account_number').val();
+                if(sort_code_value.length < 6) {
+                    $('#id_payment_bank_account_number').addClass('is-invalid');
+                    $('#invalid_bank_number').show();
+                } else {
+                    $('#id_payment_bank_account_number').removeClass('is-invalid');   
+                    $('#invalid_bank_number').hide();
+                }
+            });
         });
     </script>
 {% endblock %}

@@ -121,7 +121,9 @@ def account_view(request: HttpRequest) -> HttpResponse:
                 if bank_details_form.is_valid():
                     bank_details_form.save()
                     send_notification_org_email(request, gp_user, 'update_bank_details')
-                    return JsonResponse({'message': 'Bank details have been saved.'})
+                    return JsonResponse({'message': 'Bank details have been saved.', 'status': 'success'})
+                else:
+                    return JsonResponse({'message': "Bank details can't saved. please try again.", 'status': 'error'})
             gp_preferences_form = PracticePreferencesForm(request.POST, instance=practice_preferences)
             if gp_preferences_form.is_valid():
                 gp_preferences_form.save()
