@@ -174,7 +174,8 @@ def set_patient_emis_number(request: HttpRequest, instruction_id: str) -> HttpRe
         'patient_list': patient_list,
         'reject_types': INSTRUCTION_REJECT_TYPE,
         'instruction': instruction,
-        'amra_type': AMRA_TYPE
+        'amra_type': AMRA_TYPE,
+        'patient_full_name': instruction.patient_information.get_full_name()
     })
 
 
@@ -232,7 +233,7 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     word_library = Library.objects.filter(gp_practice=gp_practice_code)
     library_history = LibraryHistory.objects.filter(instruction=instruction)
 
-    relations_dict = {
+    relations = {
         'relations': relations,
         'word_library': word_library,
         'library_history': library_history,
@@ -245,7 +246,7 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         'instruction': instruction,
         'finalise_submit_form': finalise_submit_form,
         'questions': questions,
-        'relations': relations_dict,
+        'relations': relations,
         'sensitive_conditions': sensitive_conditions,
         'show_alert': True if inst_gp_user == cur_user else False,
         'patient_full_name': instruction.patient_information.get_full_name(),
@@ -350,6 +351,20 @@ def view_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     return HttpResponse(
         instruction.medical_report if instruction.medical_report else bytes(instruction.medical_report_byte)
         , content_type='application/pdf')
+
+
+@login_required(login_url='/accounts/login')
+def view_consent_pdf(request: HttpRequest, instruction_id: str) -> HttpResponse:
+    instruction = get_object_or_404(Instruction, id=instruction_id)
+    return HttpResponse(instruction.mdx_consent, content_type='application/pdf')
+
+
+@login_required(login_url='/accounts/login')
+def view_total_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
+    instruction = get_object_or_404(Instruction, id=instruction_id)
+
+    return HttpResponse(instruction.medical_with_attachment_report,
+                        content_type='application/pdf')
 
 
 #@silk_profile(name='Final Report')

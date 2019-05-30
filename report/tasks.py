@@ -86,6 +86,13 @@ def generate_medicalreport_with_attachment(self, instruction_info: dict, report_
 
         final_report_buffer = io.BytesIO(instruction.medical_report_byte)
         medical_report = PyPDF2.PdfFileReader(final_report_buffer)
+        
+        # append uploaded consent pdf file to output file if it exists..
+        if instruction.mdx_consent:
+            consent_file = PyPDF2.PdfFileReader(instruction.mdx_consent)
+
+            for page_num in range(consent_file.getNumPages()):
+                output.addPage(consent_file.getPage(page_num))
 
         # add each page of medical report to output file
         for page_num in range(medical_report.getNumPages()):

@@ -2,7 +2,7 @@
 <label class="redaction-checkbox">
     {% for xpath in xpaths %}
     <input name="redaction_xpaths" key="{{ header }}"
-           {{ checked }} readonly type="checkbox" class="redaction-checkbox__input" 
+           {{ checked }} readonly type="checkbox" class="redaction-checkbox__input" data-section="{{ section }}"
            value="{{ xpath }}">
     {% endfor %}
     <span class="redaction-checkbox__icon float-right fas fa-check-circle"></span>

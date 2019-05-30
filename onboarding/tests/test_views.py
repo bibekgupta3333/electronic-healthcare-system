@@ -28,7 +28,7 @@ class OnboardingHackingURLTestCase(TestCase):
     def test_non_logged_in_hacking_emis_setup_views(self):
         response = self.client.get('/onboarding/step-3/GP0001')
         self.assertEqual(302, response.status_code)
-        self.assertEqual('/accounts/login/', response.url)
+        self.assertEqual('/accounts/login?next=/onboarding/step-3/GP0001', response.url)
 
     def test_non_active_user_redirect_from_pipeline_views_to_emis_setup(self):
         self.client.force_login(self.inactive_user)
@@ -66,6 +66,8 @@ class OnboardingSignUPTest(TestCase):
             'contact_num': '0800 0808',
             'emis_org_code': '29390',
             'operating_system': 'EMISWeb',
+            'organisation_email': 'sarah@gmail.com',
+            'confirm_email': 'sarah@gmail.com',
         }
 
         self.gp_practitioner_info_2 = {
@@ -90,13 +92,13 @@ class OnboardingSignUPTest(TestCase):
             'operating_system': 'LV',
         }
 
-    def test_get_view_sign_up(self):
-        response = self.client.get(reverse('onboarding:sign_up'))
+    def test_get_view_step1(self):
+        response = self.client.get(reverse('onboarding:step1'))
 
         self.assertEqual(response.status_code, 200)
 
     def test_post_view_sign_up_emis_system(self):
-        response = self.client.post(reverse('onboarding:sign_up'), {
+        response = self.client.post(reverse('onboarding:step1'), {
             'surgery_name': self.gp_practice_info['surgery_name'],
             'practice_code': self.gp_practice_info['practice_code'],
             'postcode': self.gp_practice_info['postcode'],
@@ -106,6 +108,19 @@ class OnboardingSignUPTest(TestCase):
             'contact_num': self.gp_practice_info['contact_num'],
             'emis_org_code': self.gp_practice_info['emis_org_code'],
             'operating_system': self.gp_practice_info['operating_system'],
+            'organisation_email': self.gp_practice_info['organisation_email'],
+            'confirm_email': self.gp_practice_info['confirm_email'],
+            'accept_policy': True,
+            'consented': True
+        })
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/onboarding/step-2/TEST0001')
+        self.assertTrue(
+            OrganisationGeneralPractice.objects.filter(practcode=self.gp_practice_info['practice_code']).exists()
+        )
+
+        response = self.client.post(reverse('onboarding:step2', kwargs={'practice_code': self.gp_practice_info['practice_code']}), {
             'title': self.gp_practitioner_info['title'],
             'first_name': self.gp_practitioner_info['first_name'],
             'surname': self.gp_practitioner_info['surname'],
@@ -115,21 +130,33 @@ class OnboardingSignUPTest(TestCase):
             'password2': self.gp_practitioner_info['password'],
             'telephone_mobile': self.gp_practitioner_info['telephone_mobile'],
             'telephone_code': self.gp_practitioner_info['telephone_code'],
-            'accept_policy': True,
-            'consented': True
+            'form-TOTAL_FORMS': '4',
+            'form-INITIAL_FORMS': '0',
+            'form-MIN_NUM_FORMS': '0',
+            'form-MAX_NUM_FORMS': '1000',
+            'form-0-title': 'DR',
+            'form-0-first_name': 'test1',
+            'form-0-last_name': 'test1',
+            'form-0-email': 'test20@gmail.com',
+            'form-0-role': '0',
+            'form-0-mobile_code': '66',
+            'form-0-mobile_phone': '123456789',
+            'form-1-title': 'DR',
+            'form-1-first_name': 'test2',
+            'form-1-last_name': 'test2',
+            'form-1-email': 'test21@gmail.com',
+            'form-1-role': '1',
+            'form-1-mobile_code': '66',
+            'form-1-mobile_phone': '123456789',
         })
-
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/onboarding/emis-setup/TEST0001')
-        self.assertTrue(
-            OrganisationGeneralPractice.objects.filter(practcode=self.gp_practice_info['practice_code']).exists()
-        )
         self.assertTrue(
             User.objects.filter(email=self.gp_practitioner_info['email']).exists()
         )
+        self.assertEqual(response.url, '/onboarding/step-3/TEST0001')
 
     def test_post_view_sign_up_other_system(self):
-        response = self.client.post(reverse('onboarding:sign_up'), {
+        response = self.client.post(reverse('onboarding:step1'), {
             'surgery_name': self.gp_practice_info_2['surgery_name'],
             'practice_code': self.gp_practice_info_2['practice_code'],
             'postcode': self.gp_practice_info_2['postcode'],
@@ -139,15 +166,6 @@ class OnboardingSignUPTest(TestCase):
             'contact_num': self.gp_practice_info_2['contact_num'],
             'emis_org_code': self.gp_practice_info_2['emis_org_code'],
             'operating_system': self.gp_practice_info_2['operating_system'],
-            'title': self.gp_practitioner_info_2['title'],
-            'first_name': self.gp_practitioner_info_2['first_name'],
-            'surname': self.gp_practitioner_info_2['surname'],
-            'email1': self.gp_practitioner_info_2['email'],
-            'email2': self.gp_practitioner_info_2['email'],
-            'password1': self.gp_practitioner_info_2['password'],
-            'password2': self.gp_practitioner_info_2['password'],
-            'telephone_mobile': self.gp_practitioner_info_2['telephone_mobile'],
-            'telephone_code': self.gp_practitioner_info_2['telephone_code'],
             'accept_policy': True,
             'consented': True
         })
@@ -228,47 +246,11 @@ class OnboardingEmrSetUpFinal(OnboardingBaseTest):
     def test_get_emr_setup_final_view(self):
         self.client.force_login(self.inactive_user)
         response = self.client.get(
-            reverse('onboarding:emr_setup_final', kwargs={'practice_code': self.inactice_gp_practice.practcode})
+            reverse('onboarding:step3', kwargs={'practice_code': self.inactice_gp_practice.practcode})
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'onboarding/emr_setup_final.html')
-        self.client.logout()
-
-    def test_post_emr_setup_final_view(self):
-        self.client.force_login(self.inactive_user)
-        response= self.client.post(
-            reverse('onboarding:emr_setup_final', kwargs={'practice_code': self.inactice_gp_practice.practcode}),
-            {
-                'form-TOTAL_FORMS': '4',
-                'form-INITIAL_FORMS': '0',
-                'form-MIN_NUM_FORMS': '0',
-                'form-MAX_NUM_FORMS': '1000',
-                'form-0-title': 'DR',
-                'form-0-first_name': 'test1',
-                'form-0-last_name': 'test1',
-                'form-0-email': 'test20@gmail.com',
-                'form-0-role': '0',
-                'form-0-gp_code': '111111',
-                'form-1-title': 'DR',
-                'form-1-first_name': 'test2',
-                'form-1-last_name': 'test2',
-                'form-1-email': 'test21@gmail.com',
-                'form-1-role': '1',
-                'form-1-gp_code': '222222',
-                'organisation_email': 'testemail@gmail.com',
-                'completed_by': 'SubmitMan',
-                'job_title': 'TITLE',
-                'bank_account_name': '',
-                'bank_account_number': '',
-                'bank_account_sort_code': '',
-                'received_within_3_days': '60.0',
-                'received_within_4_to_7_days': '51.00',
-                'received_within_8_to_11_days': '43.35',
-                'received_after_11_days': '36.85',
-            }
-        )
-        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'onboarding/step3.html')
         self.client.logout()
 
 

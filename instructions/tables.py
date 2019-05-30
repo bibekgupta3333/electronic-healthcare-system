@@ -40,7 +40,7 @@ class InstructionTable(tables.Table):
             self.columns.hide('your_ref')
             self.columns.hide('completed_signed_off_timestamp')
             self.columns.hide('fee_note')
-        elif request.resolver_match.url_name == 'view_fee_payment_pipeline':
+        elif request.resolver_match.url_name == 'view_invoice_payment_pipeline':
             self.columns.hide('gp_user')
             self.columns.hide('created')
             self.columns.hide('client_ref')
@@ -174,7 +174,7 @@ class FeeInstructionTable(tables.Table):
             self.columns.hide('your_ref')
             self.columns.hide('completed_signed_off_timestamp')
             self.columns.hide('fee_note')
-        elif request.resolver_match.url_name == 'view_fee_payment_pipeline':
+        elif request.resolver_match.url_name == 'view_invoice_payment_pipeline':
             self.columns.hide('gp_user')
             self.columns.hide('created')
             self.columns.hide('client_ref')
