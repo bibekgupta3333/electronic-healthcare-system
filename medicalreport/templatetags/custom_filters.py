@@ -65,7 +65,7 @@ def additional_allergy_description(record, word_library):
     for word in word_library:
         if str.upper(word.key) == str.upper(text_allergen):
             text_allergen = '''
-                <span class="highlight-library">
+                <span class="highlight-library d-inline-block">
                     <span class="bg-warning">%s</span>
                     <span class="dropdown-options">
                         <a href="#" class="highlight-redact">Redact</a>
@@ -76,7 +76,7 @@ def additional_allergy_description(record, word_library):
             ''' % (text_allergen)
         if str.upper(word.key) == str.upper(text_reaction):
             text_reaction = '''
-                <span class="highlight-library">
+                <span class="highlight-library d-inline-block">
                     <span class="bg-warning">%s</span>
                     <span class="dropdown-options">
                         <a href="#" class="highlight-redact">Redact</a>

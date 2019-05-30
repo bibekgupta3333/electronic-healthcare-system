@@ -320,7 +320,7 @@ def render_report_tool_box_function(header: str, xpath: str, section:str, librar
         for i, head in enumerate(split_head):
             library_matched = False
             highlight_html = '''
-                    <span class="highlight-library">
+                    <span class="highlight-library d-inline-block">
                         <span class="{}">{}</span>
                         <span class="dropdown-options" data-guid="{}" data-word_idx="{}" data-section="{}">
                             <a href="#/" class="highlight-redact">Redact</a>
@@ -336,7 +336,7 @@ def render_report_tool_box_function(header: str, xpath: str, section:str, librar
                     highlight_class = 'bg-warning'
                     if not library.value:
                         highlight_html = '''
-                                <span class="highlight-library">
+                                <span class="highlight-library d-inline-block">
                                     <span class="{}">{}</span>
                                     <span class="dropdown-options" data-guid="{}" data-word_idx="{}" data-section="{}">
                                         <a href="#/" class="highlight-redact">Redact</a>
