@@ -185,15 +185,17 @@ def set_patient_emis_number(request: HttpRequest, instruction_id: str) -> HttpRe
 @check_user_type(GENERAL_PRACTICE_USER)
 def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     instruction = get_object_or_404(Instruction, id=instruction_id)
-
     try:
         redaction = AmendmentsForRecord.objects.get(instruction=instruction_id)
     except AmendmentsForRecord.DoesNotExist:
         return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
 
-    raw_xml_or_status_code = redaction.raw_medical_xml
-    if isinstance(raw_xml_or_status_code, int):
-        return redirect('services:handle_error', code=raw_xml_or_status_code)
+    # Todo REMOVE FILE SYSTEM SUPPORT
+    if redaction.raw_medical_xml:
+        raw_xml_or_status_code = redaction.raw_medical_xml
+    else:
+        raw_xml_or_status_code = services.GetMedicalRecord(redaction.patient_emis_number, gp_organisation=instruction.gp_practice).call()
+
     medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
     start_time = timezone.now()
     questions = instruction.addition_questions.all()
@@ -359,7 +361,6 @@ def view_consent_pdf(request: HttpRequest, instruction_id: str) -> HttpResponse:
     return HttpResponse(instruction.mdx_consent, content_type='application/pdf')
 
 
-@login_required(login_url='/accounts/login')
 def view_total_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     instruction = get_object_or_404(Instruction, id=instruction_id)
 
@@ -376,7 +377,12 @@ def final_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     instruction = get_object_or_404(Instruction, id=instruction_id)
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
-    medical_record_decorator = MedicalReportDecorator(instruction.final_raw_medical_xml_report, instruction)
+    # Todo REMOVE FILE SYSTEM SUPPORT
+    if instruction.final_raw_medical_xml_report:
+        final_raw_medical_xml_report = instruction.final_raw_medical_xml_report
+    else:
+        final_raw_medical_xml_report = instruction.medical_xml_report.read().decode('utf-8')
+    medical_record_decorator = MedicalReportDecorator(final_raw_medical_xml_report, instruction)
     attachments = medical_record_decorator.attachments
     relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
 

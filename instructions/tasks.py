@@ -72,7 +72,7 @@ def prepare_medicalreport_data(self, instruction_id, notify_mail=True):
                     f.write(buffer.getvalue())
                     f.close()
                     subprocess.call(
-                        ("cd /Applications/LibreOffice.app/Contents/MacOS && ./soffice --headless --convert-to pdf --outdir " + TEMP_DIR + " " + TEMP_DIR + "/" + tmp_file),
+                        ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + TEMP_DIR + " " + TEMP_DIR + "/" + tmp_file),
                         shell=True
                     )
                     pdf_path = TEMP_DIR + '%s_tmp.pdf' % instruction.pk

@@ -86,7 +86,7 @@ def generate_medicalreport_with_attachment(self, instruction_info: dict, report_
 
         final_report_buffer = io.BytesIO(instruction.medical_report_byte)
         medical_report = PyPDF2.PdfFileReader(final_report_buffer)
-        
+
         # append uploaded consent pdf file to output file if it exists..
         if instruction.mdx_consent:
             consent_file = PyPDF2.PdfFileReader(instruction.mdx_consent)
@@ -144,7 +144,7 @@ def generate_medicalreport_with_attachment(self, instruction_info: dict, report_
                         f.write(buffer.getvalue())
                         f.close()
                         subprocess.call(
-                            ("cd /Applications/LibreOffice.app/Contents/MacOS && ./soffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
+                            ("export HOME=/tmp && libreoffice --headless --convert-to pdf --outdir " + folder + " " + folder + "/" + tmp_file),
                             shell=True
                         )
                         if settings.IMAGE_REDACTION_ENABLED:
@@ -285,6 +285,8 @@ def generate_medicalreport_with_attachment(self, instruction_info: dict, report_
             report_link_info['unique_url'],
             instruction
         )
+        from medicalreport.functions import send_surgery_email
+        send_surgery_email(instruction)
 
         instruction.download_attachments = ",".join(download_attachments)
         instruction.status = INSTRUCTION_STATUS_COMPLETE

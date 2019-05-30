@@ -270,9 +270,8 @@ def get_report(request: HttpRequest, access_type:  str) -> Union[HttpResponse, S
         '{access_type} ACCESS get medical report view, Instruction ID {instruction_id}'.format(
             access_type=access_type, instruction_id=report_auth.instruction.id)
     )
-
+    instruction = get_object_or_404(Instruction, id=report_auth.instruction_id)
     if request.method == 'POST':
-            instruction = get_object_or_404(Instruction, id=report_auth.instruction_id)
             if request.POST.get('button') == 'Download Report':
                 response = StreamingHttpResponse(FileWrapper(get_zip_medical_report(instruction)), content_type='application/octet-stream')
                 response['Content-Disposition'] = 'attachment; filename="medical_report.zip"'
@@ -288,6 +287,7 @@ def get_report(request: HttpRequest, access_type:  str) -> Union[HttpResponse, S
         'report_auth': report_auth,
         'third_parties': third_parties,
         'access_type': access_type,
+        'instruction_id': instruction.id
     })
 
 

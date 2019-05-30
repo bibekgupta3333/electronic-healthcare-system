@@ -1141,6 +1141,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
             else:
                 # Asynchronous preparing task case
                 instruction.status = INSTRUCTION_STATUS_REDACTING
+                instruction.saved = False
                 instruction.save()
                 prepare_medicalreport_data.delay(instruction_id)
                 return redirect('instructions:view_pipeline')

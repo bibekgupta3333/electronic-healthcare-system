@@ -318,7 +318,6 @@ def create_patient_report(request: HttpRequest, instruction: Instruction) -> Non
         generate_medicalreport_with_attachment.delay(instruction_info, report_link_info)
     else:
         generate_medicalreport_with_attachment(instruction_info, report_link_info)
-    send_surgery_email(instruction)
 
 
 def render_report_tool_box_function(header: str, xpath: str, section:str, libraries: Library, instruction: Instruction=None, library_history: LibraryHistory=None):
