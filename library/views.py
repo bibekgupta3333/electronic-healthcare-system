@@ -15,7 +15,6 @@ from .tables import LibraryTable
 from .forms import LibraryForm
 
 
-
 @login_required(login_url='/accounts/login')
 def edit_library(request, event):
     header_title = "Surgery Library"
@@ -29,7 +28,6 @@ def edit_library(request, event):
     error_edit_link = ''
     if request.method == 'POST':
         library_form = LibraryForm(request.POST, gp_org_id=gp_practice.pk)
-        event = ''
         if library_form.is_valid():
             library_obj = library_form.save(commit=False)
             library_obj.gp_practice = gp_practice
@@ -43,7 +41,6 @@ def edit_library(request, event):
                                       'to the library and edit from there'
             if event == 'add' and request.is_ajax():
                 return JsonResponse({'message': 'Error', 'add_word_error_message': add_word_error_message})
-        event = ''
 
     if 'page_length' in request.GET:
         page_length = int(request.GET.get('page_length'))
