@@ -40,7 +40,7 @@
                 {% if perms.instructions.view_account_pages %}
                     <li class="{% if request.resolver_match.url_name == 'view_account' %}active{% endif %}">
                         {% if user.type == 'GP' %}
-                            <a href="{% url 'accounts:view_account' %}" ><i class="fas fa-money-check-alt"></i>Account Management</a>
+                            <a href="{% url 'accounts:view_account' %}" ><i class="fas fa-money-check-alt"></i>Fee Management</a>
                         {% elif user.type == 'CLT'%}
                             <a href="{% url 'accounts:view_fee' %}" ><i class="fas fa-money-check-alt"></i>Fees</a>
                         {% endif %}
@@ -54,6 +54,11 @@
                 {% if perms.library.view_library %}
                     <li class="{% if request.resolver_match.url_name == 'edit_library' %}active{% endif %}">
                         <a href="{% url 'library:edit_library' event='index' %}"><i class="fas fa-book-open"></i>Surgery Library</a>
+                    </li>
+                {% endif %}
+                {% if user.type == 'GP' %}
+                    <li class="">
+                        <a href="#" ><i class="fas fa-hospital"></i>Surgery Management</a>
                     </li>
                 {% endif %}
                 <li class="{% if request.resolver_match.url_name == 'view_invoice_payment_pipeline' %}active{% endif %}">
