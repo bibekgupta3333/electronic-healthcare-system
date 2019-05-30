@@ -68,6 +68,7 @@ class EmisAPITestCase(TestCase):
             mdx_consent=mdx_consent,
             medical_report=medical_report,
             medical_xml_report=medical_xml_report,
+            medical_with_attachment_report=medical_with_attachment_report,
             medical_report_byte=MEDICAL_REPORT_BYTES,
             medical_with_attachment_report_byte=MEDICAL_REPORT_WITH_ATTACHMENT_BYTES,
             final_raw_medical_xml_report=RAW_MEDICAL_XML
@@ -102,6 +103,7 @@ class RejectRequestTest(EmisAPITestCase):
             gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_REJECT,
             medical_report=medical_report,
             medical_xml_report=medical_xml_report,
+            medical_with_attachment_report=medical_with_attachment_report,
             medical_report_byte=MEDICAL_REPORT_BYTES,
             medical_with_attachment_report_byte=MEDICAL_REPORT_WITH_ATTACHMENT_BYTES,
             final_raw_medical_xml_report=RAW_MEDICAL_XML
@@ -215,6 +217,7 @@ class EditReportTest(EmisAPITestCase):
             gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_PROGRESS, type='SARS',
             medical_report=medical_report,
             medical_xml_report=medical_xml_report,
+            medical_with_attachment_report=medical_with_attachment_report,
             medical_report_byte=MEDICAL_REPORT_BYTES,
             medical_with_attachment_report_byte=MEDICAL_REPORT_WITH_ATTACHMENT_BYTES,
             final_raw_medical_xml_report=RAW_MEDICAL_XML,
@@ -401,6 +404,7 @@ class FinalReportTest(EmisAPITestCase):
             mdx_consent=mdx_consent,
             medical_report=medical_report,
             medical_xml_report=medical_xml_report,
+            medical_with_attachment_report=medical_with_attachment_report,
             medical_report_byte=MEDICAL_REPORT_BYTES,
             medical_with_attachment_report_byte=MEDICAL_REPORT_WITH_ATTACHMENT_BYTES,
             final_raw_medical_xml_report=RAW_MEDICAL_XML
