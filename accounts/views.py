@@ -92,7 +92,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
     user = request.user
 
     if request.user.type == 'GP':
-        header_title = 'Account Management'
+        header_title = 'Fee Management'
         gp_user = GeneralPracticeUser.objects.get(pk=user.userprofilebase.generalpracticeuser.pk)
         gp_organisation = gp_user.organisation
         try:
