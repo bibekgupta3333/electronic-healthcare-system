@@ -281,7 +281,7 @@
             $('#invalid_bank_number').hide();
             $('#id_payment_bank_account_number').change( function() {
                 var sort_code_value = $('#id_payment_bank_account_number').val();
-                if(sort_code_value.length < 6) {
+                if(sort_code_value.length < 8 {
                     $('#id_payment_bank_account_number').addClass('is-invalid');
                     $('#invalid_bank_number').show();
                 } else {
