@@ -1,3 +1,5 @@
+import json
+
 from django.test import TestCase, RequestFactory
 from django.shortcuts import reverse
 from model_mommy import mommy
@@ -9,7 +11,6 @@ from accounts.models import ClientUser, GeneralPracticeUser, MedidataUser, User,
     GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER, PATIENT_USER
 
 from services.models import SiteAccessControl
-import json
 
 
 class TestAccountBase(TestCase):
