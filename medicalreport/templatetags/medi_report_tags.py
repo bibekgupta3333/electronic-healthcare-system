@@ -1,10 +1,10 @@
 from django import template
-from django.db.models import Q
+
+from library.models import Library
+from services.xml.xml_base import XMLModelBase
+from medicalreport.models import AmendmentsForRecord
+from medicalreport.functions import render_report_tool_box_function, check_sensitive_condition
 from .helper import problem_xpaths
-from django.utils.html import format_html
-from medicalreport.models import NhsSensitiveConditions
-from library.models import LibraryHistory, Library
-import re
 
 register = template.Library()
 
@@ -132,87 +132,34 @@ def form_new_additional_allergies():
 
 
 @register.inclusion_tag('medicalreport/inclusiontags/redaction_checkbox_with_body.html')
-def redaction_checkbox_with_body(model, redaction, header='', word_library='', body='', sensitive_conditions={}):
-    checked = ""
-    xpaths = model.xpaths()
-    snomed_codes = set(model.snomed_concepts())
-    readcodes = set(model.readcodes())
-    is_sensitive = False
-    if sensitive_conditions and \
-            (sensitive_conditions['snome'].intersection(snomed_codes) or sensitive_conditions['readcodes'].intersection(readcodes)):
-        checked = "checked"
-        is_sensitive = True
-
-    if redaction.redacted(xpaths) is True:
-        checked = "checked"
+def redaction_checkbox_with_body(
+    model: XMLModelBase, redaction: AmendmentsForRecord, header: str,
+    libraries: Library=None, sensitive_conditions: dict={}, section: str=''):
 
     title = header
-    split_word = header.split()
-    xpaths_value = xpaths[0]
+    checked = ""
+    xpaths = model.xpaths()
 
-    library_history = LibraryHistory.objects.filter(instruction=redaction.instruction)
-    for word in word_library:
-        if str.upper(word.key) in map(str.upper, split_word):
-            idx = list(map(str.upper, split_word)).index(str.upper(word.key))
-            highlight_class = 'bg-warning'
-            if library_history:
-                for history in library_history:
-                    num = 0
-                    action = history.action
-                    while num < len(split_word):
-                        if history.old == split_word[num]:
-                            if action == 'Replace' and history.xpath in xpaths:
-                                split_word[num] = history.new
-                                highlight_class = 'text-danger'
-                            elif action == 'Redact' and history.xpath in xpaths:
-                                highlight_class = 'bg-dark text-light'
-                            elif action == 'ReplaceAll':
-                                split_word[num] = history.new
-                                highlight_class = 'text-danger'
-                        num = num + 1
+    # checking sensitive conditions
+    is_sensitive = check_sensitive_condition(model=model, sensitive_conditions=sensitive_conditions)
 
-            highlight_html = '''
-                <span class="highlight-library">
-                    <span class="{}">{}</span>
-                    <span class="dropdown-options" data-xpath="{}">
-                        <a href="#" class="highlight-redact">Redact</a>
-                        <a href="#" class="highlight-replace">Replace</a>
-                        <a href="#" class="highlight-replaceall">Replace all</a>
-                    </span>
-                </span>
-            '''
+    # checking redacted
+    if (redaction.redacted(xpaths) is True) or is_sensitive:
+        checked = "checked"
 
-            for word_str in split_word:
-                gp_org = redaction.instruction.gp_user.organisation
-                library_object = Library.objects.filter(gp_practice=gp_org, key=word_str)
-                for library in library_object:
-                    if not library.value:
-                        highlight_html = '''
-                            <span class="highlight-library">
-                                <span class="{}">{}</span>
-                                <span class="dropdown-options" data-xpath="{}">
-                                    <a href="#" class="highlight-redact">Redact</a>
-                                </span>
-                            </span>
-                        '''
-            header_detail = re.sub(word.key, highlight_html, header, flags=re.IGNORECASE)
-            return {
-                'checked': checked,
-                'xpaths': xpaths,
-                'header': header,
-                'title': title,
-                'header_detail': format_html(header_detail, highlight_class, split_word[idx], xpaths_value),
-                'is_sensitive': is_sensitive
-            }
+    # rendering report toolbox function
+    final_header = render_report_tool_box_function(
+        header=header, xpath=xpaths[0], section=section, libraries=libraries, instruction=redaction.instruction
+    )
 
     return {
         'checked': checked,
         'xpaths': xpaths,
         'header': header,
-        'header_detail': header,
         'title': title,
-        'body': body,
-        'is_sensitive': is_sensitive
+        'header_detail': final_header,
+        'is_sensitive': is_sensitive,
+        'section': section,
     }
 
 
@@ -247,87 +194,32 @@ def redaction_checkbox_with_list(model, redaction, header='', dict_data='', map_
 
 
 @register.inclusion_tag('medicalreport/inclusiontags/redaction_checkbox_with_body.html')
-def problem_redaction_checkboxes(model, redaction, problem_linked_lists, map_code, header='', word_library='', sensitive_conditions={}):
+def problem_redaction_checkboxes(
+        model: XMLModelBase, redaction: AmendmentsForRecord, problem_linked_lists,
+        header: str, libraries: Library, map_code: list, sensitive_conditions: dict, section: str):
+
+    title = header
     checked = ""
+    xpaths = problem_xpaths(model, problem_linked_lists)
+
     if redaction.re_redacted_codes:
         sensitive_conditions['snome'] - set(redaction.re_redacted_codes)
 
-    is_sensitive = False
-    if sensitive_conditions['snome'].intersection(set(map_code)) or sensitive_conditions['readcodes'].intersection(set(model.readcodes())):
-        checked = "checked"
-        is_sensitive = True
+    is_sensitive = check_sensitive_condition(model=model, sensitive_conditions=sensitive_conditions)
 
-    xpaths = problem_xpaths(model, problem_linked_lists)
-    if redaction.redacted(xpaths) is True:
+    if (redaction.redacted(xpaths) is True) or is_sensitive:
         checked = "checked"
 
-    title = header
-    split_word = header.split()
-    xpaths_value = xpaths[0]
-    gp_org = redaction.instruction.gp_user.organisation
-    
-    library_history = LibraryHistory.objects.filter(instruction=redaction.instruction)
-    for word in word_library:
-        if str.upper(word.key) in map(str.upper, split_word):
-            idx = list(map(str.upper, split_word)).index(str.upper(word.key))
-            highlight_class = 'bg-warning'
-            if library_history:
-                for history in library_history:
-                    num = 0
-                    action = history.action
-                    while num < len(split_word):
-                        if history.old == split_word[num]:
-                            if action == 'Replace' and history.xpath in xpaths:
-                                split_word[num] = history.new
-                                highlight_class = 'text-danger'
-                            elif action == 'Redact' and history.xpath in xpaths:
-                                highlight_class = 'bg-dark text-light'
-                            elif action == 'ReplaceAll':
-                                split_word[num] = history.new
-                                highlight_class = 'text-danger'
-                        num = num + 1
-
-            highlight_html = '''
-                <span class="highlight-library">
-                    <span class="{}">{}</span>
-                    <span class="dropdown-options" data-xpath="{}">
-                        <a href="#" class="highlight-redact">Redact</a>
-                        <a href="#" class="highlight-replace">Replace</a>
-                        <a href="#" class="highlight-replaceall">Replace all</a>
-                    </span>
-                </span>
-            '''
-
-            for word_str in split_word:
-                gp_org = redaction.instruction.gp_user.organisation
-                library_object = Library.objects.filter(gp_practice=gp_org, key=word_str)
-                for library in library_object:
-                    if not library.value:
-                        highlight_html = '''
-                            <span class="highlight-library">
-                                <span class="{}">{}</span>
-                                <span class="dropdown-options" data-xpath="{}">
-                                    <a href="#" class="highlight-redact">Redact</a>
-                                </span>
-                            </span>
-                        '''
-
-            header_detail = re.sub(word.key, highlight_html, header, flags=re.IGNORECASE)
-            return {
-                'checked': checked,
-                'xpaths': xpaths,
-                'header': header,
-                'title': title,
-                'header_detail': format_html(header_detail, highlight_class, split_word[idx], xpaths_value),
-                'is_sensitive': is_sensitive
-            }
+    final_header = render_report_tool_box_function(
+        header=header, xpath=xpaths[0], section=section, libraries=libraries, instruction=redaction.instruction
+    )
 
     return {
             'checked': checked,
             'xpaths': xpaths,
             'header': header,
             'title': title,
-            'header_detail': header,
+            'header_detail': final_header,
             'is_sensitive': is_sensitive
         }
 

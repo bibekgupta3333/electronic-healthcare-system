@@ -9,6 +9,7 @@ from django.shortcuts import redirect
 from django.utils import timezone
 from django.core.files.base import ContentFile
 from services.xml.medical_report_decorator import MedicalReportDecorator
+from services.xml.xml_base import XMLModelBase
 from snomedct.models import SnomedConcept
 from services.emisapiservices import services
 from services.xml.xml_utils import redaction_elements, lxml_to_string
@@ -147,15 +148,11 @@ def save_medical_report(instruction: Instruction, amendments_for_record: Amendme
     gp_org = instruction.gp_user.organisation
     word_library = Library.objects.filter(gp_practice=gp_org)
     library_history = LibraryHistory.objects.filter(instruction=instruction)
-    redact_xpaths = list()
-    for history in library_history:
-        redact_xpaths.append(history.xpath)
     relations_dict = {
         'relations': relations,
         'word_library': word_library,
         'library_history': library_history,
-        'xpath': redact_xpaths,
-        'status': 'final'
+        'is_final_report': True
     }
 
     str_xml = lxml_to_string(parse_xml)
@@ -312,3 +309,78 @@ def create_patient_report(request: HttpRequest, instruction: Instruction) -> Non
         generate_medicalreport_with_attachment(instruction.id, report_link_info)
     send_surgery_email(instruction)
 
+
+def render_report_tool_box_function(header: str, xpath: str, section:str, libraries: Library, instruction: Instruction=None, library_history: LibraryHistory=None):
+    split_head = header.split()
+    guid = xpath[xpath.find('{') + 1: xpath.find('}')]  # get guid in xpath between bracket
+    temp_header = []  # temp for concat each splitted head to final_header
+    final_header = header
+    library_history = library_history if library_history else LibraryHistory.objects.filter(instruction=instruction)
+    if libraries:
+        for i, head in enumerate(split_head):
+            library_matched = False
+            highlight_html = '''
+                    <span class="highlight-library d-inline-block">
+                        <span class="{}">{}</span>
+                        <span class="dropdown-options" data-guid="{}" data-word_idx="{}" data-section="{}">
+                            <a href="#/" class="highlight-redact">Redact</a>
+                            <a href="#/" class="highlight-replace">Replace</a>
+                            <a href="#/" class="highlight-replaceall">Replace all</a>
+                        </span>
+                    </span>
+                '''
+
+            for library in libraries:
+                if str.upper(library.key) == str.upper(head):
+                    library_matched = True
+                    highlight_class = 'bg-warning'
+                    if not library.value:
+                        highlight_html = '''
+                                <span class="highlight-library d-inline-block">
+                                    <span class="{}">{}</span>
+                                    <span class="dropdown-options" data-guid="{}" data-word_idx="{}" data-section="{}">
+                                        <a href="#/" class="highlight-redact">Redact</a>
+                                    </span>
+                                </span>
+                            '''
+                    for history in library_history:
+                        action = history.action
+                        if str.upper(history.old) == str.upper(head):
+                            if action == LibraryHistory.ACTION_REPLACE \
+                                    and history.guid == guid \
+                                    and history.index == i \
+                                    and history.section == section:
+                                head = history.new
+                                highlight_class = 'text-danger'
+                                break  # already matched HISTORY exist loop
+                            elif action == LibraryHistory.ACTION_HIGHLIGHT_REDACT \
+                                    and history.guid == guid \
+                                    and history.index == i \
+                                    and history.section == section:
+                                highlight_class = 'bg-dark text-dark'
+                                break  # already matched HISTORY exist loop
+                            elif action == LibraryHistory.ACTION_REPLACE_ALL:
+                                head = history.new
+                                highlight_class = 'text-danger'
+                                break  # already matched HISTORY exist loop
+
+                    highlight_html = highlight_html.format(highlight_class, head, guid, i, section)
+                    temp_header.append(highlight_html)
+                    break  # already matched LIBRARY WORD exist loop
+
+            if not library_matched:
+                temp_header.append(head)
+
+        final_header = format_html(" ".join(temp_header))
+
+    return final_header
+
+
+def check_sensitive_condition(model: XMLModelBase, sensitive_conditions: dict):
+    snomed_codes = set(model.snomed_concepts())
+    readcodes = set(model.readcodes())
+    if sensitive_conditions and \
+            (sensitive_conditions['snome'].intersection(snomed_codes) or sensitive_conditions['readcodes'].intersection(readcodes)):
+        return True
+
+    return False
