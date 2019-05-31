@@ -16,6 +16,7 @@ import reportlab.lib.pagesizes as pdf_sizes
 from PIL import Image
 from django.conf import settings
 from instructions.models import Instruction
+from medicalreport.models import RedactedAttachment
 import PyPDF2
 from report.functions import redaction_image
 #from silk.profiling.profiler import silk_profile
@@ -52,7 +53,7 @@ def link_callback(uri: str, rel) -> str:
 
 def generate_redact_pdf(
         patient_first_name: str, patient_last_name: str,
-        pdf_path: str = '', pdf_byte: str = '', image_name: str = ''):
+        pdf_path: str = '', pdf_byte: bytes = b'', image_name: str = ''):
 
     images_name_list = []
 
@@ -75,15 +76,18 @@ def generate_redact_pdf(
             images_name_list.append(image_name)
 
     output_pdf_list = []
+    total_redacted_count = 0
     for image in images_name_list:
-        output_pdf_list.append(redaction_image(
+        redacted_count, out_pdf_obj = redaction_image(
             image_path=image,
             east_path=BASE_DIR + '/config/frozen_east_text_detection.pb',
             patient_info={
                 'first_name': patient_first_name,
                 'last_name': patient_last_name
             }
-        ))
+        )
+        total_redacted_count += redacted_count
+        output_pdf_list.append(out_pdf_obj)
 
     output = PyPDF2.PdfFileWriter()
     for pdf in output_pdf_list:
@@ -98,7 +102,31 @@ def generate_redact_pdf(
     for name in images_name_list:
         os.remove(name)
 
-    return pdf_page_buf
+    return total_redacted_count, pdf_page_buf
+
+
+def tiff_processing(image: Image, max_pages: int=200) -> BytesIO:
+    height = image.tag[0x101][0]
+    width = image.tag[0x100][0]
+    out_pdf_io = BytesIO()
+    c = reportlab.pdfgen.canvas.Canvas(out_pdf_io, pagesize=pdf_sizes.letter)
+    pdf_width, pdf_height = pdf_sizes.letter
+    page = 0
+    while True:
+        try:
+            image.seek(page)
+        except EOFError:
+            break
+        if pdf_width * height / width <= pdf_height:
+            c.drawInlineImage(image, 0, 0, pdf_width, pdf_width * height / width)
+        else:
+            c.drawInlineImage(image, 0, 0, pdf_height * width / height, pdf_height)
+        c.showPage()
+        if max_pages and page > max_pages:
+            break
+        page += 1
+    c.save()
+    return out_pdf_io
 
 
 class MedicalReport:
@@ -132,14 +160,16 @@ class MedicalReport:
             return response
 
     @staticmethod
-    #@silk_profile(name='Get PDF Medical Report Method')
-    def get_pdf_file(params: dict) -> ContentFile:
+    def get_pdf_file(params: dict, raw=False) -> ContentFile:
         template = get_template(REPORT_DIR)
         html = template.render(params)
         file = BytesIO()
         pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), file, link_callback=link_callback)
         if not pdf.err:
-            return ContentFile(file.getvalue())
+            if raw:
+                return file.getvalue()
+            else:
+                return ContentFile(file.getvalue())
 
 
 class AttachmentReport:
@@ -158,7 +188,7 @@ class AttachmentReport:
         elif self.file_type in ["jpg", "jpeg", "png", "tiff", "tif"]:
             return self.render_image()
         else:
-            return self.render_download_file()
+            return self.render_download_file(self.path_file, self.instruction.id)
 
     def download(self) -> HttpResponse:
         attachment = Base64Attachment(self.raw_xml).data()
@@ -173,10 +203,11 @@ class AttachmentReport:
         response['Content-Disposition'] = 'attachment; filename=' + self.file_name.split('\\')[-1]
         return response
 
-    def render_download_file(self) -> HttpResponse:
+    @staticmethod
+    def render_download_file(dds_identifier, instruction_id) -> HttpResponse:
         link = reverse(
             'medicalreport:download_attachment',
-            kwargs={'path_file': self.path_file, 'instruction_id': self.instruction.id}
+            kwargs={'path_file': dds_identifier, 'instruction_id': instruction_id}
         )
         return render_to_response('medicalreport/preview_and_download.html', {'link': link})
 
@@ -188,11 +219,20 @@ class AttachmentReport:
         pdf_page_buf = BytesIO()
         pdf_page_buf.write(attachment)
         if settings.IMAGE_REDACTION_ENABLED:
-            pdf_page_buf = generate_redact_pdf(
+            redacted_count, pdf_page_buf = generate_redact_pdf(
                 self.instruction.patient_information.patient_first_name,
                 self.instruction.patient_information.patient_last_name,
                 pdf_byte=attachment
             )
+
+            if not RedactedAttachment.objects.filter(instruction_id=self.instruction.id, dds_identifier=self.path_file).exists():
+                RedactedAttachment.objects.create(
+                    instruction=self.instruction,
+                    dds_identifier=self.path_file,
+                    name=self.file_name,
+                    raw_attachment_file_content=pdf_page_buf.getvalue(),
+                    redacted_count=redacted_count
+                )
 
         response = HttpResponse(
             pdf_page_buf.getvalue(),
@@ -217,11 +257,20 @@ class AttachmentReport:
         redacted_pdf = None
         if settings.IMAGE_REDACTION_ENABLED:
             pdf_path = TEMP_DIR + '%s_tmp.pdf'%self.instruction.pk
-            redacted_pdf = generate_redact_pdf(
+            redacted_count, redacted_pdf = generate_redact_pdf(
                 self.instruction.patient_information.patient_first_name,
                 self.instruction.patient_information.patient_last_name,
                 pdf_path=pdf_path
             )
+
+            if not RedactedAttachment.objects.filter(instruction_id=self.instruction.id, dds_identifier=self.path_file).exists():
+                RedactedAttachment.objects.create(
+                    instruction=self.instruction,
+                    dds_identifier=self.path_file,
+                    name=self.file_name,
+                    raw_attachment_file_content=redacted_pdf.getvalue(),
+                    redacted_count=redacted_count
+                )
 
         response = HttpResponse(
             redacted_pdf.getvalue() if redacted_pdf else pdf,
@@ -245,11 +294,20 @@ class AttachmentReport:
             image_path = TEMP_DIR + 'out_{unique}_{num}.jpg'.format(num=1, unique=uuid.uuid4().hex)
             image.save(image_path)
 
-            redacted_pdf = generate_redact_pdf(
+            redacted_count, redacted_pdf = generate_redact_pdf(
                 self.instruction.patient_information.patient_first_name,
                 self.instruction.patient_information.patient_last_name,
                 image_name=image_path
             )
+
+            if not RedactedAttachment.objects.filter(instruction_id=self.instruction.id, dds_identifier=self.path_file).exists():
+                RedactedAttachment.objects.create(
+                    instruction=self.instruction,
+                    dds_identifier=self.path_file,
+                    name=self.file_name,
+                    raw_attachment_file_content=redacted_pdf.getvalue(),
+                    redacted_count=redacted_count
+                )
 
             response = HttpResponse(
                 redacted_pdf.getvalue(),
@@ -259,37 +317,28 @@ class AttachmentReport:
         return response
 
     def render_pdf_with_tiff(self, image: Image, max_pages: int=200) -> HttpResponse:
-        height = image.tag[0x101][0]
-        width = image.tag[0x100][0]
-        out_pdf_io = BytesIO()
-        c = reportlab.pdfgen.canvas.Canvas(out_pdf_io, pagesize=pdf_sizes.letter)
-        pdf_width, pdf_height = pdf_sizes.letter
-        page = 0
-        while True:
-            try:
-                image.seek(page)
-            except EOFError:
-                break
-            if pdf_width * height / width <= pdf_height:
-                c.drawInlineImage(image, 0, 0, pdf_width, pdf_width * height / width)
-            else:
-                c.drawInlineImage(image, 0, 0, pdf_height * width / height, pdf_height)
-            c.showPage()
-            if max_pages and page > max_pages:
-              break
-            page += 1
-        c.save()
+        out_pdf_io = tiff_processing(image, max_pages)
+
         response = HttpResponse(
             out_pdf_io.getvalue(),
             content_type='application/pdf',
         )
 
         if settings.IMAGE_REDACTION_ENABLED:
-            redacted_pdf = generate_redact_pdf(
+            redacted_count, redacted_pdf = generate_redact_pdf(
                 self.instruction.patient_information.patient_first_name,
                 self.instruction.patient_information.patient_last_name,
                 pdf_byte=out_pdf_io.getvalue()
             )
+
+            if not RedactedAttachment.objects.filter(instruction_id=self.instruction.id, dds_identifier=self.path_file).exists():
+                RedactedAttachment.objects.create(
+                    instruction=self.instruction,
+                    dds_identifier=self.path_file,
+                    name=self.file_name,
+                    raw_attachment_file_content=redacted_pdf.getvalue(),
+                    redacted_count=redacted_count
+                )
 
             response = HttpResponse(
                 redacted_pdf.getvalue(),

@@ -15,6 +15,7 @@ from services.xml.patient_list import PatientList
 from services.xml.registration import Registration
 from medicalreport.forms import MedicalReportFinaliseSubmitForm
 from medicalreport.reports import AttachmentReport
+from medicalreport.models import RedactedAttachment
 from instructions.models import Instruction, InstructionPatient
 from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT
 from .functions import create_or_update_redaction_record, create_patient_report
@@ -27,6 +28,7 @@ from typing import List
 from common.functions import multi_getattr
 from library.forms import LibraryForm
 from library.models import Library, LibraryHistory
+from wsgiref.util import FileWrapper
 from django.core import serializers
 #from silk.profiling.profiler import silk_profile
 
@@ -37,21 +39,63 @@ event_logger = logging.getLogger('medidata.event')
 @login_required(login_url='/accounts/login')
 def view_attachment(request: HttpRequest, instruction_id: str, path_file: str) -> HttpResponse:
     instruction = get_object_or_404(Instruction, pk=instruction_id)
-    raw_xml_or_status_code = services.GetAttachment(instruction.patient_information.patient_emis_number, path_file, gp_organisation=instruction.gp_practice).call()
-    if isinstance(raw_xml_or_status_code, int):
-        return redirect('services:handle_error', code=raw_xml_or_status_code)
-    attachment_report = AttachmentReport(instruction, raw_xml_or_status_code, path_file)
-    return attachment_report.render()
+    redacted_attachment = RedactedAttachment.objects.filter(instruction_id=instruction.id, dds_identifier=path_file).first()
+    if redacted_attachment:
+        if redacted_attachment.name.split('.')[-1] in ["pdf", "rtf", "doc", "docx", "jpg", "jpeg", "png", "tiff", "tif"]:
+            response = HttpResponse(
+                bytes(redacted_attachment.raw_attachment_file_content),
+                content_type="application/pdf",
+            )
+            return response
+        else:
+            return AttachmentReport.render_download_file(redacted_attachment.dds_identifier, instruction.id)
+    else:
+        raw_xml_or_status_code = services.GetAttachment(instruction.patient_information.patient_emis_number, path_file, gp_organisation=instruction.gp_practice).call()
+        if isinstance(raw_xml_or_status_code, int):
+            return redirect('services:handle_error', code=raw_xml_or_status_code)
+        attachment_report = AttachmentReport(instruction, raw_xml_or_status_code, path_file)
+        return attachment_report.render()
 
 
 @login_required(login_url='/accounts/login')
 def download_attachment(request: HttpRequest, instruction_id: str, path_file: str) -> HttpResponse:
     instruction = get_object_or_404(Instruction, pk=instruction_id)
+    redacted_attachment = RedactedAttachment.objects.filter(instruction_id=instruction.id, dds_identifier=path_file).first()
+    if redacted_attachment:
+        if redacted_attachment.name.split('.')[-1] in ["pdf", "rtf", "doc", "docx", "jpg", "jpeg", "png", "tiff", "tif"]:
+            response = HttpResponse(
+                bytes(redacted_attachment.raw_attachment_file_content),
+                content_type="application/octet-stream"
+            )
+            response['Content-Disposition'] = 'attachment; filename=' + redacted_attachment.name
+            return response
+
     raw_xml_or_status_code = services.GetAttachment(instruction.patient_information.patient_emis_number, path_file, gp_organisation=instruction.gp_practice).call()
     if isinstance(raw_xml_or_status_code, int):
         return redirect('services:handle_error', code=raw_xml_or_status_code)
     attachment_report = AttachmentReport(instruction, raw_xml_or_status_code, path_file)
     return attachment_report.download()
+
+
+@login_required(login_url='/accounts/login')
+def download_medicalreport(request: HttpRequest, instruction_id: str) -> HttpResponse:
+    instruction = get_object_or_404(Instruction, pk=instruction_id)
+    file_name = '_'.join([
+        'medicalreport',
+        instruction.patient_information.patient_first_name,
+        instruction.patient_information.patient_last_name,
+        str(timezone.now()).split(' ')[0]
+    ])
+
+    if not instruction.medical_report:
+        response = HttpResponse(bytes(instruction.medical_report_byte), content_type="application/octet-stream")
+    else:
+        path_file = instruction.medical_report.path
+        response = HttpResponse(FileWrapper(open(path_file, 'rb')), content_type="application/octet-stream")
+
+    response['Content-Disposition'] = 'attachment; filename=' + file_name + ".pdf"
+
+    return response
 
 
 def get_matched_patient(patient: Patient, gp_organisation: OrganisationGeneralPractice) -> List[Registration]:
@@ -96,7 +140,9 @@ def select_patient(request: HttpRequest, instruction_id: str, patient_emis_numbe
     messages.success(request, 'Allocated to self successful')
 
     if not AmendmentsForRecord.objects.filter(instruction=instruction).exists():
-        AmendmentsForRecord.objects.create(instruction=instruction)
+        raw_xml = services.GetMedicalRecord(patient_emis_number, gp_organisation=instruction.gp_practice).call()
+        AmendmentsForRecord.objects.create(instruction=instruction, raw_medical_xml=raw_xml)
+
     instruction.in_progress(context={'gp_user': request.user.userprofilebase.generalpracticeuser})
     instruction.saved = False
     instruction.save()
@@ -139,15 +185,17 @@ def set_patient_emis_number(request: HttpRequest, instruction_id: str) -> HttpRe
 @check_user_type(GENERAL_PRACTICE_USER)
 def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     instruction = get_object_or_404(Instruction, id=instruction_id)
-
     try:
         redaction = AmendmentsForRecord.objects.get(instruction=instruction_id)
     except AmendmentsForRecord.DoesNotExist:
         return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
 
-    raw_xml_or_status_code = services.GetMedicalRecord(redaction.patient_emis_number, gp_organisation=instruction.gp_practice).call()
-    if isinstance(raw_xml_or_status_code, int):
-        return redirect('services:handle_error', code=raw_xml_or_status_code)
+    # Todo REMOVE FILE SYSTEM SUPPORT
+    if redaction.raw_medical_xml:
+        raw_xml_or_status_code = redaction.raw_medical_xml
+    else:
+        raw_xml_or_status_code = services.GetMedicalRecord(redaction.patient_emis_number, gp_organisation=instruction.gp_practice).call()
+
     medical_record_decorator = MedicalReportDecorator(raw_xml_or_status_code, instruction)
     start_time = timezone.now()
     questions = instruction.addition_questions.all()
@@ -248,7 +296,10 @@ def submit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     instruction = get_object_or_404(Instruction, id=instruction_id)
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
-    medical_record_decorator = MedicalReportDecorator(instruction.medical_xml_report.read().decode('utf-8'), instruction)
+    medical_record_decorator = MedicalReportDecorator(
+        instruction.final_raw_medical_xml_report if instruction.final_raw_medical_xml_report else instruction.medical_xml_report.decode('utf-8'),
+        instruction
+    )
     attachments = medical_record_decorator.attachments
     relations = " " + " | ".join(relation.name for relation in ReferencePhrases.objects.all()) + " "
     initial_prepared_by = request.user.userprofilebase.generalpracticeuser.pk
@@ -299,7 +350,9 @@ def submit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
 @login_required(login_url='/accounts/login')
 def view_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     instruction = get_object_or_404(Instruction, id=instruction_id)
-    return HttpResponse(instruction.medical_report, content_type='application/pdf')
+    return HttpResponse(
+        instruction.medical_report if instruction.medical_report else bytes(instruction.medical_report_byte)
+        , content_type='application/pdf')
 
 
 @login_required(login_url='/accounts/login')
@@ -308,7 +361,6 @@ def view_consent_pdf(request: HttpRequest, instruction_id: str) -> HttpResponse:
     return HttpResponse(instruction.mdx_consent, content_type='application/pdf')
 
 
-@login_required(login_url='/accounts/login')
 def view_total_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     instruction = get_object_or_404(Instruction, id=instruction_id)
 
@@ -325,7 +377,12 @@ def final_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     instruction = get_object_or_404(Instruction, id=instruction_id)
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
 
-    medical_record_decorator = MedicalReportDecorator(instruction.medical_xml_report.read().decode('utf-8'), instruction)
+    # Todo REMOVE FILE SYSTEM SUPPORT
+    if instruction.final_raw_medical_xml_report:
+        final_raw_medical_xml_report = instruction.final_raw_medical_xml_report
+    else:
+        final_raw_medical_xml_report = instruction.medical_xml_report.read().decode('utf-8')
+    medical_record_decorator = MedicalReportDecorator(final_raw_medical_xml_report, instruction)
     attachments = medical_record_decorator.attachments
     relations = "|".join(relation.name for relation in ReferencePhrases.objects.all())
 
