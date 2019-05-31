@@ -179,14 +179,21 @@ def undo_last(request):
             instruction = Instruction.objects.get(pk=instruction_id)
             recent_history = LibraryHistory.objects.filter(instruction=instruction).last()
             if recent_history:
-                highlight_html = '''
-                    <span class="bg-warning">{}</span>
-                    <span class="dropdown-options" dummy-guid dummy-word_idx dummy-section>
-                        <a href="#/" class="highlight-redact">Redact</a>
-                        <a href="#/" class="highlight-replace">Replace</a>
-                        <a href="#/" class="highlight-replaceall">Replace all</a>
-                    </span>
-                '''.format(recent_history.old)
+                if not Library.objects.get(key=recent_history.old).value:
+                    highlight_html = '''
+                        <span class="bg-warning">{}</span>
+                        <span class="dropdown-options" dummy-guid dummy-word_idx dummy-section>
+                            <a href="#/" class="highlight-redact">Redact</a>
+                    '''.format(recent_history.old)
+                else:
+                    highlight_html = '''
+                        <span class="bg-warning">{}</span>
+                        <span class="dropdown-options" dummy-guid dummy-word_idx dummy-section>
+                            <a href="#/" class="highlight-redact">Redact</a>
+                            <a href="#/" class="highlight-replace">Replace</a>
+                            <a href="#/" class="highlight-replaceall">Replace all</a>
+                        </span>
+                    '''.format(recent_history.old)
                 data = {
                     'action': recent_history.action,
                     'old': recent_history.old,
