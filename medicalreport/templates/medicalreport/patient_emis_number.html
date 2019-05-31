@@ -64,6 +64,11 @@
                                   </div>
                               </div>
                           {% endif %}
+                          {% if instruction.client_user %}
+                            <div class="patient-consent">
+                                <button class="btn btn-consent" data-toggle="modal" data-target="#pdfModal"><i class="fas fa-file-medical icon"></i> View consent form</button>
+                            </div>
+                          {% endif %}
                       </div>
                   </div>
               </div>
@@ -152,7 +157,7 @@
             </form>
         </div>
     </div>
-
+    
     <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg bg-info">
             <div class="modal-content">
