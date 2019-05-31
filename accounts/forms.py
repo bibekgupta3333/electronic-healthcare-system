@@ -376,3 +376,10 @@ class CustomLoginForm(AuthenticationForm):
                 ) 
         else:
             return self.cleaned_data
+
+
+class CustomAuthenticationForm(AuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super(CustomAuthenticationForm, self).__init__(*args, **kwargs)
+
+        self.fields['username'].help_text = '<h6 class="float-left mb-3">Please note that the email field is case sensitive.</h6>'

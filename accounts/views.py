@@ -26,7 +26,7 @@ from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_
 from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences, ClientUser
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from payment.model_choices import *
-from .forms import PracticePreferencesForm, TwoFactorForm, BankDetailsForm, CustomLoginForm
+from .forms import PracticePreferencesForm, TwoFactorForm, BankDetailsForm, CustomLoginForm, CustomAuthenticationForm
 from permissions.functions import access_user_management
 from organisations.models import OrganisationGeneralPractice
 from onboarding.views import generate_password
@@ -521,6 +521,9 @@ def create_user(request: HttpRequest) -> HttpResponse:
     user_type_form = get_user_type_form(cur_user)
     newuser_form = user_type_form['newuser_form']
     user_type = user_type_form['user_type']
+    newuser_form.fields['email'].help_text = 'The email address will be the username ' + \
+                                             'when your user logs into eMR. ' + \
+                                             'Please note that usernames are case sensitive.'
 
     response = render(request, 'user_management/new_user.html', {
         'header_title': header_title,
@@ -697,7 +700,7 @@ def login(request: HttpRequest) -> HttpResponse:
                         customlogin(request, user)
                         return redirect(reverse('instructions:view_pipeline'))
             else:
-                form = LoginForm()
+                form = CustomAuthenticationForm()
             if check_lock_out(request):
                 return redirect(reverse('accounts:locked_out'))
             return render(request, 'registration/login.html', {
