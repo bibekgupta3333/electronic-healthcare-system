@@ -374,23 +374,29 @@
                             var guid = $(this).data('guid');
                             var word = $(this).prev().text();
                             if(word.toUpperCase() == response['new'].toUpperCase()){
-                                if(typeof(tool_box_information[guid]) == 'undefined'){
-                                    tool_box_information[guid] = {};
-                                    if(typeof(tool_box_information[guid][section] == 'undefined')){
-                                        tool_box_information[guid][section] = {};
-                                        if(typeof(tool_box_information[guid][section][word]) == 'undefined' ){
-                                            tool_box_information[guid][section][word] = record_detail.indexOf(response['old'].toUpperCase());
+                                if(typeof(tool_box_information[section]) == 'undefined'){
+                                    tool_box_information[section] = {};
+                                    if(typeof(tool_box_information[section][guid] == 'undefined')){
+                                        tool_box_information[section][guid] = {};
+                                        if(typeof(tool_box_information[section][guid][word]) == 'undefined' ){
+                                            tool_box_information[section][guid][word] = record_detail.indexOf(response['old'].toUpperCase());
                                         }
                                     }
                                 } else {
-                                    tool_box_information[guid][section][word] = record_detail.indexOf(response['old'].toUpperCase(), tool_box_information[guid][section][word]+1)
+                                    if(typeof(tool_box_information[section][guid] == 'undefined')){
+                                        tool_box_information[section][guid] = {};
+                                        if(typeof(tool_box_information[section][guid][word]) == 'undefined' ){
+                                            tool_box_information[section][guid][word] = record_detail.indexOf(response['old'].toUpperCase());
+                                        } else {
+                                            tool_box_information[section][guid][word] = record_detail.indexOf(response['old'].toUpperCase(), tool_box_information[guid][section][word]+1)
+                                        }
+                                    }
                                 }
-
                                 temp_response = temp_response.replace('dummy-guid', 'data-guid="' + guid + '"');
-                                temp_response = temp_response.replace('dummy-word_idx', 'data-word_idx="' + tool_box_information[guid][section][word] + '"');
+                                temp_response = temp_response.replace('dummy-word_idx', 'data-word_idx="' + tool_box_information[section][guid][word] + '"');
                                 temp_response = temp_response.replace('dummy-section', 'data-section="' + section + '"');
                                 $(this).parent().html(temp_response);
-                                parent_element.children().eq(1).data('word_idx', tool_box_information[guid][section][word]);
+                                parent_element.children().eq(1).data('word_idx', tool_box_information[section][guid][word]);
                             }
                         } else {
                             // REDACT and REAPLACE case
@@ -419,8 +425,18 @@
                 dataType: "json",
                 data: { instruction_id: {{ instruction.id }} }
             }).done(function(response) {
-                $('input[name="redaction_xpaths"]').prop('checked', false);
+                $('input[name="redaction_xpaths"]').each(function () {
+                    // don't remove sensitive redacted
+                    if($(this).parent().children().last().text() != "Sensitive Condition"){
+                        $(this).prop('checked', false)
+                    }
+                });
+
                 $('span .highlight-library').each(function () {
+                    var index_word = response.new_replace_words.indexOf($(this).children().first().text().toUpperCase());
+                    if(index_word >= 0){
+                        $(this).children().first().text(response.old_replace_words[index_word]);
+                    }
                     $(this).children().first().removeClass().addClass('bg-warning');
                 });
                 create_alert(response.message, 'success');
