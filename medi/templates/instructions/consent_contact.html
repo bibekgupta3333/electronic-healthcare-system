@@ -562,7 +562,7 @@
             } else {
                 $('#collapse-to-patient').slideUp('slow');
             }
-        })
+        });
 
         $('#ch-report-third-party').bind('click dblclick', function(evt) {
             if ($(this).is(':checked')) {
@@ -570,7 +570,7 @@
             } else {
                 $('#third-party-section').slideUp('slow');
             }
-        })
+        });
 
         $(".emailModal").popup({
             transition: 'all 0.3s',
@@ -578,7 +578,7 @@
             onclose: function() {
                 isPopup = false;
             }
-        })
+        });
 
         function proceedAction() {
             $('#AsyncOptionModal').modal({
@@ -723,7 +723,7 @@
                     }
                 }
             }
-        })
+        });
 
         $('#id_mdx_consent').on('change', function(){
             var mdx_loaded = $('.file-caption-name').last().attr('title');
@@ -740,7 +740,7 @@
                 $('#id_mdx_consent_loaded').val('');
             }
             $('#id_next_step').val('view_pipeline');
-            proceedAction();
+            $('#consentContactForm').submit();
         });
         $('.enterEmailBtn').click(function(){
             $('#id_patient_email').focus();

@@ -29,7 +29,7 @@
                 {% csrf_token %}
                 <input type="submit" name='button' value="View Report" class="btn btn-accessCode ml-2 mr-2">
                 <input type="submit" name='button' value="Download Report" class="btn btn-downloadReport ml-2 mr-2">
-                <input type="submit" name='button' value="Print Report" class="btn btn-printReport ml-2 mr-2">
+                <button type="button" class="btn btn-printReport ml-2 mr-2" id="printFinalReportButton">Print Report</button>
             </form>
 
             {% if access_type == 'patient' %}
@@ -112,4 +112,14 @@
     </div>
     {% include 'patient/footer.html' %}
 </div>
+{% endblock %}
+
+{% block Script %}
+    <script>
+        $('#printFinalReportButton').click(function(e) {
+            e.preventDefault();
+            var print_win = window.open("{% url 'medicalreport:view_total_report' instruction_id %}");
+            print_win.print();
+        });
+    </script>
 {% endblock %}
