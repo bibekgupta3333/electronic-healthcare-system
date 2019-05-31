@@ -521,9 +521,6 @@ def create_user(request: HttpRequest) -> HttpResponse:
     user_type_form = get_user_type_form(cur_user)
     newuser_form = user_type_form['newuser_form']
     user_type = user_type_form['user_type']
-    newuser_form.fields['email'].help_text = 'The email address will be the username ' + \
-                                             'when your user logs into eMR. ' + \
-                                             'Please note that usernames are case sensitive.'
 
     response = render(request, 'user_management/new_user.html', {
         'header_title': header_title,
