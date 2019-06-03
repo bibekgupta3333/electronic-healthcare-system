@@ -85,7 +85,7 @@ def step1(request: HttpRequest) -> HttpResponse:
             else:
                 password = generate_password(initial_range=1, body_rage=12, tail_rage=1)
                 gp_organisation.operating_system_salt_and_encrypted_password = password
-                gp_organisation.operating_system_username = 'medidata_access'
+                gp_organisation.operating_system_username = 'emr' + gp_organisation.emis_org_code
             gp_organisation.save()
 
             if not OrganisationFeeRate.objects.filter(default=True).exists():
@@ -210,10 +210,13 @@ def step3(request: HttpRequest, practice_code: str) -> HttpResponse:
         'operating_system': gp_organisation.gp_operating_system
     })
 
+    practice_username = 'emr' + gp_organisation.operating_system_organisation_code
+
     return render(request, 'onboarding/step3.html', {
         'header_title': header_title,
         'organisation_code': gp_organisation.operating_system_organisation_code,
         'practice_code': gp_organisation.practcode,
+        'practice_username': practice_username,
         'practice_password': gp_organisation.operating_system_salt_and_encrypted_password,
         'surgery_update_form': surgery_update_form,
         'reload_status': reload_status
