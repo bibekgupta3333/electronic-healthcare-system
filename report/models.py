@@ -16,6 +16,7 @@ class PatientReportAuth(TimeStampedModel):
     locked_report = models.BooleanField(default=False)
     verify_pin = models.CharField(max_length=6, blank=True)
     url = models.CharField(max_length=256)
+    report_de_activate = models.BooleanField(default=True)
 
     def __str__(self):
         return '%s : %s'%(self.instruction.__str__(), self.patient.__str__())
@@ -66,8 +67,9 @@ class ExceptionMerge(TimeStampedModel):
         return ' '.join(['Exception in instructions : ', str(self.pk)])
 
 
-class UnsupportedAttachment(TimeStampedModel):
+class UnsupportedAttachment(models.Model):
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)
+    file_content = models.BinaryField()
     file_name = models.CharField(max_length=255)
     file_type = models.CharField(max_length=10)
 

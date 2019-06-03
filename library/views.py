@@ -179,14 +179,21 @@ def undo_last(request):
             instruction = Instruction.objects.get(pk=instruction_id)
             recent_history = LibraryHistory.objects.filter(instruction=instruction).last()
             if recent_history:
-                highlight_html = '''
-                    <span class="bg-warning">{}</span>
-                    <span class="dropdown-options" dummy-guid dummy-word_idx dummy-section>
-                        <a href="#/" class="highlight-redact">Redact</a>
-                        <a href="#/" class="highlight-replace">Replace</a>
-                        <a href="#/" class="highlight-replaceall">Replace all</a>
-                    </span>
-                '''.format(recent_history.old)
+                if recent_history.old and not Library.objects.get(key=recent_history.old).value:
+                    highlight_html = '''
+                        <span class="bg-warning">{}</span>
+                        <span class="dropdown-options" dummy-guid dummy-word_idx dummy-section>
+                            <a href="#/" class="highlight-redact">Redact</a>
+                    '''.format(recent_history.old)
+                else:
+                    highlight_html = '''
+                        <span class="bg-warning">{}</span>
+                        <span class="dropdown-options" dummy-guid dummy-word_idx dummy-section>
+                            <a href="#/" class="highlight-redact">Redact</a>
+                            <a href="#/" class="highlight-replace">Replace</a>
+                            <a href="#/" class="highlight-replaceall">Replace all</a>
+                        </span>
+                    '''.format(recent_history.old)
                 data = {
                     'action': recent_history.action,
                     'old': recent_history.old,
@@ -209,11 +216,27 @@ def undo_all(request):
         try:
             instruction_id = request.GET.get('instruction_id')
             instruction = Instruction.objects.get(pk=instruction_id)
+
+            new_replace_words = list(LibraryHistory.objects.filter(
+                Q(action=LibraryHistory.ACTION_REPLACE) | Q(action=LibraryHistory.ACTION_REPLACE_ALL)
+            ).values_list('new', flat=True))
+
+            old_replace_words = list(LibraryHistory.objects.filter(
+                Q(action=LibraryHistory.ACTION_REPLACE) | Q(action=LibraryHistory.ACTION_REPLACE_ALL)
+            ).values_list('old', flat=True))
+
+            upper_new_replace_words = list(map(lambda x: x.upper(), new_replace_words))
+
             # clear all Library history
             LibraryHistory.objects.filter(instruction=instruction).hard_delete()
+
             # clear all redacted xpaths
             AmendmentsForRecord.objects.filter(instruction=instruction).update(redacted_xpaths=[])
-            return JsonResponse({'message': 'Undo all completed.'})
+            return JsonResponse({
+                'message': 'Undo all completed.',
+                'new_replace_words': upper_new_replace_words,
+                'old_replace_words': old_replace_words,
+            })
         except Exception as e:
             return JsonResponse({'message': 'Error: {e}'.format(e=e)}, status=500)
 

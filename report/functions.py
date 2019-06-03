@@ -3,7 +3,7 @@ from django.core.mail import send_mail
 from django.template import loader
 from django.conf import settings
 from zipfile import ZipFile, ZIP_DEFLATED
-from .models import PatientReportAuth, ThirdPartyAuthorisation
+from .models import PatientReportAuth, ThirdPartyAuthorisation, UnsupportedAttachment
 from instructions.models import Instruction
 from imutils.object_detection import non_max_suppression
 from medicalreport.models import ReferencePhrases
@@ -92,11 +92,10 @@ def validate_pin(
 def get_zip_medical_report(instruction: Instruction):
     path_patient = instruction.patient_information.__str__()
     path = settings.MEDIA_ROOT + '/patient_attachments/' + path_patient + '/'
-    attachments = instruction.download_attachments
-    with ZipFile(path + 'medicalreports.zip','w', ZIP_DEFLATED) as zip:
-        zip.write(instruction.medical_with_attachment_report.path, 'medical_report.pdf')
-        for attachment in attachments.split(','):
-            zip.write(path + attachment, attachment)
+    with ZipFile(path + 'medicalreports.zip', 'w', ZIP_DEFLATED) as zip:
+        zip.writestr('medical_report.pdf', bytes(instruction.medical_with_attachment_report_byte))
+        for unsupported_attachment in UnsupportedAttachment.objects.filter(instruction_id=instruction.id):
+            zip.writestr(unsupported_attachment.file_name, bytes(unsupported_attachment.file_content))
     return open(path + 'medicalreports.zip', 'rb')
 
 
@@ -243,15 +242,19 @@ def redaction_image(image_path, east_path, width=960, height=960, padding=0.0, p
 
     # loop over the results
     output = orig.copy()
+    redacted_count = 0
     for ((startX, startY, endX, endY), text) in results:
         # strip out non-ASCII text so we can draw the text on the image
         # using OpenCV, then draw the text and a bounding box surrounding
         # the text region of the input image
         text = "".join([c if ord(c) < 128 else "" for c in text]).strip()
-        if patient_info['first_name'] in redact_words: redact_words.remove(patient_info['first_name'])
-        if patient_info['last_name'] in redact_words: redact_words.remove(patient_info['last_name'])
+        if patient_info['first_name'] in redact_words:
+            redact_words.remove(patient_info['first_name'])
+        if patient_info['last_name'] in redact_words:
+            redact_words.remove(patient_info['last_name'])
         if text in redact_words:
             cv2.rectangle(output, (startX, startY), (endX, endY), (0, 0, 0), -1)
+            redacted_count += 1
 
     unique = uuid.uuid4().hex
     image_name = 'outfile_{unique}.jpg'.format(unique=unique)
@@ -263,4 +266,4 @@ def redaction_image(image_path, east_path, width=960, height=960, padding=0.0, p
     os.remove(image_name)
     event_logger.info('Image Redaction Completed...')
 
-    return PyPDF2.PdfFileReader(buffer)
+    return redacted_count, PyPDF2.PdfFileReader(buffer)

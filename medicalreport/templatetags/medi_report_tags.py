@@ -2,7 +2,7 @@ from django import template
 
 from library.models import Library
 from services.xml.xml_base import XMLModelBase
-from medicalreport.models import AmendmentsForRecord
+from medicalreport.models import AmendmentsForRecord, RedactedAttachment
 from medicalreport.functions import render_report_tool_box_function, check_sensitive_condition
 from .helper import problem_xpaths
 
@@ -35,7 +35,8 @@ def form_attachments(context):
     return {
         'attachments': context['medical_record'].attachments,
         'instruction': context['instruction'],
-        'redaction': context['redaction']
+        'redaction': context['redaction'],
+        'section': 'attachments',
     }
 
 
@@ -147,6 +148,20 @@ def redaction_checkbox_with_body(
     if (redaction.redacted(xpaths) is True) or is_sensitive:
         checked = "checked"
 
+    redacted_count = 0
+    if section == 'attachments':
+        dds_identifier = model.dds_identifier()
+        redacted_count = RedactedAttachment.objects.filter(
+            instruction=redaction.instruction,
+            dds_identifier=dds_identifier
+        ).values_list('redacted_count', flat=True)
+
+        # Todo REMOVE FILE SYSTEM SUPPORT
+        if redacted_count:
+            redacted_count = redacted_count[0]
+        else:
+            redacted_count = -1  # attachment still not redacted
+
     # rendering report toolbox function
     final_header = render_report_tool_box_function(
         header=header, xpath=xpaths[0], section=section, libraries=libraries, instruction=redaction.instruction
@@ -160,6 +175,7 @@ def redaction_checkbox_with_body(
         'header_detail': final_header,
         'is_sensitive': is_sensitive,
         'section': section,
+        'redacted_count': redacted_count,
     }
 
 

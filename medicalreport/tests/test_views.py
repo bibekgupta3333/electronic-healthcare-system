@@ -16,6 +16,8 @@ from snomedct.models import SnomedConcept
 from medicalreport.models import AmendmentsForRecord, ReferencePhrases
 from medicalreport.views import get_matched_patient
 from organisations.models import OrganisationGeneralPractice
+from .test_data.medical_file import MEDICAL_REPORT_WITH_ATTACHMENT_BYTES, MEDICAL_REPORT_BYTES, RAW_MEDICAL_XML
+
 from medicalreport.templatetags.custom_filters import replace_ref_phrases
 from library.models import Library, LibraryHistory
 
@@ -65,11 +67,15 @@ class EmisAPITestCase(TestCase):
             patient_information=self.instruction_patient,
             mdx_consent=mdx_consent,
             medical_report=medical_report,
+            medical_xml_report=medical_xml_report,
             medical_with_attachment_report=medical_with_attachment_report,
-            medical_xml_report=medical_xml_report
+            medical_report_byte=MEDICAL_REPORT_BYTES,
+            medical_with_attachment_report_byte=MEDICAL_REPORT_WITH_ATTACHMENT_BYTES,
+            final_raw_medical_xml_report=RAW_MEDICAL_XML
         )
         self.redaction = mommy.make(
-            AmendmentsForRecord, instruction=self.instruction, pk=1
+            AmendmentsForRecord, instruction=self.instruction, pk=1,
+            raw_medical_xml=RAW_MEDICAL_XML
         )
         self.client.force_login(user, backend=None)
 
@@ -96,10 +102,15 @@ class RejectRequestTest(EmisAPITestCase):
             patient=self.patient, gp_user=self.gp_user,
             gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_REJECT,
             medical_report=medical_report,
-            medical_xml_report=medical_xml_report
+            medical_xml_report=medical_xml_report,
+            medical_with_attachment_report=medical_with_attachment_report,
+            medical_report_byte=MEDICAL_REPORT_BYTES,
+            medical_with_attachment_report_byte=MEDICAL_REPORT_WITH_ATTACHMENT_BYTES,
+            final_raw_medical_xml_report=RAW_MEDICAL_XML
         )
         self.redaction = mommy.make(
-            AmendmentsForRecord, instruction=self.instruction, pk=4
+            AmendmentsForRecord, instruction=self.instruction, pk=4,
+            raw_medical_xml=RAW_MEDICAL_XML
         )
 
     def test_view_url(self):
@@ -206,13 +217,18 @@ class EditReportTest(EmisAPITestCase):
             gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_PROGRESS, type='SARS',
             medical_report=medical_report,
             medical_xml_report=medical_xml_report,
+            medical_with_attachment_report=medical_with_attachment_report,
+            medical_report_byte=MEDICAL_REPORT_BYTES,
+            medical_with_attachment_report_byte=MEDICAL_REPORT_WITH_ATTACHMENT_BYTES,
+            final_raw_medical_xml_report=RAW_MEDICAL_XML,
             **{'date_range_from': datetime(1995, 10, 10), 'date_range_to': datetime(2015, 10, 10)}
         )
 
         self.snomed_concept = mommy.make(SnomedConcept, external_id=365981007)
         self.snomed_concept = mommy.make(SnomedConcept, external_id=228273003)
         self.redaction = mommy.make(
-            AmendmentsForRecord, instruction=self.instruction, pk=2
+            AmendmentsForRecord, instruction=self.instruction, pk=2,
+            raw_medical_xml=RAW_MEDICAL_XML
         )
 
     def test_view_url(self):
@@ -387,11 +403,15 @@ class FinalReportTest(EmisAPITestCase):
             gp_practice=self.gp_practice, status=INSTRUCTION_STATUS_COMPLETE,
             mdx_consent=mdx_consent,
             medical_report=medical_report,
+            medical_xml_report=medical_xml_report,
             medical_with_attachment_report=medical_with_attachment_report,
-            medical_xml_report=medical_xml_report
+            medical_report_byte=MEDICAL_REPORT_BYTES,
+            medical_with_attachment_report_byte=MEDICAL_REPORT_WITH_ATTACHMENT_BYTES,
+            final_raw_medical_xml_report=RAW_MEDICAL_XML
         )
         self.redaction = mommy.make(
-            AmendmentsForRecord, instruction=self.instruction, pk=3
+            AmendmentsForRecord, instruction=self.instruction, pk=3,
+            raw_medical_xml=RAW_MEDICAL_XML
         )
 
     def test_view_url(self):

@@ -132,19 +132,24 @@ def create_or_update_redaction_record(request, instruction: Instruction) -> bool
 
 def save_medical_report(instruction: Instruction, amendments_for_record: AmendmentsForRecord) -> None:
     start_time = timezone.now()
-    raw_xml_or_status_code = services.GetMedicalRecord(amendments_for_record.patient_emis_number, gp_organisation=instruction.gp_practice).call()
-    parse_xml = redaction_elements(raw_xml_or_status_code, amendments_for_record.redacted_xpaths)
-    if isinstance(raw_xml_or_status_code, int):
-        return redirect('services:handle_error', code=raw_xml_or_status_code)
+    if amendments_for_record.raw_medical_xml:
+        raw_xml = amendments_for_record.raw_medical_xml
+    else:
+        raw_xml = services.GetMedicalRecord(amendments_for_record.patient_emis_number, gp_organisation=instruction.gp_practice).call()
+
+    parse_xml = redaction_elements(raw_xml, amendments_for_record.redacted_xpaths)
+
     if instruction.medical_report:
         os.remove(instruction.medical_report.path)
         instruction.medical_report.delete()
+
     if instruction.medical_xml_report:
         os.remove(instruction.medical_xml_report.path)
         instruction.medical_xml_report.delete()
-    medical_record_decorator = MedicalReportDecorator(parse_xml, instruction)
 
+    medical_record_decorator = MedicalReportDecorator(parse_xml, instruction)
     relations = " " + " | ".join(relation.name for relation in ReferencePhrases.objects.all()) + " "
+
     gp_org = instruction.gp_user.organisation
     word_library = Library.objects.filter(gp_practice=gp_org)
     library_history = LibraryHistory.objects.filter(instruction=instruction)
@@ -164,8 +169,9 @@ def save_medical_report(instruction: Instruction, amendments_for_record: Amendme
         'surgery_name': instruction.gp_practice,
     }
     uuid_hex = uuid.uuid4().hex
-    instruction.medical_report.save('report_%s.pdf'%uuid_hex, MedicalReport.get_pdf_file(params))
-    instruction.medical_xml_report.save('xml_report_%s.xml'%uuid_hex, ContentFile(str_xml))
+    instruction.final_raw_medical_xml_report = str_xml.decode('utf-8')
+    instruction.medical_report_byte = MedicalReport.get_pdf_file(params, raw=True)
+    instruction.save()
     end_time = timezone.now()
     total_time = end_time - start_time
     logger.info("[SAVING PDF AND XML] %s seconds with patient %s"%(total_time.seconds, instruction.patient_information.__str__()))
@@ -298,16 +304,20 @@ def send_surgery_email(instruction: Instruction) -> None:
 def create_patient_report(request: HttpRequest, instruction: Instruction) -> None:
     unique_url = uuid.uuid4().hex
     PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
+    instruction_info = {
+        'id': instruction.id,
+        'medical_report_file_name': instruction.medical_report.name.split('/')[-1],
+        'medical_xml_file_name': instruction.medical_xml_report.name.split('/')[-1]
+    }
     report_link_info = {
         'scheme': request.scheme,
         'host': request.get_host(),
         'unique_url': unique_url
     }
     if settings.CELERY_ENABLED:
-        generate_medicalreport_with_attachment.delay(instruction.id, report_link_info)
+        generate_medicalreport_with_attachment.delay(instruction_info, report_link_info)
     else:
-        generate_medicalreport_with_attachment(instruction.id, report_link_info)
-    send_surgery_email(instruction)
+        generate_medicalreport_with_attachment(instruction_info, report_link_info)
 
 
 def render_report_tool_box_function(header: str, xpath: str, section:str, libraries: Library, instruction: Instruction=None, library_history: LibraryHistory=None):

@@ -26,7 +26,7 @@ from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_
 from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences, ClientUser
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from payment.model_choices import *
-from .forms import PracticePreferencesForm, TwoFactorForm, BankDetailsForm, CustomLoginForm
+from .forms import PracticePreferencesForm, TwoFactorForm, BankDetailsForm, CustomLoginForm, CustomAuthenticationForm
 from permissions.functions import access_user_management
 from organisations.models import OrganisationGeneralPractice
 from onboarding.views import generate_password
@@ -699,7 +699,7 @@ def login(request: HttpRequest) -> HttpResponse:
                         customlogin(request, user)
                         return redirect(reverse('instructions:view_pipeline'))
             else:
-                form = LoginForm()
+                form = CustomAuthenticationForm()
             if check_lock_out(request):
                 return redirect(reverse('accounts:locked_out'))
             return render(request, 'registration/login.html', {
