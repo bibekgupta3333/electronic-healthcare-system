@@ -243,7 +243,7 @@ def replace_ref_phrases(relations, value):
     final_header = value
 
     if relations['relations']:
-        value = re.sub(relations['relations'], " [UNSPECIFIED THIRD PARTY] ", value, flags=re.IGNORECASE)
+        value = re.sub(relations['relations'], " [UNSPECIFIED] ", value, flags=re.IGNORECASE)
 
     from medicalreport.functions import render_report_tool_box_function
     if libraries:
