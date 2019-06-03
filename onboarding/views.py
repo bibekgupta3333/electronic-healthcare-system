@@ -188,6 +188,8 @@ def step3(request: HttpRequest, practice_code: str) -> HttpResponse:
         if surgery_update_form.is_valid():
             gp_organisation.operating_system_organisation_code = surgery_update_form.cleaned_data['emis_org_code']
             gp_organisation.gp_operating_system = surgery_update_form.cleaned_data['operating_system']
+            if gp_organisation.practcode[:4] != 'TEST':
+                gp_organisation.operating_system_username = 'emr' + surgery_update_form.cleaned_data['emis_org_code']
             gp_organisation.save()
 
             event_logger.info('Onboarding: {gp_name}, EDITED surgery information completed'.format(gp_name=gp_organisation.name))
