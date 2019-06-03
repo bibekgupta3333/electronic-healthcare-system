@@ -183,7 +183,7 @@
                     type: 'POST',
                     data: $('#preferencesForm').serialize()+'&update_bank_details=1'
                 }).done(function(response) {
-                    create_alert(response['message'], response['status']);
+                    create_alert(response['message'], 'success');
                 }).fail(function() {
                     create_alert('Something went wrong, please try again.', 'error');
                 });
