@@ -18,6 +18,7 @@ from common.functions import get_url_page
 import random
 import string
 import logging
+from medi.settings.common import PREFIX_EMIS_USER
 
 
 event_logger = logging.getLogger('medidata.event')
@@ -85,7 +86,7 @@ def step1(request: HttpRequest) -> HttpResponse:
             else:
                 password = generate_password(initial_range=1, body_rage=12, tail_rage=1)
                 gp_organisation.operating_system_salt_and_encrypted_password = password
-                gp_organisation.operating_system_username = 'emr' + gp_organisation.emis_org_code
+                gp_organisation.operating_system_username = PREFIX_EMIS_USER + gp_organisation.emis_org_code
             gp_organisation.save()
 
             if not OrganisationFeeRate.objects.filter(default=True).exists():
@@ -189,7 +190,7 @@ def step3(request: HttpRequest, practice_code: str) -> HttpResponse:
             gp_organisation.operating_system_organisation_code = surgery_update_form.cleaned_data['emis_org_code']
             gp_organisation.gp_operating_system = surgery_update_form.cleaned_data['operating_system']
             if gp_organisation.practcode[:4] != 'TEST':
-                gp_organisation.operating_system_username = 'emr' + surgery_update_form.cleaned_data['emis_org_code']
+                gp_organisation.operating_system_username = PREFIX_EMIS_USER + surgery_update_form.cleaned_data['emis_org_code']
             gp_organisation.save()
 
             event_logger.info('Onboarding: {gp_name}, EDITED surgery information completed'.format(gp_name=gp_organisation.name))
@@ -212,7 +213,7 @@ def step3(request: HttpRequest, practice_code: str) -> HttpResponse:
         'operating_system': gp_organisation.gp_operating_system
     })
 
-    practice_username = 'emr' + gp_organisation.operating_system_organisation_code
+    practice_username = PREFIX_EMIS_USER + gp_organisation.operating_system_organisation_code
 
     return render(request, 'onboarding/step3.html', {
         'header_title': header_title,
