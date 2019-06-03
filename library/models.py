@@ -19,10 +19,24 @@ class Library(TimeStampedModel):
 
 
 class LibraryHistory(TimeStampedModel):
+    ACTION_REPLACE              = 0
+    ACTION_REPLACE_ALL          = 1
+    ACTION_LINE_REDACT          = 2
+    ACTION_HIGHLIGHT_REDACT     = 3
+    ACTION_REMOVE_LINE_REDACT   = 4
+
+    ACTION_CHOICES = (
+        (ACTION_REPLACE, 'Replace'),
+        (ACTION_REPLACE_ALL, 'Replace All'),
+        (ACTION_LINE_REDACT, 'Line Redact'),
+        (ACTION_HIGHLIGHT_REDACT, 'Highlight Black'),
+        (ACTION_REMOVE_LINE_REDACT, 'Remove Line Redact')
+    )
+
     instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)
-    action = models.CharField(max_length=255, verbose_name='Action')
+    action = models.IntegerField(choices=ACTION_CHOICES)
     old = models.CharField(max_length=255, blank=True, verbose_name='Old value')
     new = models.CharField(max_length=255, blank=True, verbose_name='New value')
-    change_info = models.TextField(blank=True, verbose_name='Change information')
-    xpath = models.CharField(max_length=255, blank=True, verbose_name='xpath')
-    key = models.CharField(max_length=255, blank=True, verbose_name='Key')
+    guid = models.CharField(max_length=255, blank=True, verbose_name='Guid')
+    section = models.CharField(max_length=30, blank=True, verbose_name='Medical Redaction Section')
+    index = models.PositiveIntegerField(null=True)

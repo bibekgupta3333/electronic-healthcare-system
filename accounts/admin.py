@@ -48,6 +48,12 @@ class CustomUserChangeForm(UserChangeForm):
         fields = ('email', 'password', 'groups', 'is_active',)
 
 
+class WhitelistAdmin(admin.ModelAdmin):
+    list_display = ('from_ip', 'to_ip',)
+    list_filter = ('from_ip', )
+    change_list_template = "admin/change_list.html"
+
+
 class UserAdmin(BaseUserAdmin):
     inlines = []
     form = CustomUserChangeForm
@@ -217,3 +223,4 @@ admin.site.unregister(AccessAttempt)
 admin.site.register(AccessAttempt, AccessAttemptAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(Patient, PatientAdmin)
+admin.site.register(Whitelist, WhitelistAdmin)

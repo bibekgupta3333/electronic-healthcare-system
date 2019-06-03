@@ -52,7 +52,7 @@
                         </div>
                         <div class="row form-group">
                             <div class="col-md-6">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Go Back to EMIS Setup</button>
+                                <a class="btn btn-secondary" href="{% url 'onboarding:step3' practice_code=practice_code %}">Go Back to EMIS Setup</a>
                             </div>
                             <div class="col-md-6">
                                 <button type="submit" class="btn btn-primary float-md-right mr-3">Update Details</button>
@@ -195,6 +195,9 @@
 
             $('#backBTN').click( function() {
                 var percentNow = $('#progress_bar').attr('aria-valuenow');
+                if (parseInt(percentNow) == 35) {
+                    return;
+                }
                 var percentNext = parseInt(percentNow) - 4;
 
                 $('#progress_percent').text( percentNext + ' % ');
@@ -220,10 +223,8 @@
                 switch( percentNow ) {
                     case 43:
                         $('#id_label').removeClass('text-danger');
-                        $('#progress_bar').removeClass('bg-danger');
 
                         $('#id_label').addClass('text-warning');
-                        $('#progress_bar').addClass('bg-warning');
 
                         $('#completeBTN').html('<i class="fas fa-check"></i>&nbsp;&nbsp;&nbsp;Step 2 : Complete');
                         $('#step2-block').show();
@@ -236,10 +237,8 @@
                         break;
                     case 87:
                         $('#id_label').removeClass('text-warning');
-                        $('#progress_bar').removeClass('bg-warning');
 
                         $('#id_label').addClass('text-success');
-                        $('#progress_bar').addClass('bg-success');
 
                         $('#completeBTN').html('<i class="fas fa-check"></i>&nbsp;&nbsp;&nbsp;Step 4 : Complete');
                         $('#step4-block').show();

@@ -6,12 +6,13 @@ from django.db.models import Q
 from django.db import IntegrityError
 from django.http import JsonResponse
 
+from instructions.models import Instruction
 from instructions.views import calculate_next_prev
+from medicalreport.models import AmendmentsForRecord
 
 from .models import Library, LibraryHistory
 from .tables import LibraryTable
 from .forms import LibraryForm
-from instructions.models import Instruction
 
 
 @login_required(login_url='/accounts/login')
@@ -27,7 +28,6 @@ def edit_library(request, event):
     error_edit_link = ''
     if request.method == 'POST':
         library_form = LibraryForm(request.POST, gp_org_id=gp_practice.pk)
-        event = ''
         if library_form.is_valid():
             library_obj = library_form.save(commit=False)
             library_obj.gp_practice = gp_practice
@@ -41,7 +41,6 @@ def edit_library(request, event):
                                       'to the library and edit from there'
             if event == 'add' and request.is_ajax():
                 return JsonResponse({'message': 'Error', 'add_word_error_message': add_word_error_message})
-        event = ''
 
     if 'page_length' in request.GET:
         page_length = int(request.GET.get('page_length'))
@@ -106,28 +105,23 @@ def redact_word(request):
         try:
             word = request.GET.get('word').strip()
             instruction_id = request.GET.get('instruction_id')
-            header = request.GET.get('header')
-            index = request.GET.get('index')
-            content = request.GET.get('content')
-            xpath = request.GET.get('xpath')
+            idx = request.GET.get('idx')
+            guid = request.GET.get('guid')
+            section = request.GET.get('section')
 
-            gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
-            library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
-
-            change_info = '%s :-> %s :-> %s' % (header.strip(), index, content.strip())
             instruction = Instruction.objects.get(pk=instruction_id)
-            library_history = LibraryHistory(
-                instruction= instruction,
-                action= 'Redact',
-                old= word,
-                new= '',
-                change_info= change_info,
-                xpath= xpath,
+            LibraryHistory.objects.create(
+                instruction=instruction,
+                action=LibraryHistory.ACTION_HIGHLIGHT_REDACT,
+                old=word,
+                new='',
+                guid=guid,
+                index=idx,
+                section=section
             )
-            library_history.save()
-            return JsonResponse({'redact_word': library.value, 'id': library_history.id})
-        except:
-            return JsonResponse({'message': 'Error'})
+            return JsonResponse({'message': 'Redact completed.'})
+        except Exception as e:
+            return JsonResponse({'message': 'Error: {e}'.format(e=e)}, status=500)
 
 
 @login_required(login_url='/accounts/login')
@@ -136,27 +130,25 @@ def replace_word(request):
         try:
             word = request.GET.get('word').strip()
             instruction_id = request.GET.get('instruction_id')
-            header = request.GET.get('header')
-            index = request.GET.get('index')
-            content = request.GET.get('content')
-            xpath = request.GET.get('xpath')
-            gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
-            library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
+            idx = request.GET.get('idx')
+            guid = request.GET.get('guid')
+            section = request.GET.get('section')
 
-            change_info = '%s :-> %s :-> %s' % (header.strip(), index, content.strip())
             instruction = Instruction.objects.get(pk=instruction_id)
-            library_history = LibraryHistory(
-                instruction= instruction,
-                action= 'Replace',
-                old= word,
-                new= library.value,
-                change_info= change_info,
-                xpath= xpath,
+            library = Library.objects.filter(key__iexact=word).first()
+            LibraryHistory.objects.create(
+                instruction=instruction,
+                action=LibraryHistory.ACTION_REPLACE,
+                old=word,
+                new=library.value,
+                guid=guid,
+                index=idx,
+                section=section
             )
-            library_history.save()
-            return JsonResponse({'replace_word': library.value, 'id': library_history.id})
-        except:
-            return JsonResponse({'message': 'Error'})
+            return JsonResponse({'message': 'Replace completed.', 'replace_word': library.value})
+        except Exception as e:
+            return JsonResponse({'message': 'Error: {e}'.format(e=e)}, status=500)
+
 
 @login_required(login_url='/accounts/login')
 def replace_allword(request):
@@ -165,14 +157,18 @@ def replace_allword(request):
             word = request.GET.get('word').strip()
             instruction_id = request.GET.get('instruction_id')
             gp_practice = request.user.userprofilebase.generalpracticeuser.organisation
-            library = Library.objects.filter(gp_practice=gp_practice).filter(key=word).first()
+            library = Library.objects.filter(gp_practice=gp_practice, key__iexact=word).first()
 
             instruction = Instruction.objects.get(pk=instruction_id)
-            library_history = LibraryHistory(instruction=instruction, action='ReplaceAll', old=word, new=library.value)
-            library_history.save()
-            return JsonResponse({'replace_word': library.value, 'id': library_history.id})
-        except:
-            return JsonResponse({'message': 'Error'})
+            LibraryHistory.objects.create(
+                instruction=instruction,
+                action=LibraryHistory.ACTION_REPLACE_ALL,
+                old=word,
+                new=library.value,
+            )
+            return JsonResponse({'message': 'Replace all completed.', 'replace_word': library.value})
+        except Exception as e:
+            return JsonResponse({'message': 'Error: {e}'.format(e=e)}, status=500)
 
 
 @login_required(login_url='/accounts/login')
@@ -182,43 +178,36 @@ def undo_last(request):
             instruction_id = request.GET.get('instruction_id')
             instruction = Instruction.objects.get(pk=instruction_id)
             recent_history = LibraryHistory.objects.filter(instruction=instruction).last()
-
-            highlight_html = '''
-                <span class="highlight-library">
-                    <span class="bg-warning">{}</span>
-                    <span class="dropdown-options" data-xpath="{}">
-                        <a href="#" class="highlight-redact">Redact</a>
-                        <a href="javascript:;" class="highlight-replace">Replace</a>
-                        <a href="#" class="highlight-replaceall">Replace all</a>
-                    </span>
-                </span>
-            '''.format(recent_history.old, recent_history.xpath)
-
-            gp_org = instruction.gp_user.organisation
-            library_object = Library.objects.filter(gp_practice=gp_org, key=recent_history.old)
-            for library in library_object:
-                if not library.value:
+            if recent_history:
+                if recent_history.old and not Library.objects.get(key=recent_history.old).value:
                     highlight_html = '''
-                        <span class="highlight-library">
-                            <span class="bg-warning">{}</span>
-                            <span class="dropdown-options" data-xpath="{}">
-                                <a href="#" class="highlight-redact">Redact</a>
-                            </span>
+                        <span class="bg-warning">{}</span>
+                        <span class="dropdown-options" dummy-guid dummy-word_idx dummy-section>
+                            <a href="#/" class="highlight-redact">Redact</a>
+                    '''.format(recent_history.old)
+                else:
+                    highlight_html = '''
+                        <span class="bg-warning">{}</span>
+                        <span class="dropdown-options" dummy-guid dummy-word_idx dummy-section>
+                            <a href="#/" class="highlight-redact">Redact</a>
+                            <a href="#/" class="highlight-replace">Replace</a>
+                            <a href="#/" class="highlight-replaceall">Replace all</a>
                         </span>
-                    '''.format(recent_history.old, recent_history.xpath)
-
-            data = {
-                'action': recent_history.action,
-                'old': recent_history.old,
-                'new': recent_history.new,
-                'text': highlight_html,
-                'xpath': recent_history.xpath,
-                'key': recent_history.key
-            }
-            recent_history.hard_delete()
-            return JsonResponse(data)
-        except:
-            return JsonResponse({'message': 'Error'})
+                    '''.format(recent_history.old)
+                data = {
+                    'action': recent_history.action,
+                    'old': recent_history.old,
+                    'new': recent_history.new,
+                    'text': highlight_html,
+                    'guid': recent_history.guid,
+                    'word_idx': recent_history.index,
+                    'section': recent_history.section,
+                }
+                recent_history.hard_delete()
+                return JsonResponse(data)
+            return JsonResponse({'message': 'No redaction history left for this instruction'}, status=500)
+        except Exception as e:
+            return JsonResponse({'message': 'Error: {e}'.format(e=e)}, status=500)
 
 
 @login_required(login_url='/accounts/login')
@@ -227,58 +216,29 @@ def undo_all(request):
         try:
             instruction_id = request.GET.get('instruction_id')
             instruction = Instruction.objects.get(pk=instruction_id)
-            recent_history = LibraryHistory.objects.filter(instruction=instruction).order_by('-id')
-            xpath_exist_list = list()                
 
-            data = dict()
-            data_list = list()
+            new_replace_words = list(LibraryHistory.objects.filter(
+                Q(action=LibraryHistory.ACTION_REPLACE) | Q(action=LibraryHistory.ACTION_REPLACE_ALL)
+            ).values_list('new', flat=True))
 
-            for history in recent_history:
-                if history.xpath not in xpath_exist_list:
-                    highlight_html = str()
-                    data_dict = dict()
-                    if history.action not in ['mRedact', 'rmRedact',]:
-                        highlight_html = '''
-                            <span class="highlight-library">
-                                <span class="bg-warning">{}</span>
-                                <span class="dropdown-options" data-xpath="{}">
-                                    <a href="#" class="highlight-redact">Redact</a>
-                                    <a href="javascript:;" class="highlight-replace">Replace</a>
-                                    <a href="#" class="highlight-replaceall">Replace all</a>
-                                </span>
-                            </span>
-                        '''.format(history.old, history.xpath)
+            old_replace_words = list(LibraryHistory.objects.filter(
+                Q(action=LibraryHistory.ACTION_REPLACE) | Q(action=LibraryHistory.ACTION_REPLACE_ALL)
+            ).values_list('old', flat=True))
 
-                        gp_org = instruction.gp_user.organisation
-                        library_object = Library.objects.filter(gp_practice=gp_org, key=history.old)
-                        for library in library_object:
-                            if not library.value:
-                                highlight_html = '''
-                                    <span class="highlight-library">
-                                        <span class="bg-warning">{}</span>
-                                        <span class="dropdown-options" data-xpath="{}">
-                                            <a href="#" class="highlight-redact">Redact</a>
-                                        </span>
-                                    </span>
-                                '''.format(history.old, history.xpath)
+            upper_new_replace_words = list(map(lambda x: x.upper(), new_replace_words))
 
-                    data_dict['action'] = history.action
-                    data_dict['old'] = history.old
-                    data_dict['new'] = history.new
-                    data_dict['text'] = highlight_html
-                    data_dict['xpath'] = history.xpath
-                    data_dict['key'] = history.key
+            # clear all Library history
+            LibraryHistory.objects.filter(instruction=instruction).hard_delete()
 
-                    xpath_exist_list.append(history.xpath)
-                    data_list.append(data_dict)
-                    history.hard_delete()
-                else:
-                    continue
-
-            data['history'] = data_list
-            return JsonResponse(data)
-        except:
-            return JsonResponse({'message': 'Error'})
+            # clear all redacted xpaths
+            AmendmentsForRecord.objects.filter(instruction=instruction).update(redacted_xpaths=[])
+            return JsonResponse({
+                'message': 'Undo all completed.',
+                'new_replace_words': upper_new_replace_words,
+                'old_replace_words': old_replace_words,
+            })
+        except Exception as e:
+            return JsonResponse({'message': 'Error: {e}'.format(e=e)}, status=500)
 
 
 @login_required(login_url='/accounts/login')
@@ -286,31 +246,18 @@ def manual_redact(request):
     if request.is_ajax():
         try:
             instruction_id = request.GET.get('instruction_id')
-            xpath = request.GET.get('xpath')
-            key = request.GET.get('key')
-            action = 'mRedact'
+            guid = request.GET.get('guid')
+            section = request.GET.get('section')
+            action = request.GET.get('action')
+
             instruction = Instruction.objects.get(pk=instruction_id)
-
-            last_action = LibraryHistory.objects.filter(
-                action__in=['mRedact', 'rmRedact'],
-                instruction= instruction,
-                xpath= xpath,
-            ).last()
-
-            if last_action:
-                if last_action.action == 'mRedact':
-                    action = 'rmRedact'
-
             library_history = LibraryHistory(
-                instruction= instruction,
-                action= action,
-                old= '',
-                new= '',
-                change_info= '',
-                xpath= xpath,
-                key= key
+                instruction=instruction,
+                action=action,
+                guid=guid,
+                section=section
             )
             library_history.save()
             return JsonResponse({'message': 'Complete'})
-        except:
-            return JsonResponse({'message': 'Error'})
+        except Exception as e:
+            return JsonResponse({'message': 'Error: {e}'.format(e=e)}, status=500)

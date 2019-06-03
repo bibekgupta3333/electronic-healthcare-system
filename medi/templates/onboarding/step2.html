@@ -22,14 +22,14 @@
                 <div class="card-header">
                     <div class="row">
                         <div class="col-md-6">
-                            <h5>About your users</h5>
+                            <h5>Create your account</h5>
                         </div>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="row subheader">
                         <div class="col-12">
-                            <p>Please create your eMR account to continue your Surgery Registration</p>
+                            <p>Please add your details below to continue your registration</p>
                         </div>
                     </div>
                     <div class="row form-group">
@@ -58,7 +58,7 @@
                     </div>
                     <div class="row form-group">
                         <div class="col-md-6">
-                            <p class="text-secondary">Your email address will be your username when you log into eMR.</p>
+                            <p class="text-secondary">Your email address will be your username when you log into eMR. Please note that usernames are case sensitive.</p>
                             <div class="row" id="email_form">
                                 <div class="col-md-4 title-pos">Email address <span class="red">*</span></div>
                                 {% bootstrap_field pm_form.email1 show_label=False form_group_class='col-md-7' placeholder='' %}
@@ -108,7 +108,7 @@
                         <div class="col-md-6">
                             <div class="row">
                                 <div class="col-md-4 title-pos">Mobile phone <span class="red">*</span></div>
-                                {% bootstrap_field pm_form.telephone_mobile show_label=False form_group_class='col-md-7' placeholder='' %}
+                                {% bootstrap_field pm_form.telephone_mobile show_label=False form_group_class='col-md-8' placeholder='' %}
                                 {% bootstrap_field pm_form.telephone_code %}
                             </div>
                         </div>
@@ -119,7 +119,7 @@
                 <div class="card-header">
                     <div class="row">
                         <div class="col-md-6">
-                            <h5>eMR Users</h5>
+                            <h5>Additional users</h5>
                         </div>
                     </div>
                 </div>
@@ -134,13 +134,13 @@
                         <table class="table table-bordered vertical-middle">
                             <thead>
                                 <tr>
-                                    <th style="width: 9%;">Title*</th>
-                                    <th style="width: 13%;">First Name*</th>
-                                    <th style="width: 13%;">Surname*</th>
-                                    <th style="width: 13%;">Email*</th>
-                                    <th style="width: 11%;">Role(GP, Other)</th>
+                                    <th style="width: 9%;">Title<span class="red">*</span></th>
+                                    <th style="width: 13%;">First Name<span class="red">*</span></th>
+                                    <th style="width: 13%;">Surname<span class="red">*</span></th>
+                                    <th style="width: 13%;">Email<span class="red">*</span></th>
+                                    <th style="width: 11%;">Role (GP, Other)</th>
                                     <th style="width: 30%;">
-                                        Mobile Phone*
+                                        Mobile Phone<span class="red">*</span>
                                         <p class="font-weight-light text-secondary mb-0">(required to set up two factor authentication)</p>
                                     </th>
                                 </tr>
@@ -187,10 +187,8 @@
             $('#progress_bar').css('width', '20%');
 
             $('#id_label').removeClass('text-danger');
-            $('#progress_bar').removeClass('bg-danger');
 
             $('#id_label').addClass('text-success');
-            $('#progress_bar').addClass('bg-success');
 
             $("#StrengthProgressBar").zxcvbnProgressBar({
                   passwordInput: "#id_password1",
@@ -271,7 +269,7 @@
             });
 
             $('#id_telephone_mobile').after('<div style="margin-left: 10px; display: inline; position: relative;">' +
-                                    '<img class="info-icon" id="phone_info_icon" src="{% static 'images/information-icon.png' %}">' +
+                                    '<img class="info-icon" id="phone_info_icon" src="{% static 'images/infoiconemr.png' %}">' +
                                     '<div id="phone_info">We require a mobile phone number in order to set up two-factor authentication, which is a very important security step.</div></div>');
             $('#phone_info_icon').on("mouseenter", function() {
                 $('#phone_info').show();

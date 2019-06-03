@@ -14,31 +14,8 @@
 {% endblock %}
 
 {% block Content %}
-      <div class="modal fade" id="selectPatientModal" tabindex="-1" aria-hidden="true">
-          <div class="modal-dialog" role="document">
-              <div class="modal-content modal-select-patient">
-                  <form method="POST" action="" id="allocateInstructionForm">
-                      {% csrf_token %}
-                      <div class="modal-header">
-                          <h5 class="modal-title" id="exampleModalLabel">Patient confirmation</h5>
-                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                              <span aria-hidden="true">&times;</span>
-                          </button>
-                      </div>
-                      <div class="modal-body">
-                          <h6>Patient confirmed.</h6>
-                          <p>Next steps:</p>
-                          {% bootstrap_field allocate_instruction_form.allocate_options show_label=False %}
-                          {% bootstrap_field allocate_instruction_form.gp_practitioner form_group_class='form-group col-md-8 allocate-gp' show_label=False %}
-                      </div>
-                      <div class="modal-footer">
-                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Go back</button>
-                          <button type="submit" class="btn btn-primary" id="submitAllocateButton" disabled>Okay</button>
-                      </div>
-                  </form>
-              </div>
-          </div>
-      </div>
+      <!-- Proceeding consent contact modal -->
+      {% include 'instructions/modal/proceed_consent_contact.html' %}
       <div class="container-fluid">
           <div class="card-deck">
               <div class="card">
@@ -87,9 +64,11 @@
                                   </div>
                               </div>
                           {% endif %}
-                          <div class="patient-consent">
-                              <button class="btn btn-consent" data-toggle="modal" data-target="#pdfModal"><i class="fas fa-file-medical icon"></i> View consent form</button>
-                          </div>
+                          {% if instruction.client_user %}
+                            <div class="patient-consent">
+                                <button class="btn btn-consent" data-toggle="modal" data-target="#pdfModal"><i class="fas fa-file-medical icon"></i> View consent form</button>
+                            </div>
+                          {% endif %}
                       </div>
                   </div>
               </div>
@@ -109,10 +88,12 @@
                               <div class="col-md-2">{{ patient.date_of_birth }}</div>
                               <div class="col-md-4">{{ patient|patient_address }}</div>
                               <div class="col-md-2 select-btn">
-                                  <button data-instruction_id="{{ instruction.id }}"
-                                          data-instruction_type="{{ instruction.type }}"
-                                          data-patient_ref_id="{{ patient.ref_id }}"
-                                          class="btn btn-primary selectPatientButton">
+                                  <button data-instruction_id = "{{ instruction.id }}"
+                                          data-instruction_type = "{{ instruction.type }}"
+                                          data-client_info = "{{ instruction.client_user }}"
+                                          data-patient_ref_id = "{{ patient.ref_id }}"
+                                          data-viewline_url = "{% url 'instructions:view_pipeline' %}"
+                                          class = "btn btn-primary selectPatientButton">
                                       Select
                                   </button>
                                </div>
@@ -197,40 +178,76 @@
         </div>
       </div>
     </div>
+
+    <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg bg-info">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="col-12 text-center mt-2">
+                            <img src="{% static 'images/custom_images/loading.gif'%}" class="img-fluid">
+                            <div class="col-12">&nbsp;</div>
+                            <h4>Patient : <strong>{{ patient_full_name }}</strong></h4>
+                            <h4 class="mt-2">The medical record or report will be generated soon.</h4>
+                            <label class="text-danger mt-4">Please don't leave this page. Process is running ....</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
 {% endblock %}
 {% block Script %}
     <script src="{% static 'medicalreport/js/medicalreport.js' %}"></script>
     <script>
         $(document).ready(function () {
+            function proceed_action() {
+                $('#AsyncOptionModal').modal({
+                    backdrop: "static"
+                });
+            }
+
+            $('#ProceedContinueButton').on('click', function () {
+                if ($('#id_proceed_option_0').is(':checked')){
+                    $('#AsyncOptionModal').modal('hide');
+                    $('#loadingModal').modal({backdrop: "static"});
+                    navigate_action(false);
+                }
+                else if ($('#id_proceed_option_1').is(':checked')) {
+                    $('#AsyncOptionModal').modal('hide');
+                    window.location = $('.selectPatientButton').data('viewline_url');
+                }
+            });
+
+            function navigate_action(flag_modal = true) {
+                let instruction_id = $('.selectPatientButton').data('instruction_id');
+                let instruction_type = $('.selectPatientButton').data('instruction_type');
+                let patient_ref_id = $('.selectPatientButton').data('patient_ref_id');
+                let action_url = "{% url 'medicalreport:select_patient' 1 2 %}";
+
+                if (instruction_type == "SARS" && flag_modal){
+                    action_url = "{% url 'instructions:consent_contact' 1 2 %}";
+                }
+
+                action_url = action_url
+                  .replace('1', '+=')
+                  .replace('2', '+*')
+                  .replace('+=', instruction_id)
+                  .replace('+*', patient_ref_id);
+                window.location = action_url;
+            }
+
             $('.selectPatientButton').on('click', function () {
-                let instruction_id = $(this).data('instruction_id');
-                let instruction_type = $(this).data('instruction_type');
-                let patient_ref_id = $(this).data('patient_ref_id');
-                let action_url = '/medicalreport/'+ instruction_id+'/select-patient/' + patient_ref_id + '/';
-                $('#allocateInstructionForm').attr('action', action_url);
-                if (instruction_type == "SARS"){
-                    window.location = '/instruction/consent-contact/'+  instruction_id + '/select-patient/' + patient_ref_id;
-                }else {
-                    $('#selectPatientModal').modal('show');
+                let client_info = $(this).data('client_info');
+
+                if (client_info != 'None') {
+                    proceed_action();
+                }
+                else {
+                    navigate_action();
                 }
             });
-
-            $('.allocate-gp').insertAfter('label[for="id_allocate_options_1"]');
-            $('.radio').on('change', function () {
-                if($('input[type="radio"]:checked').val() != '1'){
-                    $('#submitAllocateButton').prop('disabled', false);
-                } else {
-                    $('#submitAllocateButton').prop('disabled', true);
-                    if($('#id_gp_practitioner').val()){
-                        $('#submitAllocateButton').prop('disabled', false);
-                    }
-                }
-            });
-
-            $('#submitAllocateButton').on(function () {
-                $('#allocateInstructionForm').submit();
-            })
         });
     </script>
 {% endblock %}

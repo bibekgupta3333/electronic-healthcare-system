@@ -17,41 +17,7 @@
     <div class="card-deck instruction">
         <form method="POST" id="preferencesForm" action="{% url 'accounts:view_account' %}" class="col-md-12 px-0">
             {% csrf_token %}
-            <div class="card contactPreferences mt-2">
-                <div class="card-header">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h5>Contact Preferences</h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="row mt-2">
-                        <div class="col-md-4"><label>Incoming Report Request Notifications: </label></div>
-                        <div class="col-md-6">
-                            {% bootstrap_field gp_preferences_form.notification size='small' show_label=false %}
-                        </div>
-                    </div>
-                    <div class="row mt-2">
-                        <div class="col-md-4"><label>MediData can contact me for feedback about the platform </label></div>
-                        <div class="col-md-8">
-                            <div class="pretty p-default">
-                                {{ gp_preferences_form.contact_feedback }}
-                                <div class="state p-primary"><label></label></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mt-2">
-                        <div class="col-md-4"><label>Please contact me for updates on features and other developments </label></div>
-                        <div class="col-md-8">
-                            <div class="pretty p-default">
-                                {{ gp_preferences_form.contact_updates }}
-                                <div class="state p-primary"><label></label></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
             {% if organisation_fee_data %}
                 {% if perms.instructions.authorise_bank_account or perms.instructions.amend_bank_account %}
                     <div id="bank_detail_block">
@@ -74,12 +40,18 @@
                                     <div class="col-md-3">Bank Account Number</div>
                                     <div class="col-md-4">
                                         {% bootstrap_field bank_details_form.payment_bank_account_number placeholder='' %}
+                                        <div class="invalid-feedback">
+                                            <label id="invalid_bank_number" style="display:none">The account number is too short, as it must be eight digits long.</label>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-3">Bank Account Sort Code</div>
                                     <div class="col-md-4">
                                         {% bootstrap_field bank_details_form.payment_bank_sort_code placeholder='' %}
+                                        <div class="invalid-feedback">
+                                            <label id="invalid_sort_code" style="display:none">The sort code is too short, as it must be six digits long.</label>
+                                        </div>
                                     </div>
                                 </div>
                                 {% if perms.instructions.amend_bank_account %}
@@ -204,27 +176,14 @@
                 var el = $(this);
                 copyToClipboard(text, el);
             });
-            $('#id_notification').on('change', function(){
-                $.ajax({
-                    url : "{% url 'accounts:view_account' %}",
-                    type: 'POST',
-                    data : $('#preferencesForm').serialize()
-                })
-                .done(function(){
-                    create_alert('Notification setting has been changed.', 'success');
-                })
-                .fail(function(){
-                    create_alert('Something went wrong, please try again.', 'error');
-                });
-            });
 
             $('#update_bank_details').click(function() {
                 $.ajax({
                     url: $('#update_bank_details').attr("action"),
                     type: 'POST',
                     data: $('#preferencesForm').serialize()+'&update_bank_details=1'
-                }).done(function() {
-                    create_alert('Bank details setting has been changed.', 'success');
+                }).done(function(response) {
+                    create_alert(response['message'], 'success');
                 }).fail(function() {
                     create_alert('Something went wrong, please try again.', 'error');
                 });
@@ -258,6 +217,29 @@
                 $('#id_payment_bank_account_number').prop('disabled', true);
                 $('#id_payment_bank_sort_code').prop('disabled', true);
             {% endif %}
+
+            // Check range sortcode - bank Number
+            $('#id_payment_bank_sort_code').change( function() {
+                var sort_code_value = $('#id_payment_bank_sort_code').val();
+                if(sort_code_value.length < 6) {
+                    $('#id_payment_bank_sort_code').addClass('is-invalid');
+                    $('#invalid_sort_code').show();
+                } else {
+                    $('#id_payment_bank_sort_code').removeClass('is-invalid');   
+                    $('#invalid_sort_code').hide();
+                }
+            });
+
+            $('#id_payment_bank_account_number').change( function() {
+                var bank_number_value = $('#id_payment_bank_account_number').val();
+                if(bank_number_value.length < 8){
+                    $('#id_payment_bank_account_number').addClass('is-invalid');
+                    $('#invalid_bank_number').show();
+                } else {
+                    $('#id_payment_bank_account_number').removeClass('is-invalid');   
+                    $('#invalid_bank_number').hide();
+                }
+            });
         });
     </script>
 {% endblock %}

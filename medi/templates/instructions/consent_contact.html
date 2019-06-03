@@ -77,19 +77,14 @@
                     </div>
                     <div class="card mb-2">
                         <div class="card-body">
-                            <div class="card-title">1. Direct to the patient (if this option is applicable, please select one option)</div>
+                            <div class="card-title">1. Direct to the patient</div>
                             <div class="panel-group driving-license-settings" id="accordion">
                                 <div class="panel panel-default">
                                     <div class="panel-heading">
                                         <h4 class="panel-title"> </h4>
-                                        <div class="checkbox col-md-12" id="mdx-consent">
-                                            <label data-target="#collapse-to-patient" class="collapse-check">
-                                                <input type="checkbox" class="patient-check" id="ch-mdx-consent"> Use MDX Dual Consent
-                                            </label>
-                                        </div>
                                         <div class="checkbox col-md-12" id="confirmed-agreement">
                                             <label data-target="#collapse-to-patient" class="collapse-check">
-                                                <input type="checkbox" class="patient-check" id="ch-confirmed-agreement"> Confirmed to patient that agreement exists with Medidata Exchange Limited
+                                                <input type="checkbox" class="patient-check" name="conirm-agreement" id="ch-confirmed-agreement"> Confirmed to patient that agreement exists with Medidata Exchange Limited
                                             </label>
                                         </div>
                                     </div>
@@ -97,44 +92,12 @@
                                         <div class="panel-body">
                                             <div class="driving-license-kind">
                                                 <div class="row">
-                                                    <div class="col-4" id="dual-consent">
-                                                        <div class="row">
-                                                            <div class="col-md-12 mt-2">
-                                                                <div class="col-12 text-center">
-                                                                    <h6><strong>SAR dual consent</strong></h6>
-                                                                </div>
-                                                                <div class="col-12">&nbsp;</div>
-                                                                <div class="col-12">
-                                                                    <button class="btn btn-primary btn-lg btn-block" type="button" id="downloadBtn">
-                                                                        Print Pre-Populated Consent Form
-                                                                    </button>
-                                                                    <div class="col-12">&nbsp;</div>
-                                                                    Once printed off and signed, 
-                                                                    scan document to a folder on your system, and upload the document to this screen by using the ‘browse’ button below.
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-12">&nbsp;</div>
-
-                                                            <!-- MDX Dual Consent Form Upload -->
-                                                            <div class="col-12">
-                                                                <div class="col-12">
-                                                                    <div class="form-group">
-                                                                        <div class="file-loading">
-                                                                            <input type="hidden" name="mdx_consent_loaded" id="id_mdx_consent_loaded" />
-                                                                            {% bootstrap_field mdx_consent_form.mdx_consent show_label=false %}
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-4 d-flex justify-content-center align-items-center text-center patient-content">
+                                                    <div class="col-6 d-flex justify-content-center align-items-center text-center patient-content">
                                                         <div class="alert alert-dark alert-dismissible fade show">
                                                             <strong>Warning:</strong> It is the Surgery's responsibility to ensure that all consent forms are signed correctly by the patient and the Surgery, where appropriate.
                                                         </div>
                                                     </div>
-                                                    <div class="col-4 d-flex justify-content-center align-items-center patient-content">
+                                                    <div class="col-6 d-flex justify-content-center align-items-center patient-content">
                                                         <div class="col-12">
                                                             <div class="col-12 text-center">
                                                                 <h6><strong>Contact information</strong></h6>
@@ -169,13 +132,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div id="collapseTwo" class="panel-collapse collapse in">
-                                        <div class="panel-body">
-                                            <div class="driving-license-kind">
-                                                <span>Collapse for Confirmed agreement</span>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -188,15 +144,80 @@
                                     <div class="panel-heading">
                                         <h4 class="panel-title"> </h4>
                                         <div class="checkbox col-md-6" id="report-third-party">
-                                            <label data-target="#collapseThird" class="collapse-check">
-                                                <input type="checkbox" name="" id="ch-report-third-party"> Send report back to a third party
+                                            <label data-target="#third-party-section" class="collapse-check">
+                                                <input type="checkbox" name="send-to-third" id="ch-report-third-party"> Send report back to a third party
                                             </label>
                                         </div>
                                     </div>
-                                    <div id="collapseThird" class="panel-collapse collapse in">
+                                    <div id="third-party-section" class="panel-collapse collapse in">
                                         <div class="panel-body">
                                             <div class="driving-license-kind">
-                                                <span>Collapse for sending report back to a third party</span>
+                                                <div class="row">
+                                                    <div class="col-md-12 mt-3">
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                                <div class="col-md-12">
+                                                                    <div class="row form-group text-center">
+                                                                        <div class="col-md-6">
+                                                                            <div class="row">
+                                                                                <div class="col-md-5 title-pos">Company <br>(if applicable)</div>
+                                                                                {% bootstrap_field third_party_form.company show_label=False form_group_class='col-md-7' placeholder='' %}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-md-6">
+                                                                            <div class="row">
+                                                                                <div class="col-md-5 title-pos mt-2">Contact Name </div>
+                                                                                {% bootstrap_field third_party_form.contact_name show_label=False form_group_class='col-md-7' placeholder='' %}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="row form-group text-center">
+                                                                        <div class="col-md-6">
+                                                                            <div class="row">
+                                                                                <div class="col-md-5 title-pos">Case Reference <br>(if known) </div>
+                                                                                {% bootstrap_field third_party_form.case_reference show_label=False form_group_class='col-md-7' placeholder='' %}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="row form-group text-center">
+                                                                        <div class="col-md-6">
+                                                                            <div class="row">
+                                                                                <div class="col-md-5 title-pos mt-2">Email </div>
+                                                                                {% bootstrap_field third_party_form.email_1 show_label=False form_group_class='col-md-7' placeholder='' %}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-md-6">
+                                                                            <div class="row">
+                                                                                <div class="col-md-5 title-pos mt-2">Confirm Email </div>
+                                                                                {% bootstrap_field third_party_form.email_2 show_label=False form_group_class='col-md-7' placeholder='' %}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-12">
+                                                                    <div class="row">
+                                                                        <div class="col-md-6">
+                                                                            <div class="row">
+                                                                                <div class="col-md-5 text-center">
+                                                                                    <p class="font-weight-bold mt-4 mb-4">Two factor authentication.</p>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="row form-group">
+                                                                                <div class="col-md-5 text-center">
+                                                                                    <label for="id_office_phone_number" class="col-form-label">Office Phone (for solicitor for example)</label>
+                                                                                </div>
+                                                                                <div class="col-md-7">
+                                                                                    {% bootstrap_field third_party_form.office_phone_number size='small' show_label=false placeholder='' %}
+                                                                                    {% bootstrap_field third_party_form.office_phone_number_code %}
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -302,6 +323,35 @@
                     </div>
                 {% endif %}
             </div>
+            <div class="col-md-12 mt-4">
+                <div class="card">
+                    <div class="card-header"><h5>Consent (optional)</h5></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-10 mx-auto" id="dual-consent">
+                                <div class="row">
+                                    <!-- MDX Dual Consent Form Upload -->
+                                    <div class="col-6">
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <div class="file-loading">
+                                                    <input type="hidden" name="mdx_consent_loaded" id="id_mdx_consent_loaded" />
+                                                    {% bootstrap_field mdx_consent_form.mdx_consent show_label=false %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 d-flex justify-content-center align-items-center text-center patient-content">
+                                        <div class="alert alert-dark alert-dismissible fade show">
+                                            <strong>Warning:</strong> It is the Surgery's responsibility to ensure that all consent forms are signed correctly by the patient and the Surgery, where appropriate.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </form>
     </div>
     <div id="emailDialog1" class="emailModal well">
@@ -364,8 +414,9 @@
             </form>
         </div>
     </div>
+
     <input type="button" id="permit_modal_button" data-toggle="modal" data-target="#permit_modal" style="display: none;">
-    <!-- Modal -->
+    <!-- Warnning Modal For No Selecting Case -->
     <div class="modal fade" id="permit_modal" tabindex="-1" role="dialog" aria-labelledby="permitModalTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -382,24 +433,79 @@
             </div>
         </div>
     </div>
-    <div id="noSarsConsent" class="well">
-        <h4><i class="fas fa-exclamation-triangle"></i>Warning</h4>
-        <p>Are you sure you do not wish to upload anything in the SAR Patient Request section? If you are sure please press proceed</p>
-        <button class="rightBtn btn btn-primary mr-1" id="sarsProceed">Proceed</button>
-        <button class="noSarsConsent_close rightBtn btn btn-default mr-1">Go back</button>
+
+    <input type="button" id="noMdxConsent" data-toggle="modal" data-target="#no_mdx_modal" style="display: none;">
+    <!-- Warnning Modal For No Uploading MDX File Case -->
+    <div class="modal fade" id="no_mdx_modal" tabindex="-1" role="dialog" aria-labelledby="noMDXModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white text-center">
+                    <h5 class="modal-title mx-auto" id="ModalLongTitle">Warning</h5>
+                </div>
+                <div class="modal-body bg-white" style="color: black; text-align: center;">
+                You have not submitted the MDX dual consent form. Medidata is therefore holding data in the SAR solely on behalf of the Surgery. If you wish to provide an electronic copy of the SAR to the patient, you <strong>MUST</strong> upload a dual consent form.
+                </div>
+                <div class="modal-footer bg-white">
+                    <button type="button" class="btn btn-secondary btn-lg mx-auto" data-dismiss="modal">Go Back</button>
+                </div>
+            </div>
+        </div>
     </div>
-    <div id="noMdxConsent" class="well">
-        <h4><i class="fas fa-exclamation-triangle"></i>&nbsp;&nbsp;Warning</h4><br>
-        <p>You have not submitted the MDX dual consent form. Medidata is therefore holding data in the SAR solely on behalf of the Surgery. If you wish to provide an electronic copy of the SAR to the patient, you <strong>MUST</strong> upload a dual consent form.</p>
-        <button class="noMdxConsent_close rightBtn btn btn-success mr-1" id="noMdxConsent_btn_process">Process</button>
-        <button class="noMdxConsent_close rightBtn btn btn-primary mr-1" id="noMdxConsent_btn_back">Go back</button>
+
+    <input type="button" id="noEmailAddress" data-toggle="modal" data-target="#no_email_address" style="display: none;">
+    <!-- Warnning Modal For No Inputing EMAIL Case -->
+    <div class="modal fade" id="no_email_address" tabindex="-1" role="dialog" aria-labelledby="noEMAIL" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white text-center">
+                    <h5 class="modal-title mx-auto" id="ModalLongTitle">Warning</h5>
+                </div>
+                <div class="modal-body bg-white" style="color: black; text-align: center;">
+                No email address has been provided for the patient. If no email address is provided, MDX will not be able to provide the patient with their medical record, and the GP Surgery will need to provide directly.
+                </div>
+                <div class="modal-footer bg-white">
+                    <button type="button" class="btn btn-secondary btn-lg mx-auto" data-dismiss="modal">Go Back</button>
+                </div>
+            </div>
+        </div>
     </div>
-    <div id="noEmailAddress" class="well">
-        <h4><i class="fas fa-exclamation-triangle"></i>Warning</h4>
-        <p>No email address has been provided for the patient. If no email address is provided, MDX will not be able to provide the patient with their medical record, and the GP Surgery will need to provide directly</p>
-        <button class="noEmailAddress_close rightBtn btn btn-primary mr-1" id="emailProceed">Proceed</button>
-        <button class="noEmailAddress_close rightBtn btn btn-default mr-1 enterEmailBtn">Enter Email</button>
+
+    <input type="button" id="noPhoneEmail" data-toggle="modal" data-target="#no_phone_email_address" style="display: none;">
+    <!-- Warnning Modal For No Inputing Phone and Email Case -->
+    <div class="modal fade" id="no_phone_email_address" tabindex="-1" role="dialog" aria-labelledby="noPhoneEMAIL" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white text-center">
+                    <h5 class="modal-title mx-auto" id="ModalLongTitle">Warning</h5>
+                </div>
+                <div class="modal-body bg-white" style="color: black; text-align: center;">
+                Please input email and phone number for third party authentication.
+                </div>
+                <div class="modal-footer bg-white">
+                    <button type="button" class="btn btn-secondary btn-lg mx-auto" data-dismiss="modal">Go Back</button>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <input type="button" id="wrongFileType" data-toggle="modal" data-target="#wrong_file_type" style="display: none;">
+    <!-- Warnning Modal In Case Uploaded File Type Is Wrong -->
+    <div class="modal fade" id="wrong_file_type" tabindex="-1" role="dialog" aria-labelledby="wrongFileExtension" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white text-center">
+                    <h5 class="modal-title mx-auto" id="ModalLongTitle">Warning</h5>
+                </div>
+                <div class="modal-body bg-white" style="color: black; text-align: center;">
+                Sorry, you may only upload a <strong>PDF</string> file.
+                </div>
+                <div class="modal-footer bg-white">
+                    <button type="button" class="btn btn-secondary btn-lg mx-auto" data-dismiss="modal">Go Back</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="printModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -448,32 +554,23 @@
         var isPopup = false;
         var validations ={
             email: [/^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/, 'Please enter a valid email address']
-        };
+        }
 
-        $('.patient-check').click(function(e) {
-            $('.patient-check').not(this).prop('checked', false);
-        });
-
-        $('#ch-mdx-consent').bind('click dblclick', function(evt) {
-            if ($(this).is(':checked')) {
-                $('#dual-consent').show();
-                $(".patient-content").removeClass("col-6");
-                $(".patient-content").addClass("col-4");
-                $('#collapse-to-patient').slideDown('slow');
-            } else {
-                $('#collapse-to-patient').slideUp('slow');
-            }
-        })
         $('#ch-confirmed-agreement').bind('click dblclick', function(evt) {
             if ($(this).is(':checked')) {
-                $('#dual-consent').hide();
-                $(".patient-content").removeClass("col-4");
-                $(".patient-content").addClass("col-6");
                 $('#collapse-to-patient').slideDown('slow');
             } else {
                 $('#collapse-to-patient').slideUp('slow');
             }
-        })
+        });
+
+        $('#ch-report-third-party').bind('click dblclick', function(evt) {
+            if ($(this).is(':checked')) {
+                $('#third-party-section').slideDown('slow');
+            } else {
+                $('#third-party-section').slideUp('slow');
+            }
+        });
 
         $(".emailModal").popup({
             transition: 'all 0.3s',
@@ -481,18 +578,6 @@
             onclose: function() {
                 isPopup = false;
             }
-        });
-        $("#noSarsConsent").popup({
-            transition: 'all 0.3s',
-            scrolllock: true
-        });
-        $("#noMdxConsent").popup({
-            transition: 'all 0.3s',
-            scrolllock: true
-        });
-        $("#noEmailAddress").popup({
-            transition: 'all 0.3s',
-            scrolllock: true
         });
 
         function proceedAction() {
@@ -525,7 +610,10 @@
 
         setUpTel("id_patient_telephone_mobile", "id_patient_telephone_code");
         setUpTel("id_patient_alternate_phone", "id_patient_alternate_code");
+        setUpTel("id_office_phone_number", "id_office_phone_number_code");
+
         $('.InstructionPatientForm input').attr('readonly', true);
+
         if((navigator.userAgent.indexOf("MSIE") != -1 ) || (!!document.documentMode == true )){
             $("#id_mdx_consent").fileinput({
                 theme: 'fas',
@@ -565,6 +653,7 @@
                 {% endif %}
             });
         }
+
         $('#id_patient_email').blur(function(){
             validation = new RegExp(validations['email'][0]);
             if ($('#id_patient_email').val() !='' && !validation.test(this.value) && !isPopup){
@@ -590,55 +679,52 @@
                 proceedAction();
             }, 200);
         });
-        $('#emailProceed').click(function(){
-            $('#id_next_step').val('proceed');
-            proceedAction();
-        });
+
         $('#proceedBtn').click(function(){
-            $('#proceedBtn').blur();
+            var mdx_loaded = $('.file-caption-name').last().attr('title');
+            var is_allowed = true;
 
-            if (!$('#ch-mdx-consent').is(':checked') &&
-                !$('#ch-confirmed-agreement').is(':checked') &&
-                !$('#ch-report-third-party').is(':checked')) {
-                $('#permit_modal_button').click();
+            if (mdx_loaded) {
+                file_extension = mdx_loaded.split('.').pop();
+
+                if (file_extension != 'pdf') {
+                    $('#wrongFileType').click();
+                    is_allowed = false;
+                }
             }
-            else {
-                var mdx_loaded = $('.file-caption-name').last().attr('title');
-                var is_allowed = true;
+            if (is_allowed) {
+                $('#proceedBtn').blur();
 
-                if ($('#ch-mdx-consent').is(':checked') || $('#ch-confirmed-agreement').is(':checked')) {
-                    if ($('#dual-consent').is(":visible")) {
-                        if(!mdx_loaded) {
-                            $('#noMdxConsent').popup('show');
-                            $('#id_mdx_consent_loaded').val('');
+                if (!$('#ch-confirmed-agreement').is(':checked') &&
+                    !$('#ch-report-third-party').is(':checked')) {
+                    $('#permit_modal_button').click();
+                }
+                else {
+                    if ($('#ch-confirmed-agreement').is(':checked') && $('#id_patient_email').val() == '') {
+                        $('#noEmailAddress').click();
+                        is_allowed =false;
+                    }
+                    if (is_allowed && $('#ch-report-third-party').is(':checked')) {
+                        if (!$('#id_email_1').val() || !$('#id_email_2').val() || !$('#id_office_phone_number').val()) {
+                            $('#noPhoneEmail').click();
                             is_allowed = false;
+                        }
+                    }
+                    if (is_allowed) {
+                        if(!mdx_loaded) {
+                            $('#id_mdx_consent_loaded').val('');
                         }
                         else {
                             $('#id_mdx_consent_loaded').val('loaded');
-                            is_allowed = true;
                         }
-                    }
-                    if (is_allowed && $('#id_patient_email').val() == '') {
-                        $('#noEmailAddress').popup('show');
-                        is_allowed =false;
-                    }
-
-                    if (is_allowed) {
-                        $('#id_mdx_consent_loaded').val('loaded');
                         $('#id_next_step').val('proceed');
+
                         proceedAction();
                     }
                 }
             }
         });
-        $('#noMdxConsent_btn_process').click( function() {
-            $('#id_mdx_consent_loaded').val('loaded');
-            $('#id_next_step').val('proceed');
-            proceedAction();
-        });
-        $('#noMdxConsent_btn_back').click( function() {
-            $('#noMdxConsent').modal('hide');
-        });
+
         $('#id_mdx_consent').on('change', function(){
             var mdx_loaded = $('.file-caption-name').last().attr('title');
             if (mdx_loaded){
@@ -654,7 +740,7 @@
                 $('#id_mdx_consent_loaded').val('');
             }
             $('#id_next_step').val('view_pipeline');
-            proceedAction();
+            $('#consentContactForm').submit();
         });
         $('.enterEmailBtn').click(function(){
             $('#id_patient_email').focus();

@@ -182,6 +182,7 @@ STATIC_ROOT = 'static'
 STATIC_URL = '/static/'
 
 EMIS_API_HOST = 'http://medi2data.net:9443'
+PREFIX_EMIS_USER = 'emr'
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static/'),
@@ -285,3 +286,6 @@ NEW_INSTRUCTION_SEND_MAIL_TO_MEDI = False
 
 # Set False for disable site_control
 SITE_CONTROL = True
+
+# Default timeout session by django
+DEFAULT_SESSION_COOKIE_AGE = 1209600

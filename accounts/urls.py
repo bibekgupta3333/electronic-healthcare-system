@@ -7,6 +7,7 @@ app_name = 'accounts'
 urlpatterns = (
     path('locked/', views.locked_out, name='locked_out'),
     path('view-account/', views.account_view, name='view_account'),
+    path('view-fee/', views.account_view, name='view_fee'),
     path('view-users/', views.view_users, name='view_users'),
     path('view-profile/', views.view_profile, name='view_profile'),
     path('create-user/', views.create_user, name='create_user'),

@@ -13,10 +13,12 @@ from accounts.forms import PMForm
 from services.emisapiservices.services import GetEmisStatusCode
 from organisations.models import OrganisationGeneralPractice
 from permissions.functions import generate_gp_permission
+from payment.models import GpOrganisationFee, OrganisationFeeRate
 from common.functions import get_url_page
 import random
 import string
 import logging
+from medi.settings.common import PREFIX_EMIS_USER
 
 
 event_logger = logging.getLogger('medidata.event')
@@ -28,202 +30,6 @@ def generate_password(initial_range: int, body_rage: int, tail_rage: int) -> str
     tail_password = random.choices(string.digits, k=tail_rage)
     password = ''.join(initial_password + body_password + tail_password)
     return password
-
-
-def sign_up(request: HttpRequest) -> HttpResponse:
-    surgery_form = SurgeryForm()
-    pm_form = PMForm()
-
-    if request.method == "POST":
-        surgery_form = SurgeryForm(request.POST)
-        pm_form = PMForm(request.POST)
-        selected_surgery_name = request.POST.get('surgery_name', '')
-        selected_practice_code = request.POST.get('practice_code', '')
-        selected_post_code = request.POST.get('postcode', '')
-
-        if surgery_form.is_valid() and pm_form.is_valid():
-            gp_organisation = surgery_form.save()
-            pm_form.save__with_gp(gp_organisation=gp_organisation)
-            if not surgery_form.cleaned_data.get('operating_system') == 'EMISWeb':
-                message_1 = 'Thank you for completing part one of the eMR registration process. It’s great to have you on board.'
-                message_2 = 'We will be in touch with you shortly to complete the set up process so that you can process SARs in seconds.'
-                message_3 = 'We look forward to working with you in the very near future. eMR Support Team'
-                return render(request, 'onboarding/emr_message.html', context={
-                    'message_1': message_1,
-                    'message_2': message_2,
-                    'message_3': message_3
-                })
-            if gp_organisation.practcode[:4] == 'TEST':
-                gp_organisation.operating_system_username = 'michaeljtbrooks'
-                gp_organisation.operating_system_salt_and_encrypted_password = 'Medidata2019'
-            else:
-                password = generate_password(initial_range=1, body_rage=12, tail_rage=1)
-                gp_organisation.operating_system_salt_and_encrypted_password = password
-                gp_organisation.operating_system_username = 'medidata_access'
-            gp_organisation.save()
-            event_logger.info('Onboarding: {gp_name}, sign up completed'.format(gp_name=gp_organisation.name))
-            new_pm_user = authenticate(
-                request,
-                email=pm_form.cleaned_data['email1'],
-                password=pm_form.cleaned_data['password1'],
-            )
-            login(request, new_pm_user)
-            return redirect('onboarding:emis_setup', practice_code=gp_organisation.practcode)
-
-        return render(request, 'onboarding/sign_up.html', {
-            'selected_surgery_name': selected_surgery_name,
-            'selected_practice_code': selected_practice_code,
-            'selected_post_code': selected_post_code,
-            'surgery_form': surgery_form,
-            'pm_form': pm_form,
-            'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
-        })
-
-    return render(request, 'onboarding/sign_up.html', {
-        'surgery_form': surgery_form,
-        'pm_form': pm_form,
-        'GET_ADDRESS_API_KEY': settings.GET_ADDRESS_API_KEY
-    })
-
-
-@login_required(login_url='/accounts/login')
-def emis_setup(request: HttpRequest, practice_code: str) -> HttpResponse:
-    header_title = "Sign up: eMR with EMISweb - please make sure to only minimise this browser tab, do not close this screen "
-    gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
-    reload_status = 0
-    if request.user.get_my_organisation() != gp_organisation:
-        return redirect('accounts:login')
-
-    if request.method == "POST":
-        surgery_update_form = SurgeryUpdateForm(request.POST)
-        if surgery_update_form.is_valid():
-            gp_organisation.operating_system_organisation_code = surgery_update_form.cleaned_data['emis_org_code']
-            gp_organisation.gp_operating_system = surgery_update_form.cleaned_data['operating_system']
-            gp_organisation.save()
-
-            event_logger.info('Onboarding: {gp_name}, EDITED surgery information completed'.format(gp_name=gp_organisation.name))
-            #   If User selected the another os. Will redirect to thank you Page.
-            if not gp_organisation.gp_operating_system == 'EMISWeb':
-                message_1 = 'Thank you for completing part one of the eMR registration process. It’s great to have you on board.'
-                message_2 = 'We will be in touch with you shortly to complete the set up process so that you can process SARs in seconds.'
-                message_3 = 'We look forward to working with you in the very near future. eMR Support Team'
-                return render(request, 'onboarding/emr_message.html', context={
-                    'message_1': message_1,
-                    'message_2': message_2,
-                    'message_3': message_3
-                })
-            reload_status = 1
-
-    surgery_update_form = SurgeryUpdateForm(initial={
-        'surgery_name': gp_organisation.name,
-        'surgery_code': gp_organisation.practcode,
-        'emis_org_code': gp_organisation.operating_system_organisation_code,
-        'operating_system': gp_organisation.gp_operating_system
-    })
-
-    return render(request, 'onboarding/emis_setup.html', {
-        'header_title': header_title,
-        'organisation_code': gp_organisation.operating_system_organisation_code,
-        'practice_code': gp_organisation.practcode,
-        'practice_password': gp_organisation.operating_system_salt_and_encrypted_password,
-        'surgery_update_form': surgery_update_form,
-        'reload_status': reload_status
-    })
-
-
-@login_required(login_url='/accounts/login')
-def emr_setup_final(request: HttpRequest, practice_code: str=None) -> HttpResponse:
-    gp_organisation = get_object_or_404(OrganisationGeneralPractice, pk=practice_code)
-    if request.user.get_my_organisation() != gp_organisation:
-        return redirect('accounts:login')
-    address = ' '.join([
-        gp_organisation.billing_address_street,
-        gp_organisation.billing_address_line_2,
-        gp_organisation.billing_address_line_3,
-        gp_organisation.billing_address_city,
-        gp_organisation.billing_address_state
-    ])
-
-    surgery_form = SurgeryEmrSetUpStage2Form(initial={
-        'surgery_name': gp_organisation.name,
-        'surgery_code': gp_organisation.practcode,
-        'address': address,
-        'postcode': gp_organisation.billing_address_postalcode,
-        'surgery_tel_number': gp_organisation.phone_onboarding_setup,
-        'surgery_email': gp_organisation.organisation_email
-    })
-
-    UserEmrSetUpStage2Formset = formset_factory(UserEmrSetUpStage2Form, validate_min=True, extra=4)
-    user_formset = UserEmrSetUpStage2Formset()
-    initial_band_model = OrganisationFeeRate.objects.filter(base=True).first()
-    bank_details_form = BankDetailsEmrSetUpStage2Form(initial={
-        'received_within_3_days': initial_band_model.pk if initial_band_model else ''
-    })
-    surgery_email_form = SurgeryEmailForm(instance=gp_organisation)
-
-    band_fee_rate_data = {}
-    for fee_structure in OrganisationFeeRate.objects.filter(default=True):
-        band_fee_rate_data[fee_structure.pk] = [
-            float(fee_structure.amount_rate_lvl_1),
-            float(fee_structure.amount_rate_lvl_2),
-            float(fee_structure.amount_rate_lvl_3),
-            float(fee_structure.amount_rate_lvl_4),
-        ]
-
-    if request.method == "POST":
-        home_page_link = request.scheme + '://' + get_url_page('home', request=request)
-        user_formset = UserEmrSetUpStage2Formset(request.POST)
-        bank_details_form = BankDetailsEmrSetUpStage2Form(request.POST)
-        surgery_email_form = SurgeryEmailForm(request.POST, instance=gp_organisation)
-        if user_formset.is_valid() and bank_details_form.is_valid() and surgery_email_form.is_valid():
-            created_user_list = []
-            surgery_email = surgery_email_form.save()
-            create_gp_payments_fee(bank_details_form, gp_organisation)
-            update_gp_organisation_bank_details(bank_details_form, gp_organisation)
-            if surgery_email.organisation_email:
-                html_message = loader.render_to_string('onboarding/surgery_email.html')
-                send_mail(
-                    'eMR successful set up',
-                    '',
-                    settings.DEFAULT_FROM,
-                    [surgery_email.organisation_email],
-                    fail_silently=True,
-                    html_message=html_message,
-                )
-            for user in user_formset:
-                if user.is_valid() and user.cleaned_data:
-                    created_user_dict = create_gp_user(gp_organisation, user_form=user.cleaned_data)
-                    if created_user_dict:
-                        created_user_list.append(created_user_dict)
-
-            for user in created_user_list:
-                html_message = loader.render_to_string('onboarding/emr_setup_2_email.html', {
-                    'user_email': user['general_pratice_user'].user.email,
-                    'user_password': user['password'],
-                    'home_page_link': home_page_link
-                })
-                send_mail(
-                    'eMR New User Account information',
-                    '',
-                    settings.DEFAULT_FROM,
-                    [user['general_pratice_user'].user.email],
-                    fail_silently=True,
-                    html_message=html_message,
-                )
-            if gp_organisation.gp_operating_system == 'EMISWeb' and gp_organisation.accept_policy:
-                gp_organisation.live =True
-                gp_organisation.save()
-            generate_gp_permission(gp_organisation)
-            event_logger.info('Onboarding: {gp_name}, final setup completed'.format(gp_name=gp_organisation.name))
-            return redirect('onboarding:emis_setup_success')
-
-    return render(request, 'onboarding/emr_setup_final.html', {
-        'surgery_form': surgery_form,
-        'user_formset': user_formset,
-        'bank_details_form': bank_details_form,
-        'surgery_email_form': surgery_email_form,
-        'band_fee_rate_data': band_fee_rate_data
-    })
 
 
 @login_required(login_url='/accounts/login')
@@ -280,8 +86,24 @@ def step1(request: HttpRequest) -> HttpResponse:
             else:
                 password = generate_password(initial_range=1, body_rage=12, tail_rage=1)
                 gp_organisation.operating_system_salt_and_encrypted_password = password
-                gp_organisation.operating_system_username = 'medidata_access'
+                gp_organisation.operating_system_username = PREFIX_EMIS_USER + gp_organisation.emis_org_code
             gp_organisation.save()
+
+            if not OrganisationFeeRate.objects.filter(default=True).exists():
+                OrganisationFeeRate.objects.create(
+                    name='Default Band',
+                    amount_rate_lvl_1=60,
+                    amount_rate_lvl_2=57,
+                    amount_rate_lvl_3=51,
+                    amount_rate_lvl_4=45,
+                    default=True
+                )
+
+            # setup default fee policy
+            GpOrganisationFee.objects.create(
+                gp_practice=gp_organisation,
+                organisation_fee=OrganisationFeeRate.objects.filter(default=True).first()
+            )
 
             surgery_email_form = SurgeryEmailForm(request.POST, instance=gp_organisation)
 
@@ -304,6 +126,7 @@ def step1(request: HttpRequest) -> HttpResponse:
         'surgery_form': surgery_form,
         'surgery_email_form': surgery_email_form,
     })
+
 
 def step2(request: HttpRequest, practice_code: str) -> HttpResponse:
     gp_organisation = get_object_or_404(OrganisationGeneralPractice, pk=practice_code)
@@ -352,6 +175,8 @@ def step2(request: HttpRequest, practice_code: str) -> HttpResponse:
         'user_formset': user_formset,
     })
 
+
+@login_required(login_url='/accounts/login')
 def step3(request: HttpRequest, practice_code: str) -> HttpResponse:
     header_title = "Sign up: eMR with EMISweb - please make sure to only minimise this browser tab, do not close this screen "
     gp_organisation = OrganisationGeneralPractice.objects.filter(practcode=practice_code).first()
@@ -364,6 +189,8 @@ def step3(request: HttpRequest, practice_code: str) -> HttpResponse:
         if surgery_update_form.is_valid():
             gp_organisation.operating_system_organisation_code = surgery_update_form.cleaned_data['emis_org_code']
             gp_organisation.gp_operating_system = surgery_update_form.cleaned_data['operating_system']
+            if gp_organisation.practcode[:4] != 'TEST':
+                gp_organisation.operating_system_username = PREFIX_EMIS_USER + surgery_update_form.cleaned_data['emis_org_code']
             gp_organisation.save()
 
             event_logger.info('Onboarding: {gp_name}, EDITED surgery information completed'.format(gp_name=gp_organisation.name))
@@ -386,10 +213,14 @@ def step3(request: HttpRequest, practice_code: str) -> HttpResponse:
         'operating_system': gp_organisation.gp_operating_system
     })
 
+    request.session.set_expiry(settings.DEFAULT_SESSION_COOKIE_AGE)
+    practice_username = PREFIX_EMIS_USER + gp_organisation.operating_system_organisation_code
+
     return render(request, 'onboarding/step3.html', {
         'header_title': header_title,
         'organisation_code': gp_organisation.operating_system_organisation_code,
         'practice_code': gp_organisation.practcode,
+        'practice_username': practice_username,
         'practice_password': gp_organisation.operating_system_salt_and_encrypted_password,
         'surgery_update_form': surgery_update_form,
         'reload_status': reload_status
