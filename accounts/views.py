@@ -113,7 +113,13 @@ def account_view(request: HttpRequest) -> HttpResponse:
                 if bank_details_form.is_valid():
                     bank_details_form.save()
                     send_notification_org_email(request, gp_user, 'update_bank_details')
-                    return JsonResponse({'message': 'Bank details have been saved.'})
+                    return JsonResponse({'message': 'Bank details have been saved.'}, status=200)
+                else:
+                    return JsonResponse({'message': "Bank details can't saved. please try again."}, status=400)
+            gp_preferences_form = PracticePreferencesForm(request.POST, instance=practice_preferences)
+            if gp_preferences_form.is_valid():
+                gp_preferences_form.save()
+                return JsonResponse({'message': 'Bank details have been saved.'})
 
         organisation = multi_getattr(user, 'userprofilebase.generalpracticeuser.organisation', default=None)
         gp_fee_relation = GpOrganisationFee.objects.filter(gp_practice=organisation).first()
