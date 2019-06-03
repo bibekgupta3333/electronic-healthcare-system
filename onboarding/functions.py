@@ -1,3 +1,4 @@
+from django.http import HttpRequest
 from accounts.models import User, GeneralPracticeUser
 from accounts.models import GENERAL_PRACTICE_USER
 from organisations.models import OrganisationGeneralPractice

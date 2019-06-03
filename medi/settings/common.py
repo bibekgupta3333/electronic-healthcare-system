@@ -286,3 +286,6 @@ NEW_INSTRUCTION_SEND_MAIL_TO_MEDI = False
 
 # Set False for disable site_control
 SITE_CONTROL = True
+
+# Default timeout session by django
+DEFAULT_SESSION_COOKIE_AGE = 1209600
