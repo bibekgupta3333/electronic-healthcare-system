@@ -108,7 +108,7 @@
                         <div class="col-md-6">
                             <div class="row">
                                 <div class="col-md-4 title-pos">Mobile phone <span class="red">*</span></div>
-                                {% bootstrap_field pm_form.telephone_mobile show_label=False form_group_class='col-md-7' placeholder='' %}
+                                {% bootstrap_field pm_form.telephone_mobile show_label=False form_group_class='col-md-8' placeholder='' %}
                                 {% bootstrap_field pm_form.telephone_code %}
                             </div>
                         </div>
@@ -269,7 +269,7 @@
             });
 
             $('#id_telephone_mobile').after('<div style="margin-left: 10px; display: inline; position: relative;">' +
-                                    '<img class="info-icon" id="phone_info_icon" src="{% static 'images/information-icon.png' %}">' +
+                                    '<img class="info-icon" id="phone_info_icon" src="{% static 'images/infoiconemr.png' %}">' +
                                     '<div id="phone_info">We require a mobile phone number in order to set up two-factor authentication, which is a very important security step.</div></div>');
             $('#phone_info_icon').on("mouseenter", function() {
                 $('#phone_info').show();
