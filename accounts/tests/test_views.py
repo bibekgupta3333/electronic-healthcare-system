@@ -140,8 +140,6 @@ class TestAccountView(TestAccountBase):
             HTTP_X_REQUESTED_WITH='XMLHttpRequest',
         )
         self.assertEqual(response.status_code, 200)
-        response_content = json.loads(response.content.decode('utf-8'))
-        self.assertEqual(response_content['status'], 'success')
 
     def test_update_bank_detail_fail_sort_code(self):
         bank_number = '12345678'
@@ -156,9 +154,7 @@ class TestAccountView(TestAccountBase):
             },
             HTTP_X_REQUESTED_WITH='XMLHttpRequest',
         )
-        self.assertEqual(response.status_code, 200)
-        response_content = json.loads(response.content.decode('utf-8'))
-        self.assertEqual(response_content['status'], 'error')
+        self.assertEqual(response.status_code, 400)
 
     def test_update_bank_detail_fail_bank_number(self):
         bank_number = '555'
@@ -173,9 +169,7 @@ class TestAccountView(TestAccountBase):
             },
             HTTP_X_REQUESTED_WITH='XMLHttpRequest',
         )
-        self.assertEqual(response.status_code, 200)
-        response_content = json.loads(response.content.decode('utf-8'))
-        self.assertEqual(response_content['status'], 'error')
+        self.assertEqual(response.status_code, 400)
 
     def test_update_bank_detail_fail_all_case(self):
         bank_number = '555'
@@ -190,9 +184,7 @@ class TestAccountView(TestAccountBase):
             },
             HTTP_X_REQUESTED_WITH='XMLHttpRequest',
         )
-        self.assertEqual(response.status_code, 200)
-        response_content = json.loads(response.content.decode('utf-8'))
-        self.assertEqual(response_content['status'], 'error')
+        self.assertEqual(response.status_code, 400)
 
 
 class TestManageUser(TestAccountBase):
