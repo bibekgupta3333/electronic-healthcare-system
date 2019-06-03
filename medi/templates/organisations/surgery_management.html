@@ -12,7 +12,7 @@
 
 {% block Content %}
     <div class="card-deck surgery-management">
-        <form method="POST" id="preferencesForm" action="{% url 'library:surgery_management' %}" class="col-md-12 px-0">
+        <form method="POST" id="preferencesForm" action="{% url 'organisations:surgery_management' %}" class="col-md-12 px-0">
             {% csrf_token %}
             <div class="card contactPreferences mt-2">
                 <div class="card-header">
@@ -58,7 +58,7 @@
         $(document).ready(function () {
             $('#id_notification').on('change', function(){
                 $.ajax({
-                    url : "{% url 'library:surgery_management' %}",
+                    url : "{% url 'organisations:surgery_management' %}",
                     type: 'POST',
                     data : $('#preferencesForm').serialize()
                 })

@@ -9,8 +9,6 @@ from django.http import JsonResponse
 from instructions.models import Instruction
 from instructions.views import calculate_next_prev
 from medicalreport.models import AmendmentsForRecord
-from accounts.models import GeneralPracticeUser, PracticePreferences
-from accounts.forms import PracticePreferencesForm
 
 from .models import Library, LibraryHistory
 from .tables import LibraryTable
@@ -75,40 +73,6 @@ def edit_library(request, event):
         'add_word_error_message': add_word_error_message,
         'edit_word_error_message': edit_word_error_message,
         'error_edit_link': error_edit_link
-    })
-
-
-@login_required(login_url='/accounts/login')
-def surgery_management(request):
-    header_title = "Surgery Management"
-    user = request.user
-    gp_user = GeneralPracticeUser.objects.get(
-        pk = user.userprofilebase.generalpracticeuser.pk)
-    gp_organisation = gp_user.organisation
-
-    try:
-        practice_preferences = PracticePreferences.objects.filter(
-            gp_organisation__practcode = gp_organisation.practcode).first()
-    except PracticePreferences.DoesNotExist:
-        practice_preferences = PracticePreferences()
-        practice_preferences.gp_organisation = gp_organisation
-        practice_preferences.notification = 'NEW'
-        practice_preferences.save()
-
-    if request.is_ajax():
-        gp_preferences_form = PracticePreferencesForm(
-            request.POST,instance = practice_preferences)
-
-        if gp_preferences_form.is_valid():
-            gp_preferences_form.save()
-            return JsonResponse({ 'message': 'Preferences have been saved.' })
-
-    gp_preferences_form = PracticePreferencesForm(
-        instance = practice_preferences)
-
-    return render(request, 'library/surgery_management.html', {
-        'header_title': header_title,
-        'gp_preferences_form': gp_preferences_form,
     })
 
 

@@ -1,14 +1,52 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpRequest, HttpResponse
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
 
+from accounts.models import GeneralPracticeUser, PracticePreferences
+from accounts.forms import PracticePreferencesForm
 from organisations.models import OrganisationGeneralPractice
 from typing import Union, Dict, Any
+
 
 def create_organisation(request: HttpRequest) -> HttpResponse:
     header_title = 'Add New Organisation'
     return render(request, 'organisations/create_organisation.html', {
         'header_title': header_title,
+    })
+
+
+@login_required(login_url='/accounts/login')
+def surgery_management(request):
+    header_title = "Surgery Management"
+    user = request.user
+    gp_user = GeneralPracticeUser.objects.get(
+        pk = user.userprofilebase.generalpracticeuser.pk)
+    gp_organisation = gp_user.organisation
+
+    try:
+        practice_preferences = PracticePreferences.objects.filter(
+            gp_organisation__practcode = gp_organisation.practcode).first()
+    except PracticePreferences.DoesNotExist:
+        practice_preferences = PracticePreferences()
+        practice_preferences.gp_organisation = gp_organisation
+        practice_preferences.notification = 'NEW'
+        practice_preferences.save()
+
+    if request.is_ajax():
+        gp_preferences_form = PracticePreferencesForm(
+            request.POST,instance = practice_preferences)
+
+        if gp_preferences_form.is_valid():
+            gp_preferences_form.save()
+            return JsonResponse({ 'message': 'Preferences have been saved.' })
+
+    gp_preferences_form = PracticePreferencesForm(
+        instance = practice_preferences)
+
+    return render(request, 'organisations/surgery_management.html', {
+        'header_title': header_title,
+        'gp_preferences_form': gp_preferences_form,
     })
 
 

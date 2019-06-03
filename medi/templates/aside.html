@@ -58,7 +58,7 @@
                 {% endif %}
                 {% if user.type == 'GP' %}
                     <li class="{% if request.resolver_match.url_name == 'surgery_management' %}active{% endif %}">
-                        <a href="{% url 'library:surgery_management' %}" ><i class="fas fa-hospital"></i>Surgery Management</a>
+                        <a href="{% url 'organisations:surgery_management' %}" ><i class="fas fa-hospital"></i>Surgery Management</a>
                     </li>
                 {% endif %}
                 <li class="{% if request.resolver_match.url_name == 'view_invoice_payment_pipeline' %}active{% endif %}">
