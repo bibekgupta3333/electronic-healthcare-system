@@ -1,6 +1,6 @@
 #patient-info-open-modal{
     position: fixed;
-    top: 0px;
+    top: 20px;
     margin: 8px;
     margin-left: -15px;
 }
@@ -21,14 +21,14 @@
 #report-toolbox-open-modal {
     position: fixed;
     top: 0px;
-    right: 400px;
+    right: 350px;
     margin: 8px;
 }
 
 #report-toolbox-modal {
     position: fixed;
     top: 35px;
-    right: 400px;
+    right: 350px;
     margin: 8px;
     box-shadow: 10px 10px 30px #88888857;
     border-top: solid;
