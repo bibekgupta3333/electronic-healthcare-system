@@ -355,8 +355,8 @@ class UserProfileBaseForm(forms.ModelForm):
 
 class BankDetailsForm(forms.ModelForm):
     payment_bank_holder_name = forms.CharField(max_length=255, required=False, label='', widget=forms.TextInput())
-    payment_bank_account_number = forms.CharField(max_length=255, required=False, label='', widget=forms.TextInput())
-    payment_bank_sort_code = forms.CharField(max_length=255, required=False, label='', widget=forms.TextInput())
+    payment_bank_account_number = forms.CharField(max_length=8, min_length=8, required=False, label='', widget=forms.TextInput())
+    payment_bank_sort_code = forms.CharField(max_length=6, min_length=6, required=False, label='', widget=forms.TextInput())
 
     class Meta:
         model = OrganisationGeneralPractice

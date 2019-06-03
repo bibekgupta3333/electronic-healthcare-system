@@ -213,6 +213,7 @@ def step3(request: HttpRequest, practice_code: str) -> HttpResponse:
         'operating_system': gp_organisation.gp_operating_system
     })
 
+    request.session.set_expiry(settings.DEFAULT_SESSION_COOKIE_AGE)
     practice_username = PREFIX_EMIS_USER + gp_organisation.operating_system_organisation_code
 
     return render(request, 'onboarding/step3.html', {
