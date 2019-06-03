@@ -82,9 +82,3 @@ def update_gp_organisation_bank_details(bank_details_form: BankDetailsEmrSetUpSt
     gp_organisation.save()
 
     return gp_organisation
-
-
-def set_timeout_onboarding(request: HttpRequest):
-    time_out_sec = 1209600  # 2 weeks. Default by django :)
-    request.session.set_expiry(time_out_sec)
-    return request
