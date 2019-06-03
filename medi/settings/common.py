@@ -182,6 +182,7 @@ STATIC_ROOT = 'static'
 STATIC_URL = '/static/'
 
 EMIS_API_HOST = 'http://medi2data.net:9443'
+PREFIX_EMIS_USER = 'emr'
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static/'),

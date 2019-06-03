@@ -26,7 +26,7 @@ from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_
 from .models import User, UserProfileBase, GeneralPracticeUser, PracticePreferences, ClientUser
 from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from payment.model_choices import *
-from .forms import PracticePreferencesForm, TwoFactorForm, BankDetailsForm, CustomLoginForm
+from .forms import PracticePreferencesForm, TwoFactorForm, BankDetailsForm, CustomLoginForm, CustomAuthenticationForm
 from permissions.functions import access_user_management
 from organisations.models import OrganisationGeneralPractice
 from onboarding.views import generate_password
@@ -92,17 +92,9 @@ def account_view(request: HttpRequest) -> HttpResponse:
     user = request.user
 
     if request.user.type == 'GP':
-        header_title = 'Account Management'
+        header_title = 'Fee Management'
         gp_user = GeneralPracticeUser.objects.get(pk=user.userprofilebase.generalpracticeuser.pk)
         gp_organisation = gp_user.organisation
-        try:
-            practice_preferences = PracticePreferences.objects.filter(gp_organisation__practcode=gp_organisation.practcode).first()
-        except PracticePreferences.DoesNotExist:
-            practice_preferences = PracticePreferences()
-            practice_preferences.gp_organisation = gp_organisation
-            practice_preferences.notification = 'NEW'
-            practice_preferences.save()
-
         bank_details_info = {
             'payment_bank_holder_name': gp_organisation.payment_bank_holder_name,
             'payment_bank_account_number': gp_organisation.payment_bank_account_number,
@@ -122,12 +114,7 @@ def account_view(request: HttpRequest) -> HttpResponse:
                     bank_details_form.save()
                     send_notification_org_email(request, gp_user, 'update_bank_details')
                     return JsonResponse({'message': 'Bank details have been saved.'})
-            gp_preferences_form = PracticePreferencesForm(request.POST, instance=practice_preferences)
-            if gp_preferences_form.is_valid():
-                gp_preferences_form.save()
-                return JsonResponse({'message': 'Preferences have been saved.'})
 
-        gp_preferences_form = PracticePreferencesForm(instance=practice_preferences)
         organisation = multi_getattr(user, 'userprofilebase.generalpracticeuser.organisation', default=None)
         gp_fee_relation = GpOrganisationFee.objects.filter(gp_practice=organisation).first()
         organisation_fee_data = list()
@@ -176,7 +163,6 @@ def account_view(request: HttpRequest) -> HttpResponse:
             return render(request, 'accounts/accounts_view.html', {
                 'header_title': header_title,
                 'organisation_fee_data': organisation_fee_data,
-                'gp_preferences_form': gp_preferences_form,
                 'new_password': new_organisation_password,
                 'practice_code': gp_organisation.pk,
                 'band_fee_rate_data': band_fee_rate_data
@@ -185,7 +171,6 @@ def account_view(request: HttpRequest) -> HttpResponse:
         return render(request, 'accounts/accounts_view.html', {
             'header_title': header_title,
             'organisation_fee_data': organisation_fee_data,
-            'gp_preferences_form': gp_preferences_form,
             'band_fee_rate_data': band_fee_rate_data,
             'bank_details_form': bank_details_form
         })
@@ -697,7 +682,7 @@ def login(request: HttpRequest) -> HttpResponse:
                         customlogin(request, user)
                         return redirect(reverse('instructions:view_pipeline'))
             else:
-                form = LoginForm()
+                form = CustomAuthenticationForm()
             if check_lock_out(request):
                 return redirect(reverse('accounts:locked_out'))
             return render(request, 'registration/login.html', {

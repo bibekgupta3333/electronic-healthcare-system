@@ -187,6 +187,19 @@
 .redaction-additional-header {
     color: #8a8a8a;
 }
+
+.numberCircle {
+    display: inline-block;
+    width: 25px;
+    line-height: 22px;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 14px;
+    background: #ff712c;
+    border: 2px solid #ff4823;
+    color: white;
+}
+
 textarea {
     min-height: 75px;
     max-width: 100%;
