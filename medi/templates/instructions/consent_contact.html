@@ -103,15 +103,15 @@
                                                                 <h6><strong>Contact information</strong></h6>
                                                             </div>
                                                             <div class="row mt-4">
-                                                                <div class="col-md-4 rowTitle">Email</div>
+                                                                <div class="col-md-4 rowTitle">Email<span class="text-danger asterisk">*</span></div>
                                                                 {% bootstrap_field patient_form.patient_email size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
                                                             </div>
                                                             <div class="row mt-4">
-                                                                <div class="col-md-4 rowTitle">Confirm Email</div>
+                                                                <div class="col-md-4 rowTitle">Confirm Email<span class="text-danger asterisk">*</span></div>
                                                                 {% bootstrap_field patient_form.confirm_email size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
                                                             </div>
                                                             <div class="row mt-4">
-                                                                <div class="col-md-4 rowTitle">Mobile Phone</div>
+                                                                <div class="col-md-4 rowTitle">Mobile Phone<span class="text-danger asterisk">*</span></div>
                                                                 <div class="col-md-8">
                                                                     {% bootstrap_field patient_form.patient_telephone_mobile size='small' show_label=false placeholder='' %}
                                                                     {% bootstrap_field patient_form.patient_telephone_code %}
@@ -690,9 +690,19 @@
                     $('#permit_modal_button').click();
                 }
                 else {
-                    if ($('#ch-confirmed-agreement').is(':checked') && $('#id_patient_email').val() == '') {
-                        $('#noEmailAddress').click();
-                        is_allowed =false;
+                    if ($('#ch-confirmed-agreement').is(':checked')) {
+                        if ($('#id_patient_email').val() == '') {
+                            $('#id_patient_email').focus();
+                            is_allowed = false;
+                        }
+                        else if ($('#confirm_email').val() == '') {
+                            $('#confirm_email').focus();
+                            is_allowed = false;
+                        }
+                        else if ($('#id_patient_telephone_mobile').val() == '') {
+                            $('#id_patient_telephone_mobile').focus();
+                            is_allowed = false;
+                        }
                     }
                     if (is_allowed && $('#ch-report-third-party').is(':checked')) {
                         if (!$('#id_email_1').val() || !$('#id_email_2').val() || !$('#id_office_phone_number').val()) {
