@@ -18,6 +18,11 @@ html {
   min-height: 100%;
 }
 
+.surgery-management .card-header {
+  background-color: #36569a;
+  color: whitesmoke;
+}
+
 .collapse-check {
   cursor: pointer;
 }

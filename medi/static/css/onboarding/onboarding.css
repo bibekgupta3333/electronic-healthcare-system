@@ -47,9 +47,8 @@
 }
 
 .info-icon {
-    width: 38px;
+    width: 50px;
     margin: 0 auto;
-    max-width: 100%;
 }
 
 #clinical_info {
@@ -59,11 +58,13 @@
     top: -165px;
     left: -240px;
     border: 2px solid;
-    background-color: #e7e6e6;
+    background-color:#34b8a4;
     font-size: 19px;
     padding: 20px 16px;
     text-align: center;
+    border-color: rgb(46, 144, 142);
     display: none;
+    color: white;
 }
 
 #phone_info {
@@ -73,11 +74,13 @@
     top: -175px;
     left: -140px;
     border: 2px solid;
-    background-color: #e7e6e6;
+    background-color: #34b8a4;
     font-size: 18px;
     padding: 20px 16px;
     text-align: center;
     display: none;
+    border-color: rgb(46, 144, 142);
+    color: white;
 }
 
 #step_form .btn-continue {

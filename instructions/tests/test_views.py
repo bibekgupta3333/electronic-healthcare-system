@@ -2,6 +2,7 @@ from django.test import TestCase, Client, RequestFactory
 from django.shortcuts import reverse
 from django_tables2 import RequestConfig
 from django.core.files import File
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from model_mommy import mommy
 from snomedct.models import SnomedConcept, CommonSnomedConcepts
@@ -15,9 +16,13 @@ from organisations.models import OrganisationGeneralPractice, OrganisationClient
 from instructions.tables import InstructionTable
 from instructions.views import count_instructions, calculate_next_prev, create_addition_question, create_snomed_relations
 from instructions.forms import AdditionQuestionFormset
+from medicalreport.tests.test_data.medical_file import MEDICAL_REPORT_WITH_ATTACHMENT_BYTES, MEDICAL_REPORT_BYTES, RAW_MEDICAL_XML
 
 from datetime import datetime
 from unittest.mock import Mock
+
+medical_report = SimpleUploadedFile('report.pdf', b'consent')
+medical_xml_report = SimpleUploadedFile('report.xml', b'<MedicalRecord></MedicalRecord>')
 
 
 class TestInstructionBase(TestCase):
@@ -108,7 +113,11 @@ class TestInstructionBase(TestCase):
             patient_information=self.instruction_patient_1,
             type=SARS_TYPE,
             status=INSTRUCTION_STATUS_PROGRESS,
-            gp_practice=self.gp_practice_1
+            gp_practice=self.gp_practice_1,
+            medical_report=medical_report,
+            medical_xml_report=medical_xml_report,
+            medical_report_byte=MEDICAL_REPORT_BYTES,
+            medical_with_attachment_report_byte=MEDICAL_REPORT_WITH_ATTACHMENT_BYTES,
         )
         self.instruction_2 = mommy.make(
             Instruction,
@@ -117,7 +126,11 @@ class TestInstructionBase(TestCase):
             patient_information=self.instruction_patient_2,
             type=AMRA_TYPE,
             status=INSTRUCTION_STATUS_NEW,
-            gp_practice=self.gp_practice_1
+            gp_practice=self.gp_practice_1,
+            medical_report=medical_report,
+            medical_xml_report=medical_xml_report,
+            medical_report_byte=MEDICAL_REPORT_BYTES,
+            medical_with_attachment_report_byte=MEDICAL_REPORT_WITH_ATTACHMENT_BYTES,
         )
         self.instruction_3 = mommy.make(
             Instruction,
@@ -126,7 +139,11 @@ class TestInstructionBase(TestCase):
             patient_information=self.instruction_patient_3,
             type=SARS_TYPE,
             status=INSTRUCTION_STATUS_COMPLETE,
-            gp_practice=self.gp_practice_1
+            gp_practice=self.gp_practice_1,
+            medical_report=medical_report,
+            medical_xml_report=medical_xml_report,
+            medical_report_byte=MEDICAL_REPORT_BYTES,
+            medical_with_attachment_report_byte=MEDICAL_REPORT_WITH_ATTACHMENT_BYTES,
         )
 
 
@@ -136,6 +153,7 @@ class TestCountInstructions(TestInstructionBase):
         expected = {
             'All': 3,
             'New': 1,
+            'Redacting': 0,
             'In Progress': 1,
             'Paid': 0,
             'Completed': 1,
@@ -150,6 +168,7 @@ class TestCountInstructions(TestInstructionBase):
         expected = {
             'All': 2,
             'New': 1,
+            'Redacting': 0,
             'In Progress': 1,
             'Paid': 0,
             'Completed': 0,
@@ -374,7 +393,12 @@ class TestReviewInstruction(TestInstructionBase):
             Instruction,
             status=INSTRUCTION_STATUS_REJECT,
             gp_user=self.gp_manager_1,
-            gp_practice=self.gp_practice_1
+            gp_practice=self.gp_practice_1,
+            medical_report=medical_report,
+            medical_xml_report=medical_xml_report,
+            medical_report_byte=MEDICAL_REPORT_BYTES,
+            medical_with_attachment_report_byte=MEDICAL_REPORT_WITH_ATTACHMENT_BYTES,
+            final_raw_medical_xml_report=RAW_MEDICAL_XML
         )
 
     def test_view_url(self):

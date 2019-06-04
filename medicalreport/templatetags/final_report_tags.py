@@ -37,6 +37,7 @@ def significant_conditions(context):
 @register.inclusion_tag('medicalreport/reports/allergies.html', takes_context=True)
 def allergies(context):
     toolbox_params = dict()
+    toolbox_params['section'] = 'allergies'
     toolbox_params['instruction'] = context['instruction']
     toolbox_params['relations'] = context['relations']
     return {
@@ -65,6 +66,7 @@ def bloods(context):
 @register.inclusion_tag('medicalreport/reports/referrals.html', takes_context=True)
 def referrals(context):
     toolbox_params = dict()
+    toolbox_params['section'] = 'referrals'
     toolbox_params['instruction'] = context['instruction']
     toolbox_params['relations'] = context['relations']
     return {
@@ -77,6 +79,7 @@ def referrals(context):
 @register.inclusion_tag('medicalreport/reports/medications.html', takes_context=True)
 def medications(context):
     toolbox_params = dict()
+    toolbox_params['section'] = 'medications'
     toolbox_params['instruction'] = context['instruction']
     toolbox_params['relations'] = context['relations']
     return {
@@ -114,3 +117,21 @@ def check_file_white_list(attachment):
     if file_type and file_type.lower() in ['pdf', 'doc', 'docx', 'tif', 'tiff', 'jpeg' ,'png', 'rtf', 'jpg']:
         return True
     return False
+
+@register.filter
+def get_redaction(model, redaction):
+    xpaths = model.xpaths()
+    if redaction.redacted(xpaths) is True:
+        return True
+    return False
+
+@register.filter
+def get_xpaths(model, problem_linked_lists):
+    return problem_xpaths(model, problem_linked_lists)
+
+@register.filter
+def get_redaction_problem_xpaths(xpaths, redaction):
+    if redaction.redacted(xpaths) is True:
+        return True
+    return False
+

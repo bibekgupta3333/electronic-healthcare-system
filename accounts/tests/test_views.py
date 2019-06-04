@@ -1,6 +1,9 @@
+import json
+
 from django.test import TestCase, RequestFactory
 from django.shortcuts import reverse
 from model_mommy import mommy
+from django.contrib.auth.models import Permission
 from payment.models import OrganisationFeeRate, GpOrganisationFee
 
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
@@ -102,21 +105,86 @@ class TestAccountBase(TestCase):
 
 class TestAccountView(TestAccountBase):
 
-    def test_get_account_view(self):
+    def test_get_account_view_with_permission(self):
+        self.client.force_login(self.gp_user_admin)
+        self.gp_user_admin.user_permissions.add(Permission.objects.get(codename='view_account_pages'))
+        response = self.client.get(
+            reverse('accounts:view_account')
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'accounts/accounts_view.html')
+
+    def test_get_account_view_without_permission(self):
         self.client.force_login(self.gp_user_admin)
         response = self.client.get(
             reverse('accounts:view_account')
         )
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(
+            response,
+            reverse('instructions:view_pipeline'),
+            response.status_code, response.status_code,
+        )
 
-        self.assertEqual(response.status_code == 200 or response.status_code == 302, True)
+    def test_update_bank_detail_success(self):
+        bank_number = '12345678'
+        sort_code = '123456'
+        self.client.force_login(self.gp_user_admin)
+        self.gp_user_admin.user_permissions.add(Permission.objects.get(codename='view_account_pages'))
+        response = self.client.post(
+            reverse('accounts:view_account'), {
+                'payment_bank_account_number': bank_number,
+                'payment_bank_sort_code': sort_code,
+                'update_bank_details': True,
+            },
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(response.status_code, 200)
 
-        if response.status_code == 200:
-            self.assertTemplateUsed(response, 'accounts/accounts_view.html')
-        elif response.status_code == 302:
-            self.assertRedirects(
-                response,
-                reverse('instructions:view_pipeline'),
-                response.status_code, response.status_code)
+    def test_update_bank_detail_fail_sort_code(self):
+        bank_number = '12345678'
+        sort_code = '123'
+        self.client.force_login(self.gp_user_admin)
+        self.gp_user_admin.user_permissions.add(Permission.objects.get(codename='view_account_pages'))
+        response = self.client.post(
+            reverse('accounts:view_account'), {
+                'payment_bank_account_number': bank_number,
+                'payment_bank_sort_code': sort_code,
+                'update_bank_details': True,
+            },
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_bank_detail_fail_bank_number(self):
+        bank_number = '555'
+        sort_code = '123456'
+        self.client.force_login(self.gp_user_admin)
+        self.gp_user_admin.user_permissions.add(Permission.objects.get(codename='view_account_pages'))
+        response = self.client.post(
+            reverse('accounts:view_account'), {
+                'payment_bank_account_number': bank_number,
+                'payment_bank_sort_code': sort_code,
+                'update_bank_details': True,
+            },
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_bank_detail_fail_all_case(self):
+        bank_number = '555'
+        sort_code = '555'
+        self.client.force_login(self.gp_user_admin)
+        self.gp_user_admin.user_permissions.add(Permission.objects.get(codename='view_account_pages'))
+        response = self.client.post(
+            reverse('accounts:view_account'), {
+                'payment_bank_account_number': bank_number,
+                'payment_bank_sort_code': sort_code,
+                'update_bank_details': True,
+            },
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(response.status_code, 400)
 
 
 class TestManageUser(TestAccountBase):

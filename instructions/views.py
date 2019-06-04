@@ -30,6 +30,7 @@ from organisations.forms import GeneralPracticeForm
 from organisations.models import OrganisationGeneralPractice, OrganisationClient
 from organisations.views import get_gporganisation_data
 from medicalreport.views import get_patient_registration
+from medicalreport.models import AmendmentsForRecord
 from common.functions import multi_getattr, get_url_page
 from snomedct.models import SnomedConcept
 from permissions.functions import check_permission
@@ -82,6 +83,7 @@ def count_instructions(user: User, gp_practice_code: str, client_organisation: O
         query_condition = Q(client_user__organisation=client_organisation)
 
     new_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_NEW).count()
+    redacting_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_REDACTING).count()
     progress_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_PROGRESS).count()
     paid_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_PAID).count()
     complete_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_COMPLETE).count()
@@ -93,6 +95,7 @@ def count_instructions(user: User, gp_practice_code: str, client_organisation: O
         overall_instructions_number = {
             'All': all_count,
             'New': new_count,
+            'Redacting': redacting_count,
             'In Progress': progress_count,
             'Paid': paid_count,
             'Completed': complete_count,
@@ -462,9 +465,9 @@ def instruction_pipeline_view(request):
 def instruction_invoice_payment_view(request):
     # comment
     event_logger.info(
-        '{user}:{user_id} ACCESS invoice and payment pipeline view'.format(user=request.user, user_id=request.user.id)
+        '{user}:{user_id} ACCESS Invoicing and Payments pipeline view'.format(user=request.user, user_id=request.user.id)
     )
-    header_title = "Invoice And Payment"
+    header_title = "Invoicing and Payments"
     user = request.user
     date_range_form = DateRangeSearchForm()
 
@@ -1093,63 +1096,55 @@ def consent_contact(request, instruction_id, patient_emis_number):
         return patient_registration
 
     if request.method == "POST":
-        if request.POST.get('proceed_option') == '0':
-            # Synchronous preparing task case
-            mdx_consent_form = MdxConsentForm(request.POST, request.FILES, instance=instruction)
-            if request.POST.get('mdx_consent_loaded') == 'loaded' and mdx_consent_form.is_valid():
-                mdx_consent_form.save()
-            elif request.POST.get('mdx_consent_loaded') != 'loaded':
-                instruction.mdx_consent.delete()
+        # Synchronous preparing task case
+        mdx_consent_form = MdxConsentForm(request.POST, request.FILES, instance=instruction)
+        if request.POST.get('mdx_consent_loaded') == 'loaded' and mdx_consent_form.is_valid():
+            mdx_consent_form.save()
+        elif request.POST.get('mdx_consent_loaded') != 'loaded':
+            instruction.mdx_consent.delete()
 
-            patient_email = request.POST.get('patient_email', '')
-            patient_telephone_mobile = request.POST.get('patient_telephone_mobile', '')
-            patient_alternate_phone = request.POST.get('patient_alternate_phone', '')
+        patient_email = request.POST.get('patient_email', '')
+        patient_telephone_mobile = request.POST.get('patient_telephone_mobile', '')
+        patient_alternate_phone = request.POST.get('patient_alternate_phone', '')
 
-            if request.POST.get('send-to-third'):
-                if not PatientReportAuth.objects.filter(instruction=instruction):
-                    unique_url = uuid.uuid4().hex
-                    PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
-                
-                report_auth = get_object_or_404(PatientReportAuth, instruction=instruction)
-                third_party_form = ConsentThirdParty(request.POST)
+        if request.POST.get('send-to-third'):
+            if not PatientReportAuth.objects.filter(instruction=instruction):
+                unique_url = uuid.uuid4().hex
+                PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
 
-                if third_party_form.is_valid():
-                    third_party_authorisation = third_party_form.save(report_auth)
-                    event_logger.info('CREATED third party authorised model ID {model_id}'.format(
-                        model_id=third_party_authorisation.id)
-                    )
+            report_auth = get_object_or_404(PatientReportAuth, instruction=instruction)
+            third_party_form = ConsentThirdParty(request.POST)
 
-            if request.POST.get('mdx_consent_loaded') != 'loaded' or mdx_consent_form.is_valid():
-                patient_instruction.patient_email = patient_email
-                patient_instruction.patient_telephone_mobile = patient_telephone_mobile
-                patient_instruction.patient_telephone_code = request.POST.get('patient_telephone_code', '')
-                patient_instruction.patient_alternate_phone = patient_alternate_phone
-                patient_instruction.patient_alternate_code = request.POST.get('patient_alternate_code', '')
-                patient_instruction.patient_emis_number = patient_emis_number
-                patient_instruction.save()
-                instruction.save()
-                event_logger.info(
-                    '{user}:{user_id} UPDATED consent contact of patient instruction ID {instruction_id}'.format(
-                        user=request.user, user_id=request.user.id,
-                        instruction_id=instruction_id
-                    )
+            if third_party_form.is_valid():
+                third_party_authorisation = third_party_form.save(report_auth)
+                event_logger.info('CREATED third party authorised model ID {model_id}'.format(
+                    model_id=third_party_authorisation.id)
                 )
-                next_step = request.POST.get('next_step', '')
-                if next_step == 'view_pipeline':
-                    instruction.saved = True
-                    patient_instruction.patient_emis_number = patient_emis_number
-                    patient_instruction.save()
-                    gp_user = get_object_or_404(GeneralPracticeUser, user_id=request.user.id)
-                    instruction.in_progress(context={'gp_user': gp_user})
-                    return redirect('instructions:view_pipeline')
-                elif next_step == 'proceed':
-                    return redirect('medicalreport:select_patient', instruction_id=instruction_id, patient_emis_number=patient_emis_number)
-        else:
-            # Asynchronous preparing task case
-            instruction.status = INSTRUCTION_STATUS_REDACTING
-            instruction.save()
-            prepare_medicalreport_data.delay(instruction_id)
-            return redirect('instructions:view_pipeline')
+
+        if request.POST.get('mdx_consent_loaded') != 'loaded' or mdx_consent_form.is_valid():
+            patient_instruction.patient_email = patient_email
+            patient_instruction.patient_telephone_mobile = patient_telephone_mobile
+            patient_instruction.patient_telephone_code = request.POST.get('patient_telephone_code', '')
+            patient_instruction.patient_alternate_phone = patient_alternate_phone
+            patient_instruction.patient_alternate_code = request.POST.get('patient_alternate_code', '')
+            patient_instruction.patient_emis_number = patient_emis_number
+            patient_instruction.save()
+            gp_user = get_object_or_404(GeneralPracticeUser, user_id=request.user.id)
+            instruction.saved = True
+            instruction.in_progress(context={'gp_user': gp_user})
+            next_step = request.POST.get('next_step', '')
+            if next_step == 'view_pipeline':
+                return redirect('instructions:view_pipeline')
+            elif request.POST.get('proceed_option') == '0':
+                # Synchronous preparing task case
+                return redirect('medicalreport:select_patient', instruction_id=instruction_id, patient_emis_number=patient_emis_number)
+            else:
+                # Asynchronous preparing task case
+                instruction.status = INSTRUCTION_STATUS_REDACTING
+                instruction.saved = False
+                instruction.save()
+                prepare_medicalreport_data.delay(instruction_id)
+                return redirect('instructions:view_pipeline')
 
     patient_email = patient_registration.email() if not patient_instruction.patient_email else patient_instruction.patient_email
     patient_telephone_mobile = patient_registration.mobile_number() if not patient_instruction.patient_telephone_mobile else patient_instruction.patient_telephone_mobile
@@ -1165,23 +1160,12 @@ def consent_contact(request, instruction_id, patient_emis_number):
             'patient_postcode': patient_instruction.patient_postcode,
             'patient_address_number': patient_instruction.patient_address_number,
             'patient_email': patient_email,
-            'confirm_email' : patient_email,
+            'confirm_email': patient_email,
             'patient_telephone_mobile': patient_telephone_mobile,
             'patient_alternate_phone': patient_alternate_phone,
             'patient_dob': date_format
         }
     )
-    consent_type = 'pdf'
-    consent_extension = ''
-    consent_path = ''
-    if instruction.consent_form:
-        consent_extension = (instruction.consent_form.url).split('.')[1]
-        consent_path = instruction.consent_form.url
-    elif instruction.sars_consent:
-        consent_extension = (instruction.sars_consent.url).split('.')[1]
-        consent_path = instruction.sars_consent.url
-    if consent_extension in ['jpeg', 'png', 'gif']:
-        consent_type = 'image'
 
     consent_type = 'pdf'
     consent_extension = ''

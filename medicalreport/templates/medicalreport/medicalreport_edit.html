@@ -57,7 +57,7 @@
                 <div class="modal fade" id="trud-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-sm">
                         <div class="modal-content sensitive-information-instructions">
-                            <h6>Human readable conditions</h6>
+                            <h6>Sensitive conditions</h6>
                             <ul>
                                 <li><a href="{% url 'medicalreport:trud_ivf' %}">IVF</a></li>
                                 <li><a href="{% url 'medicalreport:trud_std' %}">STD</a></li>
@@ -147,7 +147,9 @@
 
     {% endcache %}
 
-    <a href="javascript:;" class="btn btn-primary" id="report-toolbox-open-modal">Report Toolbox</a>
+    <a href="javascript:;" class="" id="report-toolbox-open-modal">
+        <img class="info-icon" id="clinical_info_icon" style="width: 140px" src="{% static 'images/Toolboxfinal.png' %}">
+    </a>
     <div class="report-toolbox-modal" id="report-toolbox-modal">
         {% include "library/report_toolbox_modal.html" %}
     </div>
@@ -167,15 +169,6 @@
         setInterval(function() {
           $("#alert-message").fadeOut('slow');
         }, 3000);
-        $('#id_gp_practitioner').removeAttr('required');
-
-        $('#id_prepared_and_signed_0').on('click', function () {
-            $('#id_prepared_by').val('');
-            $('#id_prepared_by').prop('readonly', true);
-        });
-        $('#id_prepared_and_signed_1').on('click', function () {
-            $('#id_prepared_by').prop('readonly', false);
-        });
 
         $('#patient-info-open-modal').on('click', function () {
            $('#patientInfo').toggle();
@@ -185,45 +178,33 @@
            $('#report-toolbox-modal').toggle();
         });
 
-        $('input:checkbox').on('change', function() {
+        $('input:checkbox[name=redaction_xpaths]').on('change', function() {
+            var me = $(this);
+            me.prop("disabled", true);
             var xpath = $(this).val();
-            var key = $(this).attr('key');
+            if(Array.isArray(xpath)) { xpath = xpath[0]; }
 
-            if(Array.isArray(xpath)) {
-                xpath = xpath[0];
-            }
+            var action = 4;  // remove line redacted
+            if($(this).is(':checked')) { action = 2;  } // line redacted
 
-            if(Array.isArray(key)) {
-                key = key[0];
-            }
-            $('input:checkbox').each( function() {
-                if( $(this).attr('key') == key) {
-                    $(this).prop('checked', this.checked);
-                }
-            });
+            var guid = xpath.match('\{([^}]+)\}')[1];
+            var section = $(this).data('section');
             saveReport();
-
             $.ajax({
                 url: "{% url 'library:manual_radact' %}",
                 dataType: "json",
                 data: {
                     instruction_id: {{ instruction.id }}, 
-                    xpath: xpath,
-                    key: key
+                    guid: guid,
+                    section: section,
+                    action: action
                 }
-            }).done(function(response) {
-                if (response['message'] == 'Error') {
-                    create_alert('Something went wrong, please try again.', 'error');
-                }
-            }).fail(function() {
-                create_alert('Something went wrong, please try again.', 'error');
+            }).done(function (response) {
+                me.prop("disabled", false);
+            }).fail(function(response) {
+                create_alert(response.responseJSON.message, 'error');
             });
         });
-
-        $('.finaliseChoice').css('font-size', 'large');
-
-        $('#preparer').append($('#id_prepared_by'));
-        $('#id_prepared_by').removeClass('form-control');
 
         $(".update_report_btn").on('click', function(event){
             event.preventDefault(); //prevent default action
@@ -241,19 +222,7 @@
                 saveReport();
             }, form_save_delay)
         });
-        enable_submit_button();
-        $('#id_prepared_and_signed_0').on('click', function () {
-            enable_submit_button();
-        });
-        $('#id_prepared_and_signed_1').on('click', function () {
-            enable_submit_button();
-        });
-        $('#id_prepared_by').on('change', function () {
-            enable_submit_button();
-        });
-        $('#accept_disclaimer').on('change', function () {
-            enable_submit_button();
-        });
+
         $("input[type='checkbox'][name='instruction_checked']").click(function(){
             if($(this).is(":checked")){
                 setTimeout(function(){ 
@@ -296,112 +265,89 @@
             }
         });
 
-        $(".highlight-redact").on("click", function(e) {
+        function handler_highlight_redact(e) {
             e.preventDefault();
             var word_span = $(this).parent().parent().find("span.bg-warning");
             var word = word_span.text();
-            var item = $(this).closest('.redaction-checkbox');
-            var item_parent = $(this).closest('.callout');
-            var header = item_parent.find('.callout__header').text();
-            var idx = -1;
-            var xpath = $(this).parent().data('xpath')
-            item_parent.find('.redaction-checkbox').filter(function(index, obj) {
-                    if (item.is($(obj))) {
-                        idx = index;
-                        return 1;
-                    }
-                });
-            if(Array.isArray(xpath)) {
-                xpath = xpath[0];
-            }
+            var idx = $(this).parent().data('word_idx');
+            var guid = $(this).parent().data('guid');
+            var section = $(this).parent().data('section');
+
             $.ajax({
                 url: "{% url 'library:redact_word' %}",
                 dataType: "json",
                 data: {
-                    word: word, 
-                    instruction_id: {{ instruction.id }}, 
-                    header: header, 
-                    index: idx, 
-                    content: item.html(),
-                    xpath: xpath
+                    word: word,
+                    instruction_id: {{ instruction.id }},
+                    idx: idx,
+                    guid: guid,
+                    section: section,
                 }
             }).done(function(response) {
                 word_span.removeClass("bg-warning");
-                word_span.addClass('bg-dark');
-                create_alert('Redact complete.', 'success');
-            }).fail(function() {
-                create_alert('Something went wrong, please try again.', 'error');
+                word_span.addClass('bg-dark').addClass('text-dark');
+                create_alert(response.message, 'success');
+            }).fail(function(response) {
+                create_alert(response.responseJSON.message, 'error');
             });
-        });
+        }
 
-        $(".highlight-replace").on("click", function(e) {
+        function handler_highlight_replace(e) {
             e.preventDefault();
             var word_span = $(this).parent().parent().find("span.bg-warning");
             var word = word_span.text();
-            var item = $(this).closest('.redaction-checkbox');
-            var item_parent = $(this).closest('.callout');
-            var header = item_parent.find('.callout__header').text();
-            var idx = -1;
-            var xpath = $(this).parent().data('xpath');
-            item_parent.find('.redaction-checkbox').filter(function(index, obj) {
-                if (item.is($(obj))) {
-                    idx = index;
-                    return 1;
-                }
-            });
-            if(Array.isArray(xpath)) {
-                xpath = xpath[0];
-            }
+            var idx = $(this).parent().data('word_idx');
+            var guid = $(this).parent().data('guid');
+            var section = $(this).parent().data('section');
+
             $.ajax({
                 url: "{% url 'library:replace_word' %}",
                 dataType: "json",
                 data: {
-                    word: word, 
-                    instruction_id: {{ instruction.id }}, 
-                    header: header, 
-                    index: idx, 
-                    xpath: xpath,
-                    content: item.html(),
+                    word: word,
+                    instruction_id: {{ instruction.id }},
+                    idx: idx,
+                    guid: guid,
+                    section: section,
                 }
             }).done(function(response) {
-                if (response['message'] == 'Error') {
-                    create_alert('Something went wrong, please try again.', 'error');
-                } else {
-                    word_span.text(response['replace_word']);
-                    word_span.removeClass("bg-warning");
-                    word_span.addClass('change-'+response['id']).addClass('text-danger');
-                    create_alert('Replace complete.', 'success');
-                }
-            }).fail(function() {
-                create_alert('Something went wrong, please try again.', 'error');
+                word_span.text(response['replace_word']);
+                word_span.removeClass("bg-warning");
+                word_span.addClass('text-danger');
+                create_alert(response.message, 'success');
+            }).fail(function(response) {
+                create_alert(response.responseJSON.message, 'error');
             });
-        });
+        }
 
-        $(".highlight-replaceall").on("click", function(e) {
+        function handler_highlight_replaceall(e){
             e.preventDefault();
             var word_span = $(this).parent().parent().find("span.bg-warning");
             var word = word_span.text();
             $.ajax({
                 url: "{% url 'library:replace_allword' %}",
                 dataType: "json",
-                data: { word: word, instruction_id: {{ instruction.id }} }
-            }).done(function(response) {
-                if (response['message'] == 'Error') {
-                    create_alert('Something went wrong, please try again.', 'error');
-                } else {
-                    $(".highlight-library .bg-warning").each(function(i, obj) {
-                        if ($(obj).text() == word) {
-                            $(obj).text(response['replace_word']);
-                            $(obj).removeClass("bg-warning");
-                            $(obj).addClass('change-'+response['id']).addClass('text-danger');
-                        }
-                    });
+                data: {
+                    word: word,
+                    instruction_id: {{ instruction.id }},
                 }
-                create_alert('ReplaceAll complete.', 'success');
-            }).fail(function() {
-                create_alert('Something went wrong, please try again.', 'error');
+            }).done(function(response) {
+                $(".highlight-library .bg-warning").each(function(i, obj) {
+                    if ($(obj).text().toLowerCase() == word.toLowerCase()) {
+                        $(obj).text(response['replace_word']);
+                        $(obj).removeClass("bg-warning");
+                        $(obj).addClass('text-danger');
+                    }
+                });
+                create_alert(response.message, 'success');
+            }).fail(function(response) {
+                create_alert(response.responseJSON.message, 'error');
             });
-        });
+        }
+
+        $(".highlight-redact").on("click", handler_highlight_redact);
+        $(".highlight-replace").on("click", handler_highlight_replace);
+        $(".highlight-replaceall").on("click", handler_highlight_replaceall);
 
         $('#report-toolbox-modal-undolast').on('click', function(e) {
             e.preventDefault();
@@ -410,45 +356,68 @@
                 dataType: "json",
                 data: { instruction_id: {{ instruction.id }} }
             }).done(function(response) {
-                if (response['message'] == 'Error') {
-                    create_alert('Something went wrong, please try again.', 'error');
+                var tool_box_information = {};
+                if(response['action'] == 2){
+                    // REDACT LINE case
+                    $('input[data-section="'+ response['section'] + '"][value*="' + response['guid'] +'"]').prop('checked', false);
+                } else if(response['action'] == 4) {
+                    // REMOVE REDACT LINE case
+                    $('input[data-section="'+ response['section'] + '"][value*="' + response['guid'] +'"]').prop('checked', true);
                 } else {
-                    if (response['action'] == 'Replace') {
-                        $('span .dropdown-options').each( function() {
-                            if( $(this).data('xpath') == response['xpath']) {
-                                $(this).parent().html( response['text'] );
+                    $('span .dropdown-options').each(function () {
+                        var temp_response = response['text'];
+                        if(response['action'] == 1){
+                            // REPLACE ALL case
+                            var section = $(this).data('section');
+                            var parent_element = $(this).parent();
+                            var record_detail = $(this).parent().parent().prop('title').split(' ');
+                            for (let i = 0; i < record_detail.length; i++) {
+                                record_detail[i] = record_detail[i].toUpperCase();
                             }
-                        });
-                    }   else if (response['action'] == 'ReplaceAll') {
-                        $('span .dropdown-options').each( function() {
-                            if( $(this).parent().find("span.text-danger").text() == response['new']) {
-                                $(this).parent().find("span.text-danger").text( response['old'] ).removeClass().addClass('bg-warning');
+                            var guid = $(this).data('guid');
+                            var word = $(this).prev().text();
+                            if(word.toUpperCase() == response['new'].toUpperCase()){
+                                if(typeof(tool_box_information[section]) == 'undefined'){
+                                    tool_box_information[section] = {};
+                                    if(typeof(tool_box_information[section][guid] == 'undefined')){
+                                        tool_box_information[section][guid] = {};
+                                        if(typeof(tool_box_information[section][guid][word]) == 'undefined' ){
+                                            tool_box_information[section][guid][word] = record_detail.indexOf(response['old'].toUpperCase());
+                                        }
+                                    }
+                                } else {
+                                    if(typeof(tool_box_information[section][guid] == 'undefined')){
+                                        tool_box_information[section][guid] = {};
+                                        if(typeof(tool_box_information[section][guid][word]) == 'undefined' ){
+                                            tool_box_information[section][guid][word] = record_detail.indexOf(response['old'].toUpperCase());
+                                        } else {
+                                            tool_box_information[section][guid][word] = record_detail.indexOf(response['old'].toUpperCase(), tool_box_information[guid][section][word]+1)
+                                        }
+                                    }
+                                }
+                                temp_response = temp_response.replace('dummy-guid', 'data-guid="' + guid + '"');
+                                temp_response = temp_response.replace('dummy-word_idx', 'data-word_idx="' + tool_box_information[section][guid][word] + '"');
+                                temp_response = temp_response.replace('dummy-section', 'data-section="' + section + '"');
+                                $(this).parent().html(temp_response);
+                                parent_element.children().eq(1).data('word_idx', tool_box_information[section][guid][word]);
                             }
-                        });
-                    }   else if (response['action'] == 'Redact') {
-                        $('span .dropdown-options').each( function() {
-                            if( $(this).data('xpath') == response['xpath']) {
-                                $(this).removeClass('bg-dark');
-                                $(this).parent().html( response['text'] );
+                        } else {
+                            // REDACT and REAPLACE case
+                            if($(this).data('guid') == response['guid'] && $(this).data('word_idx') == response['word_idx']){
+                                temp_response = temp_response.replace('dummy-guid', 'data-guid="' + response['guid'] + '"');
+                                temp_response = temp_response.replace('dummy-word_idx', 'data-word_idx="' + response['word_idx'] + '"');
+                                temp_response = temp_response.replace('dummy-section', 'data-section="' + response['section'] + '"');
+                                $(this).parent().html(temp_response);
                             }
-                        });
-                    }   else if (response['action'] == 'mRedact') {
-                        $('input').each( function() {
-                            if( $(this).val() == response['xpath']) {
-                                $(this).prop('checked', false);
-                            }
-                        });
-                    }   else if (response['action'] == 'rmRedact') {
-                        $('input').each( function() {
-                            if( $(this).val() == response['xpath']) {
-                                $(this).prop('checked', true);
-                            }
-                        });
-                    }
-                    create_alert('Undo complete.', 'success');
+                        }
+                    });
                 }
-            }).fail(function() {
-                create_alert('Something went wrong, please try again.', 'error');
+                $(".highlight-redact").on("click", handler_highlight_redact);
+                $(".highlight-replace").on("click", handler_highlight_replace);
+                $(".highlight-replaceall").on("click", handler_highlight_replaceall);
+                create_alert('Undo complete.', 'success');
+            }).fail(function(response) {
+                create_alert(response.responseJSON.message, 'error');
             })
         });
 
@@ -459,47 +428,23 @@
                 dataType: "json",
                 data: { instruction_id: {{ instruction.id }} }
             }).done(function(response) {
-                if (response['message'] == 'Error') {
-                    create_alert('Something went wrong, please try again.', 'error');
-                } else {
-                    response.history.forEach( function(value) {
-                        if (value.action == 'Replace') {
-                            $('span .dropdown-options').each( function() {
-                                if( $(this).data('xpath') == value.xpath) {
-                                    $(this).parent().html( value.text );
-                                }
-                            });
-                        }   else if (value.action == 'ReplaceAll') {
-                            $('span .dropdown-options').each( function() {
-                                if( $(this).parent().find("span.text-danger").text() == value.new) {
-                                    $(this).parent().find("span.text-danger").text( value.old ).removeClass().addClass('bg-warning');
-                                }
-                            });
-                        }   else if (value.action == 'Redact') {
-                            $('span .dropdown-options').each( function() {
-                                if( $(this).data('xpath') == value.xpath) {
-                                    $(this).removeClass('bg-dark');
-                                    $(this).parent().html( value.text );
-                                }
-                            });
-                        }   else if (value.action == 'mRedact') {
-                            $('input').each( function() {
-                                if( $(this).val() == value.xpath) {
-                                    $(this).prop('checked', false);
-                                }
-                            });
-                        }   else if (value.action == 'rmRedact') {
-                            $('input').each( function() {
-                                if( $(this).val() == value.xpath) {
-                                    $(this).prop('checked', true);
-                                }
-                            });
-                        }
-                    });
-                    create_alert('Undo All complete.', 'success');
-                }
-            }).fail(function() {
-                create_alert('Something went wrong, please try again.', 'error');
+                $('input[name="redaction_xpaths"]').each(function () {
+                    // don't remove sensitive redacted
+                    if($(this).parent().children().last().text() != "Sensitive Condition"){
+                        $(this).prop('checked', false)
+                    }
+                });
+
+                $('span .highlight-library').each(function () {
+                    var index_word = response.new_replace_words.indexOf($(this).children().first().text().toUpperCase());
+                    if(index_word >= 0){
+                        $(this).children().first().text(response.old_replace_words[index_word]);
+                    }
+                    $(this).children().first().removeClass().addClass('bg-warning');
+                });
+                create_alert(response.message, 'success');
+            }).fail(function(response) {
+                create_alert(response.responseJSON.message, 'error');
             })
         });
 

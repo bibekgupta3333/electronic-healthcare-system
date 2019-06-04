@@ -45,6 +45,7 @@ class AmendmentsForRecord(models.Model):
     status = models.CharField(choices=REDACTION_STATUS_CHOICES, max_length=6, default=REDACTION_STATUS_NEW)
     comment_notes = models.TextField(blank=True)
     instruction_checked = models.BooleanField(default=False, blank=True, null=True)
+    raw_medical_xml = models.TextField(blank=True)
 
     @property
     def patient_emis_number(self) -> str:
@@ -116,3 +117,18 @@ class ReferencePhrases(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class RedactedAttachment(models.Model):
+    instruction = models.ForeignKey(Instruction, on_delete=models.CASCADE)
+    dds_identifier = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
+    raw_attachment_file_content = models.BinaryField()
+    attachment_file = models.FileField(upload_to='medical_attachments', null=True, blank=True)
+    redacted_count = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return self.name
+
+    def make_attachment_file(self):
+        pass

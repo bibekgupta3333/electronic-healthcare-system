@@ -170,7 +170,12 @@ class NewGPForm(forms.ModelForm):
 
     first_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
     last_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
-    email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), label='', required=True)
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}),
+                             help_text='The email address will be the username ' + \
+                                        'when your user logs into eMR. ' + \
+                                        'Please note that usernames are case sensitive.',
+                             label='',
+                             required=True)
     username = forms.CharField(max_length=255, required=False, label='', widget=forms.TextInput())
     password = forms.CharField(required=True, widget=forms.HiddenInput())
     send_email = forms.BooleanField(required=False, initial=False)
@@ -197,7 +202,12 @@ class NewClientForm(forms.ModelForm):
 
     first_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
     last_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
-    email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}), label='', required=True)
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}),
+                             help_text='The email address will be the username ' + \
+                                        'when your user logs into eMR. ' + \
+                                        'Please note that usernames are case sensitive.',
+                             label='',
+                             required=True)
     username = forms.CharField(max_length=255, required=False, label='', widget=forms.TextInput())
     password = forms.CharField(required=True, widget=forms.HiddenInput())
     send_email = forms.BooleanField(required=False, initial=False)
@@ -345,8 +355,8 @@ class UserProfileBaseForm(forms.ModelForm):
 
 class BankDetailsForm(forms.ModelForm):
     payment_bank_holder_name = forms.CharField(max_length=255, required=False, label='', widget=forms.TextInput())
-    payment_bank_account_number = forms.CharField(max_length=255, required=False, label='', widget=forms.TextInput())
-    payment_bank_sort_code = forms.CharField(max_length=255, required=False, label='', widget=forms.TextInput())
+    payment_bank_account_number = forms.CharField(max_length=8, min_length=8, required=False, label='', widget=forms.TextInput())
+    payment_bank_sort_code = forms.CharField(max_length=6, min_length=6, required=False, label='', widget=forms.TextInput())
 
     class Meta:
         model = OrganisationGeneralPractice
@@ -376,3 +386,10 @@ class CustomLoginForm(AuthenticationForm):
                 ) 
         else:
             return self.cleaned_data
+
+
+class CustomAuthenticationForm(AuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super(CustomAuthenticationForm, self).__init__(*args, **kwargs)
+
+        self.fields['username'].help_text = '<h6 class="float-left mb-3">Please note that the email field is case sensitive.</h6>'
