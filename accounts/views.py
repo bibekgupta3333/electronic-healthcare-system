@@ -309,21 +309,6 @@ def view_users(request: HttpRequest) -> HttpResponse:
     user = request.user
     user = User.objects.get(username=user.username)
     user_profile = UserProfileBase.objects.filter(user_id=user.pk).first()
-    gp_user = GeneralPracticeUser.objects.get(
-        pk = user.userprofilebase.generalpracticeuser.pk)
-    gp_organisation = gp_user.organisation
-
-    try:
-        practice_preferences = PracticePreferences.objects.filter(
-            gp_organisation__practcode = gp_organisation.practcode).first()
-    except PracticePreferences.DoesNotExist:
-        practice_preferences = PracticePreferences()
-        practice_preferences.gp_organisation = gp_organisation
-        practice_preferences.notification = 'NEW'
-        practice_preferences.save()
-
-    gp_preferences_form = PracticePreferencesForm(
-        instance = practice_preferences)
 
     if 'status' in request.GET:
         filter_type = request.GET.get('type', 'active')
@@ -379,16 +364,43 @@ def view_users(request: HttpRequest) -> HttpResponse:
     if request.GET.get('show'):
         show_pop_up = 'show'
 
-    response = render(request, 'user_management/user_management.html', {
-        'user': user,
-        'header_title': header_title,
-        'table': table_data['table'],
-        'overall_users_number': table_data['overall_users_number'],
-        'permission_formset': permission_formset,
-        'gp_preferences_form': gp_preferences_form,
-        'user_type': table_data['user_type'],
-        'show_pop_up': show_pop_up
-    })
+    if user.type == 'GP':
+        gp_user = GeneralPracticeUser.objects.get(
+            pk = user.userprofilebase.generalpracticeuser.pk)
+        gp_organisation = gp_user.organisation
+
+        try:
+            practice_preferences = PracticePreferences.objects.filter(
+                gp_organisation__practcode = gp_organisation.practcode).first()
+        except PracticePreferences.DoesNotExist:
+            practice_preferences = PracticePreferences()
+            practice_preferences.gp_organisation = gp_organisation
+            practice_preferences.notification = 'NEW'
+            practice_preferences.save()
+
+        gp_preferences_form = PracticePreferencesForm(
+            instance = practice_preferences)
+        response = render(request, 'user_management/user_management.html', {
+            'user': user,
+            'header_title': header_title,
+            'table': table_data['table'],
+            'overall_users_number': table_data['overall_users_number'],
+            'permission_formset': permission_formset,
+            'gp_preferences_form': gp_preferences_form,
+            'user_type': table_data['user_type'],
+            'show_pop_up': show_pop_up
+        })
+    else:
+        response = render(request, 'user_management/user_management.html', {
+            'user': user,
+            'header_title': header_title,
+            'table': table_data['table'],
+            'overall_users_number': table_data['overall_users_number'],
+            'permission_formset': permission_formset,
+            'user_type': table_data['user_type'],
+            'show_pop_up': show_pop_up
+        })
+
     return response
 
 
