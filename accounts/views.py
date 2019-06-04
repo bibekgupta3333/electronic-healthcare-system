@@ -309,6 +309,21 @@ def view_users(request: HttpRequest) -> HttpResponse:
     user = request.user
     user = User.objects.get(username=user.username)
     user_profile = UserProfileBase.objects.filter(user_id=user.pk).first()
+    gp_user = GeneralPracticeUser.objects.get(
+        pk = user.userprofilebase.generalpracticeuser.pk)
+    gp_organisation = gp_user.organisation
+
+    try:
+        practice_preferences = PracticePreferences.objects.filter(
+            gp_organisation__practcode = gp_organisation.practcode).first()
+    except PracticePreferences.DoesNotExist:
+        practice_preferences = PracticePreferences()
+        practice_preferences.gp_organisation = gp_organisation
+        practice_preferences.notification = 'NEW'
+        practice_preferences.save()
+
+    gp_preferences_form = PracticePreferencesForm(
+        instance = practice_preferences)
 
     if 'status' in request.GET:
         filter_type = request.GET.get('type', 'active')
@@ -370,6 +385,7 @@ def view_users(request: HttpRequest) -> HttpResponse:
         'table': table_data['table'],
         'overall_users_number': table_data['overall_users_number'],
         'permission_formset': permission_formset,
+        'gp_preferences_form': gp_preferences_form,
         'user_type': table_data['user_type'],
         'show_pop_up': show_pop_up
     })
@@ -403,6 +419,28 @@ def update_permission(request: HttpRequest) -> HttpResponse:
                     set_permission(request, form)
     response = redirect('accounts:view_users')
     response['Location'] += "?show=True"
+    return response
+
+
+@login_required(login_url='/accounts/login')
+def update_notification(request: HttpRequest) -> HttpResponse:
+    user = request.user
+    gp_user = GeneralPracticeUser.objects.get(
+        pk = user.userprofilebase.generalpracticeuser.pk)
+    gp_organisation = gp_user.organisation
+    practice_preferences = PracticePreferences.objects \
+        .filter(
+            gp_organisation__practcode = gp_organisation.practcode) \
+        .first()
+
+    if request.is_ajax():
+        gp_preferences_form = PracticePreferencesForm(
+            request.POST,instance = practice_preferences)
+
+        if gp_preferences_form.is_valid():
+            gp_preferences_form.save()
+
+    response = redirect('accounts:view_users')
     return response
 
 
