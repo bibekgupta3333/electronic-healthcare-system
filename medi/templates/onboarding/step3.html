@@ -193,35 +193,10 @@
 
             validateBTN( $('#progress_bar').attr('aria-valuenow') );
 
-            $('#backBTN').click( function() {
-                var percentNow = $('#progress_bar').attr('aria-valuenow');
-                if (parseInt(percentNow) == 35) {
-                    return;
-                }
-                var percentNext = parseInt(percentNow) - 4;
-
-                $('#progress_percent').text( percentNext + ' % ');
-                $('#progress_bar').attr('aria-valuenow', percentNext);
-                $('#progress_bar').css('width', percentNext + '%');
-
-                validateBTN( $('#progress_bar').attr('aria-valuenow') );
-            });
-
-            $('#nextBTN').click( function() {
-                var percentNow = $('#progress_bar').attr('aria-valuenow');
-                var percentNext = parseInt(percentNow) + 4;
-
-                $('#progress_percent').text( percentNext + ' % ');
-                $('#progress_bar').attr('aria-valuenow', percentNext);
-                $('#progress_bar').css('width', percentNext + '%');
-
-                validateBTN( $('#progress_bar').attr('aria-valuenow') );
-            });
-
             $('#completeBTN').click( function() {
                 var percentNow = parseInt( $('#progress_bar').attr('aria-valuenow') );
                 switch( percentNow ) {
-                    case 43:
+                    case 51:
                         $('#id_label').removeClass('text-danger');
 
                         $('#id_label').addClass('text-warning');
@@ -230,12 +205,12 @@
                         $('#step2-block').show();
                         $('#nextBTN').trigger('click');
                         break;
-                    case 59:
+                    case 63:
                         $('#completeBTN').html('<i class="fas fa-check"></i>&nbsp;&nbsp;&nbsp;Step 3 : Complete');
                         $('#step3-block').show();
                         $('#nextBTN').trigger('click');
                         break;
-                    case 87:
+                    case 83:
                         $('#id_label').removeClass('text-warning');
 
                         $('#id_label').addClass('text-success');
