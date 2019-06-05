@@ -3,8 +3,6 @@ from datetime import date, datetime
 from django.test import TestCase
 from django.http import JsonResponse
 from django.shortcuts import reverse
-from django.contrib.admin.sites import AdminSite
-from django.contrib.admin.options import ModelAdmin
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from model_mommy import mommy
@@ -20,7 +18,6 @@ from medicalreport.views import get_matched_patient
 from organisations.models import OrganisationGeneralPractice
 from .test_data.medical_file import MEDICAL_REPORT_WITH_ATTACHMENT_BYTES, MEDICAL_REPORT_BYTES, RAW_MEDICAL_XML
 
-from medicalreport.admin import ReferencePhrasesAdmin
 from medicalreport.templatetags.custom_filters import replace_ref_phrases
 from library.models import Library, LibraryHistory
 
@@ -434,15 +431,6 @@ class FinalReportTest(EmisAPITestCase):
     def test_view_returns_404_if_instruction_does_not_exist(self):
         response = self.client.get('/medicalreport/5/final-report/')
         self.assertEqual(404, response.status_code)
-
-class ReferencePhraseAdminTests(TestCase):
-    def setUp(self):
-        self.referphrase = ReferencePhrases.objects.create(name='father')
-        self.site = AdminSite()
-
-    def test_referencephraseadmin_str(self):
-        ref_phrase = ModelAdmin(ReferencePhrases, self.site)
-        self.assertEqual(str(ref_phrase), 'medicalreport.ModelAdmin')
 
 
 # class RedactReferencePhraseTest(TestCase):
