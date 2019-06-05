@@ -989,3 +989,7 @@ table#change-history tbody th {
 .column-name {
     width: 40%;
 }
+
+.model-referencephrases .column-name {
+    width: auto;
+}
