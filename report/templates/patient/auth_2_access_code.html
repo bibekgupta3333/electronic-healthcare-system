@@ -51,18 +51,46 @@
 
         </div>
     </div>
+
+    <input type="button" id="tc-modal" data-toggle="modal" data-target="#acceptTCs" style="display: none;">
+    <!-- Warnning Fade Modal For Terms & Conditions -->
+    <div class="modal fade" id="acceptTCs" tabindex="-1" role="dialog" aria-labelledby="TermsAndCondition" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white text-center">
+                    <h5 class="modal-title mx-auto" id="ModalLongTitle">Terms & Condition</h5>
+                </div>
+                <div class="modal-body bg-white text-center">
+                    <div class="col-12 text-center">
+                        <embed src="{% static 'documents/MediTCs.pdf' %}" width="100%" height="65%%" alt="pdf"/>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white">
+                    <button type="button" class="btn btn-lg btn-secondary" data-dismiss="modal">Go Back</button>
+                    <button id="acceptPolicy" type="button" class="btn btn-lg btn-primary" data-dismiss="modal" aria-label="Close">Accept</button>
+                </div>
+            </div>
+        </div>
+    </div>
     {% include 'patient/footer.html' %}
 </div>
 {% block Script %}
     <script>
+        $(document).ready(function () {
+            $('#acceptPolicy').click(function() {
+                $('#access_code_form').submit();
+            });
 
-    $('#access_report').on('click', function(e) {
-      if($('#id_access_code').val().length == 0) {
-          e.preventDefault();
-      }else{
-        $('#access_code_form').submit();
-      }
-    });
+            $('#access_report').on('click', function(e) {
+                e.preventDefault();
 
-</script>
+                if($('#id_access_code').val().length) {
+                    $('#tc-modal').click();
+                }
+                else {
+                    $('#id_access_code').focus();
+                }
+            });
+        });
+    </script>
 {% endblock %}
