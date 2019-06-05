@@ -46,6 +46,7 @@ class InstructionPatient(models.Model):
     patient_alternate_code = models.CharField(max_length=10, blank=True)
     patient_alternate_phone = models.CharField(max_length=255, blank=True)
     patient_emis_number = models.CharField(max_length=255, blank=True)
+    patient_acceptance = models.DateTimeField(null=True, blank=True, verbose_name='T&C Accpeted Date Time')
 
     class Meta:
         verbose_name = "Instruction Patient Information"
