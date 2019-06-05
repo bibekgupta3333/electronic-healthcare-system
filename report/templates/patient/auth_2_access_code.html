@@ -52,9 +52,8 @@
         </div>
     </div>
 
-    <input type="button" id="tc-modal" data-toggle="modal" data-target="#acceptTCs" style="display: none;">
     <!-- Warnning Fade Modal For Terms & Conditions -->
-    <div class="modal fade" id="acceptTCs" tabindex="-1" role="dialog" aria-labelledby="TermsAndCondition" aria-hidden="true">
+    <div class="modal fade" id="acceptTCs" tabindex="-1" data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="TermsAndCondition" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white text-center">
@@ -66,8 +65,22 @@
                     </div>
                 </div>
                 <div class="modal-footer bg-white">
-                    <button type="button" class="btn btn-lg btn-secondary" data-dismiss="modal">Go Back</button>
+                    <button id="refusePolicy" type="button" class="btn btn-lg btn-secondary" data-dismiss="modal">Go Back</button>
                     <button id="acceptPolicy" type="button" class="btn btn-lg btn-primary" data-dismiss="modal" aria-label="Close">Accept</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warning Fade Modal For Refusing T&C -->
+    <div class="modal fade" id="refuseTCs" tabindex="-1" data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="RfuseModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white text-center">
+                    <h5 class="modal-title mx-auto" id="ModalLongTitle">Warning</h5>
+                </div>
+                <div class="modal-body bg-white text-center">
+                    You can login again and accept T&Cs if you revisit the link in your email.
                 </div>
             </div>
         </div>
@@ -81,11 +94,21 @@
                 $('#access_code_form').submit();
             });
 
+            $('#refusePolicy').click(function() {
+                $('#acceptTCs').hide();
+                $('#refuseTCs').modal();
+
+                setTimeout(function(){
+                    $("#refuseTCs").modal('hide');
+                    window.location.href = "{% url 'accounts:logout' %}";
+                }, 3000);
+            });
+
             $('#access_report').on('click', function(e) {
                 e.preventDefault();
 
                 if($('#id_access_code').val().length) {
-                    $('#tc-modal').click();
+                    $('#acceptTCs').modal();
                 }
                 else {
                     $('#id_access_code').focus();
