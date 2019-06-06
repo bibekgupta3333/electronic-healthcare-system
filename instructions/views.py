@@ -101,7 +101,7 @@ def count_instructions(user: User, gp_practice_code: str, client_organisation: O
             'Completed': complete_count,
             'Rejected': rejected_count,
             'Finalising': finalise_count,
-            'Fail': fail_count,
+            'Rerun': fail_count,
         }
     elif page == 'fee_and_payment_pipeline':
         all_count = Instruction.objects.filter(query_condition, status__in=[INSTRUCTION_STATUS_PAID, INSTRUCTION_STATUS_COMPLETE]).count()
