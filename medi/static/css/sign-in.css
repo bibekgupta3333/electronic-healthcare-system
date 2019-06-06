@@ -67,10 +67,6 @@ body {
   height: 90%;
 }
 
-.modal-content, .modal-body, .container {
-  height: 100%;
-}
-
 .modal-pdf {
   height: 100%;
 }

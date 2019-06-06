@@ -16,6 +16,7 @@ urlpatterns = (
     path('manage-user/', views.manage_user, name='manage_user'),
     path('verify-password/', views.verify_password, name='verify_password'),
     path('update-permission/', views.update_permission, name='update_permission'),
+    path('update-notification/', views.update_notification, name='update_notification'),
     path('check-email/', views.check_email, name='check_email'),
     path('login/', views.login, name='login'),
     path('two-factor/', views.two_factor, name='two_factor'),
