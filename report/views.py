@@ -229,9 +229,8 @@ def sar_access_code(request, access_type, url):
                         return redirect_auth_limit(request)
 
                 if success_sms_pin or success_voice_pin:
-                    instruction_patient = instruction.patient_information
-                    instruction_patient.patient_acceptance = timezone.now()
-                    instruction_patient.save()
+                    instruction.patient_acceptance = timezone.now()
+                    instruction.save()
 
                     response = redirect('report:select-report',
                                         access_type=access_type)

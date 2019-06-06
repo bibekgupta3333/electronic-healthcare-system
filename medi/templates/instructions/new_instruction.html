@@ -130,8 +130,11 @@
                             <div class="col-md-12">&nbsp;</div>
                             <div class="row">
                                 <div class="col-md-3 rowTitle">Search GP Practice:</div>
-                                {% bootstrap_field nhs_form.gp_practice size='small' form_group_class='form-group col-md-6' show_label=False %}
+                                {% bootstrap_field nhs_form.gp_practice size='small' form_group_class='form-group col-md-6 mb-1' show_label=False %}
                                 <input type="hidden" name="gp_practice_name" id="id_gp_practice_name" />
+                                <small class="col-md-9">
+                                    Search in this field using either: General Practice name, first line of address or surgery postcode. Select the correct Surgery from the drop down list provided.
+                                </small>
                             </div>
                             <div class="col-md-12">&nbsp;</div>
                             <div class="row ">
