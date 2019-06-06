@@ -101,7 +101,7 @@ def count_instructions(user: User, gp_practice_code: str, client_organisation: O
             'Completed': complete_count,
             'Rejected': rejected_count,
             'Finalising': finalise_count,
-            'Fail': fail_count,
+            'Rerun': fail_count,
         }
     elif page == 'fee_and_payment_pipeline':
         all_count = Instruction.objects.filter(query_condition, status__in=[INSTRUCTION_STATUS_PAID, INSTRUCTION_STATUS_COMPLETE]).count()
@@ -1105,7 +1105,6 @@ def consent_contact(request, instruction_id, patient_emis_number):
 
         patient_email = request.POST.get('patient_email', '')
         patient_telephone_mobile = request.POST.get('patient_telephone_mobile', '')
-        patient_alternate_phone = request.POST.get('patient_alternate_phone', '')
 
         if request.POST.get('send-to-third'):
             if not PatientReportAuth.objects.filter(instruction=instruction):
@@ -1125,8 +1124,6 @@ def consent_contact(request, instruction_id, patient_emis_number):
             patient_instruction.patient_email = patient_email
             patient_instruction.patient_telephone_mobile = patient_telephone_mobile
             patient_instruction.patient_telephone_code = request.POST.get('patient_telephone_code', '')
-            patient_instruction.patient_alternate_phone = patient_alternate_phone
-            patient_instruction.patient_alternate_code = request.POST.get('patient_alternate_code', '')
             patient_instruction.patient_emis_number = patient_emis_number
             patient_instruction.save()
             gp_user = get_object_or_404(GeneralPracticeUser, user_id=request.user.id)
@@ -1148,7 +1145,6 @@ def consent_contact(request, instruction_id, patient_emis_number):
 
     patient_email = patient_registration.email() if not patient_instruction.patient_email else patient_instruction.patient_email
     patient_telephone_mobile = patient_registration.mobile_number() if not patient_instruction.patient_telephone_mobile else patient_instruction.patient_telephone_mobile
-    patient_alternate_phone = patient_registration.home_telephone() if not patient_instruction.patient_alternate_phone else patient_instruction.patient_alternate_phone
     date_format = patient_instruction.patient_dob.strftime("%d/%m/%Y")
     # Initial Patient Form
     patient_form = InstructionPatientForm(
@@ -1162,7 +1158,6 @@ def consent_contact(request, instruction_id, patient_emis_number):
             'patient_email': patient_email,
             'confirm_email': patient_email,
             'patient_telephone_mobile': patient_telephone_mobile,
-            'patient_alternate_phone': patient_alternate_phone,
             'patient_dob': date_format
         }
     )

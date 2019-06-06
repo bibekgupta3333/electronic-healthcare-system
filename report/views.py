@@ -6,6 +6,7 @@ from django.db.models import Sum, Q
 from instructions.model_choices import *
 from accounts.models import *
 
+from django.utils import timezone
 from django.core.mail import send_mail
 from django.contrib import messages
 from django.template import loader
@@ -135,6 +136,7 @@ def sar_access_code(request, access_type, url):
     access_code_form = AccessCodeForm()
     error_message = None
     third_party_authorisation = None
+
     if url:
         if access_type == PatientReportAuth.ACCESS_TYPE_PATIENT:
             patient_auth = PatientReportAuth.objects.filter(url=url).first()
@@ -227,6 +229,9 @@ def sar_access_code(request, access_type, url):
                         return redirect_auth_limit(request)
 
                 if success_sms_pin or success_voice_pin:
+                    instruction.patient_acceptance = timezone.now()
+                    instruction.save()
+
                     response = redirect('report:select-report',
                                         access_type=access_type)
                     response.set_cookie('verified_pin', report_auth)

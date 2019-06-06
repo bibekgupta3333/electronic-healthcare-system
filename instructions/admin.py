@@ -206,7 +206,7 @@ class InstructionAdmin(CustomImportExportModelAdmin):
     readonly_fields = ('medi_ref', 'get_client_org_name',)
     actions = ['export_status_report_as_csv', 'export_payment_as_csv', 'export_client_payment_as_csv']
     search_fields = [
-        'type'
+        'medi_ref', 'your_ref', 'patient_information__patient_first_name', 'patient_information__patient_last_name'
     ]
 
     fieldsets = (
@@ -264,13 +264,14 @@ class InstructionAdmin(CustomImportExportModelAdmin):
         return self.readonly_fields
 
     def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super(InstructionAdmin, self) \
+            .get_search_results(request, queryset, search_term)
         gp_organisations = [gp_org.pk for gp_org in OrganisationGeneralPractice.objects.filter(name__icontains=search_term)]
-        queryset = queryset.filter(
-            Q(type__icontains=search_term) |
+        queryset |= queryset.filter(
             Q(gp_practice__pk__in=gp_organisations) |
             Q(client_user__organisation__trading_name__icontains=search_term)
         )
-        return queryset, False
+        return queryset, use_distinct
 
     def client(self, instance):
         client_organisation = ''

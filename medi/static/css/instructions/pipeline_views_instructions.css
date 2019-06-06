@@ -38,3 +38,20 @@
   background-color: rgba(255 , 0, 0, 0.1);
   color: black;
 }
+
+#Rerun {
+  position: relative;
+}
+
+#rerun_comment {
+  display: none;
+  position: absolute;
+  width: 322px;
+  height: 48px;
+  top: 50px;
+  left: -200px;
+  text-align: center;
+  border: 2px solid;
+  background: #e7e6e6;
+  z-index: 100;
+}

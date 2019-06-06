@@ -148,7 +148,7 @@ def prepare_medicalreport_data(self, instruction_id, notify_mail=True):
                 medi_ref=instruction.medi_ref
             )
             body_message_2 = 'You can now proceed this instruction on this link {hyperlink_pipeline}.'.format(
-                                hyperlink_pipeline=settings.MDX_URL + reverse('instructions:view_pipeline')
+                                hyperlink_pipeline=settings.EMR_URL + reverse('instructions:view_pipeline')
                             )
             body_message = body_message_1 + body_message_2
             send_mail(
