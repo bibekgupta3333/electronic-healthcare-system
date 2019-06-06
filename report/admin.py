@@ -9,9 +9,9 @@ class ThirdPartyAuthorisationAdmin(admin.ModelAdmin):
 
         if obj.expired:
             send_mail(
-                'Medical Report Authorisation',
-                'Your access on SAR report from {patient_name} has been expired. Please contact {patient_name}'.format(
-                    patient_name=obj.patient_report_auth.patient.user.first_name,
+                'Medical Report Authorisation Expired',
+                'Your access to the SAR report for {ref_number} has expired. Please contact your client if a third party access extension is required.'.format(
+                    ref_number=obj.patient_report_auth.patient_report_auth.instruction.medi_ref,
                 ),
                 'Medidata',
                 [obj.email],

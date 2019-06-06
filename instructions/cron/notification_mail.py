@@ -57,7 +57,7 @@ def send_email_amra(instruction):
     try:
         send_mail(
             subject_email,
-            'Your instruction is not processed',
+            'Outstanding Instruction- Optimise your fees!',
             'MediData',
             list(gp_email),
             fail_silently=True,
@@ -125,8 +125,8 @@ def instruction_notification_sars():
             try:
                 if gp_managers and diff_date.days in date_period_admin:
                     send_mail(
-                        'Pending Instruction',
-                        'You have a pending or not started instruction. Click here {link} to see it.'.format(
+                        'Outstanding  Instruction',
+                        'You have an outstanding instruction. Click here {link} to see it.'.format(
                             link=settings.EMR_URL + reverse('instructions:view_pipeline')
                         ),
                         'MediData',
@@ -137,8 +137,10 @@ def instruction_notification_sars():
                     )
                 if instruction.gp_practice and instruction.gp_practice.organisation_email and diff_date.days in date_period_surgery:
                     send_mail(
-                        'Pending Instruction',
-                        'You have a pending or not started instruction.',
+                        'Outstanding  Instruction',
+                        'You have an outstanding instruction. Click here {link} to see it.'.format(
+                            link=settings.EMR_URL + reverse('instructions:view_pipeline')
+                        ),
                         'MediData',
                         [instruction.gp_practice.organisation_email],
                         fail_silently=True,
@@ -161,8 +163,8 @@ def send_email_to_practice_job():
         practice_preferences = PracticePreferences.objects.get(gp_organisation=gp_practice)
         if practice_preferences.notification == 'DIGEST':
             send_mail(
-                'Unstarted Instruction',
-                'You have unstarted instructions. Click here {link} to see it.'.format(link=settings.EMR_URL + reverse('instructions:view_pipeline')),
+                'New Instruction',
+                'You have a New Instruction(s). Click here {link} to view'.format(link=settings.EMR_URL + reverse('instructions:view_pipeline')),
                 'MediData',
                 [gp_practice.organisation_email],
                 fail_silently=True,
