@@ -421,10 +421,8 @@ h1 {
 }
 
 .modal-select-patient {
-    color: #797979;
-    !important;
-    background-color: white;
-    !important;
+    color: #797979 !important;
+    background-color: white !important;
 }
 
 .btn-editReportButton {
