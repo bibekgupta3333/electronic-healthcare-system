@@ -519,7 +519,7 @@ def instruction_invoice_payment_view(request):
         ('cost', Column(empty_values=(), verbose_name=cost_column_name)),
         ('fee_note', Column(empty_values=(), verbose_name='Fee Note', default='---'))
     ])
-    table.order_by = request.GET.get('sort', '-created')
+    table.order_by = request.GET.get('sort', 'status')
     RequestConfig(request, paginate={'per_page': 5}).configure(table)
 
     response = render(request, 'instructions/invoice_payment_pipline_view_instructions.html', {
