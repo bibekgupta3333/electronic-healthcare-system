@@ -89,7 +89,7 @@ def count_instructions(user: User, gp_practice_code: str, client_organisation: O
     complete_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_COMPLETE).count()
     rejected_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_REJECT).count()
     finalise_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_FINALISE).count()
-    fail_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_FAIL).count()
+    fail_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_RERUN).count()
     if page == 'pipeline_view':
         all_count = Instruction.objects.filter(query_condition).count()
         overall_instructions_number = {
@@ -127,7 +127,7 @@ def count_fee_sensitive(gp_practice_code: str) -> Dict[str, int]:
     new_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_NEW, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
     progess_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_PROGRESS, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
     final_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FINALISE, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
-    fail_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FAIL, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
+    fail_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_RERUN, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
 
     # Count date = 7
     expected_date_7days = timezone.now() - timedelta(days=7)
@@ -136,7 +136,7 @@ def count_fee_sensitive(gp_practice_code: str) -> Dict[str, int]:
     new_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_NEW, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
     progess_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_PROGRESS, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
     final_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FINALISE, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
-    fail_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FAIL, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
+    fail_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_RERUN, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
 
     # Count date = 11
     expected_date_11days = timezone.now() - timedelta(days=11)
@@ -145,7 +145,7 @@ def count_fee_sensitive(gp_practice_code: str) -> Dict[str, int]:
     new_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_NEW, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
     progess_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_PROGRESS, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
     final_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FINALISE, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
-    fail_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FAIL, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
+    fail_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_RERUN, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
 
     new_total_count = new_count_3days + new_count_7days + new_count_11days
     progress_total_count = progess_count_3days + progess_count_7days + progess_count_11days
@@ -158,7 +158,7 @@ def count_fee_sensitive(gp_practice_code: str) -> Dict[str, int]:
         'New': new_total_count,
         'In Progress': progress_total_count,
         'Finalising': final_total_count,
-        'Fail': fail_total_count
+        'Rerun': fail_total_count
     }
 
     return fee_sensitive_number
@@ -229,7 +229,7 @@ def count_model_search(request: HttpRequest, client_organisation: OrganisationCl
     complete_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_COMPLETE).count()
     rejected_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_REJECT).count()
     finalise_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_FINALISE).count()
-    fail_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_FAIL).count()
+    fail_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_RERUN).count()
     all_count = new_count + progress_count + paid_count + complete_count + rejected_count + finalise_count + fail_count
 
     overall_instructions_number = {
@@ -240,7 +240,7 @@ def count_model_search(request: HttpRequest, client_organisation: OrganisationCl
         'Completed': complete_count,
         'Rejected': rejected_count,
         'Finalising': finalise_count,
-        'Fail': fail_count,
+        'Rerun': fail_count,
     }
 
     return overall_instructions_number

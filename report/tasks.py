@@ -11,7 +11,7 @@ from medicalreport.models import AmendmentsForRecord
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.emisapiservices import services
 from instructions.models import Instruction
-from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_FAIL
+from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_RERUN
 from report.mobile import SendSMS
 from report.models import ExceptionMerge, UnsupportedAttachment
 import xhtml2pdf.pisa as pisa
@@ -272,7 +272,7 @@ def generate_medicalreport_with_attachment(self, instruction_info: dict, report_
             instruction_id=instruction_id,
             defaults={'file_detail': exception_detail},
         )
-        instruction.status = INSTRUCTION_STATUS_FAIL
+        instruction.status = INSTRUCTION_STATUS_RERUN
         instruction.save()
     else:
         msg_line_1 = "Your GP surgery has completed your SAR request. We have sent you an email to access a copy."
