@@ -607,7 +607,7 @@ def new_instruction(request):
             if practice_preferences[0].notification == 'NEW':
                 send_mail(
                     'New Instruction',
-                    'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
+                    'You have a new instruction. Click here {protocol}://{link} to view.'.format(
                         protocol=request.scheme,
                         link=request.get_host() + reverse('instructions:view_pipeline')
                     ),
@@ -622,7 +622,7 @@ def new_instruction(request):
                 create_addition_question(instruction, addition_question_formset)
             else:
                 send_mail(
-                    'Patient Notification',
+                    'New Instruction',
                     'Your instruction has been created',
                     'MediData',
                     [patient_form.cleaned_data['patient_email']],
@@ -630,13 +630,13 @@ def new_instruction(request):
                 )
 
             if instruction.type == AMRA_TYPE and not instruction.consent_form:
-                message = 'Your instruction has request consent form. Please upload or accept consent form in this link {protocol}://{link}'\
+                message = 'Your instruction requires a consent form. Please sign and upload or accept terms of consent here {protocol}://{link}'\
                     .format(
                         protocol=request.scheme,
                         link=request.get_host() + '/instruction/upload-consent/' + str(instruction.id) + '/'
                     )
                 send_mail(
-                    'Request consent',
+                    'Consent Request',
                     message,
                     'MediData',
                     [patient_form.cleaned_data['patient_email']],
@@ -648,8 +648,8 @@ def new_instruction(request):
             # Notification: client selected NHS GP
             if not gp_practice.live and not gp_practice.accept_policy:
                 send_mail(
-                    'NHS GP is selected',
-                    'Your client had selected NHS GP: {}'.format(gp_practice.name),
+                    'Non enabled GP Surgery',
+                    'Your client has selected: {GP_Surgery_Details}'.format(GP_Surgery_Details=gp_practice.name),
                     'MediData',
                     medidata_emails_list,
                     fail_silently=True,
