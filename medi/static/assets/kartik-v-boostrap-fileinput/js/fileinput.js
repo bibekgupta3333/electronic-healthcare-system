@@ -4457,7 +4457,7 @@
             uploadExtra: 'form data upload'
         },
         dropZoneTitle: 'Drag and drop files here.',
-        dropZoneDetail: 'You must upload a valid consent form to proceed with the instruction. Your instruction may be rejected by the Surgery if it is considered invalid.',
+        dropZoneDetail: 'You can upload the consent you have obtained from the patient, or a request from a third party. This will be added to the final record.',
         dropZoneClickTitle: '<br>(or click to select {files})',
         previewZoomButtonTitles: {
             prev: 'View previous file',
