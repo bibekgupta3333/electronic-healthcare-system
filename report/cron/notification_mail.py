@@ -10,6 +10,7 @@ from django.conf import settings
 
 event_logger = logging.getLogger('medidata.event')
 
+
 def report_notification_expired_authorisation_job():
     current_date = timezone.now().date()
     third_party_authorisations = ThirdPartyAuthorisation.objects.all()
@@ -19,9 +20,9 @@ def report_notification_expired_authorisation_job():
             authorisation.save()
             try:
                 send_mail(
-                    'Medical Report Authorisation',
-                    'Your access on SAR report from {patient_name} has been expired. Please contact {patient_name}'.format(
-                        patient_name=authorisation.patient_report_auth.patient.user.first_name,
+                    'Medical Report Authorisation Expired',
+                    'Your access to the SAR report for {ref_number} has expired. Please contact your client if a third party access extension is required.'.format(
+                        ref_number=authorisation.patient_report_auth.instruction.medi_ref,
                     ),
                     'MediData',
                     [authorisation.email],

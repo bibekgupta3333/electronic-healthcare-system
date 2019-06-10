@@ -25,7 +25,7 @@ event_logger = logging.getLogger('medidata.event')
 #todo add link
 def send_patient_mail(patient, gp_practice):
     send_mail(
-        'Completely eMR',
+        'Notification from your GP surgery',
         'Your instruction has been submitted',
         'MediData',
         [patient.email],

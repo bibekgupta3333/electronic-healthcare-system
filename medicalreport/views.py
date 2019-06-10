@@ -413,3 +413,8 @@ def trud_ivf(request: HttpRequest) -> HttpResponse:
 def trud_std(request: HttpRequest) -> HttpResponse:
     response = render(request, 'medicalreport/trud_std.html')
     return response
+
+@login_required(login_url='/accounts/login')
+def trud_other(request: HttpRequest) -> HttpResponse:
+    response = render(request, 'medicalreport/trud_other.html')
+    return response

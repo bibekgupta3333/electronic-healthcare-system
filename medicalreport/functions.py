@@ -288,7 +288,7 @@ def delete_additional_allergies_records(request: HttpRequest) -> None:
 
 def send_surgery_email(instruction: Instruction) -> None:
     send_mail(
-        'Medidata eMR: Your medical report is ready',
+        'Your medical report has been finalised',
         'Your instruction has been submitted',
         'MediData',
         [instruction.gp_practice.organisation_email],
