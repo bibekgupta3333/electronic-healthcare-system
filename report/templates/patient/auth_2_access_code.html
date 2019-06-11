@@ -65,7 +65,11 @@
                     </div>
                 </div>
                 <div class="modal-footer bg-white">
-                    <button id="refusePolicy" type="button" class="btn btn-lg btn-secondary" data-dismiss="modal">Go Back</button>
+                    <button id="refusePolicy" type="button" class="btn btn-lg btn-secondary"
+                        data-dismiss="modal"
+                        data-access_faield="{% url 'report:access-failed' %}">
+                        Go Back
+                    </button>
                     <button id="acceptPolicy" type="button" class="btn btn-lg btn-primary" data-dismiss="modal" aria-label="Close">Accept</button>
                 </div>
             </div>
@@ -95,13 +99,13 @@
             });
 
             $('#refusePolicy').click(function() {
-                $('#acceptTCs').hide();
-                $('#refuseTCs').modal();
+                var location_url = $(this).data('access_faield');
+
+                $('#acceptTCs').modal('hide');
 
                 setTimeout(function(){
-                    $("#refuseTCs").modal('hide');
-                    window.location.href = "{% url 'accounts:logout' %}";
-                }, 3000);
+                    window.location = location_url;
+                }, 500);
             });
 
             $('#access_report').on('click', function(e) {

@@ -38,7 +38,7 @@ def reset_password(request):
     for organisation_email in organisations:
         send_mail(
             'Reset password',
-            'User password has been changed by your manager.',
+            'Your eMR account password has been changed by your manager.',
             DEFAULT_FROM,
             [organisation_email],
             fail_silently=True,
@@ -287,7 +287,7 @@ def notify_password_reset(func):
                 if surgery_email:
                     send_mail(
                         'Reset password',
-                        '%s has requested a reset password.'%(user.__str__()),
+                        '{username} has requested a password reset..'.format(username=user.__str__()),
                         DEFAULT_FROM,
                         [surgery_email],
                         fail_silently=True,

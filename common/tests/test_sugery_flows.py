@@ -6,7 +6,7 @@ from django.core.files import File
 from django.core.management import call_command
 from unittest.mock import Mock
 from instructions.models import Instruction
-from instructions.model_choices import INSTRUCTION_STATUS_FINALISE, INSTRUCTION_STATUS_FAIL, INSTRUCTION_STATUS_COMPLETE
+from instructions.model_choices import INSTRUCTION_STATUS_FINALISE, INSTRUCTION_STATUS_RERUN, INSTRUCTION_STATUS_COMPLETE
 from payment.models import OrganisationFeeRate
 from django.test import tag
 
@@ -237,7 +237,7 @@ class SurgerySARSFlow(SurgeryOnboard):
     def test_instruction_files(self):
         instruction = Instruction.objects.get(pk=self.instruction.pk)
 
-        if instruction.status not in [INSTRUCTION_STATUS_FINALISE, INSTRUCTION_STATUS_FAIL, INSTRUCTION_STATUS_COMPLETE]:
+        if instruction.status not in [INSTRUCTION_STATUS_FINALISE, INSTRUCTION_STATUS_RERUN, INSTRUCTION_STATUS_COMPLETE]:
             self.fail("Instruction invalid status")
 
 
@@ -375,5 +375,5 @@ class SurgeryAMRAFlow(SurgeryOnboard):
             self.fail("Medical report is missing")
         if not instruction.final_raw_medical_xml_report:
             self.fail("Medical report xml is missing")
-        if instruction.status not in [INSTRUCTION_STATUS_FINALISE, INSTRUCTION_STATUS_FAIL, INSTRUCTION_STATUS_COMPLETE]:
+        if instruction.status not in [INSTRUCTION_STATUS_FINALISE, INSTRUCTION_STATUS_RERUN, INSTRUCTION_STATUS_COMPLETE]:
             self.fail("Instruction invalid status")

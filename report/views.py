@@ -132,6 +132,11 @@ def sar_request_code(request: HttpRequest, instruction_id: str, access_type: str
     })
 
 
+def sar_access_failed(request: HttpRequest) -> HttpResponse:
+    return render(request, 'patient/auth_2_access_failed.html')
+
+
+
 def sar_access_code(request, access_type, url):
     access_code_form = AccessCodeForm()
     error_message = None
@@ -463,8 +468,8 @@ def cancel_authorisation(request: HttpRequest, third_party_authorisation_id: str
 
     send_mail(
         'Medical Report Authorisation',
-        'Your access on SAR report from {patient_name} has been expired. Please contact {patient_name}'.format(
-            patient_name=report_auth.instruction.patient_information.patient_first_name,
+        'Your access to the SAR report for {ref_number} has expired. Please contact your client if a third party access extension is required.'.format(
+            ref_number=obj.patient_report_auth.patient_report_auth.instruction.medi_ref,
         ),
         'Medidata',
         [third_party_authorisation.email],
@@ -488,8 +493,8 @@ def extend_authorisation(request: HttpRequest, third_party_authorisation_id: str
         )
         send_mail(
             'Medical Report Authorisation',
-            'Your access on SAR report from {patient_name} has been extended. Please click {link} to access the report'.format(
-                patient_name=report_auth.instruction.patient_information.patient_first_name,
+            'Your access to the SAR report for {ref_number} has been extended. Please click {link} to access the report'.format(
+                ref_number=report_auth.instruction.medi_ref,
                 link=request.scheme + '://' + request.get_host() + reverse(
                     'report:request-code', kwargs={
                         'instruction_id': report_auth.instruction.id,
@@ -520,8 +525,8 @@ def renew_authorisation(request: HttpRequest, third_party_authorisation_id: str)
     )
     send_mail(
         'Medical Report Authorisation',
-        'Your access on SAR report from {patient_name} has been extended. Please click {link} to access the report'.format(
-            patient_name=report_auth.patient.user.first_name,
+        'Your access to the SAR report for {ref_number} has been extended. Please click {link} to access the report'.format(
+            ref_number=report_auth.instruction.medi_ref,
             link=request.scheme + '://' + request.get_host() + reverse(
                 'report:request-code', kwargs={
                     'instruction_id': report_auth.instruction.id,
