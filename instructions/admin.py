@@ -213,7 +213,7 @@ class InstructionAdmin(CustomImportExportModelAdmin):
         ('Instruction Information', {
             'fields': (
                 'status', 'get_client_org_name', 'client_user', 'gp_user', 'patient_information', 'type', 'gp_practice', 'date_range_from', 'date_range_to', 'your_ref', 'medi_ref',
-                'gp_title_from_client', 'gp_initial_from_client', 'gp_last_name_from_client', 'deactivated'
+                'gp_title_from_client', 'gp_initial_from_client', 'gp_last_name_from_client', 'deactivated', 'patient_acceptance'
             )
         }),
         ('Rejected Information', {
