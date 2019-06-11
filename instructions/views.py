@@ -442,6 +442,9 @@ def instruction_pipeline_view(request):
     if table_all:
         next_prev_data_all = calculate_next_prev(table_all.page, filter_status=filter_status, filter_type=filter_type)
 
+    if table_fee:
+        next_prev_data_fee = calculate_next_prev(table_fee.page, filter_status=filter_status, filter_type=filter_type)
+
     response = render(request, 'instructions/pipeline_views_instruction.html', {
         'user': user,
         'table_all': table_all,
