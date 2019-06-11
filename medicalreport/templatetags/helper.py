@@ -1,11 +1,11 @@
 from django import template
+from django.db.models.functions import Length
 
 from services.xml.problem import Problem
-from django.utils.html import format_html
 from datetime import date as Date
 from typing import List, Optional
-from instructions.models import Instruction
-from library.models import Library, LibraryHistory
+from library.models import LibraryHistory, Library
+
 register = template.Library()
 
 
@@ -64,9 +64,11 @@ def problem_xpaths(problem, problem_link_list):
     return list(set(xpaths))
 
 
-def render_toolbox_function_for_final_report(library_history: LibraryHistory = None, value: str = '', section: str = ''):
+def render_toolbox_function_for_final_report(library_history: LibraryHistory = None, xpath: str = '', value: str = '', libraries: Library=None, section: str = ''):
     section_library_history = library_history.filter(section=section)
     replace_all_values = {}
+    print('-----------------------'+section+'-----------------------')
+    print(value)
     for replace_all_history in library_history.filter(action=LibraryHistory.ACTION_REPLACE_ALL):
         # construction dict {'old_word_1': 'new_word_1', 'old_word_2': 'new_word_2', ...}
         replace_all_values[replace_all_history.old] = replace_all_history.new

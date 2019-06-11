@@ -5,6 +5,7 @@ from django.core.mail import send_mail
 from django.template import loader
 from django.utils.html import format_html
 from django.http import HttpRequest
+from django.db.models.functions import Length
 from django.shortcuts import redirect
 from django.utils import timezone
 from django.core.files.base import ContentFile
@@ -27,6 +28,7 @@ import uuid
 import logging
 import os
 import glob
+import re
 
 UI_DATE_FORMAT = '%m/%d/%Y'
 logger = logging.getLogger('timestamp')
@@ -168,7 +170,6 @@ def save_medical_report(instruction: Instruction, amendments_for_record: Amendme
         'instruction': instruction,
         'surgery_name': instruction.gp_practice,
     }
-    uuid_hex = uuid.uuid4().hex
     instruction.final_raw_medical_xml_report = str_xml.decode('utf-8')
     instruction.medical_report_byte = MedicalReport.get_pdf_file(params, raw=True)
     instruction.save()
@@ -326,10 +327,15 @@ def render_report_tool_box_function(header: str, xpath: str, section:str, librar
     temp_header = []  # temp for concat each splitted head to final_header
     final_header = header
     library_history = library_history if library_history else LibraryHistory.objects.filter(instruction=instruction)
+    replaced_indexes = set()
+    skip_amount_loop = 0
     if libraries:
+        libraries = libraries.order_by(Length('key').desc())
         for i, head in enumerate(split_head):
-            library_matched = False
-            highlight_html = '''
+            if skip_amount_loop == 0:
+                k = i
+                library_matched = False
+                highlight_html = '''
                     <span class="highlight-library d-inline-block">
                         <span class="{}">{}</span>
                         <span class="dropdown-options" data-guid="{}" data-word_idx="{}" data-section="{}">
@@ -340,12 +346,16 @@ def render_report_tool_box_function(header: str, xpath: str, section:str, librar
                     </span>
                 '''
 
-            for library in libraries:
-                if str.upper(library.key) == str.upper(head):
-                    library_matched = True
-                    highlight_class = 'bg-warning'
-                    if not library.value:
-                        highlight_html = '''
+                for library in libraries:
+                    step = len(library.key.split(' '))
+                    if k+step > len(split_head):
+                        break
+                    if str.upper(library.key) == str.upper(" ".join((split_head[k:k+step]))) and not replaced_indexes.intersection(set({k, k+step})):
+                        replace_word = " ".join((split_head[k:k+step]))
+                        library_matched = True
+                        highlight_class = 'bg-warning'
+                        if not library.value:
+                            highlight_html = '''
                                 <span class="highlight-library d-inline-block">
                                     <span class="{}">{}</span>
                                     <span class="dropdown-options" data-guid="{}" data-word_idx="{}" data-section="{}">
@@ -353,33 +363,38 @@ def render_report_tool_box_function(header: str, xpath: str, section:str, librar
                                     </span>
                                 </span>
                             '''
-                    for history in library_history:
-                        action = history.action
-                        if str.upper(history.old) == str.upper(head):
-                            if action == LibraryHistory.ACTION_REPLACE \
-                                    and history.guid == guid \
-                                    and history.index == i \
-                                    and history.section == section:
-                                head = history.new
-                                highlight_class = 'text-danger'
-                                break  # already matched HISTORY exist loop
-                            elif action == LibraryHistory.ACTION_HIGHLIGHT_REDACT \
-                                    and history.guid == guid \
-                                    and history.index == i \
-                                    and history.section == section:
-                                highlight_class = 'bg-dark text-dark'
-                                break  # already matched HISTORY exist loop
-                            elif action == LibraryHistory.ACTION_REPLACE_ALL:
-                                head = history.new
-                                highlight_class = 'text-danger'
-                                break  # already matched HISTORY exist loop
+                        for history in library_history:
+                            action = history.action
+                            if str.upper(history.old) == str.upper(" ".join((split_head[k:k+step]))):
+                                if action == LibraryHistory.ACTION_REPLACE \
+                                        and history.guid == guid \
+                                        and history.index == i \
+                                        and history.section == section:
+                                    replace_word = history.new
+                                    highlight_class = 'text-danger'
+                                    break  # already matched HISTORY exist loop
+                                elif action == LibraryHistory.ACTION_HIGHLIGHT_REDACT \
+                                        and history.guid == guid \
+                                        and history.index == i \
+                                        and history.section == section:
+                                    highlight_class = 'bg-dark text-dark'
+                                    break  # already matched HISTORY exist loop
+                                elif action == LibraryHistory.ACTION_REPLACE_ALL:
+                                    replace_word = history.new
+                                    highlight_class = 'text-danger'
+                                    break  # already matched HISTORY exist loop
 
-                    highlight_html = highlight_html.format(highlight_class, head, guid, i, section)
-                    temp_header.append(highlight_html)
-                    break  # already matched LIBRARY WORD exist loop
+                        replaced_indexes = replaced_indexes.union(set(list(range(k, k+step))))
+                        highlight_html = highlight_html.format(highlight_class, replace_word, guid, i, section)
+                        temp_header.append(highlight_html)
+                        skip_amount_loop = step-1
+                        break  # already matched LIBRARY WORD exist loop
+                k += 1
 
-            if not library_matched:
-                temp_header.append(head)
+                if not library_matched:
+                    temp_header.append(head)
+            else:
+                skip_amount_loop -= 1
 
         final_header = format_html(" ".join(temp_header))
 
