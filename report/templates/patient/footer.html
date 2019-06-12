@@ -32,7 +32,8 @@
                 </button>
                 <div class="container">
                     <div class="col-12 text-center modal-pdf">
-                        <embed src="{% static 'documents/PatientDataPolicy.pdf' %}" width="100%" height="100%" alt="pdf">
+                        {% comment %} <embed src="{% static 'documents/PatientDataPolicy.pdf' %}" width="100%" height="100%" alt="pdf"> {% endcomment %}
+                        <embed src="{% static 'documents/DataPolicy.pdf' %}" width="100%" height="100%" alt="pdf">
                     </div>
                 </div>
             </div>
