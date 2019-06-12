@@ -108,16 +108,20 @@
                 }, 500);
             });
 
-            $('#access_report').on('click', function(e) {
-                e.preventDefault();
+            if('{{ access_type }}' != 'third-party') {
+                $('#access_report').on('click', function(e) {
+                    e.preventDefault();
 
-                if($('#id_access_code').val().length) {
-                    $('#acceptTCs').modal();
-                }
-                else {
-                    $('#id_access_code').focus();
-                }
-            });
+                    if($('#id_access_code').val().length) {
+                        $('#acceptTCs').modal();
+                    }
+                    else {
+                        $('#id_access_code').focus();
+                    }
+                });
+            } else {
+                $('#id_access_code').focus();
+            }
         });
     </script>
 {% endblock %}
