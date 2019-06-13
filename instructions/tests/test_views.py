@@ -386,6 +386,37 @@ class TestInstructionPipelineView(TestInstructionBase):
         self.client.logout()
 
 
+class TestAllcatedUserChange(TestInstructionBase):
+
+    def setUp(self):
+        super().setUp()
+
+        self.gp_test_user = User.objects.create(
+            email = 'gpmanager2@gmail.com',
+            username = 'gpmanager2@gmail.com',
+            password = 'test1234')
+        self.gp_test_manager = GeneralPracticeUser.objects.create(
+            user=self.gp_test_user,
+            title='DR',
+            organisation=self.gp_practice_1,
+            role=GeneralPracticeUser.PRACTICE_MANAGER
+        )
+
+    def test_update_allocate_user(self):
+        self.client.force_login(self.gp_user)
+
+        post_params = {
+            'instruction_id': str(self.instruction_2.id),
+            'selected_gp_id': str(self.gp_test_manager.id)
+        }
+        response = self.client.post(
+            reverse('instructions:update_gp_allocated_user'),
+            post_params
+        )
+
+        self.assertEqual(302, response.status_code)
+
+
 class TestReviewInstruction(TestInstructionBase):
     def setUp(self):
         super().setUp()

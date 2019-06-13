@@ -87,6 +87,7 @@
                     </div>
                     <div class="row mt-3">
                         <div class="col-md-12">
+                            <div class="csrf">{% csrf_token %}</div>
                             {% render_table table_fee 'django_tables2/bootstrap.html' %}
                             {% bootstrap_pagination  parameter_name='page_t2' page=table_fee.page pages_to_show=5 size='small' %}
                         </div>
@@ -276,6 +277,28 @@
                     $('#All').button('toggle')
                 }
             }
+
+            $('.sel_gp_users').on('change', function(){
+                var instruction_id = $(this).closest('tr').data('id');
+                var selected_gp_id = $('option:selected', this).data('gp_id');
+                var csrf_element   = $(".csrf [name='csrfmiddlewaretoken']");
+
+                $.ajax({
+                    url : "{% url 'instructions:update_gp_allocated_user' %}",
+                    type: "POST",
+                    data : {
+                        csrfmiddlewaretoken: csrf_element[0].value,
+                        instruction_id: instruction_id,
+                        selected_gp_id: selected_gp_id
+                    }
+                })
+                .done(function(){
+                    create_alert('GP Allocated user is changed.', 'success');
+                })
+                .fail(function(){
+                    create_alert('Something went wrong, please try again.', 'error');
+                });
+            });
 
             if(getUrlParameter('type')){
                 $('#filterInstructionType').val(getUrlParameter('type'));

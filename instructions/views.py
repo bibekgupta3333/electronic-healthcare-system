@@ -860,6 +860,19 @@ def upload_consent(request, instruction_id):
         })
 
 
+@login_required(login_url='/accounts/login')
+def update_gp_allocated_user(request):
+    instruction = get_object_or_404(
+        Instruction, pk=request.POST['instruction_id'])
+    payload_gp_user = get_object_or_404(
+        GeneralPracticeUser, pk=request.POST['selected_gp_id'])
+
+    instruction.gp_user = payload_gp_user
+    instruction.save()
+
+    return redirect('accounts:view_users')
+
+
 #@silk_profile(name='Review Instruction')
 @login_required(login_url='/accounts/login')
 @check_permission
