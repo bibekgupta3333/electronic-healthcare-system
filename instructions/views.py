@@ -40,7 +40,7 @@ from medicalreport.functions import create_patient_report
 from template.models import TemplateInstruction
 from payment.models import GpOrganisationFee
 from report.models import PatientReportAuth
-from payment.model_choices import FEE_STATUS_INVALID_DETAIL, FEE_STATUS_INVALID_FEE
+from payment.model_choices import FEE_STATUS_INVALID_DETAIL, FEE_STATUS_INVALID_FEE, FEE_STATUS_NOT_SETUP_ALL
 #from silk.profiling.profiler import silk_profile
 
 from datetime import timedelta
@@ -66,7 +66,7 @@ def checkFeeStatus(gp_practice):
         else:
             fee_setup_status = None
     else:
-        fee_setup_status = FEE_STATUS_INVALID_FEE
+        fee_setup_status = FEE_STATUS_NOT_SETUP_ALL
     return fee_setup_status
 
 

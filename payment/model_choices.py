@@ -11,3 +11,4 @@ FEE_TYPE_CHOICE = (
 # Fee status for check setup fee progress.
 FEE_STATUS_INVALID_DETAIL = 1
 FEE_STATUS_INVALID_FEE = 2
+FEE_STATUS_NOT_SETUP_ALL = 3
