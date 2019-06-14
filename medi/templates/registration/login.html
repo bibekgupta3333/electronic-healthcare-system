@@ -46,11 +46,11 @@
                     </button>
                     <div class="container">
                         <div class="col-12 text-center modal-pdf">
-                            <div class="iframe" id="iframe">
-                                <object data="{% static 'documents/TermAndConditions.pdf' %}#view=FitH" height="500px" width="100%">
-                                    <embed data="{% static 'documents/TermAndConditions.pdf' %}"/>
-                                </object>
-                            </div>
+                            {% if 'demo' not in request.get_host %}
+                                <object data="{% static 'documents/TermAndConditions.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% else %}
+                                <object data="{% static 'documents/TermAndConditions[DEMO].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -67,9 +67,7 @@
                     <div class="container">
                         <div class="col-12 text-center modal-pdf">
                             <div class="iframe" id="iframe">
-                                <object data="{% static 'documents/DataPolicy.pdf' %}#view=FitH" height="500px" width="100%">
-                                    <embed data="{% static 'documents/DataPolicy.pdf' %}"/>
-                                </object>
+                                <object data="{% static 'documents/DataPolicy.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
                             </div>
                         </div>
                     </div>

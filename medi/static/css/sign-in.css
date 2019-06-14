@@ -75,3 +75,8 @@ body {
   border: 10px solid black;
   border-radius: 20px;
 }
+
+.modal-dialog-pdf {
+  height: 700px;
+  width: 100%;
+}
