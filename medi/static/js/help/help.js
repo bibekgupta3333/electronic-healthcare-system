@@ -37,7 +37,7 @@ function changeScreen( code ) {
             $('#preview-21').show();
             break;
         case 22:
-            url = 'https://player.vimeo.com/video/317073626';
+            url = 'https://player.vimeo.com/video/342198509';
             title = 'SARs video'
             $('#videoPlayerId').attr('src', url );
             $('#videoTitle').text( title );
