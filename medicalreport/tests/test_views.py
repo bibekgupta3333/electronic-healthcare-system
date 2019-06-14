@@ -458,7 +458,7 @@ class FinalReportTest(EmisAPITestCase):
 #         self.value = "Mr Chatterly's father had recently been diagnosed with lymphoma"
 #         self.result = "Mr Chatterly's [UNSPECIFIED THIRD PARTY] had recently been diagnosed with lymphoma"
 #         self.relations = dict()
-#         self.relations['relations'] = " " + " | ".join(relation.name for relation in ReferencePhrases.objects.all()) + " "
+#         relations = [relation.name.lower() for relation in ReferencePhrases.objects.all()]
 #         self.relations['word_library'] = Library.objects.filter(gp_practice=gp_practice)
 #         self.relations['xpath'] = ""
 #         self.relations['library_history'] = None
