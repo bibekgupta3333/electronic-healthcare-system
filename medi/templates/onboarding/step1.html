@@ -7,6 +7,7 @@
 
 
 {% block ExtraHead %}
+    <link href="{% static 'css/sign-in.css' %}" rel="stylesheet">
     <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
     <link href="{% static 'css/strongPass.css' %}" rel="stylesheet">
     <link href="{% static 'css/onboarding/onboarding.css' %}" rel="stylesheet"/>
@@ -190,7 +191,13 @@
                     </button>
                     <div class="container">
                         <div class="col-12 text-center">
-                            <embed src="{% static 'documents/TermAndConditions.pdf' %}" width="100%" height="450px" alt="pdf"/>
+                            {% if 'demo' in request.get_host %}
+                                <object data="{% static 'documents/TermAndConditions[DEMO].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% elif 'dev' in request.get_host %}
+                                <object data="{% static 'documents/TermAndConditions[DEV].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% else %}
+                                <object data="{% static 'documents/TermAndConditions.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

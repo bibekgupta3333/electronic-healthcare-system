@@ -240,10 +240,13 @@ def replace_ref_phrases(relations, value):
     library_history = relations.get('library_history')
     is_final_report = relations.get('is_final_report', False)
     xpaths = relations.get('xpath')
-    final_header = value
 
-    if relations['relations']:
-        value = re.sub(relations['relations'], " [UNSPECIFIED] ", value, flags=re.IGNORECASE)
+    if relations.get('relations'):
+        for val in value.split(' '):
+            if val.lower() in relations['relations']:
+                value = value.replace(val, "[UNSPECIFIED]")
+
+    final_header = value
 
     from medicalreport.functions import render_report_tool_box_function
     if libraries:
