@@ -122,34 +122,65 @@
 
 <div id="preview-53" class="another-block pdf-block">
     <label class="label-title" id="previewTitle">Terms & Conditions</label>
-    {% if 'demo' in request.get_host %}
-        <div class="iframe" id="iframe">
-            <object data="{% static 'documents/TermAndConditions[DEMO].pdf' %}#view=FitH" height="500px" width="100%"></object>
-        </div>
-        <a href="{% static 'documents/TermAndConditions[DEMO].pdf' %}" target="_blank">
-            <button type="button" class="btn btn-primary btn-block btn-lg">
-                <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
-            </button>
-        </a>
-    {% elif 'dev' in request.get_host %}
-        <div class="iframe" id="iframe">
-            <object data="{% static 'documents/TermAndConditions[DEV].pdf' %}#view=FitH" height="500px" width="100%"></object>
-        </div>
-        <a href="{% static 'documents/TermAndConditions[DEV].pdf' %}" target="_blank">
-            <button type="button" class="btn btn-primary btn-block btn-lg">
-                <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
-            </button>
-        </a>
+    {% if request.get_host == mdx_url or request.user.type == 'CLT' %}
+        {% if 'demo' in request.get_host %}
+            <div class="iframe" id="iframe">
+                <object data="{% static 'documents/ClientTermAndConditions[DEMO].pdf' %}#view=FitH" height="500px" width="100%"></object>
+            </div>
+            <a href="{% static 'documents/ClientTermAndConditions[DEMO].pdf' %}" target="_blank">
+                <button type="button" class="btn btn-primary btn-block btn-lg">
+                    <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
+                </button>
+            </a>
+        {% elif 'dev' in request.get_host %}
+            <div class="iframe" id="iframe">
+                <object data="{% static 'documents/ClientTermAndConditions[DEV].pdf' %}#view=FitH" height="500px" width="100%"></object>
+            </div>
+            <a href="{% static 'documents/ClientTermAndConditions[DEV].pdf' %}" target="_blank">
+                <button type="button" class="btn btn-primary btn-block btn-lg">
+                    <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
+                </button>
+            </a>
+        {% else %}
+            <div class="iframe" id="iframe">
+                <object data="{% static 'documents/ClientTermAndConditions.pdf' %}#view=FitH" height="500px" width="100%"></object>
+            </div>
+            <a href="{% static 'documents/ClientTermAndConditions.pdf' %}" target="_blank">
+                <button type="button" class="btn btn-primary btn-block btn-lg">
+                    <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
+                </button>
+            </a>
+        {% endif %}
     {% else %}
-        <div class="iframe" id="iframe">
-            <object data="{% static 'documents/TermAndConditions.pdf' %}#view=FitH" height="500px" width="100%"></object>
-        </div>
-        <a href="{% static 'documents/TermAndConditions.pdf' %}" target="_blank">
-            <button type="button" class="btn btn-primary btn-block btn-lg">
-                <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
-            </button>
-        </a>
-    {% endif %}
+        {% if 'demo' in request.get_host %}
+            <div class="iframe" id="iframe">
+                <object data="{% static 'documents/TermAndConditions[DEMO].pdf' %}#view=FitH" height="500px" width="100%"></object>
+            </div>
+            <a href="{% static 'documents/TermAndConditions[DEMO].pdf' %}" target="_blank">
+                <button type="button" class="btn btn-primary btn-block btn-lg">
+                    <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
+                </button>
+            </a>
+        {% elif 'dev' in request.get_host %}
+            <div class="iframe" id="iframe">
+                <object data="{% static 'documents/TermAndConditions[DEV].pdf' %}#view=FitH" height="500px" width="100%"></object>
+            </div>
+            <a href="{% static 'documents/TermAndConditions[DEV].pdf' %}" target="_blank">
+                <button type="button" class="btn btn-primary btn-block btn-lg">
+                    <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
+                </button>
+            </a>
+        {% else %}
+            <div class="iframe" id="iframe">
+                <object data="{% static 'documents/TermAndConditions.pdf' %}#view=FitH" height="500px" width="100%"></object>
+            </div>
+            <a href="{% static 'documents/TermAndConditions.pdf' %}" target="_blank">
+                <button type="button" class="btn btn-primary btn-block btn-lg">
+                    <i class="fas fa-search"></i>&nbsp;&nbsp;Click for Preview Mode
+                </button>
+            </a>
+        {% endif %}
+{% endif %}
 </div>
 
 <div id="preview-54" class="another-block pdf-block">

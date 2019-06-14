@@ -61,12 +61,22 @@
                 </div>
                 <div class="modal-body bg-white text-center">
                     <div class="col-12 text-center">
-                        {% if 'demo' in request.get_host %}
-                            <object data="{% static 'documents/MediTCs[DEMO].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
-                        {% elif 'dev' in request.get_host %}
-                            <object data="{% static 'documents/MediTCs[DEV].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                        {% if access_type == 'third-party' %}
+                            {% if 'demo' in request.get_host %}
+                                <object data="{% static 'documents/ThirdPartyTerms[DEMO].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% elif 'dev' in request.get_host %}
+                                <object data="{% static 'documents/ThirdPartyTerms[DEV].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% else %}
+                                <object data="{% static 'documents/ThirdPartyTerms.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% endif %}
                         {% else %}
-                            <object data="{% static 'documents/MediTCs.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% if 'demo' in request.get_host %}
+                                <object data="{% static 'documents/MediTCs[DEMO].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% elif 'dev' in request.get_host %}
+                                <object data="{% static 'documents/MediTCs[DEV].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% else %}
+                                <object data="{% static 'documents/MediTCs.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>
@@ -114,20 +124,16 @@
                 }, 500);
             });
 
-            if('{{ access_type }}' != 'third-party') {
-                $('#access_report').on('click', function(e) {
-                    e.preventDefault();
+            $('#access_report').on('click', function(e) {
+                e.preventDefault();
 
-                    if($('#id_access_code').val().length) {
-                        $('#acceptTCs').modal();
-                    }
-                    else {
-                        $('#id_access_code').focus();
-                    }
-                });
-            } else {
-                $('#id_access_code').focus();
-            }
+                if($('#id_access_code').val().length) {
+                    $('#acceptTCs').modal();
+                }
+                else {
+                    $('#id_access_code').focus();
+                }
+            });
         });
     </script>
 {% endblock %}
