@@ -3,7 +3,7 @@
     <div class="terms-policy mb-3 space-around">
         {% if not request.COOKIES.verified_pin %}
             {% if access_type == 'third-party' %}
-                <button id="MediTerms" type="button">ThirdParty Terms and Conditions</button>
+                <button id="MediTerms" type="button">Third Party Terms and Conditions</button>
             {% else %}
                 <button id="MediTerms" type="button">Patient Terms and Conditions</button>
             {% endif %}
