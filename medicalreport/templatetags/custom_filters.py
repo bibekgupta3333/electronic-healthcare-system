@@ -243,8 +243,11 @@ def replace_ref_phrases(relations, value):
 
     if relations.get('relations'):
         for val in value.split(' '):
-            if val.lower() in relations['relations']:
+            original_val = val.lower()
+            if original_val in relations['relations']:
                 value = value.replace(val, "[UNSPECIFIED]")
+            elif "'s" in original_val and original_val[:-2]:
+                value = value.replace(original_val[:-2], "[UNSPECIFIED]")
 
     final_header = value
 
