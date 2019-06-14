@@ -16,7 +16,13 @@
                 </button>
                 <div class="container">
                     <div class="col-12 text-center modal-pdf">
-                        <embed src="{% static 'documents/PatientTermAndConditions.pdf' %}#view=FitH" height="700px" width="100%">
+                        {% if 'demo' in request.get_host %}
+                            <object data="{% static 'documents/MediTCs[DEMO].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                        {% elif 'dev' in request.get_host %}
+                            <object data="{% static 'documents/MediTCs[DEV].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                        {% else %}
+                            <object data="{% static 'documents/MediTCs.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -32,7 +38,7 @@
                 </button>
                 <div class="container">
                     <div class="col-12 text-center modal-pdf">
-                        <embed src="{% static 'documents/DataPolicy.pdf' %}#view=FitH" height="700px" width="100%">
+                        <embed src="{% static 'documents/DataPolicy.pdf' %}#view=FitH" class="modal-dialog-pdf">
                     </div>
                 </div>
             </div>

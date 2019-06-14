@@ -46,10 +46,22 @@
                     </button>
                     <div class="container">
                         <div class="col-12 text-center modal-pdf">
-                            {% if 'demo' not in request.get_host %}
-                                <object data="{% static 'documents/TermAndConditions.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% if request.get_host == mdx_url %}
+                                {% if 'demo' in request.get_host %}
+                                    <object data="{% static 'documents/ClientTermAndConditions[DEMO].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                                {% elif 'dev' in request.get_host %}
+                                    <object data="{% static 'documents/ClientTermAndConditions[DEV].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                                {% else %}
+                                    <object data="{% static 'documents/ClientTermAndConditions.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                                {% endif %}
                             {% else %}
-                                <object data="{% static 'documents/TermAndConditions[DEMO].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                                {% if 'demo' in request.get_host %}
+                                    <object data="{% static 'documents/TermAndConditions[DEMO].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                                {% elif 'dev' in request.get_host %}
+                                    <object data="{% static 'documents/TermAndConditions[DEV].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                                {% else %}
+                                    <object data="{% static 'documents/TermAndConditions.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                                {% endif %}
                             {% endif %}
                         </div>
                     </div>
