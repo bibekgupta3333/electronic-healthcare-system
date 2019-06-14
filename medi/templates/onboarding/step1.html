@@ -190,10 +190,12 @@
                     </button>
                     <div class="container">
                         <div class="col-12 text-center">
-                            {% if 'demo' not in request.get_host %}
-                                <object data="{% static 'documents/TermAndConditions.pdf' %}#view=FitH" height="700px" width="100%"></object>
+                            {% if 'demo' in request.get_host %}
+                                <object data="{% static 'documents/TermAndConditions[DEMO].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% elif 'dev' in request.get_host %}
+                                <object data="{% static 'documents/TermAndConditions[DEV].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
                             {% else %}
-                                <object data="{% static 'documents/TermAndConditions[DEMO].pdf' %}#view=FitH" height="700px" width="100%"></object>
+                                <object data="{% static 'documents/TermAndConditions.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
                             {% endif %}
                         </div>
                     </div>
