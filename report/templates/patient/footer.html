@@ -2,7 +2,11 @@
 <div class="footer">
     <div class="terms-policy mb-3 space-around">
         {% if not request.COOKIES.verified_pin %}
-            <button id="MediTerms" type="button">Patient Terms and Conditions</button>
+            {% if access_type == 'third-party' %}
+                <button id="MediTerms" type="button">Third Party Terms and Conditions</button>
+            {% else %}
+                <button id="MediTerms" type="button">Patient Terms and Conditions</button>
+            {% endif %}
         {% endif %}
         <p>&copy; MediData Exchange 2019 <button id="MediPolicy" type="button">Data Policy</button></p>
     </div>
@@ -16,7 +20,23 @@
                 </button>
                 <div class="container">
                     <div class="col-12 text-center modal-pdf">
-                        <embed src="{% static 'documents/PatientTermAndConditions.pdf' %}#view=FitH" height="700px" width="100%">
+                        {% if access_type == 'third-party' %}
+                            {% if 'demo' in request.get_host %}
+                                <object data="{% static 'documents/ThirdPartyTerms[DEMO].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% elif 'dev' in request.get_host %}
+                                <object data="{% static 'documents/ThirdPartyTerms[DEV].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% else %}
+                                <object data="{% static 'documents/ThirdPartyTerms.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% endif %}
+                        {% else %}
+                            {% if 'demo' in request.get_host %}
+                                <object data="{% static 'documents/MediTCs[DEMO].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% elif 'dev' in request.get_host %}
+                                <object data="{% static 'documents/MediTCs[DEV].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% else %}
+                                <object data="{% static 'documents/MediTCs.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% endif %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -32,7 +52,7 @@
                 </button>
                 <div class="container">
                     <div class="col-12 text-center modal-pdf">
-                        <embed src="{% static 'documents/DataPolicy.pdf' %}#view=FitH" height="700px" width="100%">
+                        <embed src="{% static 'documents/DataPolicy.pdf' %}#view=FitH" class="modal-dialog-pdf">
                     </div>
                 </div>
             </div>
