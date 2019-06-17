@@ -409,6 +409,36 @@ def summry_report(request: HttpRequest) -> HttpResponse:
                 })
 
 
+def send_third_party_message(third_party_form, request_scheme, request_get_host, report_auth):
+    phone_number = ''
+
+    if third_party_form.office_phone_number:
+        phone_number = third_party_form.get_office_phone_e164()
+    elif third_party_form.family_phone_number:
+        phone_number = third_party_form.get_family_phone_e164()
+
+    if phone_number:
+        last_three_digits = phone_number[-3:]
+
+    send_mail(
+        'Completed SAR Request',
+        '',
+        'Medidata',
+        [third_party_form.email],
+        fail_silently = True,
+        html_message = loader.render_to_string('third_parties_email.html', {
+            'ref_number': third_party_form.case_reference,
+            'report_link': request_scheme + '://' + request_get_host + reverse(
+                'report:request-code', kwargs = {
+                    'instruction_id': report_auth.instruction.id,
+                    'access_type': PatientReportAuth.ACCESS_TYPE_THIRD_PARTY,
+                    'url': third_party_form.unique
+                }),
+            'last_three_digits': last_three_digits
+        })
+    )
+
+
 def add_third_party_authorisation(request: HttpRequest, report_auth_id: str) -> HttpResponse:
     report_auth = get_object_or_404(PatientReportAuth, id=report_auth_id)
     third_party_form = ThirdPartyAuthorisationForm()
@@ -420,32 +450,11 @@ def add_third_party_authorisation(request: HttpRequest, report_auth_id: str) -> 
             event_logger.info('CREATED third party authorised model ID {model_id}'.format(
                 model_id=third_party_authorisation.id)
             )
-            phone_number = ''
-            if third_party_authorisation.office_phone_number:
-                phone_number = third_party_authorisation.get_office_phone_e164()
-            elif third_party_authorisation.family_phone_number:
-                phone_number = third_party_authorisation.get_family_phone_e164()
-
-            if phone_number:
-                last_three_digits = phone_number[-3:]
-
-            send_mail(
-                'Completed SAR Request',
-                '',
-                'Medidata',
-                [third_party_authorisation.email],
-                fail_silently=True,
-                html_message=loader.render_to_string('third_parties_email.html', {
-                    'ref_number': third_party_authorisation.case_reference,
-                    'report_link': request.scheme + '://' + request.get_host() + reverse(
-                        'report:request-code', kwargs={
-                            'instruction_id': report_auth.instruction.id,
-                            'access_type': PatientReportAuth.ACCESS_TYPE_THIRD_PARTY,
-                            'url': third_party_authorisation.unique
-                        }),
-                    'last_three_digits': last_three_digits
-                })
-            )
+            send_third_party_message(
+                third_party_authorisation,
+                request.scheme,
+                request.get_host(),
+                report_auth)
 
             return redirect('report:select-report', access_type=PatientReportAuth.ACCESS_TYPE_PATIENT)
 
