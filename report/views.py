@@ -136,7 +136,6 @@ def sar_access_failed(request: HttpRequest) -> HttpResponse:
     return render(request, 'patient/auth_2_access_failed.html')
 
 
-
 def sar_access_code(request, access_type, url):
     access_code_form = AccessCodeForm()
     error_message = None
