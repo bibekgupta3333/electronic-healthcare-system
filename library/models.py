@@ -46,5 +46,3 @@ class LibraryHistory(TimeStampedModel):
     guid = models.CharField(max_length=255, blank=True, verbose_name='Guid')
     section = models.CharField(max_length=30, blank=True, verbose_name='Medical Redaction Section')
     index = models.PositiveIntegerField(null=True)
-    index_start = models.PositiveIntegerField(null=True)
-    index_end = models.PositiveIntegerField(null=True)

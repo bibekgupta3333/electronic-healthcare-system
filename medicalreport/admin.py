@@ -1,5 +1,5 @@
 from django.contrib import admin
-from medicalreport.models import ReferencePhrases, AmendmentsForRecord
+from medicalreport.models import ReferencePhrases
 
 
 class ReferencePhrasesAdmin(admin.ModelAdmin):
