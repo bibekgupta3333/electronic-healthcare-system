@@ -16,6 +16,6 @@ class ProblemLinkListTest(XMLTestCase):
 
     def test_xpaths(self):
         self.assertListEqual(
-            [".//Referral[GUID='3487623']"],
+            [".//Event[GUID='{32DD97D5-EFF6-4ACF-9E65-F7A40C8F469B}']"],
             self.problem_link_list.xpaths()
         )

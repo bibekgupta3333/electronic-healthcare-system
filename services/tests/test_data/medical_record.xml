@@ -554,6 +554,7 @@
       </ElementList>
     </Consultation>
     <Consultation>
+      <GUID>{259980BC-ED45-4585-885D-A56279843A61}</GUID>
       <ElementList>
         <ConsultationElement>
           <Event>
@@ -621,6 +622,66 @@
               <MapCode>228273003</MapCode>
               <MapScheme>SNOMED</MapScheme>
             </Code>
+          </Event>
+        </ConsultationElement>
+        <ConsultationElement>
+          <FileStatus>0</FileStatus>
+          <DisplayOrder>0</DisplayOrder>
+          <ProblemSection>1</ProblemSection>
+          <Header>
+            <Term>Problem</Term>
+          </Header>
+          <Event>
+            <DBID>500139164</DBID>
+            <RefID>500139164</RefID>
+            <GUID>{32DD97D5-EFF6-4ACF-9E65-F7A40C8F469B}</GUID>
+            <FileStatus>0</FileStatus>
+            <AssignedDate>07/11/2016</AssignedDate>
+            <DatePart>4</DatePart>
+            <AssignedTime>14:00:00</AssignedTime>
+            <AuthorID>
+              <DBID>2670</DBID>
+              <RefID>2670</RefID>
+              <GUID>{BB68030C-E801-46D2-8ACB-DC141DEE0851}</GUID>
+            </AuthorID>
+            <OriginalAuthor>
+              <User>
+                <DBID>2670</DBID>
+                <RefID>2670</RefID>
+                <GUID>{BB68030C-E801-46D2-8ACB-DC141DEE0851}</GUID>
+              </User>
+              <SystemDate>30/01/2018 18:04:24</SystemDate>
+            </OriginalAuthor>
+            <DisplayTerm>Essential hypertension</DisplayTerm>
+            <PolicyID>-1</PolicyID>
+            <Code>
+              <Value>G20..</Value>
+              <Scheme>READ2</Scheme>
+              <Term>Essential hypertension</Term>
+              <MapCode>59621000</MapCode>
+              <MapScheme>SNOMED</MapScheme>
+            </Code>
+            <TermID>
+              <Value>G20</Value>
+              <Scheme>READ2</Scheme>
+              <Term>Essential hypertension</Term>
+              <MapCode>59621000</MapCode>
+              <MapScheme>SNOMED</MapScheme>
+            </TermID>
+            <ProblemLinkList>
+              <Link>
+                <Target>
+                  <DBID>137</DBID>
+                  <RefID>137</RefID>
+                  <GUID>23423</GUID>
+                  <FileStatus>0</FileStatus>
+                </Target>
+                <LinkType>0</LinkType>
+              </Link>
+            </ProblemLinkList>
+            <Episodicity>3</Episodicity>
+            <Abnormal>0</Abnormal>
+            <EventType>1</EventType>
           </Event>
         </ConsultationElement>
       </ElementList>

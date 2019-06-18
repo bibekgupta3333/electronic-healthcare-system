@@ -13,7 +13,10 @@ class ProblemLinkList(XMLModelBase):
 
     def xpaths(self) -> List[str]:
         xpaths = self.__parent_xpath() + self.__problem_xpath()
-        return list(set(xpaths))
+        for xpath in xpaths:
+            if 'Event' in xpath:
+                return [xpath]
+        return []
 
     # private
     def __parent_xpath(self) -> List[str]:
