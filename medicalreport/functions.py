@@ -302,8 +302,15 @@ def send_surgery_email(instruction: Instruction) -> None:
 
 
 def create_patient_report(request: HttpRequest, instruction: Instruction) -> None:
-    unique_url = uuid.uuid4().hex
-    PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
+    unique_url = ''
+    patient_report_auth = PatientReportAuth.objects.filter(instruction=instruction)
+
+    if not patient_report_auth:
+        unique_url = uuid.uuid4().hex
+        PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
+    else:
+        unique_url = patient_report_auth.first().url
+
     instruction_info = {
         'id': instruction.id,
         'medical_report_file_name': instruction.medical_report.name.split('/')[-1],
@@ -314,6 +321,7 @@ def create_patient_report(request: HttpRequest, instruction: Instruction) -> Non
         'host': request.get_host(),
         'unique_url': unique_url
     }
+
     if settings.CELERY_ENABLED:
         generate_medicalreport_with_attachment.delay(instruction_info, report_link_info)
     else:
