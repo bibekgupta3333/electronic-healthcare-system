@@ -216,7 +216,7 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         },
         user=request.user)
 
-    relations = [relation.name.lower() for relation in ReferencePhrases.objects.all()]
+    relations = [relation.name for relation in ReferencePhrases.objects.all()]
     sensitive_conditions = dict()
     sensitive_conditions['snome'] = set(NhsSensitiveConditions.objects.all().values_list('snome_code', flat=True))
     sensitive_conditions['readcodes'] = NhsSensitiveConditions.get_sensitives_readcode()
@@ -301,7 +301,7 @@ def submit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         instruction
     )
     attachments = medical_record_decorator.attachments
-    relations = [relation.name.lower() for relation in ReferencePhrases.objects.all()]
+    relations = [relation.name for relation in ReferencePhrases.objects.all()]
     initial_prepared_by = request.user.userprofilebase.generalpracticeuser.pk
     if redaction.prepared_by:
         initial_prepared_by = redaction.prepared_by.pk
@@ -384,7 +384,7 @@ def final_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         final_raw_medical_xml_report = instruction.medical_xml_report.read().decode('utf-8')
     medical_record_decorator = MedicalReportDecorator(final_raw_medical_xml_report, instruction)
     attachments = medical_record_decorator.attachments
-    relations = [relation.name.lower() for relation in ReferencePhrases.objects.all()]
+    relations = [relation.name for relation in ReferencePhrases.objects.all()]
 
     response = render(request, 'medicalreport/final_report.html', {
         'header_title': header_title,
