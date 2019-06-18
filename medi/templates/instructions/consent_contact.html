@@ -103,27 +103,18 @@
                                                                 <h6><strong>Contact information</strong></h6>
                                                             </div>
                                                             <div class="row mt-4">
-                                                                <div class="col-md-4 rowTitle">Email</div>
+                                                                <div class="col-md-4 rowTitle">Email<span class="text-danger asterisk">*</span></div>
                                                                 {% bootstrap_field patient_form.patient_email size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
                                                             </div>
                                                             <div class="row mt-4">
-                                                                <div class="col-md-4 rowTitle">Confirm Email</div>
+                                                                <div class="col-md-4 rowTitle">Confirm Email<span class="text-danger asterisk">*</span></div>
                                                                 {% bootstrap_field patient_form.confirm_email size='small' form_group_class='col-md-8' show_label=false placeholder='' %}
                                                             </div>
                                                             <div class="row mt-4">
-                                                                <div class="col-md-4 rowTitle">Mobile Phone</div>
+                                                                <div class="col-md-4 rowTitle">Mobile Phone<span class="text-danger asterisk">*</span></div>
                                                                 <div class="col-md-8">
                                                                     {% bootstrap_field patient_form.patient_telephone_mobile size='small' show_label=false placeholder='' %}
                                                                     {% bootstrap_field patient_form.patient_telephone_code %}
-                                                                </div>
-                                                            </div>
-                                                            <div class="row mt-4">
-                                                                <div class="col-md-4">
-                                                                    <label for="id_patient_alternate_phone" class="col-form-label">Alternate Phone <br> (optional)</label>
-                                                                </div>
-                                                                <div class="col-md-8">
-                                                                    {% bootstrap_field patient_form.patient_alternate_phone size='small' show_label=false placeholder='' %}
-                                                                    {% bootstrap_field patient_form.patient_alternate_code %}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -343,7 +334,7 @@
                                     </div>
                                     <div class="col-6 d-flex justify-content-center align-items-center text-center patient-content">
                                         <div class="alert alert-dark alert-dismissible fade show">
-                                            <strong>Warning:</strong> It is the Surgery's responsibility to ensure that all consent forms are signed correctly by the patient and the Surgery, where appropriate.
+                                            <strong>Warning:</strong> It is your responsibility to ensure Patient consent is in place before proceeding to process this SAR.
                                         </div>
                                     </div>
                                 </div>
@@ -497,7 +488,7 @@
                     <h5 class="modal-title mx-auto" id="ModalLongTitle">Warning</h5>
                 </div>
                 <div class="modal-body bg-white" style="color: black; text-align: center;">
-                Sorry, you may only upload a <strong>PDF</string> file.
+                Sorry, you may only upload a <strong>PDF, JPG, JPEG</strong> or <strong>TIFF</strong> file.
                 </div>
                 <div class="modal-footer bg-white">
                     <button type="button" class="btn btn-secondary btn-lg mx-auto" data-dismiss="modal">Go Back</button>
@@ -595,7 +586,7 @@
             else if($('#id_patient_email').val() !='' && $('#confirm_email').val() =='') {
                 setTimeout(function(){$("#confirmDialog").popup('show')}, 300);
             }
-            else if( $('#id_patient_telephone_mobile').val().length > 11 && $('#id_patient_alternate_phone').val().length > 11 ) {
+            else if( $('#id_patient_telephone_mobile').val().length > 11 ) {
                 $('#AsyncOptionModal').modal('hide');
                 return false;
             }
@@ -609,7 +600,6 @@
         });
 
         setUpTel("id_patient_telephone_mobile", "id_patient_telephone_code");
-        setUpTel("id_patient_alternate_phone", "id_patient_alternate_code");
         setUpTel("id_office_phone_number", "id_office_phone_number_code");
 
         $('.InstructionPatientForm input').attr('readonly', true);
@@ -619,6 +609,7 @@
                 theme: 'fas',
                 showUpload: false,
                 showPreview: false,
+                allowedFileExtensions: ['jpg', 'jpeg', 'tiff', 'pdf'],
                 {% if mdx_consent_form_data.path %}
                     initialPreview: [
                         "{{ mdx_consent_form_data.path }}"
@@ -638,6 +629,7 @@
             $("#id_mdx_consent").fileinput({
                 theme: 'fas',
                 showUpload: false,
+                allowedFileExtensions: ['jpg', 'jpeg', 'tiff', 'pdf'],
                 {% if mdx_consent_form_data.path %}
                     initialPreview: [
                         "{{ mdx_consent_form_data.path }}"
@@ -684,14 +676,6 @@
             var mdx_loaded = $('.file-caption-name').last().attr('title');
             var is_allowed = true;
 
-            if (mdx_loaded) {
-                file_extension = mdx_loaded.split('.').pop();
-
-                if (file_extension != 'pdf') {
-                    $('#wrongFileType').click();
-                    is_allowed = false;
-                }
-            }
             if (is_allowed) {
                 $('#proceedBtn').blur();
 
@@ -700,9 +684,19 @@
                     $('#permit_modal_button').click();
                 }
                 else {
-                    if ($('#ch-confirmed-agreement').is(':checked') && $('#id_patient_email').val() == '') {
-                        $('#noEmailAddress').click();
-                        is_allowed =false;
+                    if ($('#ch-confirmed-agreement').is(':checked')) {
+                        if ($('#id_patient_email').val() == '') {
+                            $('#id_patient_email').focus();
+                            is_allowed = false;
+                        }
+                        else if ($('#confirm_email').val() == '') {
+                            $('#confirm_email').focus();
+                            is_allowed = false;
+                        }
+                        else if ($('#id_patient_telephone_mobile').val() == '') {
+                            $('#id_patient_telephone_mobile').focus();
+                            is_allowed = false;
+                        }
                     }
                     if (is_allowed && $('#ch-report-third-party').is(':checked')) {
                         if (!$('#id_email_1').val() || !$('#id_email_2').val() || !$('#id_office_phone_number').val()) {
@@ -728,7 +722,12 @@
         $('#id_mdx_consent').on('change', function(){
             var mdx_loaded = $('.file-caption-name').last().attr('title');
             if (mdx_loaded){
-                $('#id_mdx_consent_loaded').val('loaded');
+                file_extension = mdx_loaded.split('.').pop();
+
+                if (!['pdf', 'jpg', 'jpeg', 'tiff'].includes(file_extension)) {
+                    $('.fileinput-remove').click();
+                    $('#wrongFileType').click();
+                }
             }
         });
         $('#saveBtn').click(function(){

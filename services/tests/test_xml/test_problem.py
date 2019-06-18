@@ -69,6 +69,6 @@ class ProblemTest(XMLTestCase):
 
     def test_xpaths(self):
         self.assertCountEqual(
-            [".//Event[GUID='98764']", ".//Consultation[GUID='23423']"],
+            [".//Event[GUID='98764']"],
             self.problems[0].xpaths()
         )

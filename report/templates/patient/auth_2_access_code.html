@@ -51,18 +51,89 @@
 
         </div>
     </div>
+
+    <!-- Warnning Fade Modal For Terms & Conditions -->
+    <div class="modal fade" id="acceptTCs" tabindex="-1" data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="TermsAndCondition" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white text-center">
+                    <h5 class="modal-title mx-auto" id="ModalLongTitle">Terms & Condition</h5>
+                </div>
+                <div class="modal-body bg-white text-center">
+                    <div class="col-lg-12 col-md-12 col-sm-12 text-center">
+                        {% if access_type == 'third-party' %}
+                            {% if 'demo' in request.get_host %}
+                                <object data="{% static 'documents/ThirdPartyTerms[DEMO].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% elif 'dev' in request.get_host %}
+                                <object data="{% static 'documents/ThirdPartyTerms[DEV].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% else %}
+                                <object data="{% static 'documents/ThirdPartyTerms.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% endif %}
+                        {% else %}
+                            {% if 'demo' in request.get_host %}
+                                <object data="{% static 'documents/MediTCs[DEMO].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% elif 'dev' in request.get_host %}
+                                <object data="{% static 'documents/MediTCs[DEV].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% else %}
+                                <object data="{% static 'documents/MediTCs.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="modal-footer bg-white">
+                    <button id="refusePolicy" type="button" class="btn btn-lg btn-secondary"
+                        data-dismiss="modal"
+                        data-access_faield="{% url 'report:access-failed' %}">
+                        Go Back
+                    </button>
+                    <button id="acceptPolicy" type="button" class="btn btn-lg btn-primary" data-dismiss="modal" aria-label="Close">Accept</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warning Fade Modal For Refusing T&C -->
+    <div class="modal fade" id="refuseTCs" tabindex="-1" data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="RfuseModal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white text-center">
+                    <h5 class="modal-title mx-auto" id="ModalLongTitle">Warning</h5>
+                </div>
+                <div class="modal-body bg-white text-center">
+                    You can login again and accept T&Cs if you revisit the link in your email.
+                </div>
+            </div>
+        </div>
+    </div>
     {% include 'patient/footer.html' %}
 </div>
 {% block Script %}
     <script>
+        $(document).ready(function () {
+            $('#acceptPolicy').click(function() {
+                $('#access_code_form').submit();
+            });
 
-    $('#access_report').on('click', function(e) {
-      if($('#id_access_code').val().length == 0) {
-          e.preventDefault();
-      }else{
-        $('#access_code_form').submit();
-      }
-    });
+            $('#refusePolicy').click(function() {
+                var location_url = $(this).data('access_faield');
 
-</script>
+                $('#acceptTCs').modal('hide');
+
+                setTimeout(function(){
+                    window.location = location_url;
+                }, 500);
+            });
+
+            $('#access_report').on('click', function(e) {
+                e.preventDefault();
+
+                if($('#id_access_code').val().length) {
+                    $('#acceptTCs').modal();
+                }
+                else {
+                    $('#id_access_code').focus();
+                }
+            });
+        });
+    </script>
 {% endblock %}

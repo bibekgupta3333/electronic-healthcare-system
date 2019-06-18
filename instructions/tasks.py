@@ -144,15 +144,15 @@ def prepare_medicalreport_data(self, instruction_id, notify_mail=True):
         instruction.status = INSTRUCTION_STATUS_PROGRESS
         instruction.save()
         if notify_mail:
-            body_message_1 = 'The redaction processes are now complete for instruction {medi_ref}. '.format(
+            body_message_1 = 'The redaction process is now complete for instruction {medi_ref}.'.format(
                 medi_ref=instruction.medi_ref
             )
-            body_message_2 = 'You can now proceed this instruction on this link {hyperlink_pipeline}.'.format(
-                                hyperlink_pipeline=settings.MDX_URL + reverse('instructions:view_pipeline')
+            body_message_2 = ' Click here {link} to complete the report.'.format(
+                                link=settings.EMR_URL + reverse('instructions:view_pipeline')
                             )
             body_message = body_message_1 + body_message_2
             send_mail(
-                'Redaction process now complete for instruction {medi_ref}'.format(medi_ref=instruction.medi_ref),
+                'Redaction Process now Complete {medi_ref}'.format(medi_ref=instruction.medi_ref),
                 body_message,
                 'MediData',
                 [instruction.gp_user.user.email, instruction.gp_practice.organisation_email],

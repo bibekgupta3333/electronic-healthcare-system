@@ -86,7 +86,7 @@ def step1(request: HttpRequest) -> HttpResponse:
             else:
                 password = generate_password(initial_range=1, body_rage=12, tail_rage=1)
                 gp_organisation.operating_system_salt_and_encrypted_password = password
-                gp_organisation.operating_system_username = PREFIX_EMIS_USER + gp_organisation.emis_org_code
+                gp_organisation.operating_system_username = PREFIX_EMIS_USER + gp_organisation.operating_system_organisation_code
             gp_organisation.save()
 
             if not OrganisationFeeRate.objects.filter(default=True).exists():

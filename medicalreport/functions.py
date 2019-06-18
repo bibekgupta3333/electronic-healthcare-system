@@ -150,7 +150,7 @@ def save_medical_report(instruction: Instruction, amendments_for_record: Amendme
         instruction.medical_xml_report.delete()
 
     medical_record_decorator = MedicalReportDecorator(parse_xml, instruction)
-    relations = " " + " | ".join(relation.name for relation in ReferencePhrases.objects.all()) + " "
+    relations = [relation.name.lower() for relation in ReferencePhrases.objects.all()]
 
     gp_org = instruction.gp_user.organisation
     word_library = Library.objects.filter(gp_practice=gp_org)
@@ -289,7 +289,7 @@ def delete_additional_allergies_records(request: HttpRequest) -> None:
 
 def send_surgery_email(instruction: Instruction) -> None:
     send_mail(
-        'Medidata eMR: Your medical report is ready',
+        'Your medical report has been finalised',
         'Your instruction has been submitted',
         'MediData',
         [instruction.gp_practice.organisation_email],
@@ -303,8 +303,15 @@ def send_surgery_email(instruction: Instruction) -> None:
 
 
 def create_patient_report(request: HttpRequest, instruction: Instruction) -> None:
-    unique_url = uuid.uuid4().hex
-    PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
+    unique_url = ''
+    patient_report_auth = PatientReportAuth.objects.filter(instruction=instruction)
+
+    if not patient_report_auth:
+        unique_url = uuid.uuid4().hex
+        PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
+    else:
+        unique_url = patient_report_auth.first().url
+
     instruction_info = {
         'id': instruction.id,
         'medical_report_file_name': instruction.medical_report.name.split('/')[-1],
@@ -315,6 +322,7 @@ def create_patient_report(request: HttpRequest, instruction: Instruction) -> Non
         'host': request.get_host(),
         'unique_url': unique_url
     }
+
     if settings.CELERY_ENABLED:
         generate_medicalreport_with_attachment.delay(instruction_info, report_link_info)
     else:

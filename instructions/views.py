@@ -89,7 +89,7 @@ def count_instructions(user: User, gp_practice_code: str, client_organisation: O
     complete_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_COMPLETE).count()
     rejected_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_REJECT).count()
     finalise_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_FINALISE).count()
-    fail_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_FAIL).count()
+    fail_count = Instruction.objects.filter(query_condition, status=INSTRUCTION_STATUS_RERUN).count()
     if page == 'pipeline_view':
         all_count = Instruction.objects.filter(query_condition).count()
         overall_instructions_number = {
@@ -101,7 +101,7 @@ def count_instructions(user: User, gp_practice_code: str, client_organisation: O
             'Completed': complete_count,
             'Rejected': rejected_count,
             'Finalising': finalise_count,
-            'Fail': fail_count,
+            'Rerun': fail_count,
         }
     elif page == 'fee_and_payment_pipeline':
         all_count = Instruction.objects.filter(query_condition, status__in=[INSTRUCTION_STATUS_PAID, INSTRUCTION_STATUS_COMPLETE]).count()
@@ -127,7 +127,7 @@ def count_fee_sensitive(gp_practice_code: str) -> Dict[str, int]:
     new_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_NEW, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
     progess_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_PROGRESS, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
     final_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FINALISE, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
-    fail_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FAIL, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
+    fail_count_3days = instruction_query_set.filter(status=INSTRUCTION_STATUS_RERUN, created__range=(from_expected_date_3days, to_expected_date_3days)).count()
 
     # Count date = 7
     expected_date_7days = timezone.now() - timedelta(days=7)
@@ -136,7 +136,7 @@ def count_fee_sensitive(gp_practice_code: str) -> Dict[str, int]:
     new_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_NEW, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
     progess_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_PROGRESS, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
     final_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FINALISE, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
-    fail_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FAIL, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
+    fail_count_7days = instruction_query_set.filter(status=INSTRUCTION_STATUS_RERUN, created__range=(from_expected_date_7days, to_expected_date_7days)).count()
 
     # Count date = 11
     expected_date_11days = timezone.now() - timedelta(days=11)
@@ -145,7 +145,7 @@ def count_fee_sensitive(gp_practice_code: str) -> Dict[str, int]:
     new_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_NEW, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
     progess_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_PROGRESS, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
     final_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FINALISE, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
-    fail_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_FAIL, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
+    fail_count_11days = instruction_query_set.filter(status=INSTRUCTION_STATUS_RERUN, created__range=(from_expected_date_11days, to_expected_date_11days)).count()
 
     new_total_count = new_count_3days + new_count_7days + new_count_11days
     progress_total_count = progess_count_3days + progess_count_7days + progess_count_11days
@@ -158,7 +158,7 @@ def count_fee_sensitive(gp_practice_code: str) -> Dict[str, int]:
         'New': new_total_count,
         'In Progress': progress_total_count,
         'Finalising': final_total_count,
-        'Fail': fail_total_count
+        'Rerun': fail_total_count
     }
 
     return fee_sensitive_number
@@ -229,7 +229,7 @@ def count_model_search(request: HttpRequest, client_organisation: OrganisationCl
     complete_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_COMPLETE).count()
     rejected_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_REJECT).count()
     finalise_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_FINALISE).count()
-    fail_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_FAIL).count()
+    fail_count = instruction_query_set.filter(status=INSTRUCTION_STATUS_RERUN).count()
     all_count = new_count + progress_count + paid_count + complete_count + rejected_count + finalise_count + fail_count
 
     overall_instructions_number = {
@@ -240,7 +240,7 @@ def count_model_search(request: HttpRequest, client_organisation: OrganisationCl
         'Completed': complete_count,
         'Rejected': rejected_count,
         'Finalising': finalise_count,
-        'Fail': fail_count,
+        'Rerun': fail_count,
     }
 
     return overall_instructions_number
@@ -442,6 +442,9 @@ def instruction_pipeline_view(request):
     if table_all:
         next_prev_data_all = calculate_next_prev(table_all.page, filter_status=filter_status, filter_type=filter_type)
 
+    if table_fee:
+        next_prev_data_fee = calculate_next_prev(table_fee.page, filter_status=filter_status, filter_type=filter_type)
+
     response = render(request, 'instructions/pipeline_views_instruction.html', {
         'user': user,
         'table_all': table_all,
@@ -519,7 +522,7 @@ def instruction_invoice_payment_view(request):
         ('cost', Column(empty_values=(), verbose_name=cost_column_name)),
         ('fee_note', Column(empty_values=(), verbose_name='Fee Note', default='---'))
     ])
-    table.order_by = request.GET.get('sort', '-created')
+    table.order_by = request.GET.get('sort', 'status')
     RequestConfig(request, paginate={'per_page': 5}).configure(table)
 
     response = render(request, 'instructions/invoice_payment_pipline_view_instructions.html', {
@@ -607,7 +610,7 @@ def new_instruction(request):
             if practice_preferences[0].notification == 'NEW':
                 send_mail(
                     'New Instruction',
-                    'You have a new instruction. Click here {protocol}://{link} to see it.'.format(
+                    'You have a new instruction. Click here {protocol}://{link} to view.'.format(
                         protocol=request.scheme,
                         link=request.get_host() + reverse('instructions:view_pipeline')
                     ),
@@ -622,7 +625,7 @@ def new_instruction(request):
                 create_addition_question(instruction, addition_question_formset)
             else:
                 send_mail(
-                    'Patient Notification',
+                    'New Instruction',
                     'Your instruction has been created',
                     'MediData',
                     [patient_form.cleaned_data['patient_email']],
@@ -630,13 +633,13 @@ def new_instruction(request):
                 )
 
             if instruction.type == AMRA_TYPE and not instruction.consent_form:
-                message = 'Your instruction has request consent form. Please upload or accept consent form in this link {protocol}://{link}'\
+                message = 'Your instruction requires a consent form. Please sign and upload or accept terms of consent here {protocol}://{link}'\
                     .format(
                         protocol=request.scheme,
                         link=request.get_host() + '/instruction/upload-consent/' + str(instruction.id) + '/'
                     )
                 send_mail(
-                    'Request consent',
+                    'Consent Request',
                     message,
                     'MediData',
                     [patient_form.cleaned_data['patient_email']],
@@ -648,8 +651,8 @@ def new_instruction(request):
             # Notification: client selected NHS GP
             if not gp_practice.live and not gp_practice.accept_policy:
                 send_mail(
-                    'NHS GP is selected',
-                    'Your client had selected NHS GP: {}'.format(gp_practice.name),
+                    'Non enabled GP Surgery',
+                    'Your client has selected: {GP_Surgery_Details}'.format(GP_Surgery_Details=gp_practice.name),
                     'MediData',
                     medidata_emails_list,
                     fail_silently=True,
@@ -1105,7 +1108,6 @@ def consent_contact(request, instruction_id, patient_emis_number):
 
         patient_email = request.POST.get('patient_email', '')
         patient_telephone_mobile = request.POST.get('patient_telephone_mobile', '')
-        patient_alternate_phone = request.POST.get('patient_alternate_phone', '')
 
         if request.POST.get('send-to-third'):
             if not PatientReportAuth.objects.filter(instruction=instruction):
@@ -1125,8 +1127,6 @@ def consent_contact(request, instruction_id, patient_emis_number):
             patient_instruction.patient_email = patient_email
             patient_instruction.patient_telephone_mobile = patient_telephone_mobile
             patient_instruction.patient_telephone_code = request.POST.get('patient_telephone_code', '')
-            patient_instruction.patient_alternate_phone = patient_alternate_phone
-            patient_instruction.patient_alternate_code = request.POST.get('patient_alternate_code', '')
             patient_instruction.patient_emis_number = patient_emis_number
             patient_instruction.save()
             gp_user = get_object_or_404(GeneralPracticeUser, user_id=request.user.id)
@@ -1148,7 +1148,6 @@ def consent_contact(request, instruction_id, patient_emis_number):
 
     patient_email = patient_registration.email() if not patient_instruction.patient_email else patient_instruction.patient_email
     patient_telephone_mobile = patient_registration.mobile_number() if not patient_instruction.patient_telephone_mobile else patient_instruction.patient_telephone_mobile
-    patient_alternate_phone = patient_registration.home_telephone() if not patient_instruction.patient_alternate_phone else patient_instruction.patient_alternate_phone
     date_format = patient_instruction.patient_dob.strftime("%d/%m/%Y")
     # Initial Patient Form
     patient_form = InstructionPatientForm(
@@ -1162,7 +1161,6 @@ def consent_contact(request, instruction_id, patient_emis_number):
             'patient_email': patient_email,
             'confirm_email': patient_email,
             'patient_telephone_mobile': patient_telephone_mobile,
-            'patient_alternate_phone': patient_alternate_phone,
             'patient_dob': date_format
         }
     )

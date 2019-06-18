@@ -146,18 +146,61 @@
             </form>
         {% endif %}
 
-            <div class="modal" id="permission_modal" tabindex="-1" role="dialog">
-              <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                  <div class="modal-body">
-                    <p>Permissions have been updated</p>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
-                  </div>
-                </div>
-              </div>
+        {% if request.user.type == 'GP' %}
+            <div class="card-deck surgery-management">
+                <form method="POST" id="preferencesForm" action="{% url 'accounts:update_notification' %}" class="col-md-12 px-0">
+                    {% csrf_token %}
+                    <div class="card contactPreferences mt-4">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Contact Preferences</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mt-2">
+                                <div class="col-md-5"><label>Incoming Report Request Notifications: </label></div>
+                                <div class="col-md-5">
+                                    {% bootstrap_field gp_preferences_form.notification size='small' show_label=false %}
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-5"><label>MediData can contact me for feedback about the platform </label></div>
+                                <div class="col-md-7">
+                                    <div class="pretty p-default">
+                                        {{ gp_preferences_form.contact_feedback }}
+                                        <div class="state p-primary"><label></label></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-5"><label>Please contact me for updates on features and other developments </label></div>
+                                <div class="col-md-7">
+                                    <div class="pretty p-default">
+                                        {{ gp_preferences_form.contact_updates }}
+                                        <div class="state p-primary"><label></label></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
+        {% endif %}
+
+        <div class="modal" id="permission_modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <p>Permissions have been updated</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     {% if show_pop_up == 'show'%}
         <script>
@@ -193,6 +236,20 @@
             $('input.search').on('keyup click', function () {
                 filterGlobal();
             } );
+
+            $('#id_notification').on('change', function(){
+                $.ajax({
+                    url : "{% url 'accounts:update_notification' %}",
+                    type: 'POST',
+                    data : $('#preferencesForm').serialize()
+                })
+                .done(function(){
+                    create_alert('Notification setting has been changed.', 'success');
+                })
+                .fail(function(){
+                    create_alert('Something went wrong, please try again.', 'error');
+                });
+            });
 
             $('.pager').hide();
             if(getUrlParameter('status')){

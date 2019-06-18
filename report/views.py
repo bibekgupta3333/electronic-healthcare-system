@@ -6,6 +6,7 @@ from django.db.models import Sum, Q
 from instructions.model_choices import *
 from accounts.models import *
 
+from django.utils import timezone
 from django.core.mail import send_mail
 from django.contrib import messages
 from django.template import loader
@@ -131,10 +132,15 @@ def sar_request_code(request: HttpRequest, instruction_id: str, access_type: str
     })
 
 
+def sar_access_failed(request: HttpRequest) -> HttpResponse:
+    return render(request, 'patient/auth_2_access_failed.html')
+
+
 def sar_access_code(request, access_type, url):
     access_code_form = AccessCodeForm()
     error_message = None
     third_party_authorisation = None
+
     if url:
         if access_type == PatientReportAuth.ACCESS_TYPE_PATIENT:
             patient_auth = PatientReportAuth.objects.filter(url=url).first()
@@ -227,6 +233,9 @@ def sar_access_code(request, access_type, url):
                         return redirect_auth_limit(request)
 
                 if success_sms_pin or success_voice_pin:
+                    instruction.patient_acceptance = timezone.now()
+                    instruction.save()
+
                     response = redirect('report:select-report',
                                         access_type=access_type)
                     response.set_cookie('verified_pin', report_auth)
@@ -399,6 +408,36 @@ def summry_report(request: HttpRequest) -> HttpResponse:
                 })
 
 
+def send_third_party_message(third_party_form, request_scheme, request_get_host, report_auth):
+    phone_number = ''
+
+    if third_party_form.office_phone_number:
+        phone_number = third_party_form.get_office_phone_e164()
+    elif third_party_form.family_phone_number:
+        phone_number = third_party_form.get_family_phone_e164()
+
+    if phone_number:
+        last_three_digits = phone_number[-3:]
+
+    send_mail(
+        'Completed SAR Request',
+        '',
+        'Medidata',
+        [third_party_form.email],
+        fail_silently = True,
+        html_message = loader.render_to_string('third_parties_email.html', {
+            'ref_number': third_party_form.case_reference,
+            'report_link': request_scheme + '://' + request_get_host + reverse(
+                'report:request-code', kwargs = {
+                    'instruction_id': report_auth.instruction.id,
+                    'access_type': PatientReportAuth.ACCESS_TYPE_THIRD_PARTY,
+                    'url': third_party_form.unique
+                }),
+            'last_three_digits': last_three_digits
+        })
+    )
+
+
 def add_third_party_authorisation(request: HttpRequest, report_auth_id: str) -> HttpResponse:
     report_auth = get_object_or_404(PatientReportAuth, id=report_auth_id)
     third_party_form = ThirdPartyAuthorisationForm()
@@ -410,32 +449,11 @@ def add_third_party_authorisation(request: HttpRequest, report_auth_id: str) -> 
             event_logger.info('CREATED third party authorised model ID {model_id}'.format(
                 model_id=third_party_authorisation.id)
             )
-            phone_number = ''
-            if third_party_authorisation.office_phone_number:
-                phone_number = third_party_authorisation.get_office_phone_e164()
-            elif third_party_authorisation.family_phone_number:
-                phone_number = third_party_authorisation.get_family_phone_e164()
-
-            if phone_number:
-                last_three_digits = phone_number[-3:]
-
-            send_mail(
-                'Completed SAR Request',
-                '',
-                'Medidata',
-                [third_party_authorisation.email],
-                fail_silently=True,
-                html_message=loader.render_to_string('third_parties_email.html', {
-                    'ref_number': third_party_authorisation.case_reference,
-                    'report_link': request.scheme + '://' + request.get_host() + reverse(
-                        'report:request-code', kwargs={
-                            'instruction_id': report_auth.instruction.id,
-                            'access_type': PatientReportAuth.ACCESS_TYPE_THIRD_PARTY,
-                            'url': third_party_authorisation.unique
-                        }),
-                    'last_three_digits': last_three_digits
-                })
-            )
+            send_third_party_message(
+                third_party_authorisation,
+                request.scheme,
+                request.get_host(),
+                report_auth)
 
             return redirect('report:select-report', access_type=PatientReportAuth.ACCESS_TYPE_PATIENT)
 
@@ -458,8 +476,8 @@ def cancel_authorisation(request: HttpRequest, third_party_authorisation_id: str
 
     send_mail(
         'Medical Report Authorisation',
-        'Your access on SAR report from {patient_name} has been expired. Please contact {patient_name}'.format(
-            patient_name=report_auth.instruction.patient_information.patient_first_name,
+        'Your access to the SAR report for {ref_number} has expired. Please contact your client if a third party access extension is required.'.format(
+            ref_number=obj.patient_report_auth.patient_report_auth.instruction.medi_ref,
         ),
         'Medidata',
         [third_party_authorisation.email],
@@ -483,8 +501,8 @@ def extend_authorisation(request: HttpRequest, third_party_authorisation_id: str
         )
         send_mail(
             'Medical Report Authorisation',
-            'Your access on SAR report from {patient_name} has been extended. Please click {link} to access the report'.format(
-                patient_name=report_auth.instruction.patient_information.patient_first_name,
+            'Your access to the SAR report for {ref_number} has been extended. Please click {link} to access the report'.format(
+                ref_number=report_auth.instruction.medi_ref,
                 link=request.scheme + '://' + request.get_host() + reverse(
                     'report:request-code', kwargs={
                         'instruction_id': report_auth.instruction.id,
@@ -515,8 +533,8 @@ def renew_authorisation(request: HttpRequest, third_party_authorisation_id: str)
     )
     send_mail(
         'Medical Report Authorisation',
-        'Your access on SAR report from {patient_name} has been extended. Please click {link} to access the report'.format(
-            patient_name=report_auth.patient.user.first_name,
+        'Your access to the SAR report for {ref_number} has been extended. Please click {link} to access the report'.format(
+            ref_number=report_auth.instruction.medi_ref,
             link=request.scheme + '://' + request.get_host() + reverse(
                 'report:request-code', kwargs={
                     'instruction_id': report_auth.instruction.id,

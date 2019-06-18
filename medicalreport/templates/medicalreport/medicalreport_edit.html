@@ -56,12 +56,12 @@
                 </div>
                 <div class="modal fade" id="trud-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-sm">
-                        <div class="modal-content sensitive-information-instructions">
-                            <h6>Sensitive conditions</h6>
-                            <ul>
-                                <li><a href="{% url 'medicalreport:trud_ivf' %}">IVF</a></li>
-                                <li><a href="{% url 'medicalreport:trud_std' %}">STD</a></li>
-                            </ul>
+                        <div class="modal-content sensitive-information-instructions text-center">
+                            <h6><strong>Sensitive conditions</strong></h6>
+                                <a href="{% url 'medicalreport:trud_ivf' %}" class="btn btn-primary btn-block col-12" role="button" aria-pressed="true">IVF</a>
+                                <a href="{% url 'medicalreport:trud_std' %}" class="btn btn-primary btn-block col-12" role="button" aria-pressed="true">STD</a>
+                                <a href="{% url 'medicalreport:trud_other' %}" class="btn btn-primary btn-block col-12" role="button" aria-pressed="true">Other</a>
+                            </div>
                         </div>
                     </div>
                 </div>

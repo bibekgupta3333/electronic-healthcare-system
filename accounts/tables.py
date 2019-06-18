@@ -97,7 +97,7 @@ class AccountTable(tables.Table):
             'Completed': 'badge-success',
             'Rejected': 'badge-danger',
             'Finalising': 'badge-secondary',
-            'Fail': 'badge-dark'
+            'Rerun': 'badge-dark'
         }
         return format_html('<h5><span class="status badge {}">{}</span></h5></a>', STATUS_DICT[value], value)
 

@@ -61,7 +61,7 @@ def problem_xpaths(problem, problem_link_list):
         problem_link_xpaths += link.xpaths()
 
     xpaths = problem.xpaths() + problem_link_xpaths
-    return list(set(xpaths))
+    return [xpaths[0]]
 
 
 def render_toolbox_function_for_final_report(library_history: LibraryHistory = None, xpath: str = '', value: str = '', libraries: Library=None, section: str = ''):

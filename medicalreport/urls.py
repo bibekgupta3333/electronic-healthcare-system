@@ -19,4 +19,5 @@ urlpatterns = [
     path('<int:instruction_id>/download-medicalreport/', views.download_medicalreport, name='download_medicalreport'),
     path('trud-ivf', views.trud_ivf, name="trud_ivf"),
     path('trud-std', views.trud_std, name="trud_std"),
+    path('trud-other', views.trud_other, name="trud_other"),
 ]

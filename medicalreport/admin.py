@@ -2,5 +2,9 @@ from django.contrib import admin
 from medicalreport.models import ReferencePhrases, AmendmentsForRecord
 
 
-admin.site.register(ReferencePhrases)
-admin.site.register(AmendmentsForRecord)
+class ReferencePhrasesAdmin(admin.ModelAdmin):
+    list_display = ['name']
+    search_fields = ['name']
+
+
+admin.site.register(ReferencePhrases, ReferencePhrasesAdmin)
