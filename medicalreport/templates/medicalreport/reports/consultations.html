@@ -14,11 +14,13 @@
                 </tr>
                 {% for item in dict_data %}
                     {% for key, value in item.items %}
-                        {% if key != 'xpath' and key != 'map_code' %}
-                            <tr>
-                                <td><label style="font-weight:bold;">{{key}}</label>: {{relations|replace_ref_phrases:value}}</td>
-                            </tr>
-                        {% endif %}
+                        {% with relations=relations|add_xpath:item %}
+                            {% if key != 'xpath' and key != 'map_code' %}
+                                <tr>
+                                    <td><label style="font-weight:bold;">{{key}}</label>: {{relations|replace_ref_phrases:value}}</td>
+                                </tr>
+                            {% endif %}
+                        {% endwith %}
                     {% endfor %}
                 {% endfor %}
             {% endwith %}

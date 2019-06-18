@@ -279,13 +279,10 @@ def generate_medicalreport_with_attachment(self, instruction_info: dict, report_
         msg_line_1 = "Your GP surgery has completed your SAR request. We have sent you an email to access a copy."
         msg_line_2 = "This may have landed in your 'Junk mail'. Move to your inbox to activate the link."
         msg = "%s %s"%(msg_line_1, msg_line_2)
-        third_party_info = ThirdPartyAuthorisation.objects.filter(
-                patient_report_auth__url = report_link_info['unique_url']
-            ).first()
 
-        SendSMS(
-                number=instruction.patient_information.get_telephone_e164()
-            ).send(msg)
+        third_party_info = ThirdPartyAuthorisation.objects.filter(patient_report_auth__url=report_link_info['unique_url']).first()
+        SendSMS(number=instruction.patient_information.get_telephone_e164()).send(msg)
+
         send_patient_mail(
             report_link_info['scheme'],
             report_link_info['host'],
@@ -293,7 +290,7 @@ def generate_medicalreport_with_attachment(self, instruction_info: dict, report_
             instruction
         )
 
-        if third_party_info.email and third_party_info.office_phone_number:
+        if third_party_info and third_party_info.email and third_party_info.office_phone_number:
             send_third_party_message(
                 third_party_info,
                 report_link_info['scheme'],

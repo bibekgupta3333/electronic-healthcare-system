@@ -262,7 +262,7 @@ def replace_ref_phrases(relations, value):
     from medicalreport.functions import render_report_tool_box_function
     if libraries:
         if is_final_report:
-            final_header = render_toolbox_function_for_final_report(library_history, '', value, libraries=libraries, section='consultations')
+            final_header = render_toolbox_function_for_final_report(library_history, xpaths[0], value, libraries=libraries, section='consultations')
         else:
             final_header = render_report_tool_box_function(
                 header=value, xpath=xpaths[0], section='consultations', libraries=libraries, library_history=library_history
@@ -295,3 +295,13 @@ def modify_section(modified_dict, new_section):
     modified_dict['section'] = new_section
 
     return modified_dict
+
+
+@register.filter
+def add_xpath(relations:dict, dict_data:dict):
+    for key, value in dict_data.items():
+        print(key, value)
+        if key == 'xpath':
+            relations['xpath'] = value
+
+    return relations

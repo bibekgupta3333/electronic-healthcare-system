@@ -303,7 +303,6 @@ def send_surgery_email(instruction: Instruction) -> None:
 
 
 def create_patient_report(request: HttpRequest, instruction: Instruction) -> None:
-    unique_url = ''
     patient_report_auth = PatientReportAuth.objects.filter(instruction=instruction)
 
     if not patient_report_auth:
@@ -356,8 +355,6 @@ def render_report_tool_box_function(header: str, xpath: str, section:str, librar
 
                 for library in libraries:
                     step = len(library.key.split(' '))
-                    if k+step > len(split_head):
-                        break
                     if str.upper(library.key) == str.upper(" ".join((split_head[k:k+step]))) and not replaced_indexes.intersection(set({k, k+step})):
                         replace_word = " ".join((split_head[k:k+step]))
                         library_matched = True
