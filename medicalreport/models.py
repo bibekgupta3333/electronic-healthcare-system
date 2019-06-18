@@ -6,6 +6,9 @@ from snomedct.models import SnomedConcept, ReadCode
 from accounts.models import User, GeneralPracticeUser
 from postgres_copy import CopyManager
 from django.utils.html import format_html
+from common.functions import get_env_variable, aes_with_salt_encryption, aes_with_salt_decryption
+
+import random, string
 
 
 class AmendmentsForRecord(models.Model):
@@ -45,7 +48,11 @@ class AmendmentsForRecord(models.Model):
     status = models.CharField(choices=REDACTION_STATUS_CHOICES, max_length=6, default=REDACTION_STATUS_NEW)
     comment_notes = models.TextField(blank=True)
     instruction_checked = models.BooleanField(default=False, blank=True, null=True)
-    raw_medical_xml = models.TextField(blank=True)
+
+    _raw_medical_xml_encrypted = models.TextField(blank=True)
+    _raw_medical_xml_aes_key = models.CharField(max_length=255, blank=True)
+    raw_medical_xml_salt_and_encrypted_iv = models.CharField(max_length=255, blank=True)
+    raw_medical_xml_aes_key_salt_and_encrypted_iv = models.CharField(max_length=255, blank=True)
 
     @property
     def patient_emis_number(self) -> str:
@@ -72,6 +79,55 @@ class AmendmentsForRecord(models.Model):
             return all(xpath in self.redacted_xpaths for xpath in xpaths)
         else:
             return False
+
+    def set_raw_medical_xml_aes_key(self, val: str) -> None:
+        salt = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
+        iv_salt, iv_aes_key, ciphertext = aes_with_salt_encryption(val, salt)
+        self.raw_medical_xml_aes_key_salt_and_encrypted_iv = '{iv_salt}${iv_aes_key}'.format(
+            iv_salt=iv_salt, iv_aes_key=iv_aes_key
+        )
+        self._raw_medical_xml_aes_key = '{salt}${aes_ciphertext}'.format(
+            salt=salt, aes_ciphertext=ciphertext
+        )
+
+    def get_raw_medical_xml_aes_key(self) -> str:
+        if self.raw_medical_xml_aes_key_salt_and_encrypted_iv:
+            return aes_with_salt_decryption(
+                self._raw_medical_xml_aes_key,
+                self.raw_medical_xml_aes_key_salt_and_encrypted_iv,
+            )
+        return self._raw_medical_xml_aes_key
+
+    raw_medical_xml_aes_key = property(
+        get_raw_medical_xml_aes_key,
+        set_raw_medical_xml_aes_key
+    )
+
+    def set_raw_medical_xml(self, val: str) -> None:
+        salt = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
+        iv_salt, iv_aes_key, ciphertext = aes_with_salt_encryption(val, salt, self.raw_medical_xml_aes_key)
+        self.raw_medical_xml_salt_and_encrypted_iv = '{iv_salt}${iv_aes_key}'.format(
+            iv_salt=iv_salt, iv_aes_key=iv_aes_key
+        )
+        self._raw_medical_xml_encrypted = '{salt}${aes_ciphertext}'.format(
+            salt=salt, aes_ciphertext=ciphertext
+        )
+
+    def get_raw_medical_xml(self) -> str:
+        print('get here!!')
+        print(self.raw_medical_xml_aes_key)
+        if self.raw_medical_xml_salt_and_encrypted_iv:
+            return aes_with_salt_decryption(
+                self._raw_medical_xml_encrypted,
+                self.raw_medical_xml_salt_and_encrypted_iv,
+                self.raw_medical_xml_aes_key
+            )
+        return self._raw_medical_xml_encrypted
+
+    raw_medical_xml_encrypted = property(
+        get_raw_medical_xml,
+        set_raw_medical_xml
+    )
 
 
 class AdditionalMedicationRecords(models.Model):
