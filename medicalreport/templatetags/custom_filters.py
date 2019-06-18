@@ -93,7 +93,9 @@ def active_problem_header(problem, problem_params):
     if type(problem_params) == dict:
         problem_list = problem_params['problem_list']
         library_history = problem_params['relations']['library_history']
-        description = render_toolbox_function_for_final_report(library_history, problem.description(), section='significant_active')
+        libraries = problem_params['relations']['word_library']
+        xpath = problem.xpaths()[0]
+        description = render_toolbox_function_for_final_report(library_history, xpath, problem.description(), libraries=libraries, section='significant_active')
         return "{} {}".format(description, diagnosed_date(problem, linked_problems(problem, problem_list())))
     else:
         problem_list = problem_params
@@ -104,7 +106,9 @@ def active_problem_header(problem, problem_params):
 def past_problem_header(problem, problem_params):
     if type(problem_params) == dict:
         library_history = problem_params['relations']['library_history']
-        description = render_toolbox_function_for_final_report(library_history, problem.description(), section='significant_past')
+        libraries = problem_params['relations']['word_library']
+        xpath = problem.xpaths()[0]
+        description = render_toolbox_function_for_final_report(library_history, xpath, problem.description(), libraries=libraries, section='significant_past')
         return "{} {}".format(description, end_date(problem))
     else:
         return "{} {}".format(problem.description(), end_date(problem))
@@ -114,7 +118,9 @@ def past_problem_header(problem, problem_params):
 def general_header(model, toolbox_params=''):
     if type(toolbox_params) == dict:
         library_history = toolbox_params['relations']['library_history']
-        description = render_toolbox_function_for_final_report(library_history, model.description(), section=toolbox_params['section'])
+        libraries = toolbox_params['relations']['word_library']
+        xpath = model.xpaths()[0]
+        description = render_toolbox_function_for_final_report(library_history, xpath, model.description(), libraries=libraries, section=toolbox_params['section'])
         text = "{} - {}".format(format_date(model.parsed_date()), description)
         return format_html(text)
     else:
@@ -256,7 +262,7 @@ def replace_ref_phrases(relations, value):
     from medicalreport.functions import render_report_tool_box_function
     if libraries:
         if is_final_report:
-            final_header = render_toolbox_function_for_final_report(library_history, value, section='consultations')
+            final_header = render_toolbox_function_for_final_report(library_history, xpaths[0], value, libraries=libraries, section='consultations')
         else:
             final_header = render_report_tool_box_function(
                 header=value, xpath=xpaths[0], section='consultations', libraries=libraries, library_history=library_history
@@ -282,3 +288,20 @@ def mod_column(count):
 @register.filter
 def hash(h, key):
     return h[key]
+
+
+@register.filter
+def modify_section(modified_dict, new_section):
+    modified_dict['section'] = new_section
+
+    return modified_dict
+
+
+@register.filter
+def add_xpath(relations:dict, dict_data:dict):
+    for key, value in dict_data.items():
+        print(key, value)
+        if key == 'xpath':
+            relations['xpath'] = value
+
+    return relations
