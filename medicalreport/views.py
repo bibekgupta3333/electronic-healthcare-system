@@ -32,6 +32,8 @@ from wsgiref.util import FileWrapper
 from django.core import serializers
 #from silk.profiling.profiler import silk_profile
 
+import random, string
+
 logger = logging.getLogger('timestamp')
 event_logger = logging.getLogger('medidata.event')
 
@@ -146,7 +148,11 @@ def select_patient(request: HttpRequest, instruction_id: str, patient_emis_numbe
 
     if not AmendmentsForRecord.objects.filter(instruction=instruction).exists():
         raw_xml = services.GetMedicalRecord(patient_emis_number, gp_organisation=instruction.gp_practice).call()
-        AmendmentsForRecord.objects.create(instruction=instruction, raw_medical_xml=raw_xml)
+        aes_key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
+        # create AmendmentsForRecord with aes_key first then save raw_xml and encrypted with self aes_key
+        amendments = AmendmentsForRecord.objects.create(instruction=instruction, raw_medical_xml_aes_key=aes_key)
+        amendments.raw_medical_xml_encrypted = raw_xml
+        amendments.save()
 
     instruction.in_progress(context={'gp_user': request.user.userprofilebase.generalpracticeuser})
     instruction.saved = False
@@ -196,8 +202,8 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
 
     # Todo REMOVE FILE SYSTEM SUPPORT
-    if redaction.raw_medical_xml:
-        raw_xml_or_status_code = redaction.raw_medical_xml
+    if redaction.raw_medical_xml_encrypted:
+        raw_xml_or_status_code = redaction.raw_medical_xml_encrypted
     else:
         raw_xml_or_status_code = services.GetMedicalRecord(redaction.patient_emis_number, gp_organisation=instruction.gp_practice).call()
 

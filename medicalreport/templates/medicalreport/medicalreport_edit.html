@@ -181,6 +181,8 @@
             var me = $(this);
             me.prop("disabled", true);
             var xpath = $(this).val();
+            var cheked = $(this).is(':checked');
+            $('input:checkbox[value="'+xpath+'"]').prop('checked', cheked);
             if(Array.isArray(xpath)) { xpath = xpath[0]; }
 
             var action = 4;  // remove line redacted
