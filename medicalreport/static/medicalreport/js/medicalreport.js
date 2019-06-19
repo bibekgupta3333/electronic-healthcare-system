@@ -95,3 +95,20 @@ function addWordLibrary() {
         create_alert('Something went wrong, please try again.', 'error');
     });
 }
+
+function fetchAttachments(url) {
+  var attachments = $('.attachment-not-active');
+  attachments.each(function(index, attachment) {
+    var instructionID = attachment.getAttribute('instruction');
+    var attachmentID = attachment.getAttribute('attachment');
+    url = url.replace(1, instructionID);
+    url = url.replace('path', attachmentID);
+    $.ajax({
+      url: decodeURIComponent(url)
+    }).done(function(response) {
+      if (response['have_report']){
+        $('a[attachment="'+attachmentID+'"]').removeClass('attachment-not-active');
+      }
+    });
+  });
+}

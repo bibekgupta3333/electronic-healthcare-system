@@ -40,6 +40,11 @@ event_logger = logging.getLogger('medidata.event')
 def view_attachment(request: HttpRequest, instruction_id: str, path_file: str) -> HttpResponse:
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     redacted_attachment = RedactedAttachment.objects.filter(instruction_id=instruction.id, dds_identifier=path_file).first()
+    if request.is_ajax():
+        if redacted_attachment:
+            return JsonResponse({'have_report': True}, status=200)
+        else:
+            return JsonResponse({'have_report': False}, status=200)
     if redacted_attachment:
         if redacted_attachment.name.split('.')[-1] in ["pdf", "rtf", "doc", "docx", "jpg", "jpeg", "png", "tiff", "tif"]:
             response = HttpResponse(
@@ -241,11 +246,13 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         'library_history': library_history,
     }
 
+    redacted_attachments = RedactedAttachment.objects.filter(instruction_id=instruction.id)
     response = render(request, 'medicalreport/medicalreport_edit.html', {
         'user': request.user,
         'medical_record': medical_record_decorator,
         'redaction': redaction,
         'instruction': instruction,
+        'redacted_attachments': redacted_attachments,
         'finalise_submit_form': finalise_submit_form,
         'questions': questions,
         'relations': relations,

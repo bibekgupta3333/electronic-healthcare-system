@@ -1137,6 +1137,7 @@ def consent_contact(request, instruction_id, patient_emis_number):
                 return redirect('instructions:view_pipeline')
             elif request.POST.get('proceed_option') == '0':
                 # Synchronous preparing task case
+                prepare_medicalreport_data.delay(instruction_id, notify_mail=False)
                 return redirect('medicalreport:select_patient', instruction_id=instruction_id, patient_emis_number=patient_emis_number)
             else:
                 # Asynchronous preparing task case

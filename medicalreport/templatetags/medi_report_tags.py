@@ -35,6 +35,7 @@ def form_attachments(context):
     return {
         'attachments': context['medical_record'].attachments,
         'instruction': context['instruction'],
+        'redacted_attachments': context['redacted_attachments'],
         'redaction': context['redaction'],
         'section': 'attachments',
     }

@@ -7,6 +7,11 @@ register = template.Library()
 
 
 @register.filter
+def get_attachment(redacted_attachments, dds_identifier):
+    return redacted_attachments.filter(dds_identifier=dds_identifier).exists()
+
+
+@register.filter
 def instruction_patient_address(patient_information):
     address_lines = [
         patient_information.patient_postcode,
