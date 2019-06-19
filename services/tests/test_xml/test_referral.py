@@ -25,6 +25,6 @@ class ReferralTest(XMLTestCase):
 
     def test_xpaths(self):
         self.assertListEqual(
-            [".//ConsultationElement[Referral/GUID='3487623']"],
+            [".//Referral[GUID='3487623']"],
             self.referrals[0].xpaths()
         )

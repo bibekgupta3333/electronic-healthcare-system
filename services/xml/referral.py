@@ -24,4 +24,7 @@ class Referral(XMLModelBase):
 
     def xpaths(self) -> List[str]:
         xpath = ".//ConsultationElement[Referral/GUID='{}']".format(self.guid())
+        if not self.parsed_xml.xpath(xpath):
+            xpath = ".//Referral[GUID='{}']".format(self.guid())
+            return [xpath]
         return [xpath]

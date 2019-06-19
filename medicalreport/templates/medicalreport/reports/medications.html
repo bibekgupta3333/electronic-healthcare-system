@@ -8,10 +8,12 @@
 {% if acute_medications or redaction.acute_prescription_notes|default:"" %}
     <table style="width:100%;font-size:15px;margin-top:10px;">
         {% for model in acute_medications %}
-            {% with header=model|general_header:toolbox_params %} 
-                <tr>
-                    <td>{{ header }}</td>
-                </tr>
+            {% with new_toolbox_params=toolbox_params|modify_section:'acute_medications' %}
+                {% with header=model|general_header:new_toolbox_params %}
+                    <tr>
+                        <td>{{ header }}</td>
+                    </tr>
+                {% endwith %}
             {% endwith %}
         {% endfor %}
         {% if redaction.repeat_prescription_notes|default:"" %}
@@ -39,10 +41,12 @@
 {% if repeat_medications or redaction.repeat_prescription_notes|default:"" %}
     <table style="width:100%;font-size:15px;margin-top:10px;">
         {% for model in repeat_medications %}
-            {% with header=model|general_header:toolbox_params %} 
-                <tr>
-                    <td>{{ header }}</td>
-                </tr>
+            {% with new_toolbox_params=toolbox_params|modify_section:'repeat_medications' %}
+                {% with header=model|general_header:new_toolbox_params %}
+                    <tr>
+                        <td>{{ header }}</td>
+                    </tr>
+                {% endwith %}
             {% endwith %}
         {% endfor %}
         {% if redaction.repeat_prescription_notes|default:"" %}
