@@ -16,8 +16,8 @@ from PIL import Image
 import io
 import img2pdf
 import subprocess
-import string
-import random, time
+import uuid
+import time
 import logging
 import reportlab
 import reportlab.lib.pagesizes as pdf_sizes
@@ -40,7 +40,7 @@ def prepare_medicalreport_data(self, instruction_id, notify_mail=True):
         amendments = AmendmentsForRecord.objects.filter(instruction=instruction).first()
 
         if not amendments:
-            aes_key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
+            aes_key = uuid.uuid4().hex
             # create AmendmentsForRecord with aes_key first then save raw_xml and encrypted with self aes_key
             amendments = AmendmentsForRecord.objects.create(instruction=instruction, raw_medical_xml_aes_key=aes_key)
 

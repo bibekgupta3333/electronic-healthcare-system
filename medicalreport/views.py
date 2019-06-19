@@ -32,7 +32,7 @@ from wsgiref.util import FileWrapper
 from django.core import serializers
 #from silk.profiling.profiler import silk_profile
 
-import random, string
+import uuid
 
 logger = logging.getLogger('timestamp')
 event_logger = logging.getLogger('medidata.event')
@@ -148,7 +148,7 @@ def select_patient(request: HttpRequest, instruction_id: str, patient_emis_numbe
 
     if not AmendmentsForRecord.objects.filter(instruction=instruction).exists():
         raw_xml = services.GetMedicalRecord(patient_emis_number, gp_organisation=instruction.gp_practice).call()
-        aes_key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
+        aes_key = uuid.uuid4().hex
         # create AmendmentsForRecord with aes_key first then save raw_xml and encrypted with self aes_key
         amendments = AmendmentsForRecord.objects.create(instruction=instruction, raw_medical_xml_aes_key=aes_key)
         amendments.raw_medical_xml_encrypted = raw_xml
