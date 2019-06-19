@@ -305,7 +305,6 @@ def modify_section(modified_dict, new_section):
 @register.filter
 def add_xpath(relations:dict, dict_data:dict):
     for key, value in dict_data.items():
-        print(key, value)
         if key == 'xpath':
             relations['xpath'] = value
 
