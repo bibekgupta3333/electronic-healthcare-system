@@ -108,6 +108,8 @@ function fetchAttachments(url) {
     }).done(function(response) {
       if (response['have_report']){
         $('a[attachment="'+attachmentID+'"]').removeClass('attachment-not-active');
+        var message = $('a[attachment="'+attachmentID+'"]').next().find('span.redaction-checkbox__header')[0].title;
+        create_alert('Attachment ' + message + ' redacted', 'success');
       }
     });
   });
