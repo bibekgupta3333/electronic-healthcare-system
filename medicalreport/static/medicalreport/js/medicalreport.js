@@ -99,14 +99,15 @@ function addWordLibrary() {
 function fetchAttachments(url) {
   var attachments = $('.attachment-not-active');
   attachments.each(function(index, attachment) {
+    var ajax_url = url;
     var instructionID = attachment.getAttribute('instruction');
     var attachmentID = attachment.getAttribute('attachment');
-    url = url.replace(1, instructionID);
-    url = url.replace('path', attachmentID);
+    ajax_url = ajax_url.replace(1, instructionID);
+    ajax_url = ajax_url.replace('path', attachmentID);
     $.ajax({
-      url: decodeURIComponent(url)
+      url: ajax_url
     }).done(function(response) {
-      if (response['have_report']){
+      if (response['have_report']) {
         $('a[attachment="'+attachmentID+'"]').removeClass('attachment-not-active');
         var message = $('a[attachment="'+attachmentID+'"]').next().find('span.redaction-checkbox__header')[0].title;
         create_alert('Attachment ' + message + ' redacted', 'success');
