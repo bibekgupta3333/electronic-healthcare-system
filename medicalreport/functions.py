@@ -134,8 +134,8 @@ def create_or_update_redaction_record(request, instruction: Instruction) -> bool
 
 def save_medical_report(instruction: Instruction, amendments_for_record: AmendmentsForRecord) -> None:
     start_time = timezone.now()
-    if amendments_for_record.raw_medical_xml:
-        raw_xml = amendments_for_record.raw_medical_xml
+    if amendments_for_record.raw_medical_xml_encrypted:
+        raw_xml = amendments_for_record.raw_medical_xml_encrypted
     else:
         raw_xml = services.GetMedicalRecord(amendments_for_record.patient_emis_number, gp_organisation=instruction.gp_practice).call()
 

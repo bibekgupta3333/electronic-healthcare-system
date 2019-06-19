@@ -22,6 +22,7 @@ from medicalreport.templatetags.custom_filters import replace_ref_phrases
 from library.models import Library, LibraryHistory
 
 import os
+import string, random
 from contextlib import suppress
 
 
@@ -73,9 +74,11 @@ class EmisAPITestCase(TestCase):
             medical_with_attachment_report_byte=MEDICAL_REPORT_WITH_ATTACHMENT_BYTES,
             final_raw_medical_xml_report=RAW_MEDICAL_XML
         )
+        self.aes_key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
         self.redaction = mommy.make(
             AmendmentsForRecord, instruction=self.instruction, pk=1,
-            raw_medical_xml=RAW_MEDICAL_XML
+            raw_medical_xml_aes_key=self.aes_key,
+            raw_medical_xml_encrypted=RAW_MEDICAL_XML
         )
         self.client.force_login(user, backend=None)
 
@@ -110,7 +113,8 @@ class RejectRequestTest(EmisAPITestCase):
         )
         self.redaction = mommy.make(
             AmendmentsForRecord, instruction=self.instruction, pk=4,
-            raw_medical_xml=RAW_MEDICAL_XML
+            raw_medical_xml_aes_key=self.aes_key,
+            raw_medical_xml_encrypted=RAW_MEDICAL_XML
         )
 
     def test_view_url(self):
@@ -228,7 +232,8 @@ class EditReportTest(EmisAPITestCase):
         self.snomed_concept = mommy.make(SnomedConcept, external_id=228273003)
         self.redaction = mommy.make(
             AmendmentsForRecord, instruction=self.instruction, pk=2,
-            raw_medical_xml=RAW_MEDICAL_XML
+            raw_medical_xml_aes_key=self.aes_key,
+            raw_medical_xml_encrypted=RAW_MEDICAL_XML
         )
 
     def test_view_url(self):
@@ -411,7 +416,8 @@ class FinalReportTest(EmisAPITestCase):
         )
         self.redaction = mommy.make(
             AmendmentsForRecord, instruction=self.instruction, pk=3,
-            raw_medical_xml=RAW_MEDICAL_XML
+            raw_medical_xml_aes_key=self.aes_key,
+            raw_medical_xml_encrypted=RAW_MEDICAL_XML
         )
 
     def test_view_url(self):
