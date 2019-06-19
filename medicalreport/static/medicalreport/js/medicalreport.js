@@ -109,8 +109,14 @@ function fetchAttachments(url) {
     }).done(function(response) {
       if (response['have_report']) {
         $('a[attachment="'+attachmentID+'"]').removeClass('attachment-not-active');
-        var message = $('a[attachment="'+attachmentID+'"]').next().find('span.redaction-checkbox__header')[0].title;
-        create_alert('Attachment ' + message + ' redacted', 'success');
+        $('a[attachment="'+attachmentID+'"]').removeAttr('onclick');
+        $('a[attachment="'+attachmentID+'"]').attr('title', 'Preview');
+        var title_el = $('a[attachment="'+attachmentID+'"]').next().find('span.redaction-checkbox__header')[0];
+        var title_text = title_el.title;
+        if (response['redacted_count'] > 0) {
+          $('span[title="' + title_text + '"]').append('<div class="numberCircle">' + response['redacted_count'] + '</div>');
+        }
+        create_alert('Attachment ' + title_text + ' redacted', 'success');
       }
     });
   });

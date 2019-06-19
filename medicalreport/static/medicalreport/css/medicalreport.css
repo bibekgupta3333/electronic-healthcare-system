@@ -477,7 +477,12 @@ h1 {
 }
 
 .attachment-not-active {
-    pointer-events: none;
+    cursor: not-allowed;
+    text-decoration: none;
     background-color: #0a0a0a;
     opacity: 0.5;
+}
+
+.attachment-not-active:hover {
+    color: white
 }

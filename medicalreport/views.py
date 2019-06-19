@@ -42,7 +42,7 @@ def view_attachment(request: HttpRequest, instruction_id: str, path_file: str) -
     redacted_attachment = RedactedAttachment.objects.filter(instruction_id=instruction.id, dds_identifier=path_file).first()
     if request.is_ajax():
         if redacted_attachment:
-            return JsonResponse({'have_report': True}, status=200)
+            return JsonResponse({'have_report': True, 'redacted_count': redacted_attachment.redacted_count}, status=200)
         else:
             return JsonResponse({'have_report': False}, status=200)
     if redacted_attachment:
