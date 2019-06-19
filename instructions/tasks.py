@@ -40,7 +40,7 @@ def prepare_medicalreport_data(self, instruction_id, notify_mail=True):
 
         raw_xml = services.GetMedicalRecord(amendments.patient_emis_number, gp_organisation=instruction.gp_practice).call()
         if isinstance(raw_xml, str):
-            amendments.raw_medical_xml = raw_xml
+            amendments.raw_medical_xml_encrypted = raw_xml
             amendments.save()
             medical_record_decorator = MedicalReportDecorator(raw_xml, instruction)
             for attachment in medical_record_decorator.attachments():

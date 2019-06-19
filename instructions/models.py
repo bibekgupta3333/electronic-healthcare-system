@@ -24,7 +24,7 @@ TITLE_CHOICE = account_models.TITLE_CHOICE
 
 
 class InstructionPatient(models.Model):
-    patient_user = models.ForeignKey(Patient, related_name='instruction_patients', on_delete=models.CASCADE, null=True)
+    patient_user = models.ForeignKey(Patient, related_name='instruction_patients', on_delete=models.CASCADE, blank=True, null=True)
     patient_title = models.CharField(max_length=3, choices=TITLE_CHOICE, verbose_name='Title*')
     patient_first_name = models.CharField(max_length=255, verbose_name="First name*")
     patient_last_name = models.CharField(max_length=255, verbose_name="Last name*")
