@@ -488,7 +488,7 @@
                     <h5 class="modal-title mx-auto" id="ModalLongTitle">Warning</h5>
                 </div>
                 <div class="modal-body bg-white" style="color: black; text-align: center;">
-                Sorry, you may only upload a <strong>PDF</string> file.
+                Sorry, you may only upload a <strong>PDF, JPG, JPEG</strong> or <strong>TIFF</strong> file.
                 </div>
                 <div class="modal-footer bg-white">
                     <button type="button" class="btn btn-secondary btn-lg mx-auto" data-dismiss="modal">Go Back</button>
@@ -609,6 +609,7 @@
                 theme: 'fas',
                 showUpload: false,
                 showPreview: false,
+                allowedFileExtensions: ['jpg', 'jpeg', 'tiff', 'pdf'],
                 {% if mdx_consent_form_data.path %}
                     initialPreview: [
                         "{{ mdx_consent_form_data.path }}"
@@ -628,6 +629,7 @@
             $("#id_mdx_consent").fileinput({
                 theme: 'fas',
                 showUpload: false,
+                allowedFileExtensions: ['jpg', 'jpeg', 'tiff', 'pdf'],
                 {% if mdx_consent_form_data.path %}
                     initialPreview: [
                         "{{ mdx_consent_form_data.path }}"
@@ -674,14 +676,6 @@
             var mdx_loaded = $('.file-caption-name').last().attr('title');
             var is_allowed = true;
 
-            if (mdx_loaded) {
-                file_extension = mdx_loaded.split('.').pop();
-
-                if (file_extension != 'pdf') {
-                    $('#wrongFileType').click();
-                    is_allowed = false;
-                }
-            }
             if (is_allowed) {
                 $('#proceedBtn').blur();
 
@@ -728,7 +722,12 @@
         $('#id_mdx_consent').on('change', function(){
             var mdx_loaded = $('.file-caption-name').last().attr('title');
             if (mdx_loaded){
-                $('#id_mdx_consent_loaded').val('loaded');
+                file_extension = mdx_loaded.split('.').pop();
+
+                if (!['pdf', 'jpg', 'jpeg', 'tiff'].includes(file_extension)) {
+                    $('.fileinput-remove').click();
+                    $('#wrongFileType').click();
+                }
             }
         });
         $('#saveBtn').click(function(){

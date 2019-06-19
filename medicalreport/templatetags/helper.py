@@ -1,11 +1,12 @@
 from django import template
+from django.db.models.functions import Length
 
 from services.xml.problem import Problem
-from django.utils.html import format_html
 from datetime import date as Date
 from typing import List, Optional
-from instructions.models import Instruction
-from library.models import Library, LibraryHistory
+from library.models import LibraryHistory, Library
+import re
+
 register = template.Library()
 
 
@@ -61,37 +62,23 @@ def problem_xpaths(problem, problem_link_list):
         problem_link_xpaths += link.xpaths()
 
     xpaths = problem.xpaths() + problem_link_xpaths
-    return list(set(xpaths))
+    return [xpaths[0]]
 
 
-def render_toolbox_function_for_final_report(library_history: LibraryHistory = None, value: str = '', section: str = ''):
-    section_library_history = library_history.filter(section=section)
-    replace_all_values = {}
+def render_toolbox_function_for_final_report(library_history: LibraryHistory = None, xpath: str = '', value: str = '', libraries: Library=None, section: str = ''):
+    guid = xpath[xpath.find('{') + 1: xpath.find('}')]
+    section_library_histories = library_history.filter(section=section)
+
+    if section_library_histories:
+        for section_library_history in section_library_histories:
+            if section_library_history.action == LibraryHistory.ACTION_HIGHLIGHT_REDACT and \
+                    section_library_history.guid == guid:
+                value = value.replace(section_library_history.old, '')
+            elif section_library_history.action == LibraryHistory.ACTION_REPLACE and \
+                    section_library_history.guid == guid:
+                value = value.replace(section_library_history.old, section_library_history.new)
+
     for replace_all_history in library_history.filter(action=LibraryHistory.ACTION_REPLACE_ALL):
-        # construction dict {'old_word_1': 'new_word_1', 'old_word_2': 'new_word_2', ...}
-        replace_all_values[replace_all_history.old] = replace_all_history.new
-
-    splitted_word = value.split()
-    final_description = []
-    add_orgin_word = True
-    if library_history:
-        for word in splitted_word:
-            if word in replace_all_values:
-                final_description.append(replace_all_values[word])
-                continue
-
-            for history in section_library_history:
-                if str.upper(word) == str.upper(history.old):
-                    if history.action == LibraryHistory.ACTION_REPLACE:
-                        add_orgin_word = False
-                        final_description.append(history.new)
-                    elif history.action == LibraryHistory.ACTION_HIGHLIGHT_REDACT:
-                        add_orgin_word = False
-                        break
-
-            if add_orgin_word:
-                final_description.append(word)
-
-        return " ".join(final_description)
+        value = re.sub(replace_all_history.old, replace_all_history.new, value, flags=re.IGNORECASE)
 
     return value

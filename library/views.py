@@ -179,7 +179,7 @@ def undo_last(request):
             instruction = Instruction.objects.get(pk=instruction_id)
             recent_history = LibraryHistory.objects.filter(instruction=instruction).last()
             if recent_history:
-                if recent_history.old and not Library.objects.get(key=recent_history.old).value:
+                if recent_history.old and not Library.objects.get(key__iexact=recent_history.old).value:
                     highlight_html = '''
                         <span class="bg-warning">{}</span>
                         <span class="dropdown-options" dummy-guid dummy-word_idx dummy-section>

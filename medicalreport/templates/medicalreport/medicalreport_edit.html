@@ -375,22 +375,38 @@
                             }
                             var guid = $(this).data('guid');
                             var word = $(this).prev().text();
+                            var word_length = 1;
+                            var j = 0;
                             if(word.toUpperCase() == response['new'].toUpperCase()){
                                 if(typeof(tool_box_information[section]) == 'undefined'){
                                     tool_box_information[section] = {};
                                     if(typeof(tool_box_information[section][guid] == 'undefined')){
                                         tool_box_information[section][guid] = {};
                                         if(typeof(tool_box_information[section][guid][word]) == 'undefined' ){
-                                            tool_box_information[section][guid][word] = record_detail.indexOf(response['old'].toUpperCase());
+                                            word_length = response['old'].split(" ").length;
+                                            for (j=0; j<record_detail.length; j++){
+                                                if(response['old'].toUpperCase() == record_detail.slice(j, j+word_length).join(' ')){
+                                                    tool_box_information[section][guid][word] = j
+                                                }
+                                            }
                                         }
                                     }
                                 } else {
                                     if(typeof(tool_box_information[section][guid] == 'undefined')){
                                         tool_box_information[section][guid] = {};
                                         if(typeof(tool_box_information[section][guid][word]) == 'undefined' ){
-                                            tool_box_information[section][guid][word] = record_detail.indexOf(response['old'].toUpperCase());
+                                            word_length = response['old'].split(" ").length;
+                                            for (j=0; j<record_detail.length; j++){
+                                                if(response['old'].toUpperCase() == record_detail.slice(j, j+word_length).join(' ')){
+                                                    tool_box_information[section][guid][word] = j
+                                                }
+                                            }
                                         } else {
-                                            tool_box_information[section][guid][word] = record_detail.indexOf(response['old'].toUpperCase(), tool_box_information[guid][section][word]+1)
+                                            for (j=tool_box_information[section][guid][word]+1; j<record_detail.length; j++){
+                                                if(response['old'].toUpperCase() == record_detail.slice(j, j+word_length).join(' ')){
+                                                    tool_box_information[section][guid][word] = j
+                                                }
+                                            }
                                         }
                                     }
                                 }

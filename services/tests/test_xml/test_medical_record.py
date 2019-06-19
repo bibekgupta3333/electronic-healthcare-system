@@ -75,7 +75,7 @@ class MedicalRecordTest(XMLTestCase):
         self.assertIsInstance(self.medical_record.locations()[0], Location)
 
     def test_problem_linked_lists_gets_all_problem_linked_lists(self):
-        self.assertEqual(6, len(self.medical_record.problem_linked_lists()))
+        self.assertEqual(7, len(self.medical_record.problem_linked_lists()))
 
     def test_problem_linked_lists_gets_correct_type(self):
         self.assertIsInstance(
