@@ -150,7 +150,7 @@ def save_medical_report(instruction: Instruction, amendments_for_record: Amendme
         instruction.medical_xml_report.delete()
 
     medical_record_decorator = MedicalReportDecorator(parse_xml, instruction)
-    relations = [relation.name.lower() for relation in ReferencePhrases.objects.all()]
+    relations = [relation.name for relation in ReferencePhrases.objects.all()]
 
     gp_org = instruction.gp_user.organisation
     word_library = Library.objects.filter(gp_practice=gp_org)

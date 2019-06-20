@@ -249,7 +249,7 @@ def replace_ref_phrases(relations, value):
 
     if relations.get('relations'):
         for val in value.split(' '):
-            original_val = val.lower()
+            original_val = val
             if original_val in relations['relations']:
                 value = value.replace(val, "[UNSPECIFIED]")
             elif "'s" in original_val and original_val[:-2] in relations['relations']:
