@@ -11,7 +11,7 @@ class Command(BaseCommand):
         self.stdout.write("clearing old data...")
         ReferencePhrases.objects.all().delete()
         self.stdout.write("clearing success...")
-        path = os.path.join(os.path.dirname(settings.BASE_DIR), 'initial_data/name_relationships.csv')
+        path = os.path.join(os.path.dirname(settings.BASE_DIR), 'initial_data/reference_phrases.csv')
         self.stdout.write("starting import sensitive data...")
         ReferencePhrases.objects.from_csv(path)
         self.stdout.write("import completed")
