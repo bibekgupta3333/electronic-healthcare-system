@@ -7,6 +7,11 @@ register = template.Library()
 
 
 @register.filter
+def get_attachment(redacted_attachments, dds_identifier):
+    return redacted_attachments.filter(dds_identifier=dds_identifier).exists()
+
+
+@register.filter
 def instruction_patient_address(patient_information):
     address_lines = [
         patient_information.patient_postcode,
@@ -300,7 +305,6 @@ def modify_section(modified_dict, new_section):
 @register.filter
 def add_xpath(relations:dict, dict_data:dict):
     for key, value in dict_data.items():
-        print(key, value)
         if key == 'xpath':
             relations['xpath'] = value
 

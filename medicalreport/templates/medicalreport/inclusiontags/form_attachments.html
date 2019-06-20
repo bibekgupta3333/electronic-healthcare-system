@@ -13,13 +13,18 @@
         <div class="container">
             <div>
             {% for model in attachments %}
-            {% with header=model.parsed_date|format_date_filter|add:" - "|add:model.description %}
-            <a class="attachment-preview-link" target="_blank" title="Preview" 
-               href="/medicalreport/{{ instruction.id }}/attachment/{{ model.dds_identifier }}">
-               <i class="fas fa-paperclip"></i>
-            </a>
-                {% redaction_checkbox_with_body model redaction header section='attachments' %}
-            {% endwith %}
+              {% with header=model.parsed_date|format_date_filter|add:" - "|add:model.description %}
+                {% with have_attachment=redacted_attachments|get_attachment:model.dds_identifier %}
+                  <a class="attachment-preview-link {% if not have_attachment %}attachment-not-active{% endif %}" target="_blank"
+                     href="/medicalreport/{{ instruction.id }}/attachment/{{ model.dds_identifier }}"
+                     title="{% if not have_attachment %}Redaction in process, please wait until complete{% else %}Preview{% endif%}"
+                     {% if not have_attachment %}onclick="return false"{% endif %}
+                     instruction="{{ instruction.id }}" attachment="{{ model.dds_identifier }}">
+                     <i class="fas fa-paperclip"></i>
+                  </a>
+                  {% redaction_checkbox_with_body model redaction header section='attachments' %}
+                {% endwith %}
+              {% endwith %}
             {% endfor %}
             </div>
             <br>

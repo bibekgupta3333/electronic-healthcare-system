@@ -32,7 +32,7 @@ from wsgiref.util import FileWrapper
 from django.core import serializers
 #from silk.profiling.profiler import silk_profile
 
-import random, string
+import uuid
 
 logger = logging.getLogger('timestamp')
 event_logger = logging.getLogger('medidata.event')
@@ -42,6 +42,11 @@ event_logger = logging.getLogger('medidata.event')
 def view_attachment(request: HttpRequest, instruction_id: str, path_file: str) -> HttpResponse:
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     redacted_attachment = RedactedAttachment.objects.filter(instruction_id=instruction.id, dds_identifier=path_file).first()
+    if request.is_ajax():
+        if redacted_attachment:
+            return JsonResponse({'have_report': True, 'redacted_count': redacted_attachment.redacted_count}, status=200)
+        else:
+            return JsonResponse({'have_report': False}, status=200)
     if redacted_attachment:
         if redacted_attachment.name.split('.')[-1] in ["pdf", "rtf", "doc", "docx", "jpg", "jpeg", "png", "tiff", "tif"]:
             response = HttpResponse(
@@ -143,7 +148,7 @@ def select_patient(request: HttpRequest, instruction_id: str, patient_emis_numbe
 
     if not AmendmentsForRecord.objects.filter(instruction=instruction).exists():
         raw_xml = services.GetMedicalRecord(patient_emis_number, gp_organisation=instruction.gp_practice).call()
-        aes_key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
+        aes_key = uuid.uuid4().hex
         # create AmendmentsForRecord with aes_key first then save raw_xml and encrypted with self aes_key
         amendments = AmendmentsForRecord.objects.create(instruction=instruction, raw_medical_xml_aes_key=aes_key)
         amendments.raw_medical_xml_encrypted = raw_xml
@@ -247,11 +252,13 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         'library_history': library_history,
     }
 
+    redacted_attachments = RedactedAttachment.objects.filter(instruction_id=instruction.id)
     response = render(request, 'medicalreport/medicalreport_edit.html', {
         'user': request.user,
         'medical_record': medical_record_decorator,
         'redaction': redaction,
         'instruction': instruction,
+        'redacted_attachments': redacted_attachments,
         'finalise_submit_form': finalise_submit_form,
         'questions': questions,
         'relations': relations,
