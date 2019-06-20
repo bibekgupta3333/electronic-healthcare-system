@@ -221,7 +221,7 @@ textarea {
 }
 
 .attachment-preview-link {
-    background-color: #376fa1;
+    background-color: #00b7a3;
     border-radius: 50%;
     color: #f1f1f2;
     float: left;
@@ -474,4 +474,15 @@ h1 {
 
 .highlight-library .hl-redact {
     background-color: #333;
+}
+
+.attachment-not-active {
+    cursor: not-allowed;
+    text-decoration: none;
+    background-color: #0a0a0a;
+    opacity: 0.5;
+}
+
+.attachment-not-active:hover {
+    color: white
 }
