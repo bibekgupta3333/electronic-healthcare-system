@@ -114,8 +114,6 @@ class AmendmentsForRecord(models.Model):
         )
 
     def get_raw_medical_xml(self) -> str:
-        print('get here!!')
-        print(self.raw_medical_xml_aes_key)
         if self.raw_medical_xml_salt_and_encrypted_iv:
             return aes_with_salt_decryption(
                 self._raw_medical_xml_encrypted,
