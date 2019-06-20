@@ -1,6 +1,6 @@
-function showDivControl( tag ) {
+function showDivControl(tag) {
     $('#default-preview').hide();
-    if( tag == 'video') {
+    if (tag == 'video') {
         $('.video-title').show();
         $('.video-player').show();
         $('.pdf-block').hide();
@@ -11,12 +11,20 @@ function showDivControl( tag ) {
     }
 }
 
-function changeScreen( code ) {
+/**
+ * This method is for switching pdf or video to correct one inside object.
+ *
+ * @param code the value for indicating correct element.
+ *             11 - 12 : Starter Guide Menu
+ *             21 - 25 : SARs Guide Menu
+ *             41 - 42 : Patient & Third Party Handouts Menu
+ *             52 - 54 : Fee Menu
+ */
+function changeScreen(code) {
     var filePath, titlePreview;
     var url, title;
-    var code = parseInt( code );
-    switch( code ) {
-        // Dropdown 1
+    var code = parseInt(code);
+    switch (code) {
         case 11:
             showDivControl('pdf');
             $('#preview-11').show();
@@ -24,14 +32,12 @@ function changeScreen( code ) {
         case 12:
             url = 'https://player.vimeo.com/video/312782124';
             title = 'Set-up video'
-            $('#videoPlayerId').attr('src', url );
-            $('#videoTitle').text( title );
+            $('#videoPlayerId').attr('src', url);
+            $('#videoTitle').text(title);
             $('#default-preview').hide();
             $('#videoPlayerId').attr('src', $('#videoPlayerId').attr('src'));
             showDivControl('video');
             break;
-
-        // Dropdown 2
         case 21:
             showDivControl('pdf');
             $('#preview-21').show();
@@ -39,8 +45,8 @@ function changeScreen( code ) {
         case 22:
             url = 'https://player.vimeo.com/video/342198509';
             title = 'SARs video'
-            $('#videoPlayerId').attr('src', url );
-            $('#videoTitle').text( title );
+            $('#videoPlayerId').attr('src', url);
+            $('#videoTitle').text(title);
             $('#videoPlayerId').attr('src', $('#videoPlayerId').attr('src'));
             showDivControl('video');
             break;
@@ -52,8 +58,10 @@ function changeScreen( code ) {
             showDivControl('pdf');
             $('#preview-24').show();
             break;
-
-        // Dropdown 4
+        case 25:
+            showDivControl('pdf');
+            $('#preview-25').show();
+            break;
         case 41:
             showDivControl('doc');
             $('#preview-41').show();
@@ -62,8 +70,6 @@ function changeScreen( code ) {
             showDivControl('doc');
             $('#preview-42').show();
             break;
-
-        // Dropdown 5
         case 52:
             showDivControl('pdf');
             $('#preview-52').show();
@@ -81,6 +87,7 @@ function changeScreen( code ) {
 
 let oldClass = 'fas fa-caret-right';
 let newClass = 'fas fa-caret-down';
+
 $('.choice-1').click(function() {
     cleanSymbol()
     $('#symbol-1').removeClass(oldClass);
@@ -114,7 +121,7 @@ $('.choice-6').click(function() {
 
 function cleanSymbol() {
     var maxId = 6;
-    for( i = 0; i <= maxId; i++ ) {
+    for (i = 0; i <= maxId; i++) {
         var idStr = '#symbol-' + i;
         $(idStr).addClass(oldClass);
     }
