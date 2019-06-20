@@ -95,3 +95,29 @@ function addWordLibrary() {
         create_alert('Something went wrong, please try again.', 'error');
     });
 }
+
+function fetchAttachments(url) {
+  var attachments = $('.attachment-not-active');
+  attachments.each(function(index, attachment) {
+    var ajax_url = url;
+    var instructionID = attachment.getAttribute('instruction');
+    var attachmentID = attachment.getAttribute('attachment');
+    ajax_url = ajax_url.replace(1, instructionID);
+    ajax_url = ajax_url.replace('path', attachmentID);
+    $.ajax({
+      url: ajax_url
+    }).done(function(response) {
+      if (response['have_report']) {
+        $('a[attachment="'+attachmentID+'"]').removeClass('attachment-not-active');
+        $('a[attachment="'+attachmentID+'"]').removeAttr('onclick');
+        $('a[attachment="'+attachmentID+'"]').attr('title', 'Preview');
+        var title_el = $('a[attachment="'+attachmentID+'"]').next().find('span.redaction-checkbox__header')[0];
+        var title_text = title_el.title;
+        if (response['redacted_count'] > 0) {
+          $('span[title="' + title_text + '"]').append('<div class="numberCircle">' + response['redacted_count'] + '</div>');
+        }
+        create_alert('Attachment ' + title_text + ' redacted', 'success');
+      }
+    });
+  });
+}

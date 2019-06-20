@@ -32,6 +32,8 @@ from wsgiref.util import FileWrapper
 from django.core import serializers
 #from silk.profiling.profiler import silk_profile
 
+import uuid
+
 logger = logging.getLogger('timestamp')
 event_logger = logging.getLogger('medidata.event')
 
@@ -40,6 +42,11 @@ event_logger = logging.getLogger('medidata.event')
 def view_attachment(request: HttpRequest, instruction_id: str, path_file: str) -> HttpResponse:
     instruction = get_object_or_404(Instruction, pk=instruction_id)
     redacted_attachment = RedactedAttachment.objects.filter(instruction_id=instruction.id, dds_identifier=path_file).first()
+    if request.is_ajax():
+        if redacted_attachment:
+            return JsonResponse({'have_report': True, 'redacted_count': redacted_attachment.redacted_count}, status=200)
+        else:
+            return JsonResponse({'have_report': False}, status=200)
     if redacted_attachment:
         if redacted_attachment.name.split('.')[-1] in ["pdf", "rtf", "doc", "docx", "jpg", "jpeg", "png", "tiff", "tif"]:
             response = HttpResponse(
@@ -141,7 +148,11 @@ def select_patient(request: HttpRequest, instruction_id: str, patient_emis_numbe
 
     if not AmendmentsForRecord.objects.filter(instruction=instruction).exists():
         raw_xml = services.GetMedicalRecord(patient_emis_number, gp_organisation=instruction.gp_practice).call()
-        AmendmentsForRecord.objects.create(instruction=instruction, raw_medical_xml=raw_xml)
+        aes_key = uuid.uuid4().hex
+        # create AmendmentsForRecord with aes_key first then save raw_xml and encrypted with self aes_key
+        amendments = AmendmentsForRecord.objects.create(instruction=instruction, raw_medical_xml_aes_key=aes_key)
+        amendments.raw_medical_xml_encrypted = raw_xml
+        amendments.save()
 
     instruction.in_progress(context={'gp_user': request.user.userprofilebase.generalpracticeuser})
     instruction.saved = False
@@ -191,8 +202,8 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         return redirect('medicalreport:set_patient_emis_number', instruction_id=instruction_id)
 
     # Todo REMOVE FILE SYSTEM SUPPORT
-    if redaction.raw_medical_xml:
-        raw_xml_or_status_code = redaction.raw_medical_xml
+    if redaction.raw_medical_xml_encrypted:
+        raw_xml_or_status_code = redaction.raw_medical_xml_encrypted
     else:
         raw_xml_or_status_code = services.GetMedicalRecord(redaction.patient_emis_number, gp_organisation=instruction.gp_practice).call()
 
@@ -216,7 +227,7 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         },
         user=request.user)
 
-    relations = [relation.name.lower() for relation in ReferencePhrases.objects.all()]
+    relations = [relation.name for relation in ReferencePhrases.objects.all()]
     sensitive_conditions = dict()
     sensitive_conditions['snome'] = set(NhsSensitiveConditions.objects.all().values_list('snome_code', flat=True))
     sensitive_conditions['readcodes'] = NhsSensitiveConditions.get_sensitives_readcode()
@@ -241,11 +252,13 @@ def edit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         'library_history': library_history,
     }
 
+    redacted_attachments = RedactedAttachment.objects.filter(instruction_id=instruction.id)
     response = render(request, 'medicalreport/medicalreport_edit.html', {
         'user': request.user,
         'medical_record': medical_record_decorator,
         'redaction': redaction,
         'instruction': instruction,
+        'redacted_attachments': redacted_attachments,
         'finalise_submit_form': finalise_submit_form,
         'questions': questions,
         'relations': relations,
@@ -301,7 +314,7 @@ def submit_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         instruction
     )
     attachments = medical_record_decorator.attachments
-    relations = [relation.name.lower() for relation in ReferencePhrases.objects.all()]
+    relations = [relation.name for relation in ReferencePhrases.objects.all()]
     initial_prepared_by = request.user.userprofilebase.generalpracticeuser.pk
     if redaction.prepared_by:
         initial_prepared_by = redaction.prepared_by.pk
@@ -384,7 +397,7 @@ def final_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         final_raw_medical_xml_report = instruction.medical_xml_report.read().decode('utf-8')
     medical_record_decorator = MedicalReportDecorator(final_raw_medical_xml_report, instruction)
     attachments = medical_record_decorator.attachments
-    relations = [relation.name.lower() for relation in ReferencePhrases.objects.all()]
+    relations = [relation.name for relation in ReferencePhrases.objects.all()]
 
     response = render(request, 'medicalreport/final_report.html', {
         'header_title': header_title,

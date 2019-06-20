@@ -134,8 +134,8 @@ def create_or_update_redaction_record(request, instruction: Instruction) -> bool
 
 def save_medical_report(instruction: Instruction, amendments_for_record: AmendmentsForRecord) -> None:
     start_time = timezone.now()
-    if amendments_for_record.raw_medical_xml:
-        raw_xml = amendments_for_record.raw_medical_xml
+    if amendments_for_record.raw_medical_xml_encrypted:
+        raw_xml = amendments_for_record.raw_medical_xml_encrypted
     else:
         raw_xml = services.GetMedicalRecord(amendments_for_record.patient_emis_number, gp_organisation=instruction.gp_practice).call()
 
@@ -150,7 +150,7 @@ def save_medical_report(instruction: Instruction, amendments_for_record: Amendme
         instruction.medical_xml_report.delete()
 
     medical_record_decorator = MedicalReportDecorator(parse_xml, instruction)
-    relations = [relation.name.lower() for relation in ReferencePhrases.objects.all()]
+    relations = [relation.name for relation in ReferencePhrases.objects.all()]
 
     gp_org = instruction.gp_user.organisation
     word_library = Library.objects.filter(gp_practice=gp_org)

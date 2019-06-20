@@ -181,6 +181,8 @@
             var me = $(this);
             me.prop("disabled", true);
             var xpath = $(this).val();
+            var cheked = $(this).is(':checked');
+            $('input:checkbox[value="'+xpath+'"]').prop('checked', cheked);
             if(Array.isArray(xpath)) { xpath = xpath[0]; }
 
             var action = 4;  // remove line redacted
@@ -467,5 +469,10 @@
             e.preventDefault();
             $('#trud-modal').modal('show');
         });
+
+        setInterval(function() {
+          fetchAttachments("{% url 'medicalreport:view_attachment' instruction_id=1 path_file='path' %}");
+        }, 12000);
+
     </script>
 {% endblock %}

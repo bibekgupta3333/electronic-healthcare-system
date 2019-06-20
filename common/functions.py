@@ -5,6 +5,7 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 from Crypto.Util.Padding import unpad
 from base64 import b64encode, b64decode
+from django.conf import settings
 import logging
 
 logger = logging.getLogger(__name__)
@@ -48,11 +49,9 @@ def verify_password(password: str, first_name: str=None, last_name: str=None, em
 
     return data
 
-
 AES_KEY = get_env_variable('AES_KEY')
 
-
-def aes_with_salt_encryption(plaintext: str, salt: str) -> str:
+def aes_with_salt_encryption(plaintext: str, salt: str, aes_key=AES_KEY) -> tuple:
     try:
         plaintext_bytes = plaintext.encode()
     except AttributeError:
@@ -68,7 +67,7 @@ def aes_with_salt_encryption(plaintext: str, salt: str) -> str:
     iv_salt = b64encode(cipher.iv).decode('utf-8')
 
     ciphertext_with_salt_bytes_base64 = b64encode(ciphertext_with_salt_bytes)
-    cipher2 = AES.new(AES_KEY.encode(), AES.MODE_CBC)
+    cipher2 = AES.new(aes_key.encode(), AES.MODE_CBC)
     ct_bytes2 = cipher2.encrypt(pad(ciphertext_with_salt_bytes_base64, AES.block_size))
     iv_aes_key = b64encode(cipher2.iv).decode('utf-8')
     ciphertext = b64encode(ct_bytes2).decode('utf-8')
@@ -76,7 +75,7 @@ def aes_with_salt_encryption(plaintext: str, salt: str) -> str:
     return iv_salt, iv_aes_key, ciphertext
 
 
-def aes_with_salt_decryption(encrypted_with_salt: str, initial_vector: str) -> str:
+def aes_with_salt_decryption(encrypted_with_salt: str, initial_vector: str, aes_key=AES_KEY) -> str:
     if all('$' in val for val in [encrypted_with_salt, initial_vector]):
         try:
             iv_salt = initial_vector.split('$')[0]
@@ -84,15 +83,15 @@ def aes_with_salt_decryption(encrypted_with_salt: str, initial_vector: str) -> s
             salt = encrypted_with_salt.split('$')[0]
             cipher_aes_text = encrypted_with_salt.split('$')[1]
 
-            cipher = AES.new(AES_KEY.encode(), AES.MODE_CBC, b64decode(iv_aes_key))
+            cipher = AES.new(aes_key.encode(), AES.MODE_CBC, b64decode(iv_aes_key))
             plain_text = unpad(cipher.decrypt(b64decode(cipher_aes_text)), AES.block_size)
 
             cipher = AES.new(salt.encode(), AES.MODE_CBC, b64decode(iv_salt))
             password = unpad(cipher.decrypt(b64decode(plain_text)), AES.block_size)
 
             return password.decode('utf-8')
-        except ValueError:
-            logger.error("Key incorrect or message corrupted")
+        except Exception as e:
+            logger.error(e)
 
 
 def get_url_page(page: str, obj_id: int = None, request=None) -> str:
