@@ -45,7 +45,40 @@ class InstructionTable(tables.Table):
             self.columns.hide('created')
             self.columns.hide('client_ref')
 
+        self.current_url = request.resolver_match.url_name
         self.user = request.user
+
+    def render_gp_user(self, record):
+        gp_users_string = ''
+        selected_string = ''
+
+        if self.current_url == 'view_pipeline' and \
+           self.user.has_perm('instructions.allocate_gp'):
+            gp_users = models.GeneralPracticeUser.objects.all()
+
+            for index, gp_user in enumerate(gp_users):
+                if not gp_user.user.has_perm('instructions.process_sars') and \
+                   not gp_user.user.has_perm('instructions.process_amra'):
+                   continue
+                if gp_user.user == record.gp_user.user:
+                    selected_string = 'selected'
+                else:
+                    selected_string = ''
+
+                gp_users_string += "<option value='{}' {} data-gp_id={}>{}</option>".format(
+                    str(index),
+                    selected_string,
+                    gp_user.pk,
+                    str(gp_user.user)
+                )
+        if gp_users_string:
+            return format_html(
+                "<select class='form-control btn sel_gp_users' name='gp_users'>" + \
+                gp_users_string + \
+                "</select>"
+            )
+
+        return format_html(str(record.gp_user))
 
     def render_client_ref(self, record):
         client_ref = record.your_ref
