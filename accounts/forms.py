@@ -168,6 +168,7 @@ class PMForm(forms.ModelForm):
 
 class NewGPForm(forms.ModelForm):
 
+    title = forms.ChoiceField(choices=TITLE_CHOICE, required=True)
     first_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
     last_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
     email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}),
@@ -184,7 +185,7 @@ class NewGPForm(forms.ModelForm):
 
     class Meta:
         model = GeneralPracticeUser
-        fields = ('first_name', 'last_name', 'email', 'username', 'password', 'send_email', 'role', 'payment_bank_holder_name',
+        fields = ('first_name', 'last_name', 'title', 'email', 'username', 'password', 'send_email', 'role', 'payment_bank_holder_name',
                     'payment_bank_account_number', 'payment_bank_sort_code', 'telephone_mobile' ,'telephone_code')
         widgets = {
             'payment_bank_sort_code': forms.HiddenInput(attrs={'placeholder': '', }),
