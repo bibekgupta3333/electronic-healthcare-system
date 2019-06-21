@@ -168,7 +168,7 @@ class PMForm(forms.ModelForm):
 
 class NewGPForm(forms.ModelForm):
 
-    title = forms.ChoiceField(choices=TITLE_CHOICE, required=True)
+    title = forms.ChoiceField(choices=TITLE_CHOICE, required=True, label='')
     first_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
     last_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
     email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}),
@@ -201,6 +201,7 @@ class NewGPForm(forms.ModelForm):
 
 class NewClientForm(forms.ModelForm):
 
+    title = forms.ChoiceField(choices=TITLE_CHOICE, required=True, label='')
     first_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
     last_name = forms.CharField(max_length=255, required=True, label='', widget=forms.TextInput())
     email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': ''}),
@@ -218,7 +219,7 @@ class NewClientForm(forms.ModelForm):
     class Meta:
         model = ClientUser
         fields = (
-            'first_name', 'last_name', 'email',
+            'first_name', 'last_name', 'title', 'email',
             'username', 'password', 'send_email',
             'telephone_mobile', 'telephone_code'
         )
