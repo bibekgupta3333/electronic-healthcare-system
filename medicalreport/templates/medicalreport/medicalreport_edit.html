@@ -267,6 +267,7 @@
         });
 
         function handler_highlight_redact(e) {
+            $(".dropdown-options").hide();
             e.preventDefault();
             var word_span = $(this).parent().parent().find("span.bg-warning");
             var word = word_span.text();
@@ -294,6 +295,7 @@
         }
 
         function handler_highlight_replace(e) {
+            $(".dropdown-options").hide();
             e.preventDefault();
             var word_span = $(this).parent().parent().find("span.bg-warning");
             var word = word_span.text();
@@ -322,6 +324,7 @@
         }
 
         function handler_highlight_replaceall(e){
+            $(".dropdown-options").hide();
             e.preventDefault();
             var word_span = $(this).parent().parent().find("span.bg-warning");
             var word = word_span.text();
@@ -429,6 +432,10 @@
                         }
                     });
                 }
+                $(".highlight-redact").off("click", handler_highlight_redact);
+                $(".highlight-replace").off("click", handler_highlight_replace);
+                $(".highlight-replaceall").off("click", handler_highlight_replaceall);
+
                 $(".highlight-redact").on("click", handler_highlight_redact);
                 $(".highlight-replace").on("click", handler_highlight_replace);
                 $(".highlight-replaceall").on("click", handler_highlight_replaceall);

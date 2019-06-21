@@ -6,9 +6,7 @@ from django.template import loader
 from django.utils.html import format_html
 from django.http import HttpRequest
 from django.db.models.functions import Length
-from django.shortcuts import redirect
 from django.utils import timezone
-from django.core.files.base import ContentFile
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.xml.xml_base import XMLModelBase
 from snomedct.models import SnomedConcept
@@ -28,7 +26,7 @@ import uuid
 import logging
 import os
 import glob
-import re
+import string
 
 UI_DATE_FORMAT = '%m/%d/%Y'
 logger = logging.getLogger('timestamp')
@@ -355,10 +353,15 @@ def render_report_tool_box_function(header: str, xpath: str, section:str, librar
 
                 for library in libraries:
                     step = len(library.key.split(' '))
-                    if str.upper(library.key) == str.upper(" ".join((split_head[k:k+step]))) and not replaced_indexes.intersection(set({k, k+step})):
-                        replace_word = " ".join((split_head[k:k+step]))
+                    phrase = " ".join((split_head[k:k+step]))
+                    if str.upper(library.key) == str.upper(phrase.replace(',', '')) and not replaced_indexes.intersection(set({k, k+step})):
+                        trail = ''
+                        if phrase[-1] not in string.ascii_letters + string.digits:
+                            trail = phrase[-1]
+                        replace_word = phrase.replace(',', '')
                         library_matched = True
                         highlight_class = 'bg-warning'
+
                         if not library.value:
                             highlight_html = '''
                                 <span class="highlight-library d-inline-block">
@@ -370,7 +373,7 @@ def render_report_tool_box_function(header: str, xpath: str, section:str, librar
                             '''
                         for history in library_history:
                             action = history.action
-                            if str.upper(history.old) == str.upper(" ".join((split_head[k:k+step]))):
+                            if str.upper(history.old) == str.upper(phrase.replace(',', '')):
                                 if action == LibraryHistory.ACTION_REPLACE \
                                         and history.guid == guid \
                                         and history.index == i \
@@ -391,7 +394,7 @@ def render_report_tool_box_function(header: str, xpath: str, section:str, librar
 
                         replaced_indexes = replaced_indexes.union(set(list(range(k, k+step))))
                         highlight_html = highlight_html.format(highlight_class, replace_word, guid, i, section)
-                        temp_header.append(highlight_html)
+                        temp_header.append(highlight_html + trail)
                         skip_amount_loop = step-1
                         break  # already matched LIBRARY WORD exist loop
                 k += 1

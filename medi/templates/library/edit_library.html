@@ -158,6 +158,9 @@
             setup_edit_modal();
             var value = $(this).parent().prev().text();
             var key = $(this).parent().prev().prev().text();
+            if(value == '—'){
+                value = ''
+            }
             $('#id_value').val(value);
             $('#id_key').val(key);
             $('#addWordForm').attr('action', $(this).data('editlink'));
