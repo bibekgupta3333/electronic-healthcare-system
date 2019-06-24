@@ -103,7 +103,11 @@
             </div>
         </form>
         {% if perms.permissions.view_instructionpermission %}
-            <form action="{% url 'accounts:update_permission' %}" id="permissionForm" method="POST" enctype="multipart/form-data">
+            <form
+                id="permissionForm"
+                enctype="multipart/form-data" method="POST"
+                action="{% url 'accounts:update_permission' %}"
+                data-fixed_permission="{{fixed_permission_names}}">
                 {% csrf_token %}
                 <table class="table table-striped table-bordered table-hover dataTable no-footer table-responsive">
                     {{ permission_formset.management_form }}
@@ -223,6 +227,8 @@
             var userType = "{{user_type}}";
             var userSelectedCnt = 0;
             var selectedUsers = [];
+            var fixed_permission_names = $('#permissionForm').data('fixed_permission');
+
             $.ajaxSetup({
                 beforeSend: function(xhr, settings) {
                     if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
@@ -336,7 +342,7 @@
                 $(".permission-role").removeAttr('disabled');
             });
 
-            render_permission();
+            render_permission(fixed_permission_names);
         });
     </script>
 {% endblock %}

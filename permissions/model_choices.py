@@ -4,6 +4,7 @@ MANAGER_PERMISSIONS=[
     'delete_user_management',
     'add_user_management',
     'view_instruction',
+    'view_account_pages',
     'view_organisationfeerate',
     'view_instructionpermission',
     'add_instructionpermission',
