@@ -119,12 +119,7 @@ class TestAccountView(TestAccountBase):
         response = self.client.get(
             reverse('accounts:view_account')
         )
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(
-            response,
-            reverse('instructions:view_pipeline'),
-            response.status_code, response.status_code,
-        )
+        self.assertEqual(response.status_code, 200)
 
     def test_update_bank_detail_success(self):
         bank_number = '12345678'
