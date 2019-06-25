@@ -78,7 +78,7 @@ class InstructionVolumeFee(models.Model):
         for index, band in enumerate(volume_band):
             if volume_amount <= band:
                 return fee_rate[index]
-        return 0
+        return self.fee_rate_top
 
     def get_fee_type(self):
         if self.fee_rate_type == 1:

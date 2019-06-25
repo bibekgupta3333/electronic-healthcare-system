@@ -119,12 +119,7 @@ class TestAccountView(TestAccountBase):
         response = self.client.get(
             reverse('accounts:view_account')
         )
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(
-            response,
-            reverse('instructions:view_pipeline'),
-            response.status_code, response.status_code,
-        )
+        self.assertEqual(response.status_code, 200)
 
     def test_update_bank_detail_success(self):
         bank_number = '12345678'
@@ -282,10 +277,12 @@ class TestViews(TestCase):
 
     def test_create_user_exist(self):
         #   Test create function but fail. Because exist account
+        title = 'MRS'
         firstName = 'Jirayu'
         lastName = 'Oopipat'
         email = self.email_A
         password = 'secret1'
+        username = 'pringleUser'
         role = '1'
         telephone_mobile = '874432803'
         telephone_code = '66'
@@ -293,9 +290,11 @@ class TestViews(TestCase):
         request = self.factory.get('/login/')
         self.client.login(request=request, email='testuser@mohara.co', password='secret')
         response = self.client.post('/accounts/create-user/', {
+            'title': title,
             'user_role': role,
             'first_name': firstName,
             'last_name': lastName,
+            'username': username,
             'email': email,
             'password': password,
             'telephone_mobile': telephone_mobile,
@@ -311,6 +310,7 @@ class TestViews(TestCase):
 
     def test_create_user_success(self):
         #   Test create user and success.
+        title = 'MRS'
         firstName = 'Jirayu'
         lastName = 'Oopipat'
         email = 'snoopy@mohara.co'
@@ -318,10 +318,12 @@ class TestViews(TestCase):
         telephone_mobile = '874432803'
         telephone_code = '66'
         role = '1'
-
         request = self.factory.get('/login/')
+
         self.client.login(request=request, email='testuser@mohara.co', password='secret')
+
         response = self.client.post('/accounts/create-user/', {
+            'title': title,
             'user_role' : role,
             'first_name': firstName,
             'last_name': lastName,
@@ -330,7 +332,6 @@ class TestViews(TestCase):
             'telephone_mobile': telephone_mobile,
             'telephone_code': telephone_code
         })
-
         queryResultUser = User.objects.all()
         resultUser = queryResultUser[2]
 

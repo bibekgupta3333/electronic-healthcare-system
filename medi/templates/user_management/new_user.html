@@ -17,6 +17,12 @@
         {{ newuser_form.non_field_errors }}
           
         <div class="row">
+            <div class="col-md-3 labelText"><label>Title</label></div>
+            <div class="col-md-4 inputDiv">
+                {% bootstrap_field newuser_form.title %}
+            </div>
+        </div>
+        <div class="row">
             <div class="col-md-3 labelText"><label>First Name</label></div>
             <div class="col-md-4 inputDiv">
                 {% bootstrap_field newuser_form.first_name %}
