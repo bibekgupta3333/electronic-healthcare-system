@@ -81,7 +81,7 @@ class TestRenderTables(TestCase):
         expected_patient_name = '<td class="patient_information">Mr. ' + self.patient_first_name + ' ' + self.patient_last_name + ' <br><b>NHS: </b></td>'
         expected_gp_allocated = '<td class="gp_user">Dr. ' + self.gp_user_name + ' </td>'
         expected_cost = '<td class="cost">' + self.gp_earns + '</td>'
-        expected_created = '<td class="created">' + str( self.date_instructions.strftime('%a %-d %b %Y')) + '</td>'
+        expected_created = '<td class="created">' + str( self.date_instructions.strftime('%-d %b %Y')) + '</td>'
         expected_status = '<td class="status"><a href=/medicalreport/'+ str(self.instruction.id) +'/edit/><h5><span class="status badge badge-warning">'\
                             + 'In Progress' + '</span></h5></a></td>'
 

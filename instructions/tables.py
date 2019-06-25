@@ -9,7 +9,7 @@ from permissions.templatetags.get_permissions import view_complete_report
 class InstructionTable(tables.Table):
     patient_information = tables.Column()
     client_ref = tables.Column(empty_values=(), default='-')
-    created = tables.DateTimeColumn(format='D j M Y')
+    created = tables.DateTimeColumn(format='j M Y')
     status = tables.Column()
     user = None
 
@@ -176,7 +176,7 @@ class InstructionTable(tables.Table):
 class FeeInstructionTable(tables.Table):
     patient_information = tables.Column()
     client_ref = tables.Column(empty_values=(), default='-')
-    created = tables.DateTimeColumn(format='D j M Y')
+    created = tables.DateTimeColumn(format='j M Y')
     status = tables.Column()
     user = None
 
