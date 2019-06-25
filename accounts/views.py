@@ -13,6 +13,7 @@ from django.http import JsonResponse, HttpRequest, HttpResponse
 from django.forms import modelformset_factory
 from django.contrib.auth import authenticate, login as customlogin
 from django.contrib.auth.forms import AuthenticationForm as LoginForm
+from django.contrib.auth.models import Permission
 
 from permissions.forms import InstructionPermissionForm, GroupPermissionForm
 from permissions.models import InstructionPermission
@@ -28,6 +29,9 @@ from .models import GENERAL_PRACTICE_USER, CLIENT_USER, MEDIDATA_USER
 from payment.model_choices import *
 from .forms import PracticePreferencesForm, TwoFactorForm, BankDetailsForm, CustomLoginForm, CustomAuthenticationForm
 from permissions.functions import access_user_management
+from permissions.model_choices import MANAGER_PERMISSIONS, \
+                                      OTHER_PERMISSIONS, \
+                                      GP_PERMISSIONS
 from organisations.models import OrganisationGeneralPractice
 from onboarding.views import generate_password
 from onboarding.forms import BankDetailsEmrSetUpStage2Form
@@ -354,6 +358,7 @@ def view_users(request: HttpRequest) -> HttpResponse:
     RequestConfig(request, paginate={'per_page': 5}).configure(table_data['table'])
     table_data['table'].order_by = request.GET.get('sort', '-created')
     permission_formset = []
+
     if user_profile and hasattr(user_profile, 'generalpracticeuser'):
         organisation = user_profile.generalpracticeuser.organisation
         permissions = InstructionPermission.objects.filter(organisation=organisation)
@@ -365,6 +370,14 @@ def view_users(request: HttpRequest) -> HttpResponse:
         permission_set = modelformset_factory(InstructionPermission, form=InstructionPermissionForm, extra=(3-permissions.count()))
         initial_data = set_initial_data_permission(permissions, None)
         permission_formset = permission_set(queryset=permissions, initial=initial_data)
+
+    #Get names of fixed permissions...
+    fixed_permissions_list = MANAGER_PERMISSIONS + \
+                             OTHER_PERMISSIONS + \
+                             GP_PERMISSIONS
+    fixed_permissions = Permission.objects.filter(
+            Q(codename__in = fixed_permissions_list))
+    fixed_perm_names = [perm.name for perm in fixed_permissions] + ['view account page']
 
     show_pop_up = ''
     if request.GET.get('show'):
@@ -394,7 +407,8 @@ def view_users(request: HttpRequest) -> HttpResponse:
             'permission_formset': permission_formset,
             'gp_preferences_form': gp_preferences_form,
             'user_type': table_data['user_type'],
-            'show_pop_up': show_pop_up
+            'show_pop_up': show_pop_up,
+            'fixed_permission_names': fixed_perm_names
         })
     else:
         response = render(request, 'user_management/user_management.html', {
@@ -404,7 +418,8 @@ def view_users(request: HttpRequest) -> HttpResponse:
             'overall_users_number': table_data['overall_users_number'],
             'permission_formset': permission_formset,
             'user_type': table_data['user_type'],
-            'show_pop_up': show_pop_up
+            'show_pop_up': show_pop_up,
+            'fixed_permission_names': fixed_perm_names
         })
 
     return response
