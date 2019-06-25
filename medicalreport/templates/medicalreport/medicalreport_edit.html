@@ -274,6 +274,7 @@
             var idx = $(this).parent().data('word_idx');
             var guid = $(this).parent().data('guid');
             var section = $(this).parent().data('section');
+            var xpath = $(this).parent().parent().parent().parent().children().eq(0).val();
 
             $.ajax({
                 url: "{% url 'library:redact_word' %}",
@@ -284,6 +285,7 @@
                     idx: idx,
                     guid: guid,
                     section: section,
+                    xpath: xpath
                 }
             }).done(function(response) {
                 word_span.removeClass("bg-warning");
@@ -302,6 +304,7 @@
             var idx = $(this).parent().data('word_idx');
             var guid = $(this).parent().data('guid');
             var section = $(this).parent().data('section');
+            var xpath = $(this).parent().parent().parent().parent().children().eq(0).val();
 
             $.ajax({
                 url: "{% url 'library:replace_word' %}",
@@ -312,6 +315,7 @@
                     idx: idx,
                     guid: guid,
                     section: section,
+                    xpath: xpath
                 }
             }).done(function(response) {
                 word_span.text(response['replace_word']);
