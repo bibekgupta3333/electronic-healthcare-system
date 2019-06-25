@@ -220,11 +220,12 @@
                 }
             });
 
-            function navigate_action(flag_modal = true) {
-                let instruction_id = $('.selectPatientButton').data('instruction_id');
-                let instruction_type = $('.selectPatientButton').data('instruction_type');
-                let patient_ref_id = $('.selectPatientButton').data('patient_ref_id');
-                let action_url = "{% url 'medicalreport:select_patient' 1 2 %}";
+            function navigate_action(flag_modal) {
+                flag_modal = typeof flag_modal !== 'undefined' ? flag_modal : true;
+                var instruction_id = $('.selectPatientButton').data('instruction_id');
+                var instruction_type = $('.selectPatientButton').data('instruction_type');
+                var patient_ref_id = $('.selectPatientButton').data('patient_ref_id');
+                var action_url = "{% url 'medicalreport:select_patient' 1 2 %}";
 
                 if (instruction_type == "SARS" && flag_modal){
                     action_url = "{% url 'instructions:consent_contact' 1 2 %}";

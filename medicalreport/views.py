@@ -299,7 +299,7 @@ def update_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
                 return redirect('medicalreport:submit_report', instruction_id=instruction_id)
             return redirect('instructions:view_pipeline')
 
-        return redirect('medicalreport:edit_report', instruction_id=instruction_id)
+    return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
 #@silk_profile(name='Preview Report')
