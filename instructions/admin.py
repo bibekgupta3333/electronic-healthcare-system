@@ -11,7 +11,6 @@ from organisations.models import OrganisationGeneralPractice
 from instructions.forms import ClientNoteForm, InstructionAdminForm
 from import_export import resources
 from accounts.models import MedidataUser
-from rangefilter.filter import DateRangeFilter, DateTimeRangeFilter
 from import_export.results import RowResult
 from copy import deepcopy
 from django.db.transaction import TransactionManagementError
