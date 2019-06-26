@@ -462,11 +462,12 @@ class RedactReferencePhraseTest(TestCase):
         )
 
         self.value = "Mr Chatterly's father had recently been diagnosed with lymphoma"
-        self.result = "Mr Chatterly's [UNSPECIFIED THIRD PARTY] had recently been diagnosed with lymphoma"
+        self.result = "Mr Chatterly's [UNSPECIFIED] had recently been diagnosed with lymphoma"
         self.relations = dict()
         relations = [relation.name for relation in ReferencePhrases.objects.all()]
+        self.relations['relations'] = relations
         self.relations['word_library'] = Library.objects.filter(gp_practice=gp_practice)
-        self.relations['xpath'] = ""
+        self.relations['xpath'] = [""]
         self.relations['library_history'] = None
 
     def test_redact_with_father(self):
