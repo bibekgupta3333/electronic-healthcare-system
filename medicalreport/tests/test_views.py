@@ -17,7 +17,7 @@ from medicalreport.models import AmendmentsForRecord, ReferencePhrases
 from medicalreport.views import get_matched_patient
 from organisations.models import OrganisationGeneralPractice
 from .test_data.medical_file import MEDICAL_REPORT_WITH_ATTACHMENT_BYTES, MEDICAL_REPORT_BYTES, RAW_MEDICAL_XML
-
+from report.models import PatientReportAuth
 from medicalreport.templatetags.custom_filters import replace_ref_phrases
 from library.models import Library, LibraryHistory
 
@@ -400,7 +400,13 @@ class FinalReportTest(EmisAPITestCase):
     def setUp(self):
         super().setUp()
         consent_form = SimpleUploadedFile('test_consent_form.txt', b'consent')
-        self.patient_information = mommy.make(InstructionPatient, patient_first_name='Alan', patient_last_name='Ball',patient_emis_number='2985')
+        self.patient_information = mommy.make(
+            InstructionPatient,
+            patient_first_name='Alan',
+            patient_last_name='Ball',
+            patient_emis_number='2985',
+            patient_dob=datetime.now()
+        )
         self.instruction = mommy.make(
             Instruction, pk=3, consent_form=consent_form,
             patient=self.patient, gp_user=self.gp_user,
@@ -413,6 +419,12 @@ class FinalReportTest(EmisAPITestCase):
             medical_report_byte=MEDICAL_REPORT_BYTES,
             medical_with_attachment_report_byte=MEDICAL_REPORT_WITH_ATTACHMENT_BYTES,
             final_raw_medical_xml_report=RAW_MEDICAL_XML
+        )
+        self.reportAuth = mommy.make(
+            PatientReportAuth,
+            patient=self.patient,
+            instruction=self.instruction,
+            url='Authurl2019'
         )
         self.redaction = mommy.make(
             AmendmentsForRecord, instruction=self.instruction, pk=3,
