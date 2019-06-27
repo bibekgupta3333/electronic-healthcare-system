@@ -159,7 +159,7 @@
                     <div class="row form-group">
                         <div class="col-md-12">
                             <input type="checkbox" class="accept-policy" name="accept_policy" id="accept-policy" disabled>
-                                Click  <a href="#" class="active-a" data-toggle="modal" data-target="#acceptTCs">here</a> to view and accept all T&amp;Cs, End User Licence and data policy.
+                                Click  <a href="#" class="active-a" data-toggle="modal" data-target="#acceptTCs" id="acceptTCsButton">here</a> to view and accept all T&amp;Cs, End User Licence and data policy.
                                 <p class="mt-2 ml-4 text-secondary">These will appear in a pop-up, so please make sure any pop-up blockers are disabled temporarily to enable this.</p>
                         </div>
                     </div>
@@ -191,13 +191,11 @@
                     </button>
                     <div class="container">
                         <div class="col-12 text-center">
-                            {% if 'demo' in request.get_host %}
-                                <object data="{% static 'documents/TermAndConditions[DEMO].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
-                            {% elif 'dev' in request.get_host %}
-                                <object data="{% static 'documents/TermAndConditions[DEV].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
-                            {% else %}
-                                <object data="{% static 'documents/TermAndConditions.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
-                            {% endif %}
+                            <div class="modal-dialog-pdf">
+                                <iframe id="mediterms_pdf" src="" style="width: 100%; height: 100%;" frameborder="0">
+                                    <p>It appears your web browser doesn't support iframes.</p>
+                                </iframe>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -235,6 +233,17 @@
     <script src="{% static 'js/onboarding/emr_signup.js' %}"></script>
     <script>
         $(document).ready(function () {
+            $('header').css('display', 'none');
+
+            $('#acceptTCsButton').click(function () {
+                if("{{ request.get_host }}".indexOf('demo') >= 0){
+                    $('#mediterms_pdf').attr('src', "{% static 'documents/TermAndConditions[DEMO].pdf' %}");
+                } else if ("{{ request.get_host }}".indexOf('dev') >= 0){
+                    $('#mediterms_pdf').attr('src', "{% static 'documents/TermAndConditions[DEV].pdf' %}");
+                } else {
+                    $('#mediterms_pdf').attr('src', "{% static 'documents/TermAndConditions.pdf' %}");
+                }
+            });
             init_select2_postcode(
                 {% if selected_post_code %} ["{{ selected_post_code }}"] {% else %} [''] {% endif %}
             );

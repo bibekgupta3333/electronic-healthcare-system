@@ -162,6 +162,26 @@
     <script src="{% static 'assets/fancybox/jquery.fancybox.min.js' %}"></script>
     <script>
         $(document).ready(function() {
+            $('.top-progress').css({
+                'position': 'relative',
+                'right': '0px',
+                'width': '100%',
+            });
+            $(document).scroll(function () {
+                if($(document).scrollTop() == 0){
+                    $('.top-progress').css({
+                        'position': 'relative',
+                        'right': '0px',
+                        'width': '100%',
+                    });
+                } else {
+                    $('.top-progress').css({
+                        'position': 'fixed',
+                        'right': '-15px',
+                        'width': '86%',
+                    });
+                }
+            });
             $('.js-tooltip').tooltip();
 
             $('.js-copy').click(function() {

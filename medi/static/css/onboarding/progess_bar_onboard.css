@@ -1,7 +1,10 @@
 .top-progress {
-    position: sticky;
-    top: 0;
+    position: fixed;
+    top: 0px;
+    right: -15px;
     z-index: 1000;
+    width: 86%;
+    border-radius: 0rem;
 }
 
 .block-img {
