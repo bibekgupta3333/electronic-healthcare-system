@@ -100,6 +100,7 @@ class WeeklyInvoice(models.Model):
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Total cost invoice')
     paid = models.BooleanField(default=False)
     weekly_invoice_pdf_file = models.FileField(upload_to='invoices', null=True, blank=True)
+    status = models.CharField(max_length=7, choices=INVOICE_STATUS_CHOICES, default=INVOICE_DRAFT)
 
     def __str__(self):
         return "Week range : {} - {}".format(self.start_date, self.end_date)
