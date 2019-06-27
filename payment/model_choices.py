@@ -8,6 +8,14 @@ FEE_TYPE_CHOICE = (
     (FEE_SARS_TYPE, 'SARS')
 )
 
+INVOICE_DRAFT = 'Draft'
+INVOICE_PRINTED = 'Printed'
+
+INVOICE_STATUS_CHOICES = (
+    (INVOICE_DRAFT, 'Draft'),
+    (INVOICE_PRINTED, 'Printed')
+)
+
 # Fee status for check setup fee progress.
 FEE_STATUS_INVALID_DETAIL = 1
 FEE_STATUS_INVALID_FEE = 2
