@@ -281,7 +281,7 @@ def generate_medicalreport_with_attachment(self, instruction_info: dict, report_
             except Exception as e:
                 exception_detail.append(date + ' ' + description)
                 logger.error(e)
-                    
+
         if download_attachments:
             template = get_template(REPORT_DIR)
             html = template.render({'attachments': download_attachments})
@@ -330,19 +330,21 @@ def generate_medicalreport_with_attachment(self, instruction_info: dict, report_
         third_party_info = ThirdPartyAuthorisation.objects.filter(patient_report_auth__url=report_link_info['unique_url']).first()
         SendSMS(number=instruction.patient_information.get_telephone_e164()).send(msg)
 
-        send_patient_mail(
-            report_link_info['scheme'],
-            report_link_info['host'],
-            report_link_info['unique_url'],
-            instruction
-        )
-
-        if third_party_info and third_party_info.email and third_party_info.office_phone_number:
-            send_third_party_message(
-                third_party_info,
+        if instruction.patient_notification:
+            send_patient_mail(
                 report_link_info['scheme'],
                 report_link_info['host'],
-                third_party_info.patient_report_auth)
+                report_link_info['unique_url'],
+                instruction
+            )
+
+        if instruction.third_party_notification:
+            if third_party_info and third_party_info.email and third_party_info.office_phone_number:
+                send_third_party_message(
+                    third_party_info,
+                    report_link_info['scheme'],
+                    report_link_info['host'],
+                    third_party_info.patient_report_auth)
 
         from medicalreport.functions import send_surgery_email
         send_surgery_email(instruction)

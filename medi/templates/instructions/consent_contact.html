@@ -84,7 +84,7 @@
                                         <h4 class="panel-title"> </h4>
                                         <div class="checkbox col-md-12" id="confirmed-agreement">
                                             <label data-target="#collapse-to-patient" class="collapse-check">
-                                                <input type="checkbox" class="patient-check" name="conirm-agreement" id="ch-confirmed-agreement"> Confirmed to patient that agreement exists with Medidata Exchange Limited
+                                                <input type="checkbox" class="patient-check" name="send-to-patient" id="ch-confirmed-agreement"> Confirmed to patient that agreement exists with Medidata Exchange Limited
                                             </label>
                                         </div>
                                     </div>
@@ -157,7 +157,7 @@
                                                                         </div>
                                                                         <div class="col-md-6">
                                                                             <div class="row">
-                                                                                <div class="col-md-5 title-pos mt-2">Contact Name </div>
+                                                                                <div class="col-md-5 title-pos mt-2">Contact Name<span class="text-danger">*</span></div>
                                                                                 {% bootstrap_field third_party_form.contact_name show_label=False form_group_class='col-md-7' placeholder='' %}
                                                                             </div>
                                                                         </div>
@@ -470,7 +470,7 @@
                     <h5 class="modal-title mx-auto" id="ModalLongTitle">Warning</h5>
                 </div>
                 <div class="modal-body bg-white" style="color: black; text-align: center;">
-                Please input email and phone number for third party authentication.
+                Please input contact name, email and phone number for third party authentication.
                 </div>
                 <div class="modal-footer bg-white">
                     <button type="button" class="btn btn-secondary btn-lg mx-auto" data-dismiss="modal">Go Back</button>
@@ -699,7 +699,7 @@
                         }
                     }
                     if (is_allowed && $('#ch-report-third-party').is(':checked')) {
-                        if (!$('#id_email_1').val() || !$('#id_email_2').val() || !$('#id_office_phone_number').val()) {
+                        if (!$('#id_email_1').val() || !$('#id_email_2').val() || !$('#id_office_phone_number').val() || !$('#id_contact_name').val()) {
                             $('#noPhoneEmail').click();
                             is_allowed = false;
                         }
@@ -757,6 +757,15 @@
         $('#rejectRequestForm').submit(function(){
             $("#consent_reject").val($("#id_patient_email").val());
         });
+
+        var patientNotification = "{{ instruction.patient_notification }}";
+        var thirdPartyNotification = "{{ instruction.third_party_notification }}";
+        if(patientNotification == 'True') {
+          $('#ch-confirmed-agreement').click();
+        }
+        if(thirdPartyNotification == 'True') {
+          $('#ch-report-third-party').click();
+        }
     });
     </script>
 
