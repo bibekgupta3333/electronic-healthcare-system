@@ -11,6 +11,15 @@ from organisations.models import OrganisationGeneralPractice
 from instructions.forms import ClientNoteForm, InstructionAdminForm
 from import_export import resources
 from accounts.models import MedidataUser
+from import_export.results import RowResult
+from copy import deepcopy
+from django.db.transaction import TransactionManagementError
+import traceback
+import logging
+try:
+    from django.utils.encoding import force_text
+except ImportError:
+    from django.utils.encoding import force_unicode as force_text
 
 
 class InstructionReminder(admin.TabularInline):
@@ -185,22 +194,72 @@ class InstructionResource(resources.ModelResource):
         dataset.headers = columns
 
     def before_import_row(self, row, **kwargs):
-        instuction_staus_mapping = {
-            'New': model_choices.INSTRUCTION_STATUS_NEW,
-            'In Progress': model_choices.INSTRUCTION_STATUS_PROGRESS,
-            'Paid': model_choices.INSTRUCTION_STATUS_PAID,
-            'Completed': model_choices.INSTRUCTION_STATUS_COMPLETE,
-            'Rejected': model_choices.INSTRUCTION_STATUS_REJECT,
-            'Finalising': model_choices.INSTRUCTION_STATUS_FINALISE,
-        }
-        row['status'] = instuction_staus_mapping[row['status']]
+        if not row['status'].isdigit():
+            instuction_staus_mapping = {
+                'new': model_choices.INSTRUCTION_STATUS_NEW,
+                'in progress': model_choices.INSTRUCTION_STATUS_PROGRESS,
+                'paid': model_choices.INSTRUCTION_STATUS_PAID,
+                'completed': model_choices.INSTRUCTION_STATUS_COMPLETE,
+                'rejected': model_choices.INSTRUCTION_STATUS_REJECT,
+                'finalising': model_choices.INSTRUCTION_STATUS_FINALISE,
+            }
+            row['status'] = instuction_staus_mapping[str.lower(row['status'])]
+
+    def import_row(self, row, instance_loader, using_transactions=True, dry_run=False, **kwargs):
+        row_result = self.get_row_result_class()()
+        try:
+            self.before_import_row(row, **kwargs)
+            instance, new = self.get_or_init_instance(instance_loader, row)
+            self.after_import_instance(instance, new, **kwargs)
+            if new:
+                row_result.import_type = RowResult.IMPORT_TYPE_NEW
+            else:
+                row_result.import_type = RowResult.IMPORT_TYPE_UPDATE
+            row_result.new_record = new
+            del instance.medical_with_attachment_report_byte
+            del instance.medical_report_byte
+            original = deepcopy(instance)
+            diff = self.get_diff_class()(self, original, new)
+            if self.for_delete(row, instance):
+                if new:
+                    row_result.import_type = RowResult.IMPORT_TYPE_SKIP
+                    diff.compare_with(self, None, dry_run)
+                else:
+                    row_result.import_type = RowResult.IMPORT_TYPE_DELETE
+                    self.delete_instance(instance, using_transactions, dry_run)
+                    diff.compare_with(self, None, dry_run)
+            else:
+                self.import_obj(instance, row, dry_run)
+                if self.skip_row(instance, original):
+                    row_result.import_type = RowResult.IMPORT_TYPE_SKIP
+                else:
+                    self.save_instance(instance, using_transactions, dry_run)
+                    self.save_m2m(instance, row, using_transactions, dry_run)
+                diff.compare_with(self, instance, dry_run)
+            row_result.diff = diff.as_html()
+            # Add object info to RowResult for LogEntry
+            if row_result.import_type != RowResult.IMPORT_TYPE_SKIP:
+                row_result.object_id = instance.pk
+                row_result.object_repr = force_text(instance)
+            self.after_import_row(row, row_result, **kwargs)
+        except Exception as e:
+            row_result.import_type = RowResult.IMPORT_TYPE_ERROR
+            # There is no point logging a transaction error for each row
+            # when only the original error is likely to be relevant
+            if not isinstance(e, TransactionManagementError):
+                logging.exception(e)
+            tb_info = traceback.format_exc()
+            row_result.errors.append(self.get_error_result_class()(e, tb_info, row))
+        return row_result
 
 
 class InstructionAdmin(CustomImportExportModelAdmin):
     change_status = False
     form = InstructionAdminForm
     list_display = ('gp_practice', 'client', 'status', 'created', 'type', 'days_since_created')
-    list_filter = ('type', DaysSinceFilter, ClientOrgFilter, GPOrgFilter)
+    list_filter = (
+        'type', DaysSinceFilter, ClientOrgFilter, GPOrgFilter,
+    )
     resource_class = InstructionResource
     raw_id_fields = ('gp_practice', )
     readonly_fields = ('medi_ref', 'get_client_org_name',)
@@ -223,7 +282,7 @@ class InstructionAdmin(CustomImportExportModelAdmin):
         }),
         ('Final report Information', {
             'fields': (
-                'completed_signed_off_timestamp', 'final_report_date', 'medical_report', 'medical_with_attachment_report'
+                'completed_signed_off_timestamp', 'final_report_date', 'final_raw_medical_xml_report',
             )
         }),
         ('Consents Information', {
