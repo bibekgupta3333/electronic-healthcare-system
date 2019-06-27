@@ -128,35 +128,33 @@ class ImportExportTest(CalculateInstructionFeeBaseTest):
                 self.assertEqual(', '.join(row), self.instruction_content[i-1])
 
     def test_import_csv_for_update_paid_instruction_status(self):
-        pass
-        # Todo Fixed TypeError: can't pickle memoryview objects
-        # with open(os.getcwd() + '/common/tests/test_file_data/test_import_instruction_status.csv') as fp:
-        #     response_preview_import = self.client.post(
-        #         '/admin/instructions/instruction/import/', {'import_file': fp, 'input_format': '0'}
-        #     )
-        #     self.assertEqual(response_preview_import.status_code, 200)
-        #
-        #     html_content = response_preview_import.content.decode('utf-8')
-        #     import_file_name = re.search('name="import_file_name" value="(.+?)"', html_content).group(1)
-        #
-        #     # before update status
-        #     instruction_status_3 = Instruction.objects.get(id=3).status
-        #     instruction_status_4 = Instruction.objects.get(id=4).status
-        #     self.assertEqual(instruction_status_3, model_choices.INSTRUCTION_STATUS_COMPLETE)
-        #     self.assertEqual(instruction_status_4, model_choices.INSTRUCTION_STATUS_COMPLETE)
-        #
-        #     response_submit_import = self.client.post(
-        #         '/admin/instructions/instruction/process_import/', {
-        #             'import_file_name': import_file_name,
-        #             'original_file_name': 'test_import_instruction_status.cs',
-        #             'input_format': '0'
-        #         }
-        #     )
-        #     # success import will redirect to change list django admin
-        #     self.assertEqual(response_submit_import.status_code, 302)
-        #
-        #     # after update status
-        #     instruction_status_3 = Instruction.objects.get(id=3).status
-        #     instruction_status_4 = Instruction.objects.get(id=4).status
-        #     self.assertEqual(instruction_status_3, model_choices.INSTRUCTION_STATUS_PAID)
-        #     self.assertEqual(instruction_status_4, model_choices.INSTRUCTION_STATUS_PAID)
+        with open(os.getcwd() + '/common/tests/test_file_data/test_import_instruction_status.csv') as fp:
+            response_preview_import = self.client.post(
+                '/admin/instructions/instruction/import/', {'import_file': fp, 'input_format': '0'}
+            )
+            self.assertEqual(response_preview_import.status_code, 200)
+
+            html_content = response_preview_import.content.decode('utf-8')
+            import_file_name = re.search('name="import_file_name" value="(.+?)"', html_content).group(1)
+
+            # before update status
+            instruction_status_3 = Instruction.objects.get(id=3).status
+            instruction_status_4 = Instruction.objects.get(id=4).status
+            self.assertEqual(instruction_status_3, model_choices.INSTRUCTION_STATUS_COMPLETE)
+            self.assertEqual(instruction_status_4, model_choices.INSTRUCTION_STATUS_COMPLETE)
+
+            response_submit_import = self.client.post(
+                '/admin/instructions/instruction/process_import/', {
+                    'import_file_name': import_file_name,
+                    'original_file_name': 'test_import_instruction_status.cs',
+                    'input_format': '0'
+                }
+            )
+            # success import will redirect to change list django admin
+            self.assertEqual(response_submit_import.status_code, 302)
+
+            # after update status
+            instruction_status_3 = Instruction.objects.get(id=3).status
+            instruction_status_4 = Instruction.objects.get(id=4).status
+            self.assertEqual(instruction_status_3, model_choices.INSTRUCTION_STATUS_PAID)
+            self.assertEqual(instruction_status_4, model_choices.INSTRUCTION_STATUS_PAID)

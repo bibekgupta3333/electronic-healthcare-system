@@ -7,9 +7,11 @@ from django.core.mail import send_mail
 from django.template.loader import get_template
 
 from services.xml.base64_attachment import Base64Attachment
-from medicalreport.models import AmendmentsForRecord
+from medicalreport.models import AmendmentsForRecord, ReferencePhrases, RedactedAttachment
+from library.models import LibraryHistory
 from services.xml.medical_report_decorator import MedicalReportDecorator
 from services.emisapiservices import services
+from services.xml.xml_utils import xml_parse, lxml_to_string
 from instructions.models import Instruction
 from instructions.model_choices import INSTRUCTION_STATUS_COMPLETE, INSTRUCTION_STATUS_RERUN
 from report.mobile import SendSMS
@@ -18,6 +20,8 @@ from report.models import ExceptionMerge, UnsupportedAttachment, ThirdPartyAutho
 import xhtml2pdf.pisa as pisa
 from medicalreport.templatetags.custom_filters import format_date_filter
 from medicalreport.reports import generate_redact_pdf
+from services.xml.medication import Medication
+
 # from silk.profiling.profiler import silk_profile
 
 from celery import shared_task
@@ -81,6 +85,49 @@ def generate_medicalreport_with_attachment(self, instruction_info: dict, report_
         instruction_id = instruction_info['id']
         instruction = get_object_or_404(Instruction, id=instruction_id)
         redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
+
+        # redaction final raw xml
+        from medicalreport.functions import redact_name_relations_third_parties
+        relations = [relation.name for relation in ReferencePhrases.objects.all()]
+        parsed_xml = xml_parse(instruction.final_raw_medical_xml_report)
+        redaction_xml_tag = ['Description', 'DescriptiveText'] + Medication.DESCRIPTION_XPATHS
+        # third parties redaction and replace all word toolbox history
+        for i in parsed_xml.iter():
+            if i.text and (i.tag in redaction_xml_tag):
+                i.text = redact_name_relations_third_parties(i.text, relations, list(LibraryHistory.objects.filter(instruction=instruction, action=LibraryHistory.ACTION_REPLACE_ALL).values_list('new', flat=True)))
+
+        # library toolbox redaction history
+        for history in LibraryHistory.objects.filter(instruction=instruction, action__in=[LibraryHistory.ACTION_REPLACE, LibraryHistory.ACTION_REPLACE_ALL, LibraryHistory.ACTION_HIGHLIGHT_REDACT]):
+            replace = '' if history.action is LibraryHistory.ACTION_HIGHLIGHT_REDACT else history.new
+            if history.section in ['acute_medications', 'repeat_medications']:
+                for medication_desc_xapth in Medication.DESCRIPTION_XPATHS:
+                    description_element = parsed_xml.find(history.xpath + medication_desc_xapth)
+                    if description_element is not None:
+                        description_element.text = description_element.text.replace(history.old, replace)
+            elif history.section in ['significant_active', 'significant_past']:
+                for problem_desc_xpath in ['DisplayTerm', 'Code/Term']:
+                    description_element = parsed_xml.find(history.xpath + problem_desc_xpath)
+                    if description_element is not None:
+                        description_element.text = description_element.text.replace(history.old, replace)
+            elif history.section == 'consultations':
+                for consultation_desc_xpath in ['DisplayTerm', 'TermID/Term', 'ReferralReason', 'DescriptiveText', 'Code/Term'] + Medication.DESCRIPTION_XPATHS:
+                    description_element = parsed_xml.find(history.xpath + consultation_desc_xpath)
+                    if description_element is not None:
+                        description_element.text = description_element.text.replace(history.old, replace)
+            elif history.section == 'referrals':
+                for referral_desc_xpath in ['DisplayTerm', 'ReferralReason', 'DescriptiveText', 'Code/Term', 'TermID/Term']:
+                    description_element = parsed_xml.find(history.xpath + referral_desc_xpath)
+                    if description_element is not None:
+                        description_element.text = description_element.text.replace(history.old, replace)
+            elif history.section == 'allergies':
+                for allergy_desc_xpath in ['DisplayTerm', 'Code/Term', 'DescriptiveText']:
+                    description_element = parsed_xml(history.xpath + allergy_desc_xpath)
+                    if description_element is not None:
+                        description_element.text = description_element.text.replace(history.old, replace)
+
+
+        str_xml = lxml_to_string(parsed_xml)
+        instruction.final_raw_medical_xml_report = str_xml.decode('utf-8')
 
         medical_record_decorator = MedicalReportDecorator(instruction.final_raw_medical_xml_report, instruction)
         output = PyPDF2.PdfFileWriter()
@@ -234,7 +281,7 @@ def generate_medicalreport_with_attachment(self, instruction_info: dict, report_
             except Exception as e:
                 exception_detail.append(date + ' ' + description)
                 logger.error(e)
-                    
+
         if download_attachments:
             template = get_template(REPORT_DIR)
             html = template.render({'attachments': download_attachments})
@@ -283,19 +330,21 @@ def generate_medicalreport_with_attachment(self, instruction_info: dict, report_
         third_party_info = ThirdPartyAuthorisation.objects.filter(patient_report_auth__url=report_link_info['unique_url']).first()
         SendSMS(number=instruction.patient_information.get_telephone_e164()).send(msg)
 
-        send_patient_mail(
-            report_link_info['scheme'],
-            report_link_info['host'],
-            report_link_info['unique_url'],
-            instruction
-        )
-
-        if third_party_info and third_party_info.email and third_party_info.office_phone_number:
-            send_third_party_message(
-                third_party_info,
+        if instruction.patient_notification:
+            send_patient_mail(
                 report_link_info['scheme'],
                 report_link_info['host'],
-                third_party_info.patient_report_auth)
+                report_link_info['unique_url'],
+                instruction
+            )
+
+        if instruction.third_party_notification:
+            if third_party_info and third_party_info.email and third_party_info.office_phone_number:
+                send_third_party_message(
+                    third_party_info,
+                    report_link_info['scheme'],
+                    report_link_info['host'],
+                    third_party_info.patient_report_auth)
 
         from medicalreport.functions import send_surgery_email
         send_surgery_email(instruction)

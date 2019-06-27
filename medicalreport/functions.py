@@ -18,7 +18,8 @@ from .models import AdditionalMedicationRecords, AdditionalAllergies, Amendments
         ReferencePhrases
 from medicalreport.reports import MedicalReport, TEMP_DIR
 from report.models import PatientReportAuth
-from report.tasks import generate_medicalreport_with_attachment
+from report.tasks import generate_medicalreport_with_attachment, send_patient_mail
+from report.views import send_third_party_message
 from instructions.models import Instruction
 from library.models import Library, LibraryHistory
 
@@ -417,3 +418,39 @@ def check_sensitive_condition(model: XMLModelBase, sensitive_conditions: dict):
         return True
 
     return False
+
+def send_report_notification(request, instruction, patient_report_auth, third_party_info):
+    report_link_info = {
+        'scheme': request.scheme,
+        'host': request.get_host(),
+        'unique_url': patient_report_auth.url
+    }
+    if instruction.patient_notification:
+        send_patient_mail(
+            report_link_info['scheme'],
+            report_link_info['host'],
+            report_link_info['unique_url'],
+            instruction
+        )
+    if instruction.third_party_notification:
+        send_third_party_message(
+            third_party_info,
+            report_link_info['scheme'],
+            report_link_info['host'],
+            patient_report_auth
+        )
+
+def redact_name_relations_third_parties(value: str, relations: list, replace_all=[]) -> str:
+    for val in value.split(' '):
+        original_val = val
+        if original_val in relations:
+            value = value.replace(val, "[UNSPECIFIED]")
+        elif "'s" in original_val and original_val[:-2] in relations:
+            value = value.replace(original_val[:-2], "[UNSPECIFIED]")
+        elif "s'" in original_val and original_val[:-2] in relations:
+            value = value.replace(original_val[:-2], "[UNSPECIFIED]")
+
+        if original_val in replace_all:
+            value = value.replace(val, replace_all[replace_all.index(original_val)])
+
+    return value

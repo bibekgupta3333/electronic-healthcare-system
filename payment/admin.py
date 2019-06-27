@@ -1,8 +1,10 @@
 from django.contrib import admin
 from .models import OrganisationFeeRate, InstructionVolumeFee, GpOrganisationFee, WeeklyInvoice
+from .model_choices import *
 from .forms import OrganisationFeeForm, InstructionVolumeFeeForm
 from common.import_export import CustomExportMixin, CustomImportExportModelAdmin
 from import_export import resources
+from import_export.admin import ExportActionModelAdmin
 
 
 class OrganisationFeeAdmin(CustomExportMixin, admin.ModelAdmin):
@@ -58,12 +60,30 @@ class WeeklyInvoiceResource(resources.ModelResource):
         dataset.headers = columns
 
 
-class WeeklyInvoiceAdmin(CustomImportExportModelAdmin):
+class WeeklyInvoiceAdmin(CustomImportExportModelAdmin, ExportActionModelAdmin):
     resource_class = WeeklyInvoiceResource
     fields = (
         'start_date', 'end_date', 'client_org', 'number_instructions', 'total_cost', 'paid',
-        'weekly_invoice_pdf_file'
+        'weekly_invoice_pdf_file', 'status'
     )
+    list_display = (
+        '__str__', 'status',
+    )
+
+    def export_admin_action(self, request, queryset):
+        """
+        Exports the selected rows using file_format.
+        """
+        response = super().export_admin_action(request, queryset)
+
+        if request.POST.get('file_format'):
+            qs = self.get_export_queryset(request).filter(
+                id__in = request.POST.getlist('_selected_action'))
+            qs.update(status = INVOICE_PRINTED)
+
+            return response
+
+    actions = [export_admin_action]
 
 
 admin.site.register(OrganisationFeeRate, OrganisationFeeAdmin)

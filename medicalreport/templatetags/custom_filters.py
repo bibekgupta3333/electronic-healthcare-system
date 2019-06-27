@@ -252,15 +252,9 @@ def replace_ref_phrases(relations, value):
     is_final_report = relations.get('is_final_report', False)
     xpaths = relations.get('xpath')
 
+    from medicalreport.functions import redact_name_relations_third_parties
     if relations.get('relations'):
-        for val in value.split(' '):
-            original_val = val
-            if original_val in relations['relations']:
-                value = value.replace(val, "[UNSPECIFIED]")
-            elif "'s" in original_val and original_val[:-2] in relations['relations']:
-                value = value.replace(original_val[:-2], "[UNSPECIFIED]")
-            elif "s'" in original_val and original_val[:-2] in relations['relations']:
-                value = value.replace(original_val[:-2], "[UNSPECIFIED]")
+        value = redact_name_relations_third_parties(value, relations['relations'])
 
     final_header = value
 

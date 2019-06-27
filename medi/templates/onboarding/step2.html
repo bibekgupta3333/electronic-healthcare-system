@@ -182,6 +182,7 @@
     <script src="{% static 'js/zxcvbn-bootstrap-strength-meter.js' %}" ></script>
     <script>
         $(document).ready(function() {
+            $('header').css('display', 'none');
             $('#progress_percent').text('20%');
             $('#progress_bar').attr('aria-valuenow', '20');
             $('#progress_bar').css('width', '20%');

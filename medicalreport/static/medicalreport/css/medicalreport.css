@@ -486,3 +486,27 @@ h1 {
 .attachment-not-active:hover {
     color: white
 }
+
+.modal-bg {
+  background-color: #e6e6e6;
+}
+
+.modal-dialog-full {
+  max-width: 80%;
+}
+
+.right {
+  float: right;
+}
+
+.modal-shadow {
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+}
+
+.scroll {
+  overflow: scroll;
+}
+
+.input-invalid {
+  border: 1px solid red
+}

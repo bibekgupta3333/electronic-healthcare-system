@@ -35,11 +35,10 @@ from common.functions import multi_getattr, get_url_page
 from snomedct.models import SnomedConcept
 from permissions.functions import check_permission
 from .print_consents import MDXDualConsent
-from report.models import ExceptionMerge
+from report.models import ExceptionMerge, ThirdPartyAuthorisation, PatientReportAuth
 from medicalreport.functions import create_patient_report
 from template.models import TemplateInstruction
 from payment.models import GpOrganisationFee
-from report.models import PatientReportAuth
 from payment.model_choices import FEE_STATUS_INVALID_DETAIL, FEE_STATUS_INVALID_FEE, FEE_STATUS_NOT_SETUP_ALL
 #from silk.profiling.profiler import silk_profile
 
@@ -1103,10 +1102,16 @@ def view_fail(request, instruction_id: str):
 @check_permission
 def consent_contact(request, instruction_id, patient_emis_number):
     instruction = get_object_or_404(Instruction, pk=instruction_id)
-    third_party_form = ConsentThirdParty()
+    report_auth = PatientReportAuth.objects.filter(instruction=instruction).first()
     patient_instruction = instruction.patient_information
     mdx_consent_form = MdxConsentForm()
     patient_registration = get_patient_registration(str(patient_emis_number), gp_organisation=instruction.gp_practice)
+
+    if report_auth:
+        third_party = ThirdPartyAuthorisation.objects.filter(patient_report_auth=report_auth).first()
+        third_party_form = ConsentThirdParty(instance=third_party)
+    else:
+        third_party_form = ConsentThirdParty()
 
     if isinstance(patient_registration, HttpResponseRedirect):
         return patient_registration
@@ -1122,7 +1127,10 @@ def consent_contact(request, instruction_id, patient_emis_number):
         patient_email = request.POST.get('patient_email', '')
         patient_telephone_mobile = request.POST.get('patient_telephone_mobile', '')
 
+        if request.POST.get('send-to-patient'):
+            instruction.patient_notification = True
         if request.POST.get('send-to-third'):
+            instruction.third_party_notification = True
             if not PatientReportAuth.objects.filter(instruction=instruction):
                 unique_url = uuid.uuid4().hex
                 PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)

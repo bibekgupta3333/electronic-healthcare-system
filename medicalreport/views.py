@@ -18,7 +18,8 @@ from medicalreport.reports import AttachmentReport
 from medicalreport.models import RedactedAttachment
 from instructions.models import Instruction, InstructionPatient
 from instructions.model_choices import INSTRUCTION_REJECT_TYPE, AMRA_TYPE, INSTRUCTION_STATUS_REJECT
-from .functions import create_or_update_redaction_record, create_patient_report
+from instructions.forms import ConsentThirdParty
+from .functions import create_or_update_redaction_record, create_patient_report, send_report_notification
 from accounts.models import  Patient, GENERAL_PRACTICE_USER
 from organisations.models import OrganisationGeneralPractice
 from .forms import AllocateInstructionForm
@@ -30,6 +31,8 @@ from library.forms import LibraryForm
 from library.models import Library, LibraryHistory
 from wsgiref.util import FileWrapper
 from django.core import serializers
+from report.models import PatientReportAuth, ThirdPartyAuthorisation
+from accounts.forms import InstructionPatientForm
 #from silk.profiling.profiler import silk_profile
 
 import uuid
@@ -299,7 +302,7 @@ def update_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
                 return redirect('medicalreport:submit_report', instruction_id=instruction_id)
             return redirect('instructions:view_pipeline')
 
-        return redirect('medicalreport:edit_report', instruction_id=instruction_id)
+    return redirect('medicalreport:edit_report', instruction_id=instruction_id)
 
 
 #@silk_profile(name='Preview Report')
@@ -389,6 +392,52 @@ def final_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     header_title = "Final Report"
     instruction = get_object_or_404(Instruction, id=instruction_id)
     redaction = get_object_or_404(AmendmentsForRecord, instruction=instruction_id)
+    report_auth = get_object_or_404(PatientReportAuth, instruction=instruction_id)
+
+    third_party = ThirdPartyAuthorisation.objects.filter(patient_report_auth=report_auth).first()
+    if third_party:
+        third_party_form = ConsentThirdParty(instance=third_party)
+    else:
+        third_party_form = ConsentThirdParty()
+
+    patient_instruction = instruction.patient_information
+
+    if request.POST:
+
+        instruction.patient_notification = False
+        instruction.third_party_notification = False
+
+        if request.POST.get('send-to-patient'):
+            instruction.patient_notification = True
+            patient_instruction.patient_email = request.POST.get('patient_email', '')
+            patient_instruction.patient_telephone_mobile = request.POST.get('patient_telephone_mobile', '')
+            patient_instruction.patient_telephone_code = request.POST.get('patient_telephone_code', '')
+            patient_instruction.save()
+
+        if request.POST.get('send-to-third'):
+            instruction.third_party_notification = True
+            third_party_form = ConsentThirdParty(request.POST, instance=third_party)
+            if third_party_form.is_valid():
+                third_party = third_party_form.save(report_auth)
+
+        instruction.save()
+
+        send_report_notification(request, instruction, report_auth, third_party)
+
+    patient_form = InstructionPatientForm(
+        instance=patient_instruction,
+        initial={
+            'patient_title': patient_instruction.get_patient_title_display(),
+            'patient_first_name': patient_instruction.patient_first_name,
+            'patient_last_name': patient_instruction.patient_last_name,
+            'patient_postcode': patient_instruction.patient_postcode,
+            'patient_address_number': patient_instruction.patient_address_number,
+            'patient_email': patient_instruction.patient_email,
+            'confirm_email': patient_instruction.patient_email,
+            'patient_telephone_mobile': patient_instruction.patient_telephone_mobile,
+            'patient_dob': patient_instruction.patient_dob.strftime("%d/%m/%Y")
+        }
+    )
 
     # Todo REMOVE FILE SYSTEM SUPPORT
     if instruction.final_raw_medical_xml_report:
@@ -404,6 +453,8 @@ def final_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         'attachments': attachments,
         'redaction': redaction,
         'relations': relations,
+        'third_party_form': third_party_form,
+        'patient_form': patient_form,
         'instruction': instruction
     })
     end_time = timezone.now()

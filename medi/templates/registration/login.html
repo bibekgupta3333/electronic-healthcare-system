@@ -46,23 +46,11 @@
                     </button>
                     <div class="container">
                         <div class="col-lg-12 col-md-12 col-sm-12 text-center">
-                            {% if request.get_host == mdx_url %}
-                                {% if 'demo' in request.get_host %}
-                                    <object data="{% static 'documents/ClientTermAndConditions[DEMO].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
-                                {% elif 'dev' in request.get_host %}
-                                    <object data="{% static 'documents/ClientTermAndConditions[DEV].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
-                                {% else %}
-                                    <object data="{% static 'documents/ClientTermAndConditions.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
-                                {% endif %}
-                            {% else %}
-                                {% if 'demo' in request.get_host %}
-                                    <object data="{% static 'documents/TermAndConditions[DEMO].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
-                                {% elif 'dev' in request.get_host %}
-                                    <object data="{% static 'documents/TermAndConditions[DEV].pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
-                                {% else %}
-                                    <object data="{% static 'documents/TermAndConditions.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
-                                {% endif %}
-                            {% endif %}
+                            <div class="modal-dialog-pdf">
+                                <iframe id="mediterms_pdf" src="" style="width: 100%; height: 100%;" frameborder="0">
+                                    <p>It appears your web browser doesn't support iframes.</p>
+                                </iframe>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -78,8 +66,10 @@
                     </button>
                     <div class="container">
                         <div class="col-lg-12 col-md-12 col-sm-12 text-center">
-                            <div class="iframe" id="iframe">
-                                <object data="{% static 'documents/DataPolicy.pdf' %}#view=FitH" class="modal-dialog-pdf"></object>
+                            <div class="modal-dialog-pdf">
+                                <iframe id="medipolicy_pdf" src="" style="width: 100%; height: 100%;" frameborder="0">
+                                    <p>It appears your web browser doesn't support iframes.</p>
+                                </iframe>
                             </div>
                         </div>
                     </div>
@@ -91,9 +81,27 @@
 {% block Script %}
   <script>
       $('#MediTerms').on('click', function(){
+          if("{{ request.get_host }}" == "{{ mdx_url }}"){
+              if("{{ request.get_host }}".indexOf("demo") >= 0){
+                  $('#mediterms_pdf').attr('src', "{% static 'documents/ClientTermAndConditions[DEMO].pdf' %}");
+              } else if("{{ request.get_host }}".indexOf("dev") >= 0){
+                  $('#mediterms_pdf').attr('src', "{% static 'documents/ClientTermAndConditions[DEV].pdf' %}");
+              } else {
+                  $('#mediterms_pdf').attr('src', "{% static 'documents/ClientTermAndConditions.pdf' %}");
+              }
+          } else {
+              if("{{ request.get_host }}".indexOf("demo") >= 0){
+                  $('#mediterms_pdf').attr('src', "{% static 'documents/TermAndConditions[DEMO].pdf' %}");
+              } else if("{{ request.get_host }}".indexOf("dev") >= 0){
+                  $('#mediterms_pdf').attr('src', "{% static 'documents/TermAndConditions[DEV].pdf' %}");
+              } else {
+                  $('#mediterms_pdf').attr('src', "{% static 'documents/TermAndConditions.pdf' %}");
+              }
+          }
           $('#MediTermsModal').modal("show");
       });
       $('#MediPolicy').on('click', function(){
+          $('#medipolicy_pdf').attr('src', "{% static 'documents/DataPolicy.pdf' %}");
           $('#MediPolicyModal').modal("show");
       });
   </script>
