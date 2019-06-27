@@ -108,6 +108,7 @@ def redact_word(request):
             idx = request.GET.get('idx')
             guid = request.GET.get('guid')
             section = request.GET.get('section')
+            xpath = request.GET.get('xpath')
 
             instruction = Instruction.objects.get(pk=instruction_id)
             LibraryHistory.objects.create(
@@ -117,7 +118,8 @@ def redact_word(request):
                 new='',
                 guid=guid,
                 index=idx,
-                section=section
+                section=section,
+                xpath=xpath
             )
             return JsonResponse({'message': 'Redact completed.'})
         except Exception as e:
@@ -133,6 +135,7 @@ def replace_word(request):
             idx = request.GET.get('idx')
             guid = request.GET.get('guid')
             section = request.GET.get('section')
+            xpath = request.GET.get('xpath')
 
             instruction = Instruction.objects.get(pk=instruction_id)
             library = Library.objects.filter(key__iexact=word).first()
@@ -143,7 +146,8 @@ def replace_word(request):
                 new=library.value,
                 guid=guid,
                 index=idx,
-                section=section
+                section=section,
+                xpath=xpath
             )
             return JsonResponse({'message': 'Replace completed.', 'replace_word': library.value})
         except Exception as e:
