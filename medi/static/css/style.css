@@ -667,3 +667,8 @@ header {
 .invalid-feedback {
   display: block !important;
 }
+
+.modal-dialog-pdf {
+    height: 700px;
+    width: 100%;
+}

@@ -417,9 +417,9 @@
                 <div class="modal-body bg-white" style="color: black; text-align: center;">
                 You haven't chosen any options to send the medical record out. You will anyway be able to print the record in your Surgery. Alternatively you can go back and choose other options.
                 </div>
-                <div class="modal-footer bg-white">
+                <div class="modal-footer bg-white" style="display: block;">
                     <button type="button" class="btn btn-secondary btn-lg" data-dismiss="modal">Go Back</button>
-                    <button type="button" class="btn btn-primary btn-lg ml-auto" id="sarsProceed">Proceed</button>
+                    <button type="button" class="btn btn-primary btn-lg ml-auto" id="sarsProceed" style="float: right">Proceed</button>
                 </div>
             </div>
         </div>
@@ -724,7 +724,7 @@
             if (mdx_loaded){
                 file_extension = mdx_loaded.split('.').pop();
 
-                if (!['pdf', 'jpg', 'jpeg', 'tiff'].includes(file_extension)) {
+                if (['pdf', 'jpg', 'jpeg', 'tiff'].indexOf(file_extension) >= 0) {
                     $('.fileinput-remove').click();
                     $('#wrongFileType').click();
                 }
