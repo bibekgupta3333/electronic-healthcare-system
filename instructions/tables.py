@@ -107,7 +107,7 @@ class InstructionTable(tables.Table):
                 return format(client_cost, '.2f')
             return record.gp_earns + record.medi_earns
         elif self.user.type == models.GENERAL_PRACTICE_USER:
-            gp_earns = 0
+            gp_earns = record.gp_earns
             if record.get_type() == 'AMRA':
                 gp_earns = calculate_gp_earn(record)
             return gp_earns
