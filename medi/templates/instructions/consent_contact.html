@@ -173,13 +173,13 @@
                                                                     <div class="row form-group text-center">
                                                                         <div class="col-md-6">
                                                                             <div class="row">
-                                                                                <div class="col-md-5 title-pos mt-2">Email </div>
+                                                                                <div class="col-md-5 title-pos mt-2">Email<span class="text-danger">*</span></div>
                                                                                 {% bootstrap_field third_party_form.email_1 show_label=False form_group_class='col-md-7' placeholder='' %}
                                                                             </div>
                                                                         </div>
                                                                         <div class="col-md-6">
                                                                             <div class="row">
-                                                                                <div class="col-md-5 title-pos mt-2">Confirm Email </div>
+                                                                                <div class="col-md-5 title-pos mt-2">Confirm Email<span class="text-danger">*</span></div>
                                                                                 {% bootstrap_field third_party_form.email_2 show_label=False form_group_class='col-md-7' placeholder='' %}
                                                                             </div>
                                                                         </div>
@@ -195,7 +195,7 @@
                                                                             </div>
                                                                             <div class="row form-group">
                                                                                 <div class="col-md-5 text-center">
-                                                                                    <label for="id_office_phone_number" class="col-form-label">Office Phone (for solicitor for example)</label>
+                                                                                    <label for="id_office_phone_number" class="col-form-label">Office Phone (for solicitor for example)<span class="text-danger">*</span></label>
                                                                                 </div>
                                                                                 <div class="col-md-7">
                                                                                     {% bootstrap_field third_party_form.office_phone_number size='small' show_label=false placeholder='' %}

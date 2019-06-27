@@ -1,25 +1,30 @@
 /***************** 5. Instructions Pipeline ****************/
+
 .status .badge {
-  width: 128px;
+    width: 128px;
 }
 
 #addUserButton {
-  width: 130px;
-  color: white;
+    width: 130px;
+    color: white;
 }
 
 .list-permissions {
-  list-style-type: none;
-  display: flex;
-  margin: auto;
+    list-style-type: none;
+    display: flex;
+    margin: auto;
 }
 
 .permission-role {
-  -webkit-appearance: none;
-  -moz-appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
 }
 
 .disabled {
-  pointer-events: none;
-  opacity: .65;
+    pointer-events: none;
+    opacity: .65;
+}
+
+.grey-out-title {
+    color: #ababab;
 }

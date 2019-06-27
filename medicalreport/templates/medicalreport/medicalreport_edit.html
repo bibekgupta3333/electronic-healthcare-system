@@ -240,7 +240,14 @@
         });
 
         $('#addWordForm').submit(function(e) {
+            $('#refreshModal').modal({
+                backdrop: 'static'
+            });
+            $('#check_1_icon').addClass('text-success');
             addWordLibrary();
+            $('#check_2_icon').addClass('text-success');
+            location.reload();
+            $('#check_3_icon').addClass('text-success');
             return false;
         });
 
