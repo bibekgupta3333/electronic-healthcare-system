@@ -134,6 +134,10 @@ class Instruction(TimeStampedModel, models.Model):
     # Patient Acceptance DateTime
     patient_acceptance = models.DateTimeField(null=True, blank=True, verbose_name='T&C Accpeted Date Time')
 
+    # Notification when completed
+    patient_notification = models.BooleanField(default=False)
+    third_party_notification = models.BooleanField(default=False)
+
     class Meta:
         verbose_name = "Instruction"
         ordering = ('-created',)

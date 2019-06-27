@@ -213,6 +213,13 @@ class ConsentThirdParty(forms.ModelForm):
             'office_phone_number_code': forms.HiddenInput(attrs={'placeholder': ''})
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if kwargs.get('instance'):
+            obj = kwargs['instance']
+            self.fields['email_1'].initial = obj.email
+            self.fields['email_2'].initial = obj.email
+
     def clean_email_2(self):
         email_1 = self.cleaned_data.get("email_1")
         email_2 = self.cleaned_data.get("email_2")
@@ -227,7 +234,7 @@ class ConsentThirdParty(forms.ModelForm):
         super().clean()
 
         office_phone_number = self.cleaned_data.get("office_phone_number")
-        
+
         if not office_phone_number:
             raise forms.ValidationError(
                 self.error_messages['phone_number_input'],
