@@ -143,6 +143,24 @@ class DaysSinceFilter(admin.SimpleListFilter):
             return queryset
 
 
+class CustomStatusFilter(admin.SimpleListFilter):
+    title = 'Status'
+    parameter_name = 'status'
+
+    def lookups(self, request, model_admin):
+        return [
+            (model_choices.INSTRUCTION_STATUS_PAID, 'Paid'),
+            (model_choices.INSTRUCTION_STATUS_COMPLETE, 'Completed')
+        ]
+
+    def queryset(self, request, queryset):
+        selected_status = self.value()
+
+        if selected_status:
+            return queryset.filter(status = selected_status)
+        return queryset
+
+
 class ClientOrgFilter(admin.SimpleListFilter):
     title = 'Client'
     parameter_name = 'organisation'
@@ -258,7 +276,7 @@ class InstructionAdmin(CustomImportExportModelAdmin):
     form = InstructionAdminForm
     list_display = ('gp_practice', 'client', 'status', 'created', 'type', 'days_since_created')
     list_filter = (
-        'type', DaysSinceFilter, ClientOrgFilter, GPOrgFilter,
+        'type', DaysSinceFilter, ClientOrgFilter, GPOrgFilter, CustomStatusFilter
     )
     resource_class = InstructionResource
     raw_id_fields = ('gp_practice', )
