@@ -4,6 +4,7 @@ from .models import Instruction
 from django.utils.html import format_html
 from django.urls import reverse
 from permissions.templatetags.get_permissions import view_complete_report
+from payment.functions import calculate_gp_earn, calculate_medi_earn
 
 
 class InstructionTable(tables.Table):
@@ -101,9 +102,15 @@ class InstructionTable(tables.Table):
 
     def render_cost(self, record):
         if self.user.type == models.CLIENT_USER or self.user.type == models.MEDIDATA_USER:
+            if record.gp_earns == 0 and record.medi_earns == 0:
+                client_cost = calculate_medi_earn(record) + calculate_gp_earn(record)
+                return format(client_cost, '.2f')
             return record.gp_earns + record.medi_earns
         elif self.user.type == models.GENERAL_PRACTICE_USER:
-            return record.gp_earns
+            gp_earns = record.gp_earns
+            if record.get_type() == 'AMRA':
+                gp_earns = calculate_gp_earn(record)
+            return gp_earns
 
     def render_status(self, value, record):
         STATUS_DICT = {
