@@ -61,3 +61,19 @@ function initialData(patientNotification, thirdPartyNotification){
     $('#ch-report-third-party').click();
   }
 }
+
+function hidenReport(){
+  var element = $('.reports.active');
+  var reportID = $(element).attr('id').replace('report-', '');
+  $('.attachments').hide();
+  $('#attachment-' + reportID).hide();
+}
+
+function showHidenReport(){
+  var element = $('.reports.active');
+  var reportID = $(element).attr('id').replace('report-', '');
+  $('.reports').removeClass('active');
+  $('#report-' + reportID).addClass('active');
+  $('.attachments').hide();
+  $('#attachment-' + reportID).show();
+}

@@ -1,5 +1,5 @@
 from instructions import model_choices
-
+from django.utils import timezone
 from django.conf import settings
 from instructions.models import Instruction
 from .models import InstructionVolumeFee, GpOrganisationFee
@@ -16,21 +16,36 @@ TEMP_DIR = BASE_DIR + '/medi/static/generic_pdf/'
 REPORT_DIR = BASE_DIR + '/payment/templates/invoice/instruction_invoice.html'
 
 
-def calculate_instruction_fee(instruction: Instruction) -> None:
-    gp_practice = instruction.gp_practice
-    time_delta = instruction.completed_signed_off_timestamp - instruction.fee_calculation_start_date
-    organisation_fee = GpOrganisationFee.objects.filter(gp_practice=gp_practice).first()
+def calculate_gp_earn(instruction: Instruction, time_delta=None):
+    if time_delta == None:
+        now = timezone.now()
+        time_delta = now - instruction.fee_calculation_start_date
+    organisation_fee = GpOrganisationFee.objects.filter(gp_practice=instruction.gp_practice).first()
     organisation_fee_rate = 0
     if organisation_fee:
         organisation_fee_rate = organisation_fee.organisation_fee.get_fee_rate(time_delta.days)
+    return organisation_fee_rate
+
+
+def calculate_medi_earn(instruction: Instruction):
     client_organisation = instruction.client_user.organisation if instruction.client_user else None
     instruction_volume_fee = InstructionVolumeFee.objects.filter(client_org=client_organisation, fee_rate_type=instruction.type_catagory).first()
+    instruction_fee_rate = instruction_volume_fee.get_fee_rate(
+        Instruction.objects.filter(client_user__organisation=client_organisation, type_catagory=instruction.type_catagory).count()
+    )
+    vat = instruction_volume_fee.vat
+    instruction_fee_rate = instruction_fee_rate + (instruction_fee_rate * (vat / 100))
+    return instruction_fee_rate
+
+
+def calculate_instruction_fee(instruction: Instruction) -> None:
+    time_delta = instruction.completed_signed_off_timestamp - instruction.fee_calculation_start_date
+    organisation_fee_rate = calculate_gp_earn(instruction, time_delta)
+    client_organisation = instruction.client_user.organisation if instruction.client_user else None
+    instruction_volume_fee = InstructionVolumeFee.objects.filter(client_org=client_organisation, fee_rate_type=instruction.type_catagory).first()
+    organisation_fee = GpOrganisationFee.objects.filter(gp_practice=instruction.gp_practice).first()
     if instruction_volume_fee and organisation_fee:
-        instruction_fee_rate = instruction_volume_fee.get_fee_rate(
-            Instruction.objects.filter(client_user__organisation=client_organisation, type_catagory=instruction.type_catagory).count()
-        )
-        vat = instruction_volume_fee.vat
-        instruction.medi_earns = instruction_fee_rate + (instruction_fee_rate * (vat / 100))
+        instruction.medi_earns = calculate_medi_earn(instruction)
         if instruction.type == model_choices.AMRA_TYPE:
             instruction.gp_earns = organisation_fee_rate
 

@@ -35,7 +35,7 @@ class OrganisationFeeRate(models.Model):
         for index, band in enumerate(payment_band):
             if period_day <= band:
                 return amount_rate[index]
-        return 0
+        return self.amount_rate_lvl_4
 
 
 class GpOrganisationFee(models.Model):

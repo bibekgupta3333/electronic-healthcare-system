@@ -165,7 +165,7 @@
                           </div>
                       </div>
                   </div>
-                  <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                  <button type="button" class="btn btn-primary" data-dismiss="modal" id="s-cancel">Cancel</button>
                   <button type="button" class="btn btn-success right" data-toggle="modal" data-target="#confirm-option">Update details</button>
               </div>
           </div>
@@ -207,9 +207,18 @@
         setUpTel("id_patient_telephone_mobile", "id_patient_telephone_code");
         setUpTel("id_office_phone_number", "id_office_phone_number_code");
 
+        $('#edit-option').on('click', function(e){
+          hidenReport();
+        });
+
+        $('#s-cancel').on('click', function(e){
+          showHidenReport();
+        });
+
         $('#m-cancel').on('click', function(e){
           $('.modal.show').modal('toggle');
           $('.modal-backdrop').remove();
+          showHidenReport();
         }); 
 
         $('#m-confirm').on('click', function(e){
