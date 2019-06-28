@@ -27,7 +27,7 @@ def calculate_gp_earn(instruction: Instruction, time_delta=None):
     return organisation_fee_rate
 
 
-def calculate_client_earn(instruction: Instruction):
+def calculate_medi_earn(instruction: Instruction):
     client_organisation = instruction.client_user.organisation if instruction.client_user else None
     instruction_volume_fee = InstructionVolumeFee.objects.filter(client_org=client_organisation, fee_rate_type=instruction.type_catagory).first()
     instruction_fee_rate = instruction_volume_fee.get_fee_rate(
@@ -45,7 +45,7 @@ def calculate_instruction_fee(instruction: Instruction) -> None:
     instruction_volume_fee = InstructionVolumeFee.objects.filter(client_org=client_organisation, fee_rate_type=instruction.type_catagory).first()
     organisation_fee = GpOrganisationFee.objects.filter(gp_practice=instruction.gp_practice).first()
     if instruction_volume_fee and organisation_fee:
-        instruction.medi_earns = calculate_client_earn(instruction)
+        instruction.medi_earns = calculate_medi_earn(instruction)
         if instruction.type == model_choices.AMRA_TYPE:
             instruction.gp_earns = organisation_fee_rate
 
