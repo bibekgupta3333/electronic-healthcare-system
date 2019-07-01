@@ -1,6 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.template import loader
-from django.core.mail import send_mail
 from django.conf import settings
 from django.forms import formset_factory
 from django.http import JsonResponse, HttpRequest, HttpResponse
@@ -14,7 +13,7 @@ from services.emisapiservices.services import GetEmisStatusCode
 from organisations.models import OrganisationGeneralPractice
 from permissions.functions import generate_gp_permission
 from payment.models import GpOrganisationFee, OrganisationFeeRate
-from common.functions import get_url_page
+from common.functions import get_url_page, send_mail
 import random
 import string
 import logging

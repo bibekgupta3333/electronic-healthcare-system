@@ -7,8 +7,7 @@ from permissions.model_choices import MANAGER_PERMISSIONS, GP_PERMISSIONS,\
         MEDI_ADMIN_PERMISSIONS, MEDI_TEAM_PERMISSIONS
 from organisations.models import OrganisationGeneralPractice, OrganisationClient, OrganisationMedidata
 from common.models import TimeStampedModel
-from django.core.mail import send_mail
-from common.functions import multi_getattr
+from common.functions import multi_getattr, send_mail
 from typing import Union
 
 SEX_CHOICES = (

@@ -289,3 +289,56 @@ SITE_CONTROL = True
 
 # Default timeout session by django
 DEFAULT_SESSION_COOKIE_AGE = 1209600
+
+# Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+    'formatters': {
+        'simple': {
+            'format': '%(asctime)s %(levelname)s: %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'ERROR',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'email_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/django_email.log',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/var/log/django.log',
+        },
+    },
+    'loggers': {
+        'email_logging': {
+            'handlers': ['email_file'],
+            'level': 'ERROR',
+        },
+        'timestamp': {
+            'handlers': ['file'],
+            'level': 'INFO',
+        },
+        'raven': {
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        'django.request': {
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+    }
+}

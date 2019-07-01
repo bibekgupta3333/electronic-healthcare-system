@@ -3,7 +3,7 @@ from django.core.files.base import ContentFile
 from django.conf import settings
 from django.utils import timezone
 from django.template import loader
-from django.core.mail import send_mail
+from common.functions import send_mail
 from django.template.loader import get_template
 
 from services.xml.base64_attachment import Base64Attachment
@@ -41,6 +41,7 @@ import requests
 logger = logging.getLogger(__name__)
 time_logger = logging.getLogger('timestamp')
 event_logger = logging.getLogger('medidata.event')
+email_logger = logging.getLogger('email.error')
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPORT_DIR = BASE_DIR + '/medicalreport/templates/medicalreport/reports/unsupport_files.html'
 
@@ -52,7 +53,7 @@ def send_patient_mail(scheme: str, host: str,  unique_url: str, instruction: Ins
         '',
         'MediData',
         [instruction.patient_information.patient_email],
-        fail_silently=True,
+        fail_silently=False,
         html_message=loader.render_to_string('medicalreport/patient_email.html', {
             'surgery_name': instruction.gp_practice,
             'report_link': report_link
