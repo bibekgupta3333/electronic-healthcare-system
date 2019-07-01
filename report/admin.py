@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import PatientReportAuth, ThirdPartyAuthorisation, UnsupportedAttachment
-from django.core.mail import send_mail
+from common.functions import send_mail
 
 
 class ThirdPartyAuthorisationAdmin(admin.ModelAdmin):

@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.utils import timezone
-from django.core.mail import send_mail
+from common.functions import send_mail
 from django.http import HttpRequest
 from django_clamd.validators import validate_file_infection
 from common.models import TimeStampedModel

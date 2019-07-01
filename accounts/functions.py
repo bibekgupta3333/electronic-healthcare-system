@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.conf import settings
 from django.db.models import Q
-from django.core.mail import send_mail
+from common.functions import send_mail
 from .forms import NewGPForm, NewClientForm
 from instructions.models import InstructionPatient
 from .tables import UserTable

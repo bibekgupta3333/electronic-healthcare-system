@@ -1,5 +1,5 @@
 
-from django.core.mail import send_mail
+from common.functions import send_mail
 from django.template import loader
 from django.conf import settings
 from zipfile import ZipFile, ZIP_DEFLATED

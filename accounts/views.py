@@ -17,7 +17,7 @@ from django.contrib.auth.models import Permission
 
 from permissions.forms import InstructionPermissionForm, GroupPermissionForm
 from permissions.models import InstructionPermission
-from common.functions import multi_getattr, verify_password as verify_pass
+from common.functions import multi_getattr, verify_password as verify_pass, send_mail
 from payment.models import GpOrganisationFee, InstructionVolumeFee, OrganisationFeeRate, WeeklyInvoice
 from django_tables2 import RequestConfig
 from accounts.forms import AllUserForm, NewGPForm, NewClientForm, NewMediForm,\
@@ -42,7 +42,6 @@ from instructions.views import calculate_next_prev
 from typing import Union, List, Dict
 from instructions.forms import DateRangeSearchForm
 from django.conf import settings
-from django.core.mail import send_mail
 DEFAULT_FROM = settings.DEFAULT_FROM
 
 from services.models import SiteAccessControl

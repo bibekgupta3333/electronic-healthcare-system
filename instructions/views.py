@@ -10,7 +10,7 @@ import logging
 from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.core.mail import send_mail
+from common.functions import send_mail
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime

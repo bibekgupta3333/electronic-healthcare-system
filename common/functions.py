@@ -1,14 +1,17 @@
 import os
 from zxcvbn import zxcvbn
 from django.core.exceptions import ImproperlyConfigured
+from django.core.mail import send_mail as django_send_mail
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 from Crypto.Util.Padding import unpad
 from base64 import b64encode, b64decode
 from django.conf import settings
+from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
+email_logging = logging.getLogger('email_logging')
 
 
 def multi_getattr(obj: object, attr: str, **kwargs) -> object:
@@ -119,3 +122,15 @@ def get_url_page(page: str, obj_id: int = None, request=None) -> str:
             return domain_name
     elif page == 'home':
         return domain_name
+
+def send_mail(subject, message, from_email, recipient_list,
+        fail_silently=False, auth_user=None, auth_password=None,
+        connection=None, html_message=None):
+    try:
+        django_send_mail(
+            subject, message, from_email, recipient_list,
+            fail_silently=False, auth_user=auth_user, auth_password=auth_password,
+            connection=connection, html_message=html_message
+        )
+    except Exception as e:
+        email_logging.error('[%s]: %s'%(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), e))
