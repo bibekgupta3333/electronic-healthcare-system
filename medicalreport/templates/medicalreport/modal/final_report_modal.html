@@ -199,8 +199,8 @@
     <script src="{% static 'js/intlTelInput.min.js' %}"></script>
     <script src="{% static 'js/intlTel.js' %}"></script>
     <script>
-        var patientNotification = "{{ instruction.patient_notification }}";
-        var thirdPartyNotification = "{{ instruction.third_party_notification }}";
+        var patientNotification = "{{ patient_notification }}";
+        var thirdPartyNotification = "{{ third_party_notification }}";
 
         initialData(patientNotification, thirdPartyNotification);
 
