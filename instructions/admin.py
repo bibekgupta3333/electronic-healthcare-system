@@ -7,7 +7,7 @@ from django.utils import timezone
 from datetime import timedelta
 from instructions.models import Instruction
 from django.db.models import Q
-from organisations.models import OrganisationGeneralPractice
+from organisations.models import OrganisationGeneralPractice, OrganisationClient
 from instructions.forms import ClientNoteForm, InstructionAdminForm
 from import_export import resources
 from accounts.models import MedidataUser
@@ -167,16 +167,14 @@ class ClientOrgFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         organisations = set()
-        for data in Instruction.objects.filter(client_user__isnull=False, client_user__organisation__isnull=False):
-            organisation = data.client_user.organisation
-            organisations.add((organisation.pk, organisation.trading_name))
+        for client_org in OrganisationClient.objects.all().values_list('id', 'trading_name'):
+            organisations.add((client_org[0], client_org[1]))
         return organisations
 
     def queryset(self, request, queryset):
         organisation_id = self.value()
         if organisation_id:
-            organisation_id = int(organisation_id)
-            return queryset.filter(client_user__isnull=False, client_user__organisation_id=organisation_id)
+            return Instruction.objects.filter(client_user__isnull=False, client_user__organisation_id=organisation_id)
         return queryset
 
 
@@ -186,16 +184,14 @@ class GPOrgFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         organisations = set()
-        for data in Instruction.objects.filter(gp_practice__isnull=False):
-            organisation = data.gp_practice
-            if organisation:
-                organisations.add((organisation.pk, organisation.name))
+        for gp in OrganisationGeneralPractice.objects.filter(live=True).values_list('pk', 'name'):
+            organisations.add((gp[0], gp[1]))
         return organisations
 
     def queryset(self, request, queryset):
         organisation_pk = self.value()
         if organisation_pk:
-            return queryset.filter(gp_practice__isnull=False)
+            return Instruction.objects.filter(gp_practice__practcode=organisation_pk)
         return queryset
 
 
@@ -273,6 +269,7 @@ class InstructionResource(resources.ModelResource):
 
 class InstructionAdmin(CustomImportExportModelAdmin):
     change_status = False
+    show_full_result_count = False
     form = InstructionAdminForm
     list_display = ('gp_practice', 'client', 'status', 'created', 'type', 'days_since_created')
     list_filter = (
@@ -300,7 +297,7 @@ class InstructionAdmin(CustomImportExportModelAdmin):
         }),
         ('Final report Information', {
             'fields': (
-                'completed_signed_off_timestamp', 'final_report_date', 'final_raw_medical_xml_report',
+                'completed_signed_off_timestamp', 'final_report_date',
             )
         }),
         ('Consents Information', {
