@@ -447,6 +447,13 @@ def final_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
     medical_record_decorator = MedicalReportDecorator(final_raw_medical_xml_report, instruction)
     attachments = medical_record_decorator.attachments
     relations = [relation.name for relation in ReferencePhrases.objects.all()]
+    has_patient_report_auth = True if instruction.patient_information.patient_email else False
+    if instruction.patientreportauth_set.first():
+        has_any_third_party_report_auth = True if instruction.patientreportauth_set.first().third_parties.first() else False
+    else:
+        has_any_third_party_report_auth = False
+    patient_notification = instruction.patient_notification or has_patient_report_auth
+    third_party_notification = has_any_third_party_report_auth
 
     response = render(request, 'medicalreport/final_report.html', {
         'header_title': header_title,
@@ -455,7 +462,9 @@ def final_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
         'relations': relations,
         'third_party_form': third_party_form,
         'patient_form': patient_form,
-        'instruction': instruction
+        'instruction': instruction,
+        'patient_notification': patient_notification,
+        'third_party_notification': third_party_notification
     })
     end_time = timezone.now()
     total_time = end_time - start_time
