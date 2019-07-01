@@ -326,6 +326,10 @@ LOGGING = {
             'handlers': ['email_file'],
             'level': 'ERROR',
         },
+        'timestamp': {
+            'handlers': ['file'],
+            'level': 'INFO',
+        },
         'raven': {
             'level': 'ERROR',
             'handlers': ['console'],
