@@ -100,8 +100,22 @@
     <script src="{% static 'js/instructions/consent_form.js' %}"></script>
     <script>
         $(document).ready(function () {
-            file_url = "{{ instruction.mdx_consent.url }}";
-            file_extension = file_url.split('.').pop();
+            var file_url = '';
+
+            if ($('.file-preview-consent object').length) {
+                file_url = document
+                    .querySelector(
+                        'div.file-preview-consent object'
+                    ).data;
+            }
+            else if ($('.file-preview-sars object').length) {
+                file_url = document
+                    .querySelector(
+                        'div.file-preview-sars object'
+                    ).data;
+            }
+
+            var file_extension = file_url.split('.').pop();
 
             if (file_extension.toLowerCase() == 'tiff') {
                 var xhr = new XMLHttpRequest();
