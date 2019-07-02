@@ -314,6 +314,12 @@ def generate_medicalreport_with_attachment(self, instruction_info: dict, report_
 
     except Exception as e:
         # waiting for 5 min to retry
+        exception_merge, created = ExceptionMerge.objects.update_or_create(
+            instruction_id=instruction_id,
+            defaults={'file_detail': "Instruction can't converting to PDF"},
+        )
+        instruction.status = INSTRUCTION_STATUS_RERUN
+        instruction.save()
         raise self.retry(countdown=60*5, exc=e, max_retires=2)
 
     if exception_detail:
