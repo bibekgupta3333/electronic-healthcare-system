@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.http import JsonResponse
-from common.tasks import test_celery
+from medi.celery import app
 import requests
 
 
@@ -21,8 +21,7 @@ def emis_connection():
 
 def celery_connection():
     celery_status = 'Down'
-    task = test_celery.apply_async(args=[1,1])
-    task.get()
-    if task.state == 'SUCCESS':
+    i = app.control.inspect()
+    if i.stats():
         celery_status = 'Up'
     return celery_status
