@@ -305,6 +305,10 @@ LOGGING = {
         },
     },
     'handlers': {
+        'sentry': {
+            'level': 'ERROR',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+        },
         'console': {
             'level': 'ERROR',
             'class': 'logging.StreamHandler',
@@ -312,18 +316,35 @@ LOGGING = {
         },
         'email_file': {
             'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': '/var/log/django_email.log',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': '/var/log/django/email.log',
+            'when': 'w0',
+            'interval': 1,
+            'backupCount': 5,
+            'formatter': 'simple'
         },
         'file': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': '/var/log/django.log',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': '/var/log/django/django.log',
+            'when': 'w0',
+            'interval': 1,
+            'backupCount': 5,
+            'formatter': 'simple'
         },
+        'err_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': '/var/log/django/error.log',
+            'when': 'w0',
+            'interval': 1,
+            'backupCount': 5,
+            'formatter': 'simple'
+        }
     },
     'loggers': {
         'email_logging': {
-            'handlers': ['email_file'],
+            'handlers': ['email_file', 'sentry'],
             'level': 'ERROR',
         },
         'timestamp': {
@@ -332,12 +353,16 @@ LOGGING = {
         },
         'raven': {
             'level': 'ERROR',
-            'handlers': ['console'],
+            'handlers': ['sentry', 'err_file'],
             'propagate': False,
+        },
+        'medidata.event': {
+            'level': 'INFO',
+            'handlers': ['file'],
         },
         'django.request': {
             'level': 'ERROR',
-            'handlers': ['console'],
+            'handlers': ['sentry', 'err_file'],
             'propagate': False,
         },
     }
