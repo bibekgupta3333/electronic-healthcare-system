@@ -679,6 +679,12 @@
             if (is_allowed) {
                 $('#proceedBtn').blur();
 
+                if(!mdx_loaded) {
+                    $('#id_mdx_consent_loaded').val('');
+                }
+                else {
+                    $('#id_mdx_consent_loaded').val('loaded');
+                }
                 if (!$('#ch-confirmed-agreement').is(':checked') &&
                     !$('#ch-report-third-party').is(':checked')) {
                     $('#permit_modal_button').click();
@@ -705,12 +711,6 @@
                         }
                     }
                     if (is_allowed) {
-                        if(!mdx_loaded) {
-                            $('#id_mdx_consent_loaded').val('');
-                        }
-                        else {
-                            $('#id_mdx_consent_loaded').val('loaded');
-                        }
                         $('#id_next_step').val('proceed');
 
                         proceedAction();
@@ -719,17 +719,47 @@
             }
         });
 
-        $('#id_mdx_consent').on('change', function(){
+        $('#id_mdx_consent').on('change', function(event) {
             var mdx_loaded = $('.file-caption-name').last().attr('title');
+
+            function receivedText(file_reader) {
+                var base64Image = file_reader.target.result;
+                var tiff = new Tiff({buffer: base64Image});
+                var canvas = tiff.toCanvas();
+
+                if (canvas) {
+                    canvas.setAttribute('style','width:100%; height:100%;');
+                    document.querySelector('div.kv-file-content object').remove();
+                    document.querySelector('div.kv-file-content').append(canvas);
+
+                    $('#btn-zoom-embed').click(function(e) {
+                        canvas_for_zoom = cloneCanvas(canvas);
+                        canvas_for_zoom.setAttribute('style','width:100%; height:100%;');
+
+                        document.querySelector('.kv-zoom-body.file-zoom-content.krajee-default object').remove();
+                        document.querySelector('.kv-zoom-body.file-zoom-content.krajee-default').append(canvas_for_zoom);
+                    });
+
+                }
+            }
+
             if (mdx_loaded){
                 file_extension = mdx_loaded.split('.').pop();
 
-                if (['pdf', 'jpg', 'jpeg', 'tiff'].indexOf(file_extension) >= 0) {
+                if (['pdf', 'jpg', 'jpeg', 'tiff'].indexOf(file_extension) < 0) {
                     $('.fileinput-remove').click();
                     $('#wrongFileType').click();
                 }
+                else if (['tiff'].indexOf(file_extension) >= 0) {
+                    var file = this.files[0];
+                    var file_reader = new FileReader();
+
+                    file_reader.onload = receivedText;
+                    file_reader.readAsArrayBuffer(file);
+                }
             }
         });
+
         $('#saveBtn').click(function(){
             var mdx_loaded = $('.file-caption-name').last().attr('title');
 
@@ -741,9 +771,11 @@
             $('#id_next_step').val('view_pipeline');
             $('#consentContactForm').submit();
         });
+
         $('.enterEmailBtn').click(function(){
             $('#id_patient_email').focus();
         });
+
         $('#downloadBtn').click(function(e){
             e.preventDefault();
             $("#printModal").modal({
@@ -754,6 +786,7 @@
         $('#id_patient_address_number').tooltip({
             title: $('#id_patient_address_number').val()
         });
+
         $('#rejectRequestForm').submit(function(){
             $("#consent_reject").val($("#id_patient_email").val());
         });

@@ -33,3 +33,17 @@
         {% endwith %}
     {% endfor %}
 </div>
+
+{% block Script %}
+    <script>
+        $(document).ready(function () {
+            object_name = '{{instruction.mdx_consent.name}}';
+            object_extension = object_name.split('.').pop();
+
+            if (object_extension != 'pdf') {
+                $('#report-consent').remove();
+                $('#attachment-consent').remove();
+            }
+        });
+    </script>
+{% endblock %}
