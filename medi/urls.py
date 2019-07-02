@@ -24,6 +24,7 @@ from instructions.views import instruction_pipeline_view
 from accounts.functions import notify_password_changed
 from django.contrib.auth import views as auth_views
 from accounts import views as account_views
+from common import health
 
 
 admin.site.site_header = 'MediData administration'
@@ -50,6 +51,7 @@ urlpatterns = [
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('resource_centre/', include('help.urls', namespace='help')),
     path('library/', include('library.urls', namespace='library')),
+    path('health-check/', health.health_check, name='health_check')
 ]
 #urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
