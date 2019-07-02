@@ -1,4 +1,5 @@
 {% load custom_filters %}
+{% load static %}
 <div class="col-md-12 mt-4 mb-2">
     <div class="row">
         <div class="col-md-6">
@@ -55,14 +56,12 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div style="text-align: center; padding: 15px">
+                <div style="text-align: center; padding: 15px" class="file-preview-sars">
                     {% if instruction.consent_form %}
                         <object data="{{ instruction.consent_form.url }}" height="735px" width="60%">
-                            <embed data="{{ instruction.consent_form.url }}" />
                         </object>
                     {% elif instruction.sars_consent %}
                         <object data="{{ instruction.sars_consent.url }}" height="735px" width="60%">
-                            <embed data="{{ instruction.sars_consent.url }}" />
                         </object>
                     {% else %}
                     <p>No consent form </p>
@@ -82,14 +81,12 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div style="text-align: center; padding: 15px">
+                <div style="text-align: center; padding: 15px" class="file-preview-consent">
                     {% if instruction.type == 'SARS' and instruction.mdx_consent %}
                         <object data="{{ instruction.mdx_consent.url }}" height="735px" width="60%">
-                            <embed data="{{ instruction.mdx_consent.url }}" />
                         </object>
                     {% elif instruction.type == 'AMRA' and instruction.consent_form %}
                         <object data="{{ instruction.consent_form.url }}" height="735px" width="60%">
-                            <embed data="{{ instruction.consent_form.url }}" />
                         </object>
                     {% else %}
                         <p>No consent form </p>
@@ -99,3 +96,37 @@
         </div>
     </div>
 </div>
+{% block Script %}
+    <script src="{% static 'js/instructions/consent_form.js' %}"></script>
+    <script>
+        $(document).ready(function () {
+            file_url = "{{ instruction.mdx_consent.url }}";
+            file_extension = file_url.split('.').pop();
+
+            if (file_extension.toLowerCase() == 'tiff') {
+                var xhr = new XMLHttpRequest();
+
+                xhr.responseType = 'arraybuffer';
+                xhr.open('GET', file_url);
+                xhr.onload = function (event) {
+                    var tiff = new Tiff({buffer: xhr.response});
+                    var canvas = tiff.toCanvas();
+
+                    canvas.setAttribute('style','width:60%; height:100%;');
+
+                    if ($('.file-preview-consent object').length &&
+                        !$('.file-preview-consent canvas').length) {
+                        document.querySelector('div.file-preview-consent object').remove();
+                        document.querySelector('div.file-preview-consent').append(canvas);
+                    }
+                    else if ($('.file-preview-sars object').length &&
+                            !$('.file-preview-sars canvas').length) {
+                        document.querySelector('div.file-preview-sars object').remove();
+                        document.querySelector('div.file-preview-sars').append(canvas);
+                    }
+                };
+                xhr.send();
+            }
+        });
+    </script>
+{% endblock %}
