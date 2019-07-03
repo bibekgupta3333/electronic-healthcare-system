@@ -1136,7 +1136,11 @@ def consent_contact(request, instruction_id, patient_emis_number):
                 PatientReportAuth.objects.create(patient=instruction.patient, instruction=instruction, url=unique_url)
 
             report_auth = get_object_or_404(PatientReportAuth, instruction=instruction)
-            third_party_form = ConsentThirdParty(request.POST)
+            third_party = ThirdPartyAuthorisation.objects.filter(patient_report_auth=report_auth).first()
+            if third_party:
+                third_party_form = ConsentThirdParty(request.POST, instance=third_party)
+            else:
+                third_party_form = ConsentThirdParty(request.POST)
 
             if third_party_form.is_valid():
                 third_party_authorisation = third_party_form.save(report_auth)

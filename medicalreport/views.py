@@ -416,7 +416,10 @@ def final_report(request: HttpRequest, instruction_id: str) -> HttpResponse:
 
         if request.POST.get('send-to-third'):
             instruction.third_party_notification = True
-            third_party_form = ConsentThirdParty(request.POST, instance=third_party)
+            if third_party:
+                third_party_form = ConsentThirdParty(request.POST, instance=third_party)
+            else:
+                third_party_form = ConsentThirdParty(request.POST)
             if third_party_form.is_valid():
                 third_party = third_party_form.save(report_auth)
 
