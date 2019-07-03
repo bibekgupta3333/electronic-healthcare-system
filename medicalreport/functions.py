@@ -445,10 +445,18 @@ def redact_name_relations_third_parties(value: str, relations: list, replace_all
         original_val = val
         if original_val in relations:
             value = value.replace(val, "[UNSPECIFIED]")
+        elif "'s." in original_val and original_val[:-3] in relations:
+            value = value.replace(original_val[:-3], "[UNSPECIFIED]")
+        elif "s'." in original_val and original_val[:-3] in relations:
+            value = value.replace(original_val[:-3], "[UNSPECIFIED]")
         elif "'s" in original_val and original_val[:-2] in relations:
             value = value.replace(original_val[:-2], "[UNSPECIFIED]")
         elif "s'" in original_val and original_val[:-2] in relations:
             value = value.replace(original_val[:-2], "[UNSPECIFIED]")
+        elif ":" in original_val and original_val[:-1] in relations:
+            value = value.replace(original_val[:-1], "[UNSPECIFIED]")
+        elif ";" in original_val and original_val[:-1] in relations:
+            value = value.replace(original_val[:-1], "[UNSPECIFIED]")
 
         if original_val in replace_all:
             value = value.replace(val, replace_all[replace_all.index(original_val)])
