@@ -44,7 +44,7 @@ gunicorn==19.9.0
 idna==2.6
 img2pdf==0.3.3
 jdcal==1.4
-Jinja2==2.10
+Jinja2==2.11.3
 jinja2-time==0.2.0
 jsonschema==2.6.0
 loggers==0.1.3
